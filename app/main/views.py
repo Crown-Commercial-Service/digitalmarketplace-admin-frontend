@@ -35,8 +35,7 @@ def get_service_json(service_id):
     if access_token is None:
         print('Bearer token must be supplied in DM_API_BEARER')
         raise Exception("DM_API_BEARER token is not set")
-    url = \
-        "https://api.digitalmarketplace.service.gov.uk/services/" + service_id
+    url = os.getenv('DM_API_URL') + "/services/" + service_id
     response = requests.get(
         url,
         headers={
