@@ -1,2 +1,54 @@
 # digitalmarketplace-admin-frontend
-Frontend administartion application for the digital marketplace.
+
+Frontend administration application for the digital marketplace.
+
+- Python app, based on the [Flask framework](http://flask.pocoo.org/)
+
+## Setup
+
+Install [Virtualenv](https://virtualenv.pypa.io/en/latest/)
+
+```
+sudo easy_install virtualenv
+```
+
+Create a virtual environment
+ 
+ ```
+ virtualenv ./venv
+ ```
+
+Set the required environment variables (for dev use local API instance if you 
+have it running):
+```
+export DM_API_URL=https://api.digitalmarketplace.service.gov.uk
+export DM_API_BEARER=<bearer_token>
+```
+
+### Activate the virtual environment
+
+```
+source ./venv/bin/activate
+```
+
+### Upgrade dependencies
+
+Install new Python dependencies with pip
+
+```pip install -r requirements.txt```
+
+
+### Run the tests
+
+```
+./scripts/run_tests.sh
+```
+
+
+### Run the server
+
+```
+python application.py runserver
+```
+
+Use the app at [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
