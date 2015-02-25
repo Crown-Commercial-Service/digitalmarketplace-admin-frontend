@@ -1,10 +1,14 @@
 {% extends "_base_page.html" %}
 
 {% block content %}
-<h1>Digital Marketplace Admin</h1>
-<form action="/viewservice" method="get">
-    Service ID to edit: <input type="text" name="service_id">
-    <br><br>
-    <input type="submit" value="Edit this service">
-</form>
+<div class="page-container">
+  <header class="page-heading">
+    <h1>Admin</h1>
+  </header>
+  <form action="/service" method="get" class="question">
+      <label class="question-heading" for="service_id">Service ID</label>
+      <input type="text" name="service_id" id="service_id" class="text-box">
+      <input type="submit" value="Find service" class="button-save">
+  </form>
+</div>
 {% endblock %}

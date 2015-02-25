@@ -1,0 +1,16 @@
+@import "grid_layout";
+@import "colours";
+
+#global-header-bar .header-bar {
+  background: $error-colour;
+}
+
+.page-container {
+  @extend %site-width-container;
+  padding-bottom: $gutter * 2;
+}
+
+.grid-row {
+  @extend %grid-row;
+  clear: both;
+}

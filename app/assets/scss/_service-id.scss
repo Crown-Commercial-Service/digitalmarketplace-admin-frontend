@@ -1,0 +1,21 @@
+.service-id {
+
+  @include core-16;
+  padding: 5px 10px;
+  margin: 0 5px 0 0;
+  display: inline-block;
+  background: $grey-4;
+  border: 1px solid $grey-3;
+  color: $text-colour;
+
+  span {
+
+    padding-right: 5px;
+
+    &:last-child {
+      padding-right: 0;
+    }
+
+  }
+
+}

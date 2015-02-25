@@ -1,0 +1,22 @@
+//
+// Digital Marketplace admin front end
+//
+
+@import "reset";
+@import "layout";
+
+// Digital Marketplace front end toolkit components
+$path: "/static/images/";
+@import "breadcrumb";
+@import "page-headings";
+@import "forms/summary";
+@import "forms/questions";
+@import "forms/textboxes";
+@import "buttons";
+@import "notification-banners";
+
+// Components specific to this app
+@import "service-id";
+
+// Layout of specific views
+@import "view_service";
