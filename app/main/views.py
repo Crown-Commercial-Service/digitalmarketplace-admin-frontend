@@ -12,21 +12,25 @@ def index():
 
 @main.route('/editservice')
 def get_service():
+    template_data = main.config['BASE_TEMPLATE_DATA']
     try:
         service_id = request.args.get("service_id")
         service_json = json.loads(get_service_json(service_id))["services"]
+        template_data["service_data"] = service_json
         return render_template(
-            "edit_service.html", service_data=service_json), 200
+            "edit_service.html", **template_data), 200
     except KeyError:
         return Response("Service ID '%s' can not be found" % service_id, 404)
 
 
 @main.route('/viewservice')
 def get_service_by_id():
+    template_data = main.config['BASE_TEMPLATE_DATA']
     try:
         service_id = request.args.get("service_id")
         service_json = json.loads(get_service_json(service_id))["services"]
-        return Response(json.dumps(service_json), mimetype='application/json')
+        template_data["service_data"] = service_json
+        return render_template("view_service.html", **template_data)
     except KeyError:
         return Response("Service ID '%s' can not be found" % service_id, 404)
 

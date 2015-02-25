@@ -1,0 +1,30 @@
+{% extends "_base_page.html" %}
+
+{% block content %}
+<p>
+    <a href="/" alt="Back to home">Back to admin home page (breadcrumb)</a>
+</p>
+{% if service_data %}
+    <h1>{{ service_data['serviceName'] }} (Service ID: {{ service_data['id'] }})</h1>
+    <p>Supplier: {{ service_data['supplierName'] }}</p>
+    <p>Documents that we will want to be able to change:
+    <ul>
+        <li><a href="{{ service_data['serviceDefinitionDocumentURL'] }}">Service definition</a></li>
+        <li><a href="{{ service_data['pricingDocumentURL'] }}">Pricing</a></li>
+        <li><a href="{{ service_data['termsAndConditionsDocumentURL'] }}">Terms and conditions</a></li>
+        {% if service_data['sfiaRateDocumentURL'] %}
+            <li><a href="{{ service_data['sfiaRateDocumentURL'] }}">SFIA rate card</a></li>
+        {% endif %}
+    </ul>
+    </p>
+{% else %}
+<h1>Error</h1>
+<p>
+  No service data
+</p>
+{% endif %}
+
+<p>
+    <a href="/viewservice?service_id={{ service_data['id'] }}" alt="View this service">View service JSON</a>
+</p>
+{% endblock %}
