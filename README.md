@@ -37,6 +37,9 @@ Install new Python dependencies with pip
 
 ```pip install -r requirements.txt```
 
+Install frontend dependencies with npm
+
+```npm install```
 
 ### Run the tests
 
