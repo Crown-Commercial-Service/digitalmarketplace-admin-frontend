@@ -6,7 +6,8 @@ from flask import json, render_template, Response, request
 
 @main.route('/')
 def index():
-    return render_template("index.html"), 200
+    template_data = main.config['BASE_TEMPLATE_DATA']
+    return render_template("index.html", **template_data), 200
 
 
 @main.route('/editservice')
