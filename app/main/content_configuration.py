@@ -1,19 +1,35 @@
-import yaml
+import yaml, inflection, re
 
 content_folder = "bower_components/digital-marketplace-ssp-content/g6/"
 
-def get_pages():
-    page_order_yaml = open("app/page_order.yml", "r")
-    page_order = yaml.load(page_order_yaml)
-    pages_with_questions = map(__populate_page__, page_order)
-    return page_order
+def get_sections():
+    section_order = yaml.load(
+        open("app/section_order.yml", "r")
+    )
+    map(__populate_section__, section_order)
+    return section_order
 
-def __populate_page__(page):
-    page['questions'] = map(__get_question_content__, page['questions'])
-    return page
+def get_section(requested_section):
+    sections = get_sections()
+    for section in sections:
+        if section['id'] == requested_section: return section
+
+def __populate_section__(section):
+    section['questions'] = map(__get_question_content__, section['questions'])
+    section['id'] = __make_id__(section['name'])
+    return section
 
 def __get_question_content__(question):
-    question_yaml = open(content_folder + question + ".yml", "r")
-    question_content = yaml.load(question_yaml)
+    question_content = yaml.load(
+        open(content_folder + question + ".yml", "r")
+    )
     question_content['id'] = question
     return question_content
+
+def __match_section_id__(section):
+    return True
+
+def __make_id__(name):
+    return inflection.underscore(
+        re.sub("\s", "_", name)
+    )

@@ -20,42 +20,30 @@ def find_service():
 @main.route('/service/<service_id>')
 def view_service(service_id):
     template_data = main.config['BASE_TEMPLATE_DATA']
-    template_data['sections'] = content_configuration.get_pages()
+    template_data['sections'] = content_configuration.get_sections()
     try:
-        service_json = json.loads(get_service_json(service_id))["services"]
-        template_data["service_data"] = service_json
-        template_data["service_data"]["id_split"] = \
-            re.findall("....", str(template_data["service_data"]["id"]))
+        template_data["service_data"] = json.loads(get_service_json(service_id))["services"]
+        template_data["service_data"]["id_split"] = re.findall("....", str(template_data["service_data"]["id"]))
         return render_template("view_service.html", **template_data)
     except KeyError:
         return Response("Service ID '%s' can not be found" % service_id, 404)
 
 
-@main.route('/service/<service_id>/raw')
-def view_service_raw(service_id):
-    try:
-        service_json = json.loads(get_service_json(service_id))["services"]
-        return Response(json.dumps(service_json), mimetype='application/json')
-    except KeyError:
-        return Response("Service ID '%s' can not be found" % service_id, 404)
-
-
-@main.route('/service/<service_id>/edit/documents')
-def edit_documents(service_id):
+@main.route('/service/<service_id>/edit/<section>')
+def edit_section(service_id, section):
     template_data = main.config['BASE_TEMPLATE_DATA']
+    template_data['section'] = content_configuration.get_section(section)
     try:
-        service_json = json.loads(get_service_json(service_id))["services"]
-        template_data["service_data"] = service_json
-        return render_template(
-            "edit_documents.html", **template_data), 200
+        template_data["service_data"] = json.loads(get_service_json(service_id))["services"]
+        return render_template("edit_section.html", **template_data)
     except KeyError:
         return Response("Service ID '%s' can not be found" % service_id, 404)
-
 
 @main.route('/service/<service_id>', methods=['POST'])
 def update(service_id):
     template_data = main.config['BASE_TEMPLATE_DATA']
-    template_data["edits_submitted"] = request.form.getlist("edits_submitted")
+    template_data["edits_submitted"] = request.form
+    template_data["service_id"] = service_id
     return render_template("confirm.html", **template_data), 200
 
 

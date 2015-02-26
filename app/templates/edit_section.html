@@ -1,0 +1,38 @@
+{% extends "_base_page.html" %}
+{% block page_title %}
+  Documents – Digital Marketplace admin
+{% endblock %}
+
+{% block content %}
+<div id="global-breadcrumb">
+  <nav>
+    <ol>
+      <li>
+        <a href="/" alt="Back to home">Home</a>
+      </li>
+      <li>
+        <a href="/service/{{ service_data['id'] }}" alt="Back to home">{{ service_data['serviceName'] }}</a>
+      </li>
+    </ol>
+  </nav>
+</div>
+<div class="page-container">
+  <header class="page-heading-smaller">
+    <h1>
+      {{ section.name }}
+    </h1>
+  </header>
+  <form action="/service/{{ service_data['id'] }}" method="post" enctype="multipart/form">
+    {% for field in section.questions %}
+      <div class="question">
+        <label class="question-heading" for="{{ field.id }}">{{ field.question }}</label>
+        <input type="textbox" class="text-box" name="{{ field.id }}" id="{{ field.id }}" value="{{ service_data[field.id] }}" />
+      </div>
+    {% endfor %}
+    <button class="button-save" type="submit">Save and return to overview</button>
+    <p>
+      <a href="/service/{{ service_data['id'] }}">Return without saving</a>
+    </p>
+  </form>
+</div>
+{% endblock %}

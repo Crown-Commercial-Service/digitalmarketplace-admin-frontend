@@ -3,6 +3,7 @@ Flask-Bootstrap==3.3.0.1
 Flask-Script==2.0.5
 requests==2.5.1
 pyyaml==3.11
+inflection==0.2.1
 
 #Required for testing
 pep8==1.5.7
