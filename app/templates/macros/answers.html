@@ -1,0 +1,9 @@
+{% macro textbox(field, value='') -%}
+  <fieldset class="question" id="{{ field.name }}">
+    <label class="question-heading" for="{{ field.name }}">{{ field.question }}</label>
+    <p class="question-hint">
+      {{ field.hint }}
+    </p>
+    <input type="text" class="text-box" name="{{ field.name }}" id="{{ field.name }}-text-box" value="{{ value }}" />
+  </fieldset>
+{%- endmacro %}
