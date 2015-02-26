@@ -54,11 +54,16 @@ def update(service_id):
 
 
 def get_service_json(service_id):
+    # TODO: Don't do these checks for every call - initialise once
     access_token = os.getenv('DM_API_BEARER')
+    api_url = os.getenv('DM_API_URL')
     if access_token is None:
         print('Bearer token must be supplied in DM_API_BEARER')
         raise Exception("DM_API_BEARER token is not set")
-    url = os.getenv('DM_API_URL') + "/services/" + service_id
+    if api_url is None:
+        print('API URL must be supplied in DM_API_URL')
+        raise Exception("DM_API_URL token is not set")
+    url = api_url + "/services/" + service_id
     response = requests.get(
         url,
         headers={
