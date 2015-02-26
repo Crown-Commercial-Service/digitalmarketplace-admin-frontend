@@ -59,6 +59,34 @@
           </tbody>
         </table>
 
+        {% for section in sections %}
+            <h2 class="summary-item-heading">
+              {{section.name}}
+            </h2>
+            {% if section.editable %}
+              <p class="summary-item-top-level-action">
+                <a href="/service/{{ service_data['id'] }}/edit/{{section.name}}">Edit</a>
+              </p>
+            {% endif %}
+            <table class="summary-item-body">
+              <thead class="summary-item-field-headings">
+                <tr>
+                  <th>Service attribute name</th><th>Service attribute</th>
+                </tr>
+              </thead>
+              <tbody class="summary-item-body">
+                {% for question in section.questions %}
+                  <tr class="summary-item-row">
+                    <td class="summary-item-field-name">{{ question.question }}</td>
+                    <td class="summary-item-field-content">
+                      <a href="{{ service_data[question.id] }}">{{ service_data[question.id] }}</a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+        {% endfor %}
+
         <h2 class="summary-item-heading">
           Documents
         </h2>

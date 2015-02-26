@@ -1,7 +1,7 @@
 import requests
 import os
 import re
-from . import main
+from . import main, content_configuration
 from flask import json, render_template, Response, request, redirect
 
 
@@ -20,6 +20,7 @@ def find_service():
 @main.route('/service/<service_id>')
 def view_service(service_id):
     template_data = main.config['BASE_TEMPLATE_DATA']
+    template_data['sections'] = content_configuration.get_pages()
     try:
         service_json = json.loads(get_service_json(service_id))["services"]
         template_data["service_data"] = service_json
@@ -55,8 +56,6 @@ def edit_documents(service_id):
 def update(service_id):
     template_data = main.config['BASE_TEMPLATE_DATA']
     template_data["edits_submitted"] = request.form.getlist("edits_submitted")
-    print("====================")
-    print(template_data["edits_submitted"])
     return render_template("confirm.html", **template_data), 200
 
 

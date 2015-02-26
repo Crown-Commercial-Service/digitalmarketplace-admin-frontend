@@ -1,0 +1,8 @@
+-
+  name: Documents
+  editable: true
+  questions:
+    - serviceDefinitionDocumentURL
+    - termsAndConditionsDocumentURL
+    - sfiaRateCardURL
+    - pricingDocumentURL
