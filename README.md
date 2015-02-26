@@ -37,9 +37,12 @@ Install new Python dependencies with pip
 
 ```pip install -r requirements.txt```
 
-Install frontend dependencies with npm
+Install frontend dependencies with npm and gulp
 
-```npm install```
+```
+npm install
+node_modules/gulp/bin/gulp.js build:development
+```
 
 ### Run the tests
 
