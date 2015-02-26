@@ -37,12 +37,14 @@
               </thead>
               <tbody class="summary-item-body">
                 {% for question in section.questions %}
-                  <tr class="summary-item-row">
-                    <td class="summary-item-field-name">{{ question.question }}</td>
-                    <td class="summary-item-field-content">
-                      <a href="{{ service_data[question.id] }}">{{ service_data[question.id] }}</a>
-                    </td>
-                  </tr>
+                  {% if service_data['lot']|lower in question['dependsOnLots'] %}
+                    <tr class="summary-item-row">
+                      <td class="summary-item-field-name">{{ question.question }}</td>
+                      <td class="summary-item-field-content">
+                        {{ service_data[question.id] }}
+                      </td>
+                    </tr>
+                  {% endif %}
                 {% endfor %}
               </tbody>
             </table>

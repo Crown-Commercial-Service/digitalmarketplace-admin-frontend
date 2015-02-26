@@ -24,6 +24,10 @@ def __get_question_content__(question):
         open(content_folder + question + ".yml", "r")
     )
     question_content['id'] = question
+    if 'dependsOnLots' in question_content:
+        question_content['dependsOnLots'] = [x.strip() for x in question_content['dependsOnLots'].lower().split(',')]
+    else:
+        question_content['dependsOnLots'] = ["saas", "paas", "iaas", "scs"]
     return question_content
 
 def __match_section_id__(section):
