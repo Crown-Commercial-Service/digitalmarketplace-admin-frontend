@@ -1,6 +1,9 @@
-import yaml, inflection, re
+import yaml
+import inflection
+import re
 
 content_folder = "bower_components/digital-marketplace-ssp-content/g6/"
+
 
 def get_sections():
     section_order = yaml.load(
@@ -9,15 +12,19 @@ def get_sections():
     map(__populate_section__, section_order)
     return section_order
 
+
 def get_section(requested_section):
     sections = get_sections()
     for section in sections:
-        if section['id'] == requested_section: return section
+        if section['id'] == requested_section:
+            return section
+
 
 def __populate_section__(section):
     section['questions'] = map(__get_question_content__, section['questions'])
     section['id'] = __make_id__(section['name'])
     return section
+
 
 def __get_question_content__(question):
     question_content = yaml.load(
@@ -25,13 +32,18 @@ def __get_question_content__(question):
     )
     question_content['id'] = question
     if 'dependsOnLots' in question_content:
-        question_content['dependsOnLots'] = [x.strip() for x in question_content['dependsOnLots'].lower().split(',')]
+        dependsOnLots = question_content['dependsOnLots'].lower().split(",")
+        question_content['dependsOnLots'] = [
+            x.strip() for x in dependsOnLots
+        ]
     else:
         question_content['dependsOnLots'] = ["saas", "paas", "iaas", "scs"]
     return question_content
 
+
 def __match_section_id__(section):
     return True
+
 
 def __make_id__(name):
     return inflection.underscore(

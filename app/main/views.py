@@ -1,8 +1,8 @@
 import requests
 import os
 import re
-from . import main, content_configuration
 from flask import json, render_template, Response, request, redirect
+from . import main, content_configuration
 
 
 @main.route('/')
@@ -22,8 +22,12 @@ def view_service(service_id):
     template_data = main.config['BASE_TEMPLATE_DATA']
     template_data['sections'] = content_configuration.get_sections()
     try:
-        template_data["service_data"] = json.loads(get_service_json(service_id))["services"]
-        template_data["service_data"]["id_split"] = re.findall("....", str(template_data["service_data"]["id"]))
+        template_data["service_data"] = json.loads(
+            get_service_json(service_id)
+        )["services"]
+        template_data["service_data"]["id_split"] = re.findall(
+            "....", str(template_data["service_data"]["id"])
+        )
         return render_template("view_service.html", **template_data)
     except KeyError:
         return Response("Service ID '%s' can not be found" % service_id, 404)
@@ -34,10 +38,13 @@ def edit_section(service_id, section):
     template_data = main.config['BASE_TEMPLATE_DATA']
     template_data['section'] = content_configuration.get_section(section)
     try:
-        template_data["service_data"] = json.loads(get_service_json(service_id))["services"]
+        template_data["service_data"] = json.loads(
+            get_service_json(service_id)
+        )["services"]
         return render_template("edit_section.html", **template_data)
     except KeyError:
         return Response("Service ID '%s' can not be found" % service_id, 404)
+
 
 @main.route('/service/<service_id>', methods=['POST'])
 def update(service_id):
