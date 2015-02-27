@@ -1,4 +1,4 @@
-{% import 'macros/fields.html' as fields %}
+{% import 'macros/forms.html' as forms %}
 {% from 'macros/breadcrumb.html' import breadcrumb %}
 {% from 'macros/page_heading.html' import page_heading %}
 
@@ -17,8 +17,12 @@
   <div class="page-container">
     {{ page_heading(section.name, null, "page-heading-smaller") }}
     <form action="/service/{{ service_data['id'] }}" method="post" enctype="multipart/form">
-      {% for field in section.questions %}
-        {{ fields.textbox(field, service_data[field.id]) }}
+      {% for question in section.questions %}
+        {{ forms.question_wrapper_open(question) }}
+          {% for field in question.fields %}
+            {{ forms[field.type](field, service_data[question.id]) }}
+          {% endfor %}
+        {{ forms.question_wrapper_close(question) }}
       {% endfor %}
       <button class="button-save" type="submit">Save and return to overview</button>
       <p>

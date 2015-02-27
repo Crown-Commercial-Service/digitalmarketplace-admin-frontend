@@ -1,0 +1,39 @@
+{% macro question_wrapper_open(question) -%}
+  <fieldset class="question" id="{{ question.name }}">
+    <label class="question-heading" for="{{ question.name }}">{{ question.question }}</label>
+    {% if "hint" in question %}
+      <p class="question-hint">
+        {{ question.hint }}
+      </p>
+    {% endif %}
+{%- endmacro %}
+
+{% macro question_wrapper_close(question) -%}
+  </fieldset>
+{%- endmacro %}
+
+{% macro textbox(field, value='') -%}
+  <input type="text" class="text-box" name="{{ field.name }}" id="{{ field.name }}-text-box" value="{{ value }}" />
+{%- endmacro %}
+
+{% macro upload(field, value='') -%}
+  {{ textbox(field, value) }}
+{%- endmacro %}
+
+{% macro radio(field, value='') -%}
+  <label class="selection-button">
+    {{ field.label }}
+    <input type="radio" name="radio-1" id="radio-1" value="val-1">
+  </label>
+{%- endmacro %}
+
+{% macro boolean(field, value='') -%}
+  <label class="selection-button selection-button-boolean">
+    Yes
+    <input type="radio" name="boolean-1" id="boolean-1" value="val-1">
+  </label>
+  <label class="selection-button selection-button-boolean">
+    No
+    <input type="radio" name="boolean-1" id="boolean-1" value="val-1">
+  </label>
+{%- endmacro %}
