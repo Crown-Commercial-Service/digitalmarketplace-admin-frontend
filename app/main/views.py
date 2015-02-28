@@ -49,7 +49,7 @@ def update(service_id, section):
     for question_id in posted_data:
         content = content_configuration.get_question(question_id)
         for validation_rule in content["validations"]:
-            valid = validations.upload_to_S3(  # TODO: validation_rule["name"]
+            valid = validations.save_file(  # TODO: validation_rule["name"]
                 question_id,
                 posted_data[question_id]
             )
