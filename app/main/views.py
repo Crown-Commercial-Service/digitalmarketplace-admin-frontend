@@ -1,9 +1,21 @@
-import requests
 import os
+import requests
 import re
-from flask import json, render_template, Response, request, redirect, url_for
-from werkzeug import secure_filename
-from . import main, content_configuration, validation_tools
+from flask import render_template, request, redirect, url_for
+from . import main
+from helpers.validation_tools import Validate
+from helpers.content import Content_loader
+from helpers.service import Service_loader
+
+
+service = Service_loader(
+    os.getenv('DM_API_URL'),
+    os.getenv('DM_API_BEARER')
+)
+content = Content_loader(
+    "app/section_order.yml",
+    "bower_components/digital-marketplace-ssp-content/g6/"
+)
 
 
 @main.route('/')
@@ -18,10 +30,9 @@ def find():
 
 @main.route('/service/<service_id>')
 def view(service_id):
-    service_data = get_service_json(service_id)
     template_data = get_template_data({
-        "sections": content_configuration.get_sections(),
-        "service_data": service_data
+        "sections": content.sections,
+        "service_data": service.get(service_id).data
     })
     template_data["service_data"]["id_split"] = re.findall(
         "....", str(template_data["service_data"]["id"])
@@ -32,8 +43,8 @@ def view(service_id):
 @main.route('/service/<service_id>/edit/<section>')
 def edit(service_id, section):
     template_data = get_template_data({
-        "section": content_configuration.get_section(section),
-        "service_data": get_service_json(service_id)
+        "section": content.get_section(section),
+        "service_data": service.get(service_id).data
     })
     return render_template("edit_section.html", **template_data)
 
@@ -41,57 +52,36 @@ def edit(service_id, section):
 @main.route('/service/<service_id>/edit/<section>', methods=['POST'])
 def update(service_id, section):
 
+    service.get(service_id)
     posted_data = dict(request.form, **request.files)
-    validations = validation_tools.Validations()
     errors = {}
     successes = {}  # just for debugging
 
     for question_id in posted_data:
-        content = content_configuration.get_question(question_id)
-        for validation_rule in content["validations"]:
-            valid = validations.save_file(  # TODO: validation_rule["name"]
-                question_id,
-                posted_data[question_id]
-            )
-            if not valid:
-                errors[question_id] = validation_rule["message"]
+        validate = Validate(posted_data[question_id])
+        for rule in content.get_question(question_id)["validations"]:
+            if not validate.test("save_file"):
+                errors[question_id] = rule["message"]
                 break
-            else:
-                successes[question_id] = "all OK"  # just for debugging
             break  # TODO: loop through every validation rule
+        if question_id not in errors:
+            successes[question_id] = "all OK"  # just for debugging
+            service.set(question_id, "new value")
 
     template_data = get_template_data({
-        "edits_submitted": dict(request.form, **request.files),
+        "edits_submitted": posted_data,
         "service_id": service_id,
         "errors": errors,
         "successes": successes
     })
 
     if len(errors):
+        service.post()  # Debug--shouldn't post for real if there are errors
         return render_template("confirm.html", **template_data)
     else:
+        service.post()
         return redirect("/service/" + service_id)
 
 
-def get_service_json(service_id):
-    # TODO: Don't do these checks for every call - initialise once
-    access_token = os.getenv('DM_API_BEARER')
-    api_url = os.getenv('DM_API_URL')
-    if access_token is None:
-        print('Bearer token must be supplied in DM_API_BEARER')
-        raise Exception("DM_API_BEARER token is not set")
-    if api_url is None:
-        print('API URL must be supplied in DM_API_URL')
-        raise Exception("DM_API_URL is not set")
-    url = api_url + "/services/" + service_id
-    response = requests.get(
-        url,
-        headers={
-            "authorization": "Bearer {}".format(access_token)
-        }
-    )
-    return json.loads(response.content)["services"]
-
-
-def get_template_data(merged_with=[]):
+def get_template_data(merged_with={}):
     return dict(main.config['BASE_TEMPLATE_DATA'], **merged_with)

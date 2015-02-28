@@ -1,0 +1,32 @@
+import os
+import requests
+from flask import request, json
+
+
+class Service_loader():
+
+    def __init__(self, api_url, access_token):
+        self.api_url = api_url
+        self.access_token = access_token
+        if self.access_token is None:
+            print('Bearer token must be supplied in DM_API_BEARER')
+            raise Exception("DM_API_BEARER token is not set")
+        if self.api_url is None:
+            print('API URL must be supplied in DM_API_URL')
+            raise Exception("DM_API_URL is not set")
+
+    def get(self, service_id):
+        response = requests.get(
+            self.api_url + "/services/" + service_id,
+            headers={
+                "authorization": "Bearer {}".format(self.access_token)
+            }
+        )
+        self.data = json.loads(response.content)["services"]
+        return self
+
+    def set(self, key, value):
+        self.data['key'] = value
+
+    def post(self):
+        print self.data  # This would be an update call to the API
