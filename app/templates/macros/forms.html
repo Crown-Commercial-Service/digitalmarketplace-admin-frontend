@@ -2,7 +2,7 @@
   <fieldset class="question" id="{{ question.name }}">
     <label class="question-heading" for="{{ question.name }}">{{ question.question }}</label>
     {% if "hint" in question %}
-      <p class="question-hint">
+      <p class="hint">
         {{ question.hint }}
       </p>
     {% endif %}
