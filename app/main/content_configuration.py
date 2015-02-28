@@ -2,6 +2,7 @@ import yaml
 import inflection
 import re
 
+
 content_folder = "bower_components/digital-marketplace-ssp-content/g6/"
 
 
@@ -20,17 +21,12 @@ def get_section(requested_section):
             return section
 
 
-def __populate_section__(section):
-    section['questions'] = map(__get_question_content__, section['questions'])
-    section['id'] = __make_id__(section['name'])
-    return section
-
-
-def __get_question_content__(question):
+def get_question(question):
     question_content = yaml.load(
         open(content_folder + question + ".yml", "r")
     )
     question_content['id'] = question
+    # this is the wrong way to do it. question should be shown by default.
     if 'dependsOnLots' in question_content:
         dependsOnLots = question_content['dependsOnLots'].lower().split(",")
         question_content['dependsOnLots'] = [
@@ -39,6 +35,12 @@ def __get_question_content__(question):
     else:
         question_content['dependsOnLots'] = ["saas", "paas", "iaas", "scs"]
     return question_content
+
+
+def __populate_section__(section):
+    section['questions'] = map(get_question, section['questions'])
+    section['id'] = __make_id__(section['name'])
+    return section
 
 
 def __match_section_id__(section):

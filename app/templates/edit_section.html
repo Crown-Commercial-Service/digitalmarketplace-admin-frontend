@@ -16,12 +16,10 @@
   ]) }}
   <div class="page-container">
     {{ page_heading(section.name, null, "page-heading-smaller") }}
-    <form action="/service/{{ service_data['id'] }}" method="post" enctype="multipart/form">
+    <form action="/service/{{ service_data['id'] }}/edit/{{ section.id }}" method="post" enctype="multipart/form-data">
       {% for question in section.questions %}
         {{ forms.question_wrapper_open(question) }}
-          {% for field in question.fields %}
-            {{ forms[field.type](field, service_data[question.id]) }}
-          {% endfor %}
+          {{ forms[question.type](question, service_data[question.id]) }}
         {{ forms.question_wrapper_close(question) }}
       {% endfor %}
       <button class="button-save" type="submit">Save and return to overview</button>

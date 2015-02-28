@@ -16,14 +16,22 @@
   <input type="text" class="text-box" name="{{ field.name }}" id="{{ field.name }}-text-box" value="{{ value }}" />
 {%- endmacro %}
 
-{% macro upload(field, value='') -%}
-  {{ textbox(field, value) }}
+{% macro upload(question, value='') -%}
+  <input type="file" name="{{ question.id }}" id="{{ question.id }}-file-upload" />
 {%- endmacro %}
 
 {% macro radio(field, value='') -%}
+  {{ selection_button("radio", field, value) }}
+{%- endmacro %}
+
+{% macro checkbox(field, value='') -%}
+  {{ selection_button("radio", field, value) }}
+{%- endmacro %}
+
+{% macro selection_button(type, field, value='') -%}
   <label class="selection-button">
     {{ field.label }}
-    <input type="radio" name="radio-1" id="radio-1" value="val-1">
+    <input type="{{ type }}" name="{{ field.name }}" id="{{ field.name }}" value="{{ value }}">
   </label>
 {%- endmacro %}
 

@@ -1,8 +1,9 @@
 import requests
 import os
 import re
-from flask import json, render_template, Response, request, redirect
-from . import main, content_configuration
+from flask import json, render_template, Response, request, redirect, url_for
+from werkzeug import secure_filename
+from . import main, content_configuration, validation_tools
 
 
 @main.route('/')
@@ -11,25 +12,25 @@ def index():
 
 
 @main.route('/service')
-def find_service():
+def find():
     return redirect("/service/" + request.args.get("service_id"))
 
 
 @main.route('/service/<service_id>')
-def view_service(service_id):
+def view(service_id):
     service_data = get_service_json(service_id)
-    service_data["id_split"] = re.findall(
-        "....", str(template_data["service_data"]["id"])
-    )
     template_data = get_template_data({
         "sections": content_configuration.get_sections(),
         "service_data": service_data
     })
+    template_data["service_data"]["id_split"] = re.findall(
+        "....", str(template_data["service_data"]["id"])
+    )
     return render_template("view_service.html", **template_data)
 
 
 @main.route('/service/<service_id>/edit/<section>')
-def edit_section(service_id, section):
+def edit(service_id, section):
     template_data = get_template_data({
         "section": content_configuration.get_section(section),
         "service_data": get_service_json(service_id)
@@ -37,13 +38,39 @@ def edit_section(service_id, section):
     return render_template("edit_section.html", **template_data)
 
 
-@main.route('/service/<service_id>', methods=['POST'])
-def update(service_id):
+@main.route('/service/<service_id>/edit/<section>', methods=['POST'])
+def update(service_id, section):
+
+    posted_data = dict(request.form, **request.files)
+    validations = validation_tools.Validations()
+    errors = {}
+    successes = {}  # just for debugging
+
+    for question_id in posted_data:
+        content = content_configuration.get_question(question_id)
+        for validation_rule in content["validations"]:
+            valid = validations.upload_to_S3(  # TODO: validation_rule["name"]
+                question_id,
+                posted_data[question_id]
+            )
+            if not valid:
+                errors[question_id] = validation_rule["message"]
+                break
+            else:
+                successes[question_id] = "all OK"  # just for debugging
+            break  # TODO: loop through every validation rule
+
     template_data = get_template_data({
-        "edits_submitted": request.form,
-        "service_id": service_id
+        "edits_submitted": dict(request.form, **request.files),
+        "service_id": service_id,
+        "errors": errors,
+        "successes": successes
     })
-    return render_template("confirm.html", **template_data), 200
+
+    if len(errors):
+        return render_template("confirm.html", **template_data)
+    else:
+        return redirect("/service/" + service_id)
 
 
 def get_service_json(service_id):

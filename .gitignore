@@ -64,3 +64,6 @@ npm-debug.log
 
 # Front end generated assets
 app/static
+
+# Folder for testing file uploads
+temp

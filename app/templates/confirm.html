@@ -10,8 +10,23 @@
         POST request received
       </div>
     </div>
+    <h2 class="summary-item-heading">
+      Submitted
+    </h2>
     <p style="font-family: monospace; margin: 30px 0;">
       {{ edits_submitted }}
+    </p>
+    <h2 class="summary-item-heading">
+      The good
+    </h2>
+    <p style="font-family: monospace; margin: 30px 0;">
+      {{ successes }}
+    </p>
+    <h2 class="summary-item-heading">
+      The bad
+    </h2>
+    <p style="font-family: monospace; margin: 30px 0;">
+      {{ errors }}
     </p>
     <p>
       <a href="/service/{{ service_id }}">Back to summary</a>
