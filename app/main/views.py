@@ -60,10 +60,10 @@ def update(service_id, section):
     for question_id in posted_data:
         validate = Validate(posted_data[question_id])
         for rule in content.get_question(question_id)["validations"]:
-            if not validate.test("save_file"):
+            if not validate.test(rule["name"]):
+                print "error!"
                 errors[question_id] = rule["message"]
                 break
-            break  # TODO: loop through every validation rule
         if question_id not in errors:
             successes[question_id] = "all OK"  # just for debugging
             service.set(question_id, "new value")

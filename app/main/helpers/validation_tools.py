@@ -13,17 +13,18 @@ class Validate():
             raise Exception("Validation rule " + rule + " not found")
         return getattr(self, rule)()
 
-    def __file_has_contents(self):
+    def answer_required(self):
 
         first_file = self.posted_data[0]
-        return len(first_file.read())
+        first_file.seek(0)
+        return len(first_file.read()) > 0
 
-    def save_file(self):
+    def file_can_be_saved(self):
 
-        first_file = self.posted_data[0]
-
-        if not self.__file_has_contents():
+        if not self.answer_required():
             return False
+
+        first_file = self.posted_data[0]
 
         tmp = "/Users/chs/gdsworkspace/digitalmarketplace-admin-frontend/temp/"
 
@@ -39,3 +40,17 @@ class Validate():
 
         first_file.save(destination)
         return True
+
+    def file_is_less_than_5mb(self):
+
+        first_file = self.posted_data[0]
+        first_file.seek(0)
+
+        return len(first_file.read()) < 5400000
+
+    def file_is_open_document_format(self):
+
+        first_file = self.posted_data[0]
+        file_name, file_extension = os.path.splitext(first_file.filename)
+
+        return file_extension.lower() in [".pdf", ".pda", ".odt", ".ods", ".odp"];
