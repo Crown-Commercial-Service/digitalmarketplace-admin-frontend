@@ -1,5 +1,5 @@
 {% macro question_wrapper_open(question) -%}
-  <fieldset class="question" id="{{ question.name }}">
+  <div class="question" id="{{ question.id }}">
     <label class="question-heading" for="{{ question.name }}">{{ question.question }}</label>
     {% if "hint" in question %}
       <p class="hint">
@@ -9,7 +9,21 @@
 {%- endmacro %}
 
 {% macro question_wrapper_close(question) -%}
-  </fieldset>
+  </div>
+{%- endmacro %}
+
+{% macro validation_wrapper_open() -%}
+  <div class="validation-wrapper" >
+{%- endmacro %}
+
+{% macro validation_wrapper_close() -%}
+  </div>
+{%- endmacro %}
+
+{% macro validation_message(message, question_id) -%}
+  <p class="validation-message" id="error-{{ question_id }}">
+    {{ message }}
+  </p>
 {%- endmacro %}
 
 {% macro textbox(field, value='') -%}
