@@ -56,7 +56,7 @@ npm install
 python application.py runserver
 ```
 
-Use the app at [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+The admin frontend runs on port 5004. Use the app at [http://127.0.0.1:5004/](http://127.0.0.1:5004/)
 
 ## Frontend tasks
 
