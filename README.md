@@ -41,7 +41,6 @@ Install frontend dependencies with npm and gulp
 
 ```
 npm install
-node_modules/gulp/bin/gulp.js build:development
 ```
 
 ### Run the tests
@@ -58,3 +57,14 @@ python application.py runserver
 ```
 
 Use the app at [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+
+## Frontend tasks
+
+[NPM](https://www.npmjs.org/) is used for all frontend build tasks. The commands available are:
+
+- `npm run frontend-build:development` (compile the frontend files for development)
+- `npm run frontend-build:production` (compile the frontend files for production)
+- `npm run frontend-build:watch` (watch all frontend files & rebuild when anything changes)
+- `npm run frontend-install` (install all non-NPM dependancies)
+
+Note: `npm run frontend-install` is run as a post-install task after you run `npm install`.
