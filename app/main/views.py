@@ -68,16 +68,16 @@ def update(service_id, section):
             successes[question_id] = "all OK"  # just for debugging
             service.set(question_id, "new value")
 
-    template_data = get_template_data({
-        "edits_submitted": posted_data,
-        "service_id": service_id,
-        "errors": errors,
-        "successes": successes
-    })
-
     if len(errors):
         service.post()  # Debug--shouldn't post for real if there are errors
-        return render_template("confirm.html", **template_data)
+        return render_template("edit_section.html", **get_template_data({
+            "section": content.get_section(section),
+            "service_data": service.get(service_id).data,
+            "edits_submitted": posted_data,
+            "service_id": service_id,
+            "errors": errors,
+            "successes": successes
+        }))
     else:
         service.post()
         return redirect("/service/" + service_id)

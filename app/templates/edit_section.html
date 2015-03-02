@@ -16,13 +16,26 @@
   ]) }}
   <div class="page-container">
     {{ page_heading(section.name, null, "page-heading-smaller") }}
+    {% if errors %}
+      There were problems with your response to the following questions:
+      <ul>
+        {% for question in section.questions %}
+          {% if question.id in errors %}
+            <li>{{ question.question }}</li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    {% endif %}
     <form action="/service/{{ service_data['id'] }}/edit/{{ section.id }}" method="post" enctype="multipart/form-data">
       {% for question in section.questions %}
         {{ forms.question_wrapper_open(question) }}
+          {% if question.id in errors %}
+            {{ errors[question.id ]}}
+          {% endif %}
           {{ forms[question.type](question, service_data[question.id]) }}
         {{ forms.question_wrapper_close(question) }}
       {% endfor %}
-      <button class="button-save" type="submit">Save and return to overview</button>
+      <button class="button-save" type="submit">Save and return to summary</button>
       <p>
         <a href="/service/{{ service_data['id'] }}">Return without saving</a>
       </p>
