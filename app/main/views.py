@@ -59,11 +59,11 @@ def update(service_id, section):
     for question_id in posted_data:
         validate = Validate(posted_data[question_id])
         for rule in content.get_question(question_id)["validations"]:
-            if (
-                (not validate.test("answer_required")) and
-                "optional" in content.get_question(question_id)
-            ):
-                break
+            if not validate.test("answer_required"):
+                if "optional" in content.get_question(question_id):
+                    break # question is optional
+                if question_id in service.data:
+                    break # file has previously been uploaded
             if not validate.test(rule["name"]):
                 errors[question_id] = rule["message"]
                 break
@@ -71,7 +71,6 @@ def update(service_id, section):
             service.set(question_id, "new value")
 
     if len(errors):
-        service.post()  # Debug--shouldn't post for real if there are errors
         return render_template("edit_section.html", **get_template_data({
             "section": content.get_section(section),
             "service_data": service.get(service_id).data,
