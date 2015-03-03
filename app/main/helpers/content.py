@@ -32,7 +32,7 @@ class Content_loader():
             question_content["id"] = question
 
             # wrong way to do it? question should be shown by default.
-            question_content["dependsOnLots"] = (
+            question_content["depends_on_lots"] = (
                 self.__get_dependent_lots__(question_content["dependsOnLots"])
             ) if "dependsOnLots" in question_content else (
                 ["saas", "paas", "iaas", "scs"]
@@ -45,6 +45,12 @@ class Content_loader():
     def __populate_section__(self, section):
         section["questions"] = [
             self.get_question(q) for q in section["questions"]
+        ]
+        all_dependencies = [
+            q["depends_on_lots"] for q in section["questions"]
+        ]
+        section["depends_on_lots"] = [
+            y for x in all_dependencies for y in x  # flatten array
         ]
         section["id"] = self.__make_id__(section["name"])
         return section
