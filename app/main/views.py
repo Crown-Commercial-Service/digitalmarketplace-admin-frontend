@@ -55,17 +55,19 @@ def update(service_id, section):
     service.get(service_id)
     posted_data = dict(request.form, **request.files)
     errors = {}
-    successes = {}  # just for debugging
 
     for question_id in posted_data:
         validate = Validate(posted_data[question_id])
         for rule in content.get_question(question_id)["validations"]:
+            if (
+                (not validate.test("answer_required")) and
+                "optional" in content.get_question(question_id)
+            ):
+                break
             if not validate.test(rule["name"]):
-                print "error!"
                 errors[question_id] = rule["message"]
                 break
         if question_id not in errors:
-            successes[question_id] = "all OK"  # just for debugging
             service.set(question_id, "new value")
 
     if len(errors):
@@ -75,8 +77,7 @@ def update(service_id, section):
             "service_data": service.get(service_id).data,
             "edits_submitted": posted_data,
             "service_id": service_id,
-            "errors": errors,
-            "successes": successes
+            "errors": errors
         }))
     else:
         service.post()
