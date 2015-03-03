@@ -21,7 +21,7 @@ Create a virtual environment
 Set the required environment variables (for dev use local API instance if you 
 have it running):
 ```
-export DM_API_URL=https://api.digitalmarketplace.service.gov.uk
+export DM_API_URL=http://localhost:5000
 export DM_API_BEARER=<bearer_token>
 ```
 
@@ -52,6 +52,15 @@ npm install
 
 ### Run the server
 
+To run the Admin Frontend App for local development you can use the convenient run 
+script, which sets the required environment variables to defaults if they have
+not already been set:
+
+```
+./run_app.sh
+```
+
+More generally, the command to start the server is:
 ```
 python application.py runserver
 ```
