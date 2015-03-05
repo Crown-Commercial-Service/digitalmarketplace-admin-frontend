@@ -3,9 +3,9 @@ import requests
 import re
 from flask import render_template, request, redirect, url_for
 from . import main
-from helpers.validation_tools import Validate
-from helpers.content import Content_loader
-from helpers.service import Service_loader
+from .helpers.validation_tools import Validate
+from .helpers.content import Content_loader
+from .helpers.service import Service_loader
 
 
 service = Service_loader(
@@ -61,9 +61,9 @@ def update(service_id, section):
         for rule in content.get_question(question_id)["validations"]:
             if not validate.test("answer_required"):
                 if "optional" in content.get_question(question_id):
-                    break # question is optional
+                    break  # question is optional
                 if question_id in service.data:
-                    break # file has previously been uploaded
+                    break  # file has previously been uploaded
             if not validate.test(rule["name"]):
                 errors[question_id] = rule["message"]
                 break

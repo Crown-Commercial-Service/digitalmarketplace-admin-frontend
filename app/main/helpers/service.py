@@ -29,4 +29,4 @@ class Service_loader():
         self.data['key'] = value
 
     def post(self):
-        print self.data  # This would be an update call to the API
+        print(self.data)  # This would be an update call to the API

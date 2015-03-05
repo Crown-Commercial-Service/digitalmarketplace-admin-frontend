@@ -1,7 +1,7 @@
 from flask import Flask
 from flask.ext.bootstrap import Bootstrap
 from config import config
-from main import main as main_blueprint
+from .main import main as main_blueprint
 
 bootstrap = Bootstrap()
 

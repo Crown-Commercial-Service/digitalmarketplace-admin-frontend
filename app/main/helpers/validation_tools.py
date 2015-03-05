@@ -53,4 +53,6 @@ class Validate():
         first_file = self.posted_data[0]
         file_name, file_extension = os.path.splitext(first_file.filename)
 
-        return file_extension.lower() in [".pdf", ".pda", ".odt", ".ods", ".odp"];
+        return file_extension.lower() in [
+            ".pdf", ".pda", ".odt", ".ods", ".odp"
+        ]
