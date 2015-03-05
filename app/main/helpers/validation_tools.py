@@ -26,7 +26,7 @@ class Validate():
 
         first_file = self.posted_data[0]
 
-        tmp = "/Users/chs/gdsworkspace/digitalmarketplace-admin-frontend/temp/"
+        tmp = "./temp/"
 
         file_name, file_extension = os.path.splitext(first_file.filename)
         destination = os.path.join(
