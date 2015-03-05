@@ -18,8 +18,7 @@ var jsVendorFiles = [
   assetsFolder + '/javascripts/vendor/hogan-3.0.2.min.js'
 ];
 var jsSourceFiles = [
-  assetsFolder + '/javascripts/test1.js',
-  assetsFolder + '/javascripts/test2.js'
+  assetsFolder + '/javascripts/application.js'
 ];
 var jsDistributionFolder = staticFolder + '/javascripts';
 var jsDistributionFile = 'application.js';
