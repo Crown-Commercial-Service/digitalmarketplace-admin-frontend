@@ -10,7 +10,7 @@ from .helpers.service import Service_loader
 
 service = Service_loader(
     os.getenv('DM_API_URL'),
-    os.getenv('DM_API_BEARER')
+    os.getenv('DM_ADMIN_FRONTEND_API_AUTH_TOKEN')
 )
 content = Content_loader(
     "app/section_order.yml",

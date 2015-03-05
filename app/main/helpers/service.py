@@ -9,8 +9,8 @@ class Service_loader():
         self.api_url = api_url
         self.access_token = access_token
         if self.access_token is None:
-            print('Bearer token must be supplied in DM_API_BEARER')
-            raise Exception("DM_API_BEARER token is not set")
+            print('Token must be supplied in DM_ADMIN_FRONTEND_API_AUTH_TOKEN')
+            raise Exception("DM_ADMIN_FRONTEND_API_AUTH_TOKEN token not set")
         if self.api_url is None:
             print('API URL must be supplied in DM_API_URL')
             raise Exception("DM_API_URL is not set")

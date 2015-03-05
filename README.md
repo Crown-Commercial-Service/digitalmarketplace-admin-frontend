@@ -13,16 +13,16 @@ sudo easy_install virtualenv
 ```
 
 Create a virtual environment
- 
+
  ```
  virtualenv ./venv
  ```
 
-Set the required environment variables (for dev use local API instance if you 
+Set the required environment variables (for dev use local API instance if you
 have it running):
 ```
 export DM_API_URL=http://localhost:5000
-export DM_API_BEARER=<bearer_token>
+export DM_ADMIN_FRONTEND_API_AUTH_TOKEN=<bearer_token>
 ```
 
 ### Activate the virtual environment
@@ -52,7 +52,7 @@ npm install
 
 ### Run the server
 
-To run the Admin Frontend App for local development you can use the convenient run 
+To run the Admin Frontend App for local development you can use the convenient run
 script, which sets the required environment variables to defaults if they have
 not already been set:
 
