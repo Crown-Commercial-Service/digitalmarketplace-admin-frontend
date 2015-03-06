@@ -3,14 +3,15 @@ import inflection
 import re
 
 
-class Content_loader():
+class ContentLoader(object):
 
     def __init__(self, manifest, content_directory):
 
-        section_order = yaml.load(open(manifest, "r"))
+        with open(manifest, "r") as file:
+            section_order = yaml.load(file)
 
-        self.directory = content_directory
-        self.__question_cache__ = {}
+        self._directory = content_directory
+        self._question_cache = {}
         self.sections = [
             self.__populate_section__(s) for s in section_order
         ]
@@ -23,11 +24,10 @@ class Content_loader():
 
     def get_question(self, question):
 
-        if question not in self.__question_cache__:
+        if question not in self._question_cache:
 
-            question_content = yaml.load(
-                open(str(self.directory) + str(question) + ".yml", "r")
-            )
+            with open(self._directory + question + ".yml", "r") as file:
+                question_content = yaml.load(file)
 
             question_content["id"] = question
 
@@ -38,9 +38,9 @@ class Content_loader():
                 ["saas", "paas", "iaas", "scs"]
             )
 
-            self.__question_cache__[question] = question_content
+            self._question_cache[question] = question_content
 
-        return self.__question_cache__[question]
+        return self._question_cache[question]
 
     def __populate_section__(self, section):
         section["questions"] = [

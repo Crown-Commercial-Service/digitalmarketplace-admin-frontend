@@ -4,15 +4,15 @@ import re
 from flask import render_template, request, redirect, url_for
 from . import main
 from .helpers.validation_tools import Validate
-from .helpers.content import Content_loader
-from .helpers.service import Service_loader
+from .helpers.content import ContentLoader
+from .helpers.service import ServiceLoader
 
 
-service = Service_loader(
+service = ServiceLoader(
     os.getenv('DM_API_URL'),
     os.getenv('DM_ADMIN_FRONTEND_API_AUTH_TOKEN')
 )
-content = Content_loader(
+content = ContentLoader(
     "app/section_order.yml",
     "bower_components/digital-marketplace-ssp-content/g6/"
 )

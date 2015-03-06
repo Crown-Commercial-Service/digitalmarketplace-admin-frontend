@@ -3,7 +3,7 @@ import requests
 from flask import request, json
 
 
-class Service_loader():
+class ServiceLoader(object):
 
     def __init__(self, api_url, access_token):
         self.api_url = api_url
@@ -22,11 +22,11 @@ class Service_loader():
                 "authorization": "Bearer {}".format(self.access_token)
             }
         )
-        self.data = json.loads(response.content)["services"]
+        self.data = response.json()["services"]
         return self
 
     def set(self, key, value):
-        self.data['key'] = value
+        self.data[key] = value
 
     def post(self):
         print(self.data)  # This would be an update call to the API
