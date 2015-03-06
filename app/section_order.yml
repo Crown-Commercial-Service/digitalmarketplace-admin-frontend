@@ -1,0 +1,21 @@
+-
+  name: Service attributes
+  editable: false
+  questions:
+    - id
+    - lot
+-
+  name: Documents
+  editable: true
+  questions:
+    - serviceDefinitionDocumentURL
+    - termsAndConditionsDocumentURL
+    - sfiaRateCardURL
+    - pricingDocumentURL
+-
+  name: Other example fields
+  editable: true
+  questions:
+    - otherConsumers
+    - vulnerabilityTracking
+    - persistantStorage

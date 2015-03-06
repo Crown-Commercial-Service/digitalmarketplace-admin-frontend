@@ -1,0 +1,61 @@
+{% macro question_wrapper_open(question) -%}
+  <div class="question" id="{{ question.id }}">
+    <label class="question-heading" for="{{ question.name }}">{{ question.question }}</label>
+    {% if "hint" in question %}
+      <p class="hint">
+        {{ question.hint }}
+      </p>
+    {% endif %}
+{%- endmacro %}
+
+{% macro question_wrapper_close(question) -%}
+  </div>
+{%- endmacro %}
+
+{% macro validation_wrapper_open() -%}
+  <div class="validation-wrapper" >
+{%- endmacro %}
+
+{% macro validation_wrapper_close() -%}
+  </div>
+{%- endmacro %}
+
+{% macro validation_message(message, question_id) -%}
+  <p class="validation-message" id="error-{{ question_id }}">
+    {{ message }}
+  </p>
+{%- endmacro %}
+
+{% macro textbox(field, value='') -%}
+  <input type="text" class="text-box" name="{{ field.name }}" id="{{ field.name }}-text-box" value="{{ value }}" />
+{%- endmacro %}
+
+{% macro upload(question, value='') -%}
+  <input type="file" name="{{ question.id }}" id="{{ question.id }}-file-upload" />
+{%- endmacro %}
+
+{% macro radio(field, value='') -%}
+  {{ selection_button("radio", field, value) }}
+{%- endmacro %}
+
+{% macro checkbox(field, value='') -%}
+  {{ selection_button("radio", field, value) }}
+{%- endmacro %}
+
+{% macro selection_button(type, field, value='') -%}
+  <label class="selection-button">
+    {{ field.label }}
+    <input type="{{ type }}" name="{{ field.name }}" id="{{ field.name }}" value="{{ value }}">
+  </label>
+{%- endmacro %}
+
+{% macro boolean(field, value='') -%}
+  <label class="selection-button selection-button-boolean">
+    Yes
+    <input type="radio" name="boolean-1" id="boolean-1" value="val-1">
+  </label>
+  <label class="selection-button selection-button-boolean">
+    No
+    <input type="radio" name="boolean-1" id="boolean-1" value="val-1">
+  </label>
+{%- endmacro %}

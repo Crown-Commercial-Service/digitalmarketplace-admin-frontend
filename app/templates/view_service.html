@@ -1,105 +1,57 @@
+{% import 'macros/answers.html' as answers %}
+{% from 'macros/breadcrumb.html' import breadcrumb as breadcrumb %}
+{% from 'macros/page_heading.html' import page_heading %}
+
 {% extends "_base_page.html" %}
 {% block page_title %}
   {{ service_data['serviceName'] }} – Digital Marketplace admin
 {% endblock %}
 
 {% block content %}
-  <div id="global-breadcrumb">
-    <nav>
-      <ol>
-        <li>
-          <a href="/" alt="Back to home">Home</a>
-        </li>
-      </ol>
-    </nav>
-  </div>
+  {{ breadcrumb() }}
   <div class="page-container">
     {% if service_data %}
-        <div class="grid-row">
-          <div class="service-title">
-            <header class="page-heading-smaller">
-              <p class="context">
-                {{ service_data['supplierName'] }}
-              </p>
-              <h1>{{ service_data['serviceName'] }}</h1>
-            </header>
-          </div>
-          <div class="service-view">
-            <a href="https://www.digitalmarketplace.service.gov.uk/service/{{ service_data['id'] }}">View service</a>
-          </div>
+      <div class="grid-row">
+        <div class="service-title">
+          {{ page_heading(service_data['serviceName'], service_data['supplierName'], "page-heading-smaller") }}
         </div>
-        <h2 class="summary-item-heading">
-          Service attributes
-        </h2>
-        <table class="summary-item-body">
-          <thead class="summary-item-field-headings">
-            <tr>
-              <th>Attribute name</th><th>Attribute</th>
-            </tr>
-          </thead>
-          <tbody class="summary-item-body">
-            <tr class="summary-item-row">
-              <td class="summary-item-field-name">Service ID</td>
-              <td class="summary-item-field-content">
-                <div class="service-id">{% for item in service_data['id_split'] %}<span>{{ item }}</span>{% endfor %}</div>
-              </td>
-            </tr>
-            <tr class="summary-item-row">
-              <td class="summary-item-field-name">Lot</td>
-              <td class="summary-item-field-content">
-                {{ service_data['lot'] }}
-              </td>
-            </tr>
-            <tr class="summary-item-row">
-              <td class="summary-item-field-name">Raw service data</td>
-              <td class="summary-item-field-content">
-                <a href="/service/{{ service_data['id'] }}/raw">View as JSON</a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="service-view">
+          <a href="https://www.digitalmarketplace.service.gov.uk/service/{{ service_data['id'] }}">View service</a>
+        </div>
+      </div>
 
-        <h2 class="summary-item-heading">
-          Documents
-        </h2>
-        <p class="summary-item-top-level-action">
-          <a href="/service/{{ service_data['id'] }}/edit/documents">Edit</a>
-        </p>
-        <table class="summary-item-body">
-          <thead class="summary-item-field-headings">
-            <tr>
-              <th>Document name</th><th>Document link</th>
-            </tr>
-          </thead>
-          <tbody class="summary-item-body">
-            <tr class="summary-item-row">
-              <td class="summary-item-field-name">Service definition</td>
-              <td class="summary-item-field-content">
-                <a href="{{ service_data['serviceDefinitionDocumentURL'] }}">File</a>
-              </td>
-            </tr>
-            <tr class="summary-item-row">
-              <td class="summary-item-field-name">Pricing</td>
-              <td class="summary-item-field-content">
-                <a href="{{ service_data['pricingDocumentURL'] }}">File</a>
-              </td>
-            </tr>
-            <tr class="summary-item-row">
-              <td class="summary-item-field-name">Terms and conditions</td>
-              <td class="summary-item-field-content">
-                <a href="{{ service_data['termsAndConditionsDocumentURL'] }}">File</a>
-              </td>
-            </tr>
-            {% if service_data['sfiaRateDocumentURL'] %}
-              <tr class="summary-item-row">
-                <td class="summary-item-field-name">SFIA rate card</td>
-                <td class="summary-item-field-content">
-                  <a href="{{ service_data['sfiaRateDocumentURL'] }}">File</a>
-                </td>
+      {% for section in sections %}
+        {% if service_data['lot']|lower in section['depends_on_lots'] %}
+          <h2 class="summary-item-heading">
+            {{section.name}}
+          </h2>
+          {% if section.editable %}
+            <p class="summary-item-top-level-action">
+              <a href="/service/{{ service_data['id'] }}/edit/{{section.id}}">Edit</a>
+            </p>
+          {% endif %}
+          <table class="summary-item-body">
+            <thead class="summary-item-field-headings">
+              <tr>
+                <th>Service attribute name</th><th>Service attribute</th>
               </tr>
-            {% endif %}
-          </tbody>
-        </table>
+            </thead>
+            <tbody class="summary-item-body">
+              {% for question in section.questions %}
+                {% if service_data['lot']|lower in question['depends_on_lots'] %}
+                  <tr class="summary-item-row">
+                    <td class="summary-item-field-name">{{ question.question }}</td>
+                    <td class="summary-item-field-content">
+                      {{ service_data[question.id] }}
+                    </td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+      {% endfor %}
+
     {% else %}
     <h1>Error</h1>
     <p>

@@ -7,9 +7,9 @@
 
 # Use default environment vars for localhost if not already set
 export DM_API_URL=${DM_API_URL:=http://localhost:5000}
-export DM_API_BEARER=${DM_API_BEARER:=myToken}
+export DM_ADMIN_FRONTEND_API_AUTH_TOKEN=${DM_ADMIN_FRONTEND_API_AUTH_TOKEN:=myToken}
 
-echo "Environment variables in use:" 
+echo "Environment variables in use:"
 env | grep DM_
 
 set -o pipefail

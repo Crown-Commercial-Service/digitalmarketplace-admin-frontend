@@ -1,0 +1,56 @@
+{% import 'macros/forms.html' as forms %}
+{% from 'macros/breadcrumb.html' import breadcrumb %}
+{% from 'macros/page_heading.html' import page_heading %}
+
+{% extends "_base_page.html" %}
+{% block page_title %}
+  Documents – Digital Marketplace admin
+{% endblock %}
+
+{% block content %}
+  {{ breadcrumb([
+    {
+      "link": "/service/" + service_data['id']|string,
+      "text": service_data['serviceName']
+    }
+  ]) }}
+  <div class="page-container">
+    {{ page_heading(section.name, null, "page-heading-smaller") }}
+    {% if errors %}
+      <div class="validation-masthead">
+        <h2 class="validation-masthead-heading">
+          There were problems with your response to the following questions:
+        </h2>
+        <ul>
+          {% for question in section.questions %}
+            {% if question.id in errors %}
+              <li>
+                <a class="validation-masthead-link" href="#{{ question.id }}">{{ question.question }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    <form action="/service/{{ service_data['id'] }}/edit/{{ section.id }}" method="post" enctype="multipart/form-data">
+      {% for question in section.questions %}
+        {% if question.id in errors %}
+          {{ forms.validation_wrapper_open() }}
+        {% endif %}
+        {{ forms.question_wrapper_open(question) }}
+          {% if question.id in errors %}
+            {{ forms.validation_message(errors[question.id ], question.id) }}
+          {% endif %}
+          {{ forms[question.type](question, service_data[question.id]) }}
+        {{ forms.question_wrapper_close(question) }}
+        {% if question.id in errors %}
+          {{ forms.validation_wrapper_close() }}
+        {% endif %}
+      {% endfor %}
+      <button class="button-save" type="submit">Save and return to summary</button>
+      <p>
+        <a href="/service/{{ service_data['id'] }}">Return without saving</a>
+      </p>
+    </form>
+  </div>
+{% endblock %}

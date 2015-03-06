@@ -1,80 +1,87 @@
-import requests
 import os
+import requests
 import re
+from flask import render_template, request, redirect, url_for
 from . import main
-from flask import json, render_template, Response, request, redirect
+from .helpers.validation_tools import Validate
+from .helpers.content import ContentLoader
+from .helpers.service import ServiceLoader
+
+
+service = ServiceLoader(
+    os.getenv('DM_API_URL'),
+    os.getenv('DM_ADMIN_FRONTEND_API_AUTH_TOKEN')
+)
+content = ContentLoader(
+    "app/section_order.yml",
+    "bower_components/digital-marketplace-ssp-content/g6/"
+)
 
 
 @main.route('/')
 def index():
-    template_data = main.config['BASE_TEMPLATE_DATA']
-    return render_template("index.html", **template_data)
+    return render_template("index.html", **get_template_data())
 
 
 @main.route('/service')
-def find_service():
-    service_id = request.args.get("service_id")
-    return redirect("/service/" + service_id)
+def find():
+    return redirect("/service/" + request.args.get("service_id"))
 
 
 @main.route('/service/<service_id>')
-def view_service(service_id):
-    template_data = main.config['BASE_TEMPLATE_DATA']
-    try:
-        service_json = json.loads(get_service_json(service_id))["services"]
-        template_data["service_data"] = service_json
-        template_data["service_data"]["id_split"] = \
-            re.findall("....", str(template_data["service_data"]["id"]))
-        return render_template("view_service.html", **template_data)
-    except KeyError:
-        return Response("Service ID '%s' can not be found" % service_id, 404)
-
-
-@main.route('/service/<service_id>/raw')
-def view_service_raw(service_id):
-    try:
-        service_json = json.loads(get_service_json(service_id))["services"]
-        return Response(json.dumps(service_json), mimetype='application/json')
-    except KeyError:
-        return Response("Service ID '%s' can not be found" % service_id, 404)
-
-
-@main.route('/service/<service_id>/edit/documents')
-def edit_documents(service_id):
-    template_data = main.config['BASE_TEMPLATE_DATA']
-    try:
-        service_json = json.loads(get_service_json(service_id))["services"]
-        template_data["service_data"] = service_json
-        return render_template(
-            "edit_documents.html", **template_data), 200
-    except KeyError:
-        return Response("Service ID '%s' can not be found" % service_id, 404)
-
-
-@main.route('/service/<service_id>', methods=['POST'])
-def update(service_id):
-    template_data = main.config['BASE_TEMPLATE_DATA']
-    template_data["edits_submitted"] = request.form.getlist("edits_submitted")
-    print("====================")
-    print(template_data["edits_submitted"])
-    return render_template("confirm.html", **template_data), 200
-
-
-def get_service_json(service_id):
-    # TODO: Don't do these checks for every call - initialise once
-    access_token = os.getenv('DM_API_BEARER')
-    api_url = os.getenv('DM_API_URL')
-    if access_token is None:
-        print('Bearer token must be supplied in DM_API_BEARER')
-        raise Exception("DM_API_BEARER token is not set")
-    if api_url is None:
-        print('API URL must be supplied in DM_API_URL')
-        raise Exception("DM_API_URL is not set")
-    url = api_url + "/services/" + service_id
-    response = requests.get(
-        url,
-        headers={
-            "authorization": "Bearer {}".format(access_token)
-        }
+def view(service_id):
+    template_data = get_template_data({
+        "sections": content.sections,
+        "service_data": service.get(service_id).data
+    })
+    template_data["service_data"]["id_split"] = re.findall(
+        "....", str(template_data["service_data"]["id"])
     )
-    return response.content
+    return render_template("view_service.html", **template_data)
+
+
+@main.route('/service/<service_id>/edit/<section>')
+def edit(service_id, section):
+    template_data = get_template_data({
+        "section": content.get_section(section),
+        "service_data": service.get(service_id).data
+    })
+    return render_template("edit_section.html", **template_data)
+
+
+@main.route('/service/<service_id>/edit/<section>', methods=['POST'])
+def update(service_id, section):
+
+    service.get(service_id)
+    posted_data = dict(request.form, **request.files)
+    errors = {}
+
+    for question_id in posted_data:
+        validate = Validate(posted_data[question_id])
+        for rule in content.get_question(question_id)["validations"]:
+            if not validate.test("answer_required"):
+                if "optional" in content.get_question(question_id):
+                    break  # question is optional
+                if question_id in service.data:
+                    break  # file has previously been uploaded
+            if not validate.test(rule["name"]):
+                errors[question_id] = rule["message"]
+                break
+        if question_id not in errors:
+            service.set(question_id, "new value")
+
+    if len(errors):
+        return render_template("edit_section.html", **get_template_data({
+            "section": content.get_section(section),
+            "service_data": service.get(service_id).data,
+            "edits_submitted": posted_data,
+            "service_id": service_id,
+            "errors": errors
+        }))
+    else:
+        service.post()
+        return redirect("/service/" + service_id)
+
+
+def get_template_data(merged_with={}):
+    return dict(main.config['BASE_TEMPLATE_DATA'], **merged_with)
