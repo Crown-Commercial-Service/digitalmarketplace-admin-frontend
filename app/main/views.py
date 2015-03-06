@@ -6,6 +6,7 @@ from . import main
 from .helpers.validation_tools import Validate
 from .helpers.content import ContentLoader
 from .helpers.service import ServiceLoader
+from .helpers.auth import requires_auth
 
 
 service = ServiceLoader(
@@ -19,16 +20,19 @@ content = ContentLoader(
 
 
 @main.route('/')
+@requires_auth
 def index():
     return render_template("index.html", **get_template_data())
 
 
 @main.route('/service')
+@requires_auth
 def find():
     return redirect("/service/" + request.args.get("service_id"))
 
 
 @main.route('/service/<service_id>')
+@requires_auth
 def view(service_id):
     template_data = get_template_data({
         "sections": content.sections,
@@ -41,6 +45,7 @@ def view(service_id):
 
 
 @main.route('/service/<service_id>/edit/<section>')
+@requires_auth
 def edit(service_id, section):
     template_data = get_template_data({
         "section": content.get_section(section),
@@ -50,6 +55,7 @@ def edit(service_id, section):
 
 
 @main.route('/service/<service_id>/edit/<section>', methods=['POST'])
+@requires_auth
 def update(service_id, section):
 
     service.get(service_id)
