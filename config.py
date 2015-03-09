@@ -19,10 +19,16 @@ class Config:
 
 class Test(Config):
     DEBUG = True
+    AUTHENTICATION = False
+    BASE_TEMPLATE_DATA = {
+        'asset_path': '/static/',
+        'header_class': 'with-proposition'
+    }
 
 
 class Development(Config):
-    DEBUG = True,
+    DEBUG = True
+    AUTHENTICATION = True
     BASE_TEMPLATE_DATA = {
         'asset_path': '/static/',
         'header_class': 'with-proposition'
@@ -31,6 +37,11 @@ class Development(Config):
 
 class Live(Config):
     DEBUG = False
+    AUTHENTICATION = True
+    BASE_TEMPLATE_DATA = {
+        'asset_path': '/static/',
+        'header_class': 'with-proposition'
+    }
 
 
 config = {
