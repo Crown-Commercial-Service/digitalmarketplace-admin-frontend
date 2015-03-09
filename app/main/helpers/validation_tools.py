@@ -5,30 +5,50 @@ import shutil
 
 class Validate():
 
-    def __init__(self, posted_data):
+    def __init__(self, content, service, posted_data):
+        self.content = content
+        self.service = service
         self.posted_data = posted_data
 
-    def test(self, rule):
+    @property
+    def errors(self):
+        errors = {}
+        for question_id in self.posted_data:
+            question_errors = self.question_errors(question_id)
+            if question_errors:
+                errors[question_id] = question_errors
+
+        return errors
+
+    def question_errors(self, question_id):
+        question = self.posted_data[question_id]
+        question_content = self.content.get_question(question_id)
+
+        if not self.test(question, "answer_required"):
+            if "optional" in question_content:
+                return
+            # File has previously been uploaded
+            if question_id in self.service:
+                return
+
+        for rule in question_content["validations"]:
+            if not self.test(question, rule["name"]):
+                return rule["message"]
+
+    def test(self, question, rule):
         if not hasattr(self, rule):
-            raise Exception("Validation rule " + rule + " not found")
-        return getattr(self, rule)()
+            raise ValueError("Validation rule " + rule + " not found")
+        return getattr(self, rule)(question)
 
-    def answer_required(self):
+    def answer_required(self, question):
+        not_empty = len(question.read(1)) > 0
+        question.seek(0)
+        return not_empty
 
-        first_file = self.posted_data[0]
-        first_file.seek(0)
-        return len(first_file.read()) > 0
-
-    def file_can_be_saved(self):
-
-        if not self.answer_required():
-            return False
-
-        first_file = self.posted_data[0]
-
+    def file_can_be_saved(self, question):
         tmp = "./temp/"
 
-        file_name, file_extension = os.path.splitext(first_file.filename)
+        file_name, file_extension = os.path.splitext(question.filename)
         destination = os.path.join(
             tmp, file_name + file_extension
         )
@@ -38,20 +58,19 @@ class Validate():
             old_version = os.path.join(tmp, file_name + now + file_extension)
             shutil.move(destination, old_version)
 
-        first_file.save(destination)
+        question.save(destination)
         return True
 
-    def file_is_less_than_5mb(self):
+    def file_is_less_than_5mb(self, question):
+        size_limit = 5400000
+        below_size_limit = len(question.read(size_limit)) < size_limit
+        question.seek(0)
 
-        first_file = self.posted_data[0]
-        first_file.seek(0)
+        return below_size_limit
 
-        return len(first_file.read()) < 5400000
+    def file_is_open_document_format(self, question):
 
-    def file_is_open_document_format(self):
-
-        first_file = self.posted_data[0]
-        file_name, file_extension = os.path.splitext(first_file.filename)
+        file_name, file_extension = os.path.splitext(question.filename)
 
         return file_extension.lower() in [
             ".pdf", ".pda", ".odt", ".ods", ".odp"

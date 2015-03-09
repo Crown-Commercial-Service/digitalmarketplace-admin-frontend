@@ -52,24 +52,13 @@ def edit(service_id, section):
 def update(service_id, section):
 
     service = service_loader.get(service_id)
-    posted_data = dict(request.form, **request.files)
-    errors = {}
+    posted_data = dict(
+        list(request.form.items()) + list(request.files.items())
+    )
 
-    for question_id in posted_data:
-        validate = Validate(posted_data[question_id])
-        for rule in content.get_question(question_id)["validations"]:
-            if not validate.test("answer_required"):
-                if "optional" in content.get_question(question_id):
-                    break  # question is optional
-                if question_id in service:
-                    break  # file has previously been uploaded
-            if not validate.test(rule["name"]):
-                errors[question_id] = rule["message"]
-                break
-        if question_id not in errors:
-            service_loader.set(service, question_id, "new value")
+    errors = Validate(content, service, posted_data).errors
 
-    if len(errors):
+    if errors:
         return render_template("edit_section.html", **get_template_data({
             "section": content.get_section(section),
             "service_data": service,
@@ -78,6 +67,9 @@ def update(service_id, section):
             "errors": errors
         }))
     else:
+        for question_id in posted_data:
+            service_loader.set(service, question_id, "new value")
+
         service_loader.post(service)
         return redirect("/service/" + service_id)
 
