@@ -35,6 +35,13 @@ class Validate():
             if not self.test(question, rule["name"]):
                 return rule["message"]
 
+        # TODO We can't update file URLs until we have the write API,
+        # so uploaded file must have the same extension as the
+        # current one for now
+        current_extension = get_extension(self.service[question_id])
+        if get_extension(question.filename) != current_extension:
+            return u"Uploaded file format should be: %s" % current_extension
+
     def test(self, question, rule):
         if not hasattr(self, rule):
             raise ValueError("Validation rule " + rule + " not found")
@@ -70,8 +77,11 @@ class Validate():
 
     def file_is_open_document_format(self, question):
 
-        file_name, file_extension = os.path.splitext(question.filename)
-
-        return file_extension.lower() in [
+        return get_extension(question.filename) in [
             ".pdf", ".pda", ".odt", ".ods", ".odp"
         ]
+
+
+def get_extension(filename):
+    file_name, file_extension = os.path.splitext(filename)
+    return file_extension.lower()
