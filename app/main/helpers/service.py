@@ -1,6 +1,4 @@
-import os
 import requests
-from flask import request, json
 
 
 class ServiceLoader(object):
@@ -22,11 +20,12 @@ class ServiceLoader(object):
                 "authorization": "Bearer {}".format(self.access_token)
             }
         )
-        self.data = response.json()["services"]
-        return self
 
-    def set(self, key, value):
-        self.data[key] = value
+        return response.json()["services"]
 
-    def post(self):
-        print(self.data)  # This would be an update call to the API
+    def set(self, data, key, value):
+        data[key] = value
+        return data
+
+    def post(self, data):
+        print(data)  # This would be an update call to the API

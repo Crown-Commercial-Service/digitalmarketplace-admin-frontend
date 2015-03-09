@@ -1,14 +1,13 @@
 import os
-import requests
 import re
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect
 from . import main
 from .helpers.validation_tools import Validate
 from .helpers.content import ContentLoader
 from .helpers.service import ServiceLoader
 
 
-service = ServiceLoader(
+service_loader = ServiceLoader(
     os.getenv('DM_API_URL'),
     os.getenv('DM_ADMIN_FRONTEND_API_AUTH_TOKEN')
 )
@@ -32,7 +31,7 @@ def find():
 def view(service_id):
     template_data = get_template_data({
         "sections": content.sections,
-        "service_data": service.get(service_id).data
+        "service_data": service_loader.get(service_id),
     })
     template_data["service_data"]["id_split"] = re.findall(
         "....", str(template_data["service_data"]["id"])
@@ -44,7 +43,7 @@ def view(service_id):
 def edit(service_id, section):
     template_data = get_template_data({
         "section": content.get_section(section),
-        "service_data": service.get(service_id).data
+        "service_data": service_loader.get(service_id),
     })
     return render_template("edit_section.html", **template_data)
 
@@ -52,7 +51,7 @@ def edit(service_id, section):
 @main.route('/service/<service_id>/edit/<section>', methods=['POST'])
 def update(service_id, section):
 
-    service.get(service_id)
+    service = service_loader.get(service_id)
     posted_data = dict(request.form, **request.files)
     errors = {}
 
@@ -62,24 +61,24 @@ def update(service_id, section):
             if not validate.test("answer_required"):
                 if "optional" in content.get_question(question_id):
                     break  # question is optional
-                if question_id in service.data:
+                if question_id in service:
                     break  # file has previously been uploaded
             if not validate.test(rule["name"]):
                 errors[question_id] = rule["message"]
                 break
         if question_id not in errors:
-            service.set(question_id, "new value")
+            service_loader.set(service, question_id, "new value")
 
     if len(errors):
         return render_template("edit_section.html", **get_template_data({
             "section": content.get_section(section),
-            "service_data": service.get(service_id).data,
+            "service_data": service,
             "edits_submitted": posted_data,
             "service_id": service_id,
             "errors": errors
         }))
     else:
-        service.post()
+        service_loader.post(service)
         return redirect("/service/" + service_id)
 
 
