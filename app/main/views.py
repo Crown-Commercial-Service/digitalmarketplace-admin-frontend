@@ -5,6 +5,7 @@ from . import main
 from .helpers.validation_tools import Validate
 from .helpers.content import ContentLoader
 from .helpers.service import ServiceLoader
+from .helpers.s3 import S3
 
 
 service_loader = ServiceLoader(
@@ -14,6 +15,11 @@ service_loader = ServiceLoader(
 content = ContentLoader(
     "app/section_order.yml",
     "bower_components/digital-marketplace-ssp-content/g6/"
+)
+
+s3_uploader = S3(
+    bucket_name=os.getenv('DM_DOCUMENT_S3_BUCKET'),
+    host='s3-eu-west-1.amazonaws.com',
 )
 
 
@@ -56,7 +62,7 @@ def update(service_id, section):
         list(request.form.items()) + list(request.files.items())
     )
 
-    errors = Validate(content, service, posted_data).errors
+    errors = Validate(content, service, posted_data, s3_uploader).errors
 
     if errors:
         return render_template("edit_section.html", **get_template_data({

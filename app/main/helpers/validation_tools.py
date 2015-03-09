@@ -5,10 +5,11 @@ import shutil
 
 class Validate():
 
-    def __init__(self, content, service, posted_data):
+    def __init__(self, content, service, posted_data, uploader=None):
         self.content = content
         self.service = service
         self.posted_data = posted_data
+        self.uploader = uploader
 
     @property
     def errors(self):
@@ -53,19 +54,17 @@ class Validate():
         return not_empty
 
     def file_can_be_saved(self, question):
-        tmp = "./temp/"
+        file_name = self._generate_file_name(question)
 
-        file_name, file_extension = os.path.splitext(question.filename)
-        destination = os.path.join(
-            tmp, file_name + file_extension
+        self.uploader.save(
+            '{}/{}'.format(
+                self.service['supplierId'],
+                self.service['id'],
+            ),
+            file_name,
+            question
         )
 
-        if os.path.isfile(destination):
-            now = time.strftime('--%Y-%m-%d-%H-%M-%S')
-            old_version = os.path.join(tmp, file_name + now + file_extension)
-            shutil.move(destination, old_version)
-
-        question.save(destination)
         return True
 
     def file_is_less_than_5mb(self, question):
@@ -80,6 +79,21 @@ class Validate():
         return get_extension(question.filename) in [
             ".pdf", ".pda", ".odt", ".ods", ".odp"
         ]
+
+    def _generate_file_name(self, question):
+        ID_TO_FILE_NAME_SUFFIX = {
+            'serviceDefinitionDocumentURL': 'service-definition-document',
+            'termsAndConditionsDocumentURL': 'terms-and-conditions',
+            'sfiaRateCardURL': 'sfia-rate-card',
+            'pricingDocumentURL': 'pricing-document',
+        }
+        extension = get_extension(question.filename)
+
+        return '{}-{}{}'.format(
+            self.service['id'],
+            ID_TO_FILE_NAME_SUFFIX[question.name],
+            extension
+        )
 
 
 def get_extension(filename):
