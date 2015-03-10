@@ -4,10 +4,11 @@ import datetime
 
 
 class S3(object):
-    def __init__(self, bucket_name, host):
-        self.conn = boto.connect_s3(host=host)
+    def __init__(self, bucket_name=None, host='s3-eu-west-1.amazonaws.com'):
+        conn = boto.connect_s3(host=host)
+
         self.bucket_name = bucket_name
-        self.bucket = self.conn.get_bucket(bucket_name)
+        self.bucket = conn.get_bucket(bucket_name)
 
     def save(self, path, name, file, acl='public-read'):
         timestamp = datetime.datetime.utcnow().isoformat()

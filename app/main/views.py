@@ -1,4 +1,3 @@
-import os
 import re
 from flask import render_template, request, redirect
 from . import main
@@ -8,18 +7,9 @@ from .helpers.service import ServiceLoader
 from .helpers.s3 import S3
 
 
-service_loader = ServiceLoader(
-    os.getenv('DM_API_URL'),
-    os.getenv('DM_ADMIN_FRONTEND_API_AUTH_TOKEN')
-)
 content = ContentLoader(
     "app/section_order.yml",
     "bower_components/digital-marketplace-ssp-content/g6/"
-)
-
-s3_uploader = S3(
-    bucket_name=os.getenv('DM_DOCUMENT_S3_BUCKET'),
-    host='s3-eu-west-1.amazonaws.com',
 )
 
 
@@ -35,6 +25,11 @@ def find():
 
 @main.route('/service/<service_id>')
 def view(service_id):
+    service_loader = ServiceLoader(
+        main.config['API_URL'],
+        main.config['API_AUTH_TOKEN'],
+    )
+
     template_data = get_template_data({
         "sections": content.sections,
         "service_data": service_loader.get(service_id),
@@ -47,6 +42,11 @@ def view(service_id):
 
 @main.route('/service/<service_id>/edit/<section>')
 def edit(service_id, section):
+    service_loader = ServiceLoader(
+        main.config['API_URL'],
+        main.config['API_AUTH_TOKEN'],
+    )
+
     template_data = get_template_data({
         "section": content.get_section(section),
         "service_data": service_loader.get(service_id),
@@ -56,6 +56,14 @@ def edit(service_id, section):
 
 @main.route('/service/<service_id>/edit/<section>', methods=['POST'])
 def update(service_id, section):
+    service_loader = ServiceLoader(
+        main.config['API_URL'],
+        main.config['API_AUTH_TOKEN'],
+    )
+
+    s3_uploader = S3(
+        bucket_name=main.config['S3_DOCUMENT_BUCKET'],
+    )
 
     service = service_loader.get(service_id)
     posted_data = dict(
