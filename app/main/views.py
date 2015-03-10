@@ -64,6 +64,12 @@ def update(service_id, section):
 
     errors = Validate(content, service, posted_data, s3_uploader).errors
 
+    for question_id in posted_data:
+        if question_id not in errors:
+            service_loader.set(service, question_id, "new value")
+
+    service_loader.post(service)
+
     if errors:
         return render_template("edit_section.html", **get_template_data({
             "section": content.get_section(section),
@@ -73,10 +79,6 @@ def update(service_id, section):
             "errors": errors
         }))
     else:
-        for question_id in posted_data:
-            service_loader.set(service, question_id, "new value")
-
-        service_loader.post(service)
         return redirect("/service/" + service_id)
 
 
