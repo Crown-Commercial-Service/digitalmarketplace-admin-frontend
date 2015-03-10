@@ -4,7 +4,13 @@ import jinja2
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-class Config:
+class Config(object):
+    DEBUG = True
+    S3_DOCUMENT_BUCKET = os.getenv('DM_S3_DOCUMENT_BUCKET')
+    API_URL = os.getenv('DM_API_URL'),
+    API_AUTH_TOKEN = os.getenv('DM_ADMIN_FRONTEND_API_AUTH_TOKEN')
+    BASE_TEMPLATE_DATA = {}
+
     @staticmethod
     def init_app(app):
         repo_root = os.path.abspath(os.path.dirname(__file__))
@@ -49,4 +55,4 @@ config = {
     'development': Development,
     'test': Test,
     'default': Development
-    }
+}

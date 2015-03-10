@@ -1,17 +1,12 @@
-import os
-import requests
 import re
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect
 from . import main
 from .helpers.validation_tools import Validate
 from .helpers.content import ContentLoader
 from .helpers.service import ServiceLoader
+from .helpers.s3 import S3
 
 
-service = ServiceLoader(
-    os.getenv('DM_API_URL'),
-    os.getenv('DM_ADMIN_FRONTEND_API_AUTH_TOKEN')
-)
 content = ContentLoader(
     "app/section_order.yml",
     "bower_components/digital-marketplace-ssp-content/g6/"
@@ -30,9 +25,14 @@ def find():
 
 @main.route('/service/<service_id>')
 def view(service_id):
+    service_loader = ServiceLoader(
+        main.config['API_URL'],
+        main.config['API_AUTH_TOKEN'],
+    )
+
     template_data = get_template_data({
         "sections": content.sections,
-        "service_data": service.get(service_id).data
+        "service_data": service_loader.get(service_id),
     })
     template_data["service_data"]["id_split"] = re.findall(
         "....", str(template_data["service_data"]["id"])
@@ -42,44 +42,51 @@ def view(service_id):
 
 @main.route('/service/<service_id>/edit/<section>')
 def edit(service_id, section):
+    service_loader = ServiceLoader(
+        main.config['API_URL'],
+        main.config['API_AUTH_TOKEN'],
+    )
+
     template_data = get_template_data({
         "section": content.get_section(section),
-        "service_data": service.get(service_id).data
+        "service_data": service_loader.get(service_id),
     })
     return render_template("edit_section.html", **template_data)
 
 
 @main.route('/service/<service_id>/edit/<section>', methods=['POST'])
 def update(service_id, section):
+    service_loader = ServiceLoader(
+        main.config['API_URL'],
+        main.config['API_AUTH_TOKEN'],
+    )
 
-    service.get(service_id)
-    posted_data = dict(request.form, **request.files)
-    errors = {}
+    s3_uploader = S3(
+        bucket_name=main.config['S3_DOCUMENT_BUCKET'],
+    )
+
+    service = service_loader.get(service_id)
+    posted_data = dict(
+        list(request.form.items()) + list(request.files.items())
+    )
+
+    errors = Validate(content, service, posted_data, s3_uploader).errors
 
     for question_id in posted_data:
-        validate = Validate(posted_data[question_id])
-        for rule in content.get_question(question_id)["validations"]:
-            if not validate.test("answer_required"):
-                if "optional" in content.get_question(question_id):
-                    break  # question is optional
-                if question_id in service.data:
-                    break  # file has previously been uploaded
-            if not validate.test(rule["name"]):
-                errors[question_id] = rule["message"]
-                break
         if question_id not in errors:
-            service.set(question_id, "new value")
+            service_loader.set(service, question_id, "new value")
 
-    if len(errors):
+    service_loader.post(service)
+
+    if errors:
         return render_template("edit_section.html", **get_template_data({
             "section": content.get_section(section),
-            "service_data": service.get(service_id).data,
+            "service_data": service,
             "edits_submitted": posted_data,
             "service_id": service_id,
             "errors": errors
         }))
     else:
-        service.post()
         return redirect("/service/" + service_id)
 
 

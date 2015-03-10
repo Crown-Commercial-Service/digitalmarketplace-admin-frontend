@@ -16,9 +16,7 @@ def create_app(config_name):
     bootstrap.init_app(application)
 
     application.register_blueprint(main_blueprint)
-    main_blueprint.config = {
-        'BASE_TEMPLATE_DATA': application.config['BASE_TEMPLATE_DATA']
-    }
+    main_blueprint.config = application.config.copy()
 
     if application.config['AUTHENTICATION']:
         application.before_request(requires_auth)
