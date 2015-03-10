@@ -35,6 +35,9 @@
 {%- endmacro %}
 
 {% macro upload(question, value='') -%}
+  <p>
+    {{ value }}
+  </p>
   <input type="file" name="{{ question.id }}" id="{{ question.id }}-file-upload" />
 {%- endmacro %}
 

@@ -30,7 +30,7 @@ def view(service_id):
     service_loader = ServiceLoader(
         main.config['API_URL'],
         main.config['API_AUTH_TOKEN'],
-    );
+    )
     service_data = service_loader.get(service_id)
     presented_service_data = {}
     for key, value in service_data.items():
