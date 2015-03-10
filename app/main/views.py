@@ -4,6 +4,7 @@ from . import main
 from .helpers.validation_tools import Validate
 from .helpers.content import ContentLoader
 from .helpers.service import ServiceLoader
+from .helpers.presenters import Presenters
 from .helpers.s3 import S3
 
 
@@ -11,6 +12,7 @@ content = ContentLoader(
     "app/section_order.yml",
     "bower_components/digital-marketplace-ssp-content/g6/"
 )
+presenters = Presenters()
 
 
 @main.route('/')
@@ -28,15 +30,19 @@ def view(service_id):
     service_loader = ServiceLoader(
         main.config['API_URL'],
         main.config['API_AUTH_TOKEN'],
-    )
+    );
+    service_data = service_loader.get(service_id)
+    presented_service_data = {}
+    for key, value in service_data.items():
+        presented_service_data[key] = presenters.present(
+            value, content.get_question(key)
+        )
 
     template_data = get_template_data({
         "sections": content.sections,
-        "service_data": service_loader.get(service_id),
+        "service_data": presented_service_data,
+        "service_id": service_id
     })
-    template_data["service_data"]["id_split"] = re.findall(
-        "....", str(template_data["service_data"]["id"])
-    )
     return render_template("view_service.html", **template_data)
 
 

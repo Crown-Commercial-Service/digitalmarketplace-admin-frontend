@@ -1,9 +1,35 @@
-{% macro textbox(field, value='') -%}
-  <fieldset class="question" id="{{ field.name }}">
-    <label class="question-heading" for="{{ field.name }}">{{ field.question }}</label>
-    <p class="question-hint">
-      {{ field.hint }}
-    </p>
-    <input type="text" class="text-box" name="{{ field.name }}" id="{{ field.name }}-text-box" value="{{ value }}" />
-  </fieldset>
+{% macro textbox(value='') -%}
+  txtbox
+  {{ value }}
+{%- endmacro %}
+
+
+{% macro upload(value) -%}
+  {% if 'url' in value and 'filename' in value %}
+    <a href="{{ value.url }}">{{ value.filename }}</a>
+  {% endif %}
+{%- endmacro %}
+
+
+{% macro service_id(value='') -%}
+  <div class="service-id">
+    {% for chunk in value -%}
+      <span>{{ chunk }}</span>
+    {%- endfor %}
+  </div>
+{%- endmacro %}
+
+
+{% macro checkboxes(value='') -%}
+  {{ value }}
+{%- endmacro %}
+
+
+{% macro boolean(value='') -%}
+  {{ value }}
+{%- endmacro %}
+
+
+{% macro textbox_large(value='') -%}
+  {{ value }}
 {%- endmacro %}
