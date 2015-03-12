@@ -30,7 +30,14 @@
   <input type="text" class="text-box" name="{{ field.name }}" id="{{ field.name }}-text-box" value="{{ value }}" />
 {%- endmacro %}
 
+{% macro textbox_large(field, value='') -%}
+  <textarea type="text" class="text-box text-box-large" name="{{ field.name }}" id="{{ field.name }}-text-box">{{ value }}</textarea>
+{%- endmacro %}
+
 {% macro upload(question, value='') -%}
+  <p>
+    {{ value }}
+  </p>
   <input type="file" name="{{ question.id }}" id="{{ question.id }}-file-upload" />
 {%- endmacro %}
 

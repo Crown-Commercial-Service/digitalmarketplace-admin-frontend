@@ -27,7 +27,7 @@
           </h2>
           {% if section.editable %}
             <p class="summary-item-top-level-action">
-              <a href="/service/{{ service_data['id'] }}/edit/{{section.id}}">Edit</a>
+              <a href="/service/{{ service_id }}/edit/{{section.id}}">Edit</a>
             </p>
           {% endif %}
           <table class="summary-item-body">
@@ -42,7 +42,7 @@
                   <tr class="summary-item-row">
                     <td class="summary-item-field-name">{{ question.question }}</td>
                     <td class="summary-item-field-content">
-                      {{ service_data[question.id] }}
+                      {{ answers[question.type](service_data[question.id]) }}
                     </td>
                   </tr>
                 {% endif %}

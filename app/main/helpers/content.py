@@ -1,6 +1,7 @@
 import yaml
 import inflection
 import re
+import os
 
 
 class ContentLoader(object):
@@ -26,7 +27,13 @@ class ContentLoader(object):
 
         if question not in self._question_cache:
 
-            with open(self._directory + question + ".yml", "r") as file:
+            question_file = self._directory + question + ".yml"
+
+            if not os.path.isfile(question_file):
+                self._question_cache[question] = {}
+                return {}
+
+            with open(question_file, "r") as file:
                 question_content = yaml.load(file)
 
             question_content["id"] = question
