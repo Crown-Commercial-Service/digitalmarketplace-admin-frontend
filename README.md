@@ -18,18 +18,20 @@ Create a virtual environment
  virtualenv ./venv
  ```
 
+ Activate the virtual environment
+ ```
+ source ./venv/bin/activate
+ ```
+
 Set the required environment variables (for dev use local API instance if you
 have it running):
 ```
 export DM_API_URL=http://localhost:5000
 export DM_ADMIN_FRONTEND_API_AUTH_TOKEN=<bearer_token>
+export DM_ADMIN_FRONTEND_PASSWORD_HASH=<generated password hash>
 ```
+You can generate a password hash by running `python ./scripts/generate_password.sh`.
 
-### Activate the virtual environment
-
-```
-source ./venv/bin/activate
-```
 
 ### Upgrade dependencies
 
