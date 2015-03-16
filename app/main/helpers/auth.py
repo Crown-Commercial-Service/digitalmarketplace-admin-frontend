@@ -1,5 +1,5 @@
 import os
-from functools import wraps
+import base64
 from flask import request, Response
 from pbkdf2 import crypt
 
@@ -8,7 +8,7 @@ def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
     """
-    secret = os.getenv('DM_ADMIN_FRONTEND_PASSWORD_HASH')
+    secret = base64.b64decode(os.getenv('DM_ADMIN_FRONTEND_PASSWORD_HASH'))
     return secret == crypt(username + password, secret, iterations=10000)
 
 
