@@ -8,9 +8,8 @@ def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
     """
-    # salt generated from pbkdf2.crypt salted with 'salt'
     secret = os.getenv('DM_ADMIN_FRONTEND_PASSWORD_HASH')
-    return secret == crypt(username + password, secret)
+    return secret == crypt(username + password, secret, iterations=10000)
 
 
 def authenticate():
