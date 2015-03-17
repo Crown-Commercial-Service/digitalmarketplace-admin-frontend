@@ -90,7 +90,8 @@ class TestValidate(unittest.TestCase):
 
         self.assertEquals(self.validate.errors, {})
         self.uploader.save.assert_called_once_with(
-            '2/1', '1-pricing-document.pdf', self.data['pricingDocumentURL']
+            'documents/2', '1-pricing-document.pdf',
+            self.data['pricingDocumentURL']
         )
 
     def test_multiple_fields_list_of_validations(self):

@@ -57,9 +57,8 @@ class Validate():
         file_name = self._generate_file_name(question)
 
         self.uploader.save(
-            '{}/{}'.format(
+            'documents/{}'.format(
                 self.service['supplierId'],
-                self.service['id'],
             ),
             file_name,
             question
