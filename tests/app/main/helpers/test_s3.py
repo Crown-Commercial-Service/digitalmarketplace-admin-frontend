@@ -49,11 +49,22 @@ class FakeBucket(object):
 
     def get_key(self, key):
         if key in self.keys:
-            return mock.Mock()
+            return FakeKey(key)
 
     def new_key(self, key):
         self.keys.add(key)
-        return mock.Mock()
+        return FakeKey(key)
 
     def copy_key(self, new_key, *args, **kwargs):
         self.keys.add(new_key)
+
+
+class FakeKey(object):
+    def __init__(self, key):
+        self.name = key.split('/')[-1]
+
+    def set_contents_from_file(self, file, headers):
+        return mock.Mock()
+
+    def set_acl(self, acl):
+        return mock.Mock()
