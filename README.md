@@ -30,7 +30,7 @@ export DM_API_URL=http://localhost:5000
 export DM_ADMIN_FRONTEND_API_AUTH_TOKEN=<bearer_token>
 export DM_ADMIN_FRONTEND_PASSWORD_HASH=<generated password hash>
 ```
-You can generate a password hash by running `python ./scripts/generate_password.sh`.
+You can generate a password hash by running `python ./scripts/generate_password.py`.
 
 
 ### Upgrade dependencies
