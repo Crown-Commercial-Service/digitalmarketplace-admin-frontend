@@ -10,5 +10,5 @@
   questions:
     - serviceDefinitionDocumentURL
     - termsAndConditionsDocumentURL
-    - sfiaRateCardURL
+    - sfiaRateDocumentURL
     - pricingDocumentURL
