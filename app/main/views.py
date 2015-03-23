@@ -1,11 +1,12 @@
 import re
-from flask import render_template, request, redirect
+from flask import render_template, request, redirect, session
 from . import main
 from .helpers.validation_tools import Validate
 from .helpers.content import ContentLoader
 from .helpers.service import ServiceLoader
 from .helpers.presenters import Presenters
 from .helpers.s3 import S3
+from .helpers.auth import check_auth, is_authenticated
 
 
 content = ContentLoader(
@@ -18,6 +19,33 @@ presenters = Presenters()
 @main.route('/')
 def index():
     return render_template("index.html", **get_template_data())
+
+
+@main.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'GET':
+        return render_template("login.html", **get_template_data({
+            "previous_responses": None,
+            "logged_out": "logged_out" in request.args
+        }))
+
+    if check_auth(
+        request.form['username'],
+        request.form['password']
+    ):
+        session['username'] = request.form['username']
+        return redirect('/')
+
+    return render_template("login.html", **get_template_data({
+        "error": "Could not log in",
+        "previous_responses": request.form
+    }))
+
+
+@main.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect('/login?logged_out')
 
 
 @main.route('/service')
@@ -97,4 +125,6 @@ def update(service_id, section):
 
 
 def get_template_data(merged_with={}):
-    return dict(main.config['BASE_TEMPLATE_DATA'], **merged_with)
+    template_data = dict(main.config['BASE_TEMPLATE_DATA'], **merged_with)
+    template_data["authenticated"] = is_authenticated()
+    return template_data

@@ -1,0 +1,33 @@
+{% from 'macros/page_heading.html' import page_heading %}
+
+{% extends "_base_page.html" %}
+{% block page_title %}
+  Digital Marketplace admin
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+  {% if logged_out %}
+    <div class="banner-success-without-action">
+      <p class="banner-message">
+        You have been logged out
+      </p>
+    </div>
+  {% endif %}
+  {{ page_heading("Administrator login") }}
+  <form action="/login" method="post" class="question">
+    {% if error %}
+      <div class="validation-masthead">
+        <h2 class="validation-masthead-heading">
+          {{error}}
+        </h2>
+      </div>
+    {% endif %}
+    <label class="question-heading" for="username">Username</label>
+    <input type="text" name="username" id="username" class="text-box" value="{{previous_responses.username}}">
+    <label class="question-heading" for="password">Password</label>
+    <input type="password" name="password" id="password" class="text-box">
+    <input type="submit" value="Log in" class="button-save">
+  </form>
+</div>
+{% endblock %}
