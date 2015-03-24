@@ -42,6 +42,27 @@ class TestS3Uploader(unittest.TestCase):
                 '/folder/2015-01-01T01:02:03.000004-test-file.pdf'
             ]))
 
+    def test_content_type_detection(self):
+        mock_bucket = FakeBucket()
+        self.s3_mock.get_bucket.return_value = mock_bucket
+
+        # File extensions allowed for G6 documents: pdf, odt, ods, odp
+        key = S3('test-bucket').save('/folder', 'test-file.pdf', mock.Mock())
+        self.assertEqual(key.headers['Content-Type'],
+                         'application/pdf')
+
+        key = S3('test-bucket').save('/folder', 'test-file.odt', mock.Mock())
+        self.assertEqual(key.headers['Content-Type'],
+                         'application/vnd.oasis.opendocument.text')
+
+        key = S3('test-bucket').save('/folder', 'test-file.ods', mock.Mock())
+        self.assertEqual(key.headers['Content-Type'],
+                         'application/vnd.oasis.opendocument.spreadsheet')
+
+        key = S3('test-bucket').save('/folder', 'test-file.odp', mock.Mock())
+        self.assertEqual(key.headers['Content-Type'],
+                         'application/vnd.oasis.opendocument.presentation')
+
 
 class FakeBucket(object):
     def __init__(self, keys=None):
@@ -64,6 +85,7 @@ class FakeKey(object):
         self.name = key.split('/')[-1]
 
     def set_contents_from_file(self, file, headers):
+        self.headers = headers
         return mock.Mock()
 
     def set_acl(self, acl):

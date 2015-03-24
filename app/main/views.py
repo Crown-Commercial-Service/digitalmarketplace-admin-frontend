@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-import re
 from flask import render_template, request, redirect, session
-=======
-from flask import render_template, request, redirect
->>>>>>> 8af0f3b... Remove unused import of 're'
 from . import main
 from .helpers.validation_tools import Validate
 from .helpers.content import ContentLoader
