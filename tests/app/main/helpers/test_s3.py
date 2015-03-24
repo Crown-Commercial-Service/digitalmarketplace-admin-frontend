@@ -27,6 +27,9 @@ class TestS3Uploader(unittest.TestCase):
 
         S3('test-bucket').save('/folder', 'test-file.pdf', mock.Mock())
         self.assertEqual(mock_bucket.keys, set(['/folder/test-file.pdf']))
+        mock_bucket.s3_key_mock.set_contents_from_file.assert_called_with(
+            mock.ANY, headers={'Content-Type': 'application/pdf'})
+        mock_bucket.s3_key_mock.set_acl.assert_called_with('public-read')
 
     def test_save_existing_file(self):
         mock_bucket = FakeBucket(['/folder/test-file.pdf'])
@@ -41,52 +44,42 @@ class TestS3Uploader(unittest.TestCase):
                 '/folder/test-file.pdf',
                 '/folder/2015-01-01T01:02:03.000004-test-file.pdf'
             ]))
+        mock_bucket.s3_key_mock.set_contents_from_file.assert_called_with(
+            mock.ANY, headers={'Content-Type': 'application/pdf'})
+        mock_bucket.s3_key_mock.set_acl.assert_called_with('public-read')
 
     def test_content_type_detection(self):
-        mock_bucket = FakeBucket()
-        self.s3_mock.get_bucket.return_value = mock_bucket
-
         # File extensions allowed for G6 documents: pdf, odt, ods, odp
-        key = S3('test-bucket').save('/folder', 'test-file.pdf', mock.Mock())
-        self.assertEqual(key.headers['Content-Type'],
+        test_type = S3('test-bucket')._get_mimetype('test-file.pdf')
+        self.assertEqual(test_type,
                          'application/pdf')
 
-        key = S3('test-bucket').save('/folder', 'test-file.odt', mock.Mock())
-        self.assertEqual(key.headers['Content-Type'],
+        test_type = S3('test-bucket')._get_mimetype('test-file.odt')
+        self.assertEqual(test_type,
                          'application/vnd.oasis.opendocument.text')
 
-        key = S3('test-bucket').save('/folder', 'test-file.ods', mock.Mock())
-        self.assertEqual(key.headers['Content-Type'],
+        test_type = S3('test-bucket')._get_mimetype('test-file.ods')
+        self.assertEqual(test_type,
                          'application/vnd.oasis.opendocument.spreadsheet')
 
-        key = S3('test-bucket').save('/folder', 'test-file.odp', mock.Mock())
-        self.assertEqual(key.headers['Content-Type'],
+        test_type = S3('test-bucket')._get_mimetype('test-file.odp')
+        self.assertEqual(test_type,
                          'application/vnd.oasis.opendocument.presentation')
 
 
 class FakeBucket(object):
     def __init__(self, keys=None):
         self.keys = set(keys or [])
+        self.s3_key_mock = mock.Mock()
+        self.s3_key_mock.name = "test-file.pdf"
 
     def get_key(self, key):
         if key in self.keys:
-            return FakeKey(key)
+            return self.s3_key_mock
 
     def new_key(self, key):
         self.keys.add(key)
-        return FakeKey(key)
+        return self.s3_key_mock
 
     def copy_key(self, new_key, *args, **kwargs):
         self.keys.add(new_key)
-
-
-class FakeKey(object):
-    def __init__(self, key):
-        self.name = key.split('/')[-1]
-
-    def set_contents_from_file(self, file, headers):
-        self.headers = headers
-        return mock.Mock()
-
-    def set_acl(self, acl):
-        return mock.Mock()

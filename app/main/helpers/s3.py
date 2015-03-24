@@ -25,10 +25,10 @@ class S3(object):
         key = self.bucket.new_key(full_path)
         key.set_contents_from_file(file,
                                    headers={'Content-Type':
-                                            self.__get_mimetype(key.name)})
+                                            self._get_mimetype(key.name)})
         key.set_acl(acl)
         return key
 
-    def __get_mimetype(self, filename):
+    def _get_mimetype(self, filename):
         mimetype, _ = mimetypes.guess_type(filename)
         return mimetype
