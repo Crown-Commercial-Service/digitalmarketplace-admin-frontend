@@ -1,3 +1,5 @@
+import json
+
 import requests
 
 
@@ -23,9 +25,20 @@ class ServiceLoader(object):
 
         return response.json()["services"]
 
-    def set(self, data, key, value):
-        data[key] = value
-        return data
+    def post(self, service_id, data, user, reason):
+        response = requests.post(
+            "{}/services/{}".format(self.api_url, service_id),
+            headers={
+                "authorization": "Bearer {}".format(self.access_token),
+                "content-type": "application/json",
+            },
+            data=json.dumps({
+                'update_details': {
+                    'updated_by': user,
+                    'update_reason': reason,
+                },
+                'services': data,
+            })
+        )
 
-    def post(self, data):
-        print(data)  # This would be an update call to the API
+        return response

@@ -105,16 +105,18 @@ def update(service_id, section):
     )
 
     form = Validate(content, service, posted_data, s3_uploader)
+    update = {}
 
     for question_id in posted_data:
         if question_id not in form.errors and question_id in form.clean_data:
-            service_loader.set(
-                service,
-                question_id,
-                form.clean_data[question_id]
-            )
+            update[question_id] = form.clean_data[question_id]
 
-    service_loader.post(service)
+    service_loader.post(
+        service['id'],
+        update,
+        session['username'],
+        'admin app'
+    )
 
     if form.errors:
         return render_template("edit_section.html", **get_template_data({
