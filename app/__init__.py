@@ -21,7 +21,6 @@ def create_app(config_name):
     main_blueprint.config = application.config.copy()
 
     if application.config['AUTHENTICATION']:
-        application.secret_key = os.getenv('DM_ADMIN_FRONTEND_COOKIE_SECRET')
         application.permanent_session_lifetime = timedelta(minutes=60)
         application.before_request(requires_auth)
 

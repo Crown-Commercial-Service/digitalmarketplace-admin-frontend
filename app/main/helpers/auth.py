@@ -4,12 +4,12 @@ from flask import redirect, request, session
 from pbkdf2 import crypt
 
 
-def check_auth(username, password):
+def check_auth(username, password, password_hash):
     """This function is called to check if a username /
     password combination is valid.
     """
     secret = base64.b64decode(
-        os.getenv('DM_ADMIN_FRONTEND_PASSWORD_HASH')
+        password_hash
     ).decode('utf-8')
     return secret == crypt(username + password, secret, iterations=10000)
 

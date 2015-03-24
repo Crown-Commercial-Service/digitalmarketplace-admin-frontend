@@ -31,7 +31,8 @@ def login():
 
     if check_auth(
         request.form['username'],
-        request.form['password']
+        request.form['password'],
+        main.config['PASSWORD_HASH']
     ):
         session['username'] = request.form['username']
         return redirect('/')
