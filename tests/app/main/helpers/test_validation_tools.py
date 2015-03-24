@@ -94,6 +94,10 @@ class TestValidate(unittest.TestCase):
             self.data['pricingDocumentURL']
         )
 
+        self.assertEquals(self.validate.clean_data, {
+            'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document.pdf',  # noqa
+        })
+
     def test_multiple_fields_list_of_validations(self):
         self.data.update({
             'q0': mock_file('a.pdf', 1),

@@ -104,21 +104,25 @@ def update(service_id, section):
         list(request.form.items()) + list(request.files.items())
     )
 
-    errors = Validate(content, service, posted_data, s3_uploader).errors
+    form = Validate(content, service, posted_data, s3_uploader)
 
     for question_id in posted_data:
-        if question_id not in errors:
-            service_loader.set(service, question_id, "new value")
+        if question_id not in form.errors and question_id in form.clean_data:
+            service_loader.set(
+                service,
+                question_id,
+                form.clean_data[question_id]
+            )
 
     service_loader.post(service)
 
-    if errors:
+    if form.errors:
         return render_template("edit_section.html", **get_template_data({
             "section": content.get_section(section),
             "service_data": service,
             "edits_submitted": posted_data,
             "service_id": service_id,
-            "errors": errors
+            "errors": form.errors
         }))
     else:
         return redirect("/service/" + service_id)
