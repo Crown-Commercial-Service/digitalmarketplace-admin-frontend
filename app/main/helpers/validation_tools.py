@@ -41,13 +41,6 @@ class Validate(object):
             if not self.test(question_id, question, rule["name"]):
                 return rule["message"]
 
-        # TODO We can't update file URLs until we have the write API,
-        # so uploaded file must have the same extension as the
-        # current one for now
-        current_extension = get_extension(self.service.get(question_id, ''))
-        if get_extension(question.filename) != current_extension:
-            return u"Uploaded file format should be: %s" % current_extension
-
     def test(self, question_id, question, rule):
         if not hasattr(self, rule):
             raise ValueError("Validation rule " + rule + " not found")
