@@ -18,6 +18,3 @@ class LoggedInApplicationTest(BaseApplicationTest):
         super(LoggedInApplicationTest, self).setUp()
         with self.client.session_transaction() as session:
             session['username'] = 'admin'
-
-    def tearDown(self):
-        self.s3.stop()
