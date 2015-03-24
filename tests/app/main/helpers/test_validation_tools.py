@@ -90,8 +90,9 @@ class TestValidate(unittest.TestCase):
 
         self.assertEquals(self.validate.errors, {})
         self.uploader.save.assert_called_once_with(
-            'documents/2', '1-pricing-document.pdf',
-            self.data['pricingDocumentURL']
+            'documents/2/1-pricing-document.pdf',
+            self.data['pricingDocumentURL'],
+            'b.pdf'
         )
 
         self.assertEquals(self.validate.clean_data, {

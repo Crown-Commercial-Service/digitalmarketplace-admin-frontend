@@ -52,20 +52,29 @@ class Validate(object):
         return not_empty
 
     def file_can_be_saved(self, question_id, question):
-        file_name = self._generate_file_name(question)
-        file_path = 'documents/{}'.format(
+        file_path = generate_file_name(
             self.service['supplierId'],
+            self.service['id'],
+            question_id,
+            question.filename
         )
+
+        if self.service[question_id]:
+            existing_path = urlparse.urlsplit(
+                self.service[question_id]
+            ).path.lstrip('/')
+        else:
+            existing_path = None
 
         self.uploader.save(
             file_path,
-            file_name,
-            question
+            question,
+            existing_path
         )
 
         full_url = urlparse.urljoin(
             main.config['DOCUMENTS_URL'],
-            "{}/{}".format(file_path, file_name)
+            file_path
         )
 
         self.clean_data[question_id] = full_url
@@ -85,20 +94,21 @@ class Validate(object):
             ".pdf", ".pda", ".odt", ".ods", ".odp"
         ]
 
-    def _generate_file_name(self, question):
-        ID_TO_FILE_NAME_SUFFIX = {
-            'serviceDefinitionDocumentURL': 'service-definition-document',
-            'termsAndConditionsDocumentURL': 'terms-and-conditions',
-            'sfiaRateDocumentURL': 'sfia-rate-card',
-            'pricingDocumentURL': 'pricing-document',
-        }
-        extension = get_extension(question.filename)
 
-        return '{}-{}{}'.format(
-            self.service['id'],
-            ID_TO_FILE_NAME_SUFFIX[question.name],
-            extension
-        )
+def generate_file_name(supplier_id, service_id, question_id, filename):
+    ID_TO_FILE_NAME_SUFFIX = {
+        'serviceDefinitionDocumentURL': 'service-definition-document',
+        'termsAndConditionsDocumentURL': 'terms-and-conditions',
+        'sfiaRateDocumentURL': 'sfia-rate-card',
+        'pricingDocumentURL': 'pricing-document',
+    }
+
+    return 'documents/{}/{}-{}{}'.format(
+        supplier_id,
+        service_id,
+        ID_TO_FILE_NAME_SUFFIX[question_id],
+        get_extension(filename)
+    )
 
 
 def get_extension(filename):
