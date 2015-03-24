@@ -11,3 +11,10 @@ class BaseApplicationTest(TestCase):
 
     def tearDown(self):
         self.s3.stop()
+
+
+class LoggedInApplicationTest(BaseApplicationTest):
+    def setUp(self):
+        super(LoggedInApplicationTest, self).setUp()
+        with self.client.session_transaction() as session:
+            session['username'] = 'admin'
