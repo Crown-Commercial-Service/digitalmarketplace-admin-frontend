@@ -27,13 +27,27 @@ class TestS3Uploader(unittest.TestCase):
 
         S3('test-bucket').save('folder/test-file.pdf', mock.Mock())
         self.assertEqual(mock_bucket.keys, set(['folder/test-file.pdf']))
+
+    def test_save_sets_content_type_and_acl(self):
+        mock_bucket = FakeBucket()
+        self.s3_mock.get_bucket.return_value = mock_bucket
+
+        S3('test-bucket').save('folder/test-file.pdf', mock.Mock())
+        self.assertEqual(mock_bucket.keys, set(['folder/test-file.pdf']))
+
         mock_bucket.s3_key_mock.set_contents_from_file.assert_called_with(
             mock.ANY, headers={'Content-Type': 'application/pdf'})
         mock_bucket.s3_key_mock.set_acl.assert_called_with('public-read')
 
-    def test_save_existing_file(self):
-        file_path = 'folder/test-file.pdf'
-        mock_bucket = FakeBucket([file_path])
+    def test_save_strips_leading_slash(self):
+        mock_bucket = FakeBucket()
+        self.s3_mock.get_bucket.return_value = mock_bucket
+
+        S3('test-bucket').save('/folder/test-file.pdf', mock.Mock())
+        self.assertEqual(mock_bucket.keys, set(['folder/test-file.pdf']))
+
+    def test_default_move_prefix_is_datetime(self):
+        mock_bucket = FakeBucket(['folder/test-file.pdf'])
         self.s3_mock.get_bucket.return_value = mock_bucket
         now = datetime.datetime(2015, 1, 1, 1, 2, 3, 4)
 
@@ -41,37 +55,70 @@ class TestS3Uploader(unittest.TestCase):
                                mock.Mock(wraps=datetime.datetime)) as patched:
             patched.utcnow.return_value = now
             S3('test-bucket').save(
-                file_path, mock.Mock(),
+                'folder/test-file.pdf', mock.Mock(),
             )
 
             self.assertEqual(mock_bucket.keys, set([
-                file_path,
+                'folder/test-file.pdf',
                 'folder/2015-01-01T01:02:03.000004-test-file.pdf'
             ]))
 
-    def test_save_with_existing_path(self):
-        file_path = 'folder/test-file.pdf'
-        existing_path = 'folder/test-file.odt'
-
-        mock_bucket = FakeBucket([existing_path])
+    def test_save_existing_file(self):
+        mock_bucket = FakeBucket(['folder/test-file.pdf'])
         self.s3_mock.get_bucket.return_value = mock_bucket
-        now = datetime.datetime(2015, 1, 1, 1, 2, 3, 4)
 
-        with mock.patch.object(datetime, 'datetime',
-                               mock.Mock(wraps=datetime.datetime)) as patched:
-            patched.utcnow.return_value = now
-            S3('test-bucket').save(
-                file_path, mock.Mock(),
-                existing_path=existing_path
-            )
+        S3('test-bucket').save(
+            'folder/test-file.pdf', mock.Mock(),
+            move_prefix='OLD'
+        )
 
-            self.assertEqual(mock_bucket.keys, set([
-                file_path,
-                'folder/2015-01-01T01:02:03.000004-test-file.odt'
-            ]))
-        mock_bucket.s3_key_mock.set_contents_from_file.assert_called_with(
-            mock.ANY, headers={'Content-Type': 'application/pdf'})
-        mock_bucket.s3_key_mock.set_acl.assert_called_with('public-read')
+        self.assertEqual(mock_bucket.keys, set([
+            'folder/test-file.pdf',
+            'folder/OLD-test-file.pdf'
+        ]))
+
+    def test_save_with_existing_path(self):
+        mock_bucket = FakeBucket(['folder/test-file.odt'])
+        self.s3_mock.get_bucket.return_value = mock_bucket
+
+        S3('test-bucket').save(
+            'folder/test-file.pdf', mock.Mock(),
+            existing_path='folder/test-file.odt',
+            move_prefix='OLD'
+        )
+
+        self.assertEqual(mock_bucket.keys, set([
+            'folder/test-file.pdf',
+            'folder/OLD-test-file.odt'
+        ]))
+
+    def test_save_strips_existing_path_leading_slash(self):
+        mock_bucket = FakeBucket(['folder/test-file.odt'])
+        self.s3_mock.get_bucket.return_value = mock_bucket
+
+        S3('test-bucket').save(
+            '/folder/test-file.pdf', mock.Mock(),
+            existing_path='/folder/test-file.odt',
+            move_prefix='OLD'
+        )
+
+        self.assertEqual(mock_bucket.keys, set([
+            'folder/test-file.pdf',
+            'folder/OLD-test-file.odt'
+        ]))
+
+    def test_move_existing_deletes_file(self):
+        mock_bucket = FakeBucket(['folder/test-file.odt'])
+        self.s3_mock.get_bucket.return_value = mock_bucket
+
+        S3('test-bucket')._move_existing(
+            existing_path='folder/test-file.odt',
+            move_prefix='OLD'
+        )
+
+        self.assertEqual(mock_bucket.keys, set([
+            'folder/OLD-test-file.odt'
+        ]))
 
     def test_content_type_detection(self):
         # File extensions allowed for G6 documents: pdf, odt, ods, odp
