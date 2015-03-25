@@ -1,4 +1,3 @@
-import re
 from flask import render_template, request, redirect, session
 from . import main
 from .helpers.validation_tools import Validate

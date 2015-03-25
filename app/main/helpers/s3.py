@@ -1,6 +1,7 @@
 import os
 import boto
 import datetime
+import mimetypes
 
 
 class S3(object):
@@ -21,7 +22,13 @@ class S3(object):
                 self.bucket_name,
                 full_path
             )
-
         key = self.bucket.new_key(full_path)
-        key.set_contents_from_file(file)
+        key.set_contents_from_file(file,
+                                   headers={'Content-Type':
+                                            self._get_mimetype(key.name)})
         key.set_acl(acl)
+        return key
+
+    def _get_mimetype(self, filename):
+        mimetype, _ = mimetypes.guess_type(filename)
+        return mimetype
