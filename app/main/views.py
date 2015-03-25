@@ -111,12 +111,13 @@ def update(service_id, section):
         if question_id not in form.errors and question_id in form.clean_data:
             update[question_id] = form.clean_data[question_id]
 
-    service_loader.post(
-        service['id'],
-        update,
-        session['username'],
-        'admin app'
-    )
+    if update:
+        service_loader.post(
+            service['id'],
+            update,
+            session['username'],
+            'admin app'
+        )
 
     if form.errors:
         return render_template("edit_section.html", **get_template_data({
