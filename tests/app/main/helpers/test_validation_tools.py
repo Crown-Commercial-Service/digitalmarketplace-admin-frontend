@@ -121,7 +121,6 @@ class TestValidate(unittest.TestCase):
             {'name': 'file_is_open_document_format', 'message': 'failed'},
             {'name': 'file_is_less_than_5mb', 'message': 'failed'},
             {'name': 'file_can_be_saved', 'message': 'failed'},
-            value=None
         )
         self.assertEquals(self.validate.errors, {})
 

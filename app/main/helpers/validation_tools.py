@@ -65,7 +65,7 @@ class Validate(object):
             question.filename
         )
 
-        if self.service[question_id]:
+        if self.service.get(question_id):
             existing_path = urlparse.urlsplit(
                 self.service[question_id]
             ).path.lstrip('/')
