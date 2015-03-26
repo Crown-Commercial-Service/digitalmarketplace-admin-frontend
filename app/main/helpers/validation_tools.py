@@ -1,5 +1,9 @@
 import os.path
-import urlparse
+
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
 
 from .. import main
 

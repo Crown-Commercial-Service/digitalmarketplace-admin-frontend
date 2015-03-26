@@ -3,7 +3,7 @@ try:
     from StringIO import StringIO
 except ImportError:
     from urllib.parse import urlsplit
-    from ioi import StringIO
+    from io import BytesIO as StringIO
 
 from ..helpers import BaseApplicationTest
 from ..helpers import LoggedInApplicationTest
@@ -91,8 +91,8 @@ class TestServiceEdit(LoggedInApplicationTest):
         response = self.client.post(
             '/service/1/edit/documents',
             data={
-                'pricingDocumentURL': (StringIO("doc"), 'test.pdf'),
-                'sfiaRateDocumentURL': (StringIO("doc"), 'test.pdf')
+                'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
+                'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.pdf')
             }
         )
 
@@ -114,8 +114,8 @@ class TestServiceEdit(LoggedInApplicationTest):
         response = self.client.post(
             '/service/1/edit/documents',
             data={
-                'pricingDocumentURL': (StringIO("doc"), 'test.pdf'),
-                'sfiaRateDocumentURL': (StringIO("doc"), 'test.txt'),
+                'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
+                'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.txt'),
                 'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
             }
         )
@@ -125,6 +125,6 @@ class TestServiceEdit(LoggedInApplicationTest):
             'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document.pdf',  # noqa
         }, 'admin', 'admin app')
 
-        self.assertIn('Your document is not in an open format', response.data)
-        self.assertIn('This question requires an answer', response.data)
+        self.assertIn(b'Your document is not in an open format', response.data)
+        self.assertIn(b'This question requires an answer', response.data)
         self.assertEquals(200, response.status_code)
