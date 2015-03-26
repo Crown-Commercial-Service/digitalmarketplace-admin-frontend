@@ -7,7 +7,7 @@ export DM_ADMIN_FRONTEND_API_AUTH_TOKEN=${DM_ADMIN_FRONTEND_API_AUTH_TOKEN:=myTo
 # Default hash for user/pass combo: admin/admin
 export DM_ADMIN_FRONTEND_PASSWORD_HASH=${DM_ADMIN_FRONTEND_PASSWORD_HASH:=JHA1azIkMjcxMCQxYjM5Y2JhY2RkYTY0OWMwYjdhMGU1MWU4MjQ5ODZlYSQ2VkNuM1I3dXNXYW8zY3dWZmRzVHFBck10Tzh0cWRBLg==}
 export DM_ADMIN_FRONTEND_COOKIE_SECRET=${DM_ADMIN_FRONTEND_COOKIE_SECRET:=secret}
-export DM_S3_DOCUMENT_BUCKET='admin-frontend-dev-documents'
+export DM_S3_DOCUMENT_BUCKET=${DM_S3_DOCUMENT_BUCKET:=admin-frontend-dev-documents}
 
 echo "Environment variables in use:"
 env | grep DM_
