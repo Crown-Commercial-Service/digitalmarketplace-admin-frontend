@@ -6,6 +6,7 @@ except ImportError:
     import urllib.parse as urlparse
 
 from .. import main
+from .s3 import S3ResponseError
 
 
 class Validate(object):
@@ -14,7 +15,7 @@ class Validate(object):
         self.service = service
         self.posted_data = posted_data
         self.uploader = uploader
-        self.clean_data = {}
+        self.clean_data = None
         self._errors = None
 
     @property
@@ -22,6 +23,7 @@ class Validate(object):
         if self._errors is not None:
             return self._errors
         errors = {}
+        self.clean_data = {}
         for question_id in self.posted_data:
             question_errors = self.question_errors(question_id)
             if question_errors:
@@ -70,11 +72,14 @@ class Validate(object):
         else:
             existing_path = None
 
-        self.uploader.save(
-            file_path,
-            question,
-            existing_path
-        )
+        try:
+            self.uploader.save(
+                file_path,
+                question,
+                existing_path
+            )
+        except S3ResponseError:
+            return False
 
         full_url = urlparse.urljoin(
             main.config['DOCUMENTS_URL'],

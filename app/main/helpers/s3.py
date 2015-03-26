@@ -1,7 +1,10 @@
 import os
 import boto
+import boto.exception
 import datetime
 import mimetypes
+
+from boto.exception import S3ResponseError  # noqa
 
 
 class S3(object):

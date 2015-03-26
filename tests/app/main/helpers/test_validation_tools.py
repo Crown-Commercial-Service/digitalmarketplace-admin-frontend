@@ -1,6 +1,7 @@
 import unittest
 
 import mock
+from app.main.helpers.s3 import S3ResponseError
 from app.main.helpers.validation_tools import Validate
 
 
@@ -98,6 +99,20 @@ class TestValidate(unittest.TestCase):
         self.assertEquals(self.validate.clean_data, {
             'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document.pdf',  # noqa
         })
+
+    def test_failed_file_upload(self):
+        self.uploader.save.side_effect = S3ResponseError(403, 'Forbidden')
+        self.set_question(
+            'pricingDocumentURL', mock_file('a.pdf', 1, 'pricingDocumentURL'),
+            {'name': 'file_can_be_saved', 'message': 'failed'},
+            value='b.pdf'
+        )
+
+        self.assertEquals(self.validate.errors, {
+            'pricingDocumentURL': 'failed'
+        })
+
+        self.assertEquals(self.validate.clean_data, {})
 
     def test_field_with_no_previous_value(self):
         self.set_question(
