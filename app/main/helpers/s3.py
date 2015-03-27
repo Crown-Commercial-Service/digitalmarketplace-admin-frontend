@@ -14,15 +14,10 @@ class S3(object):
         self.bucket_name = bucket_name
         self.bucket = conn.get_bucket(bucket_name)
 
-    def save(self, path, file, existing_path=None,
-             acl='public-read', move_prefix=None):
+    def save(self, path, file, acl='public-read', move_prefix=None):
         path = path.lstrip('/')
 
-        if existing_path:
-            existing_path = existing_path.lstrip('/')
-            self._move_existing(existing_path, move_prefix)
-        else:
-            self._move_existing(path, move_prefix)
+        self._move_existing(path, move_prefix)
 
         key = self.bucket.new_key(path)
         key.set_contents_from_file(file,

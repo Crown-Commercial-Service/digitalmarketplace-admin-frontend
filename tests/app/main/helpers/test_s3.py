@@ -77,36 +77,6 @@ class TestS3Uploader(unittest.TestCase):
             'folder/OLD-test-file.pdf'
         ]))
 
-    def test_save_with_existing_path(self):
-        mock_bucket = FakeBucket(['folder/test-file.odt'])
-        self.s3_mock.get_bucket.return_value = mock_bucket
-
-        S3('test-bucket').save(
-            'folder/test-file.pdf', mock.Mock(),
-            existing_path='folder/test-file.odt',
-            move_prefix='OLD'
-        )
-
-        self.assertEqual(mock_bucket.keys, set([
-            'folder/test-file.pdf',
-            'folder/OLD-test-file.odt'
-        ]))
-
-    def test_save_strips_existing_path_leading_slash(self):
-        mock_bucket = FakeBucket(['folder/test-file.odt'])
-        self.s3_mock.get_bucket.return_value = mock_bucket
-
-        S3('test-bucket').save(
-            '/folder/test-file.pdf', mock.Mock(),
-            existing_path='/folder/test-file.odt',
-            move_prefix='OLD'
-        )
-
-        self.assertEqual(mock_bucket.keys, set([
-            'folder/test-file.pdf',
-            'folder/OLD-test-file.odt'
-        ]))
-
     def test_move_existing_deletes_file(self):
         mock_bucket = FakeBucket(['folder/test-file.odt'])
         self.s3_mock.get_bucket.return_value = mock_bucket
