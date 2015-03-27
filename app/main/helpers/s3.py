@@ -38,8 +38,6 @@ class S3(object):
                 existing_path
             )
 
-            self.bucket.delete_key(existing_path)
-
     def _get_mimetype(self, filename):
         mimetype, _ = mimetypes.guess_type(filename)
         return mimetype

@@ -77,7 +77,7 @@ class TestS3Uploader(unittest.TestCase):
             'folder/OLD-test-file.pdf'
         ]))
 
-    def test_move_existing_deletes_file(self):
+    def test_move_existing_doesnt_delete_file(self):
         mock_bucket = FakeBucket(['folder/test-file.odt'])
         self.s3_mock.get_bucket.return_value = mock_bucket
 
@@ -87,6 +87,7 @@ class TestS3Uploader(unittest.TestCase):
         )
 
         self.assertEqual(mock_bucket.keys, set([
+            'folder/test-file.odt',
             'folder/OLD-test-file.odt'
         ]))
 
