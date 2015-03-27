@@ -98,8 +98,8 @@ class TestServiceEdit(LoggedInApplicationTest):
 
         self.service_loader.get.assert_called_with('1')
         self.service_loader.post.assert_called_with(1, {
-            'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document.pdf',  # noqa
-            'sfiaRateDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-sfia-rate-card.pdf',  # noqa
+            'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
+            'sfiaRateDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-sfia-rate-card-2015-01-01-1200.pdf',  # noqa
         }, 'admin', 'admin app')
 
         self.assertEquals(302, response.status_code)
@@ -122,7 +122,7 @@ class TestServiceEdit(LoggedInApplicationTest):
 
         self.service_loader.get.assert_called_with('1')
         self.service_loader.post.assert_called_with(1, {
-            'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document.pdf',  # noqa
+            'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
         }, 'admin', 'admin app')
 
         self.assertIn(b'Your document is not in an open format', response.data)

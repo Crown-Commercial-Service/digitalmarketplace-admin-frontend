@@ -1,3 +1,4 @@
+import datetime
 import os.path
 
 try:
@@ -65,19 +66,8 @@ class Validate(object):
             question.filename
         )
 
-        if self.service.get(question_id):
-            existing_path = urlparse.urlsplit(
-                self.service[question_id]
-            ).path.lstrip('/')
-        else:
-            existing_path = None
-
         try:
-            self.uploader.save(
-                file_path,
-                question,
-                existing_path
-            )
+            self.uploader.save(file_path, question)
         except S3ResponseError:
             return False
 
@@ -104,7 +94,11 @@ class Validate(object):
         ]
 
 
-def generate_file_name(supplier_id, service_id, question_id, filename):
+def generate_file_name(supplier_id, service_id, question_id, filename,
+                       suffix=None):
+    if suffix is None:
+        suffix = default_file_suffix()
+
     ID_TO_FILE_NAME_SUFFIX = {
         'serviceDefinitionDocumentURL': 'service-definition-document',
         'termsAndConditionsDocumentURL': 'terms-and-conditions',
@@ -112,12 +106,17 @@ def generate_file_name(supplier_id, service_id, question_id, filename):
         'pricingDocumentURL': 'pricing-document',
     }
 
-    return 'documents/{}/{}-{}{}'.format(
+    return 'documents/{}/{}-{}-{}{}'.format(
         supplier_id,
         service_id,
         ID_TO_FILE_NAME_SUFFIX[question_id],
+        suffix,
         get_extension(filename)
     )
+
+
+def default_file_suffix():
+    return datetime.datetime.utcnow().strftime("%Y-%m-%d-%H%M")
 
 
 def get_extension(filename):

@@ -1,8 +1,33 @@
 import unittest
+import datetime
 
 import mock
 from app.main.helpers.s3 import S3ResponseError
-from app.main.helpers.validation_tools import Validate
+from app.main.helpers.validation_tools import Validate, generate_file_name
+
+
+class TestGenerateFilename(unittest.TestCase):
+    def test_filename_format(self):
+        self.assertEquals(
+            'documents/2/1-pricing-document-123.pdf',
+            generate_file_name(
+                2, 1,
+                'pricingDocumentURL', 'test.pdf',
+                suffix='123'
+            ))
+
+    def test_default_suffix_is_datetime(self):
+        now = datetime.datetime(2015, 1, 2, 3, 4, 5, 6)
+
+        with mock.patch.object(datetime, 'datetime',
+                               mock.Mock(wraps=datetime.datetime)) as patched:
+            patched.utcnow.return_value = now
+            self.assertEquals(
+                'documents/2/1-pricing-document-2015-01-02-0304.pdf',
+                generate_file_name(
+                    2, 1,
+                    'pricingDocumentURL', 'test.pdf',
+                ))
 
 
 class TestValidate(unittest.TestCase):
@@ -15,6 +40,11 @@ class TestValidate(unittest.TestCase):
         self.content = {}
         self.uploader = mock.Mock()
 
+        self.default_suffix_patch = mock.patch(
+            'app.main.helpers.validation_tools.default_file_suffix',
+            return_value='2015-01-01-1200'
+        ).start()
+
         self.validate = Validate(
             content=mock.Mock(),
             service=self.service,
@@ -23,6 +53,9 @@ class TestValidate(unittest.TestCase):
         )
 
         self.validate.content.get_question = lambda key: self.content[key]
+
+    def tearDown(self):
+        self.default_suffix_patch.stop()
 
     def set_question(self, question_id, data, *validations, **kwargs):
         self.data[question_id] = data
@@ -90,14 +123,14 @@ class TestValidate(unittest.TestCase):
         )
 
         self.assertEquals(self.validate.errors, {})
+
         self.uploader.save.assert_called_once_with(
-            'documents/2/1-pricing-document.pdf',
-            self.data['pricingDocumentURL'],
-            'b.pdf'
+            'documents/2/1-pricing-document-2015-01-01-1200.pdf',
+            self.data['pricingDocumentURL']
         )
 
         self.assertEquals(self.validate.clean_data, {
-            'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document.pdf',  # noqa
+            'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
         })
 
     def test_failed_file_upload(self):

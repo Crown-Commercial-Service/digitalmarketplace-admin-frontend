@@ -14,9 +14,15 @@ class BaseApplicationTest(TestCase):
             return_value=self.service_loader
         ).start()
 
+        self.default_suffix_patch = mock.patch(
+            'app.main.helpers.validation_tools.default_file_suffix',
+            return_value='2015-01-01-1200'
+        ).start()
+
     def tearDown(self):
         self.s3.stop()
         self._service_loader_patch.stop()
+        self.default_suffix_patch.stop()
 
 
 class LoggedInApplicationTest(BaseApplicationTest):
