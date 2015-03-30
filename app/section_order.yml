@@ -18,3 +18,8 @@
     - termsAndConditionsDocumentURL
     - sfiaRateDocumentURL
     - pricingDocumentURL
+-
+  name: Pricing
+  editable: false
+  questions:
+    - priceString
