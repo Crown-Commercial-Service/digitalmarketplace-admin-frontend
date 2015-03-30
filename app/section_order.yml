@@ -20,6 +20,6 @@
     - pricingDocumentURL
 -
   name: Pricing
-  editable: false
+  editable: true
   questions:
     - priceString

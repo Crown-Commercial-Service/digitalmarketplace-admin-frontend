@@ -83,7 +83,7 @@ def edit(service_id, section):
 
     template_data = get_template_data({
         "section": content.get_section(section),
-        "service_data": service_loader.get(service_id),
+        "service_data": service_loader.get(service_id)
     })
     return render_template("edit_section.html", **template_data)
 
@@ -108,8 +108,6 @@ def update(service_id, section):
     update = {}
 
     for question_id in posted_data:
-        print(question_id)
-        print(question_id in form.errors)
         if question_id not in form.errors and question_id in form.clean_data:
             update[question_id] = form.clean_data[question_id]
 

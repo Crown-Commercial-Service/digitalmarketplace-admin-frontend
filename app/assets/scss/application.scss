@@ -18,9 +18,10 @@ $path: "/static/images/";
 @import "buttons";
 @import "notification-banners";
 
-// Components specific to this app
-@import "service-id";
+// Patterns specific to this app
+@import "patterns/service-id";
+@import "patterns/pricing";
 
 // Layout of specific views
-@import "view_service";
-@import "edit_section";
+@import "views/view_service";
+@import "views/edit_section";

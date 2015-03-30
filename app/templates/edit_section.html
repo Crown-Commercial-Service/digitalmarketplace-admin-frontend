@@ -14,7 +14,7 @@
       "text": service_data['serviceName']
     }
   ]) }}
-  <div class="page-container">
+  <div class="page-container edit-section">
     {{ page_heading(section.name, null, "page-heading-smaller") }}
     {% if errors %}
       <div class="validation-masthead">
@@ -41,7 +41,7 @@
           {% if question.id in errors %}
             {{ forms.validation_message(errors[question.id ], question.id) }}
           {% endif %}
-          {{ forms[question.type](question, service_data[question.id]) }}
+          {{ forms[question.type](question, service_data[question.id], service_data, content) }}
         {{ forms.question_wrapper_close(question) }}
         {% if question.id in errors %}
           {{ forms.validation_wrapper_close() }}

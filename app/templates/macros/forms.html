@@ -70,3 +70,84 @@
     <input type="radio" name="boolean-1" id="boolean-1" value="val-1">
   </label>
 {%- endmacro %}
+
+{% macro pricing(field, value='', service_data, content) -%}
+  <div class='pricing'>
+    <div class='pricing-column'>
+      <label for='pricingMinPrice' >
+        Minimum price
+        <span class='hidden'>in</span>
+        <span class='pricing-unit'>£</span>
+      </label>
+      <input type='text' class='text-box pricing-input-with-unit' name='priceMin' id='priceMin' value='{{service_data["priceMin"]}}'/>
+    </div>
+    <div class='pricing-column'>
+      <span class='pricing-preposition'>to</span>
+    </div>
+    <div class='pricing-column'>
+      <label for='pricingMaxPrice'>
+        Maximum price
+        <span class='hidden'>in</span>
+        <span class='pricing-unit'>£</span>
+      </label>
+      <p class='question-hint'>
+        Optional
+      </p>
+      <input type='text' class='text-box pricing-input-with-unit' name='priceMax' id='priceMax' value='{{service_data["priceMax"]}}' />
+    </div>
+    <div class='pricing-column'>
+      <span class='pricing-preposition'>per</span>
+    </div>
+    <div class='pricing-column'>
+      <label for='priceUnit'>
+        Unit
+      </label>
+      <select class='pricing-input-select' name='priceUnit' id='priceUnit'>
+        {{ option('', service_data['priceUnit']) }}
+        {{ option('Unit', service_data['priceUnit']) }}
+        {{ option('Person', service_data['priceUnit']) }}
+        {{ option('Licence', service_data['priceUnit']) }}
+        {{ option('User', service_data['priceUnit']) }}
+        {{ option('Device', service_data['priceUnit']) }}
+        {{ option('Instance', service_data['priceUnit']) }}
+        {{ option('Server', service_data['priceUnit']) }}
+        {{ option('Virtual machine', service_data['priceUnit']) }}
+        {{ option('Transaction', service_data['priceUnit']) }}
+        {{ option('Megabyte', service_data['priceUnit']) }}
+        {{ option('Gigabyte', service_data['priceUnit']) }}
+        {{ option('Terabyte', service_data['priceUnit']) }}
+      </select>
+    </div>
+    <div class='pricing-column'>
+      <span class='pricing-preposition'>per</span>
+    </div>
+    <div class='pricing-column'>
+      <label for='priceInterval'>
+        Interval
+      </label>
+      <p class='question-hint'>
+        Optional
+      </p>
+      <select class='pricing-input-select' name='priceInterval' id='priceInterval'>
+        {{ option('', service_data['priceUnit']) }}
+        {{ option('Second', service_data["priceInterval"]) }}
+        {{ option('Minute', service_data["priceInterval"]) }}
+        {{ option('Hour', service_data["priceInterval"]) }}
+        {{ option('Day', service_data["priceInterval"]) }}
+        {{ option('Week', service_data["priceInterval"]) }}
+        {{ option('Month', service_data["priceInterval"]) }}
+        {{ option('Quarter', service_data["priceInterval"]) }}
+        {{ option('6 months', service_data["priceInterval"]) }}
+        {{ option('Year', service_data["priceInterval"]) }}
+      </select>
+    </div>
+  </div>
+{% endmacro -%}
+
+{% macro option(label, current) -%}
+  {% if label == current %}
+    <option value='{{ label }}' selected='selected'>{{ label }}</option>
+  {% else %}
+    <option value='{{ label }}'>{{ label }}</option>
+  {% endif %}
+{% endmacro -%}

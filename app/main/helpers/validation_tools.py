@@ -48,6 +48,8 @@ class Validate(object):
             ):
                 return
 
+        print(question_content)
+
         for rule in question_content["validations"]:
             if not self.test(question_id, question, rule["name"]):
                 return rule["message"]
