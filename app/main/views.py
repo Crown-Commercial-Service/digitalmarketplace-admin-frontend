@@ -108,6 +108,8 @@ def update(service_id, section):
     update = {}
 
     for question_id in posted_data:
+        print(question_id)
+        print(question_id in form.errors)
         if question_id not in form.errors and question_id in form.clean_data:
             update[question_id] = form.clean_data[question_id]
 

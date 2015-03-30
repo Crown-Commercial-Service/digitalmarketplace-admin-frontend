@@ -1,5 +1,6 @@
 import datetime
 import os.path
+import six
 
 try:
     import urlparse
@@ -41,7 +42,10 @@ class Validate(object):
             if "optional" in question_content:
                 return
             # File has previously been uploaded
-            if question_id in self.service:
+            if (
+                question_id in self.service and
+                "upload" == question_content["type"]
+            ):
                 return
 
         for rule in question_content["validations"]:
@@ -54,6 +58,13 @@ class Validate(object):
         return getattr(self, rule)(question_id, question)
 
     def answer_required(self, question_id, question):
+        if os.path.isfile(question):
+            return self.file_has_been_uploaded(self, question_id, question)
+        elif isinstance(question, six.string_types) and "" != question:
+            self.clean_data[question_id] = question
+            return True
+
+    def file_has_been_uploaded(self, question_id, question):
         not_empty = len(question.read(1)) > 0
         question.seek(0)
         return not_empty

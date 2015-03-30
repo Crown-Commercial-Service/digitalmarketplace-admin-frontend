@@ -27,11 +27,15 @@
 {%- endmacro %}
 
 {% macro textbox(field, value='') -%}
-  <input type="text" class="text-box" name="{{ field.name }}" id="{{ field.name }}-text-box" value="{{ value }}" />
+  <input type="text" class="text-box" name="{{ field.id }}" id="{{ field.id }}-text-box" value="{{ value }}" />
+{%- endmacro %}
+
+{% macro text(field, value='') -%}
+  <input type="text" class="text-box" name="{{ field.id }}" id="{{ field.id }}-text-box" value="{{ value }}" />
 {%- endmacro %}
 
 {% macro textbox_large(field, value='') -%}
-  <textarea type="text" class="text-box text-box-large" name="{{ field.name }}" id="{{ field.name }}-text-box">{{ value }}</textarea>
+  <textarea type="text" class="text-box text-box-large" name="{{ field.id }}" id="{{ field.id }}-text-box">{{ value }}</textarea>
 {%- endmacro %}
 
 {% macro upload(question, value='') -%}

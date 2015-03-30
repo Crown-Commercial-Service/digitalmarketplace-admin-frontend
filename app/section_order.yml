@@ -6,7 +6,7 @@
     - lot
 -
   name: Description
-  editable: false
+  editable: true
   questions:
     - serviceName
     - serviceSummary
