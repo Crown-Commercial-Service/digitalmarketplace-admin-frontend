@@ -11,6 +11,11 @@
     - serviceName
     - serviceSummary
 -
+  name: Pricing
+  editable: true
+  questions:
+    - priceString
+-
   name: Documents
   editable: true
   questions:
@@ -18,8 +23,3 @@
     - termsAndConditionsDocumentURL
     - sfiaRateDocumentURL
     - pricingDocumentURL
--
-  name: Pricing
-  editable: true
-  questions:
-    - priceString

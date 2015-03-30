@@ -41,7 +41,7 @@
           {% if question.id in errors %}
             {{ forms.validation_message(errors[question.id ], question.id) }}
           {% endif %}
-          {{ forms[question.type](question, service_data[question.id], service_data, content) }}
+          {{ forms[question.type](question, service_data[question.id], service_data) }}
         {{ forms.question_wrapper_close(question) }}
         {% if question.id in errors %}
           {{ forms.validation_wrapper_close() }}

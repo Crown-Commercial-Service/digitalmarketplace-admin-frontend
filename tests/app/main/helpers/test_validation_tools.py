@@ -57,37 +57,52 @@ class TestValidate(unittest.TestCase):
     def tearDown(self):
         self.default_suffix_patch.stop()
 
-    def set_question(self, question_id, data, *validations, **kwargs):
+    def set_question(self, question_id, data, content, **kwargs):
         self.data[question_id] = data
         if 'value' in kwargs:
             self.service[question_id] = kwargs['value']
-        self.content[question_id] = {'validations': validations}
+        self.content[question_id] = content
 
     def test_validate_empty(self):
         self.assertEquals(self.validate.errors, {})
 
     def test_validate_empty_question(self):
-        self.set_question('q1', mock_file('a', 0))
+        self.set_question('q1', mock_file('a', 0), {'validations': []})
         self.assertEquals(self.validate.errors, {})
 
     def test_validate_non_empty_answer_required(self):
         self.set_question(
             'q1', mock_file('a', 1),
-            {'name': 'answer_required', 'message': 'failed'}
+            {
+                'type': 'upload',
+                'validations': [{
+                    'name': 'answer_required', 'message': 'failed'
+                }]
+            }
         )
         self.assertEquals(self.validate.errors, {})
 
     def test_validate_empty_answer_required(self):
         self.set_question(
             'q1', mock_file('a.pdf', 0),
-            {'name': 'answer_required', 'message': 'failed'}
+            {
+                'type': 'upload',
+                'validations': [{
+                    'name': 'answer_required', 'message': 'failed'
+                }]
+            }
         )
         self.assertEquals(self.validate.errors, {'q1': 'failed'})
 
     def test_validate_empty_answer_required_previous_value(self):
         self.set_question(
-            'q1', mock_file('a.pdf', 0),
-            {'name': 'answer_required', 'message': 'failed'},
+            'q2', mock_file('a.pdf', 0),
+            {
+                'type': 'upload',
+                'validations': [{
+                    'name': 'answer_required', 'message': 'failed'
+                }]
+            },
             value='b.pdf',
         )
         self.assertEquals(self.validate.errors, {})
@@ -95,22 +110,42 @@ class TestValidate(unittest.TestCase):
     def test_incorrect_document_format(self):
         self.set_question(
             'q1', mock_file('a.txt', 1),
-            {'name': 'file_is_open_document_format', 'message': 'failed'}
+            {
+                'type': 'upload',
+                'validations': [{
+                    'name': 'file_is_open_document_format', 'message': 'failed'
+                }]
+            }
         )
         self.assertEquals(self.validate.errors, {'q1': 'failed'})
 
     def test_incorrect_file_size(self):
         self.set_question(
             'q1', mock_file('a.pdf', 5400001),
-            {'name': 'file_is_less_than_5mb', 'message': 'failed'}
+            {
+                'type': 'upload',
+                'validations': [{
+                    'name': 'file_is_less_than_5mb', 'message': 'failed'
+                }]
+            }
         )
         self.assertEquals(self.validate.errors, {'q1': 'failed'})
 
     def test_list_of_validations(self):
         self.set_question(
             'q1', mock_file('a.pdf', 1),
-            {'name': 'file_is_open_document_format', 'message': 'failed'},
-            {'name': 'file_is_less_than_5mb', 'message': 'failed'},
+            {
+                'type': 'upload',
+                'validations': [
+                    {
+                        'name': 'file_is_open_document_format',
+                        'message': 'failed'
+                    },
+                    {
+                        'name': 'file_is_less_than_5mb', 'message': 'failed'
+                    },
+                ]
+            },
             value='b.pdf'
         )
         self.assertEquals(self.validate.errors, {})
@@ -118,7 +153,12 @@ class TestValidate(unittest.TestCase):
     def test_file_save(self):
         self.set_question(
             'pricingDocumentURL', mock_file('a.pdf', 1, 'pricingDocumentURL'),
-            {'name': 'file_can_be_saved', 'message': 'failed'},
+            {
+                'type': 'upload',
+                'validations': [
+                    {'name': 'file_can_be_saved', 'message': 'failed'},
+                ]
+            },
             value='b.pdf'
         )
 
@@ -137,7 +177,12 @@ class TestValidate(unittest.TestCase):
         self.uploader.save.side_effect = S3ResponseError(403, 'Forbidden')
         self.set_question(
             'pricingDocumentURL', mock_file('a.pdf', 1, 'pricingDocumentURL'),
-            {'name': 'file_can_be_saved', 'message': 'failed'},
+            {
+                'type': 'upload',
+                'validations': [
+                    {'name': 'file_can_be_saved', 'message': 'failed'},
+                ]
+            },
             value='b.pdf'
         )
 
@@ -150,27 +195,38 @@ class TestValidate(unittest.TestCase):
     def test_field_with_no_previous_value(self):
         self.set_question(
             'pricingDocumentURL', mock_file('a.pdf', 1),
-            {'name': 'answer_required', 'message': 'failed'},
-            {'name': 'file_is_open_document_format', 'message': 'failed'},
-            {'name': 'file_is_less_than_5mb', 'message': 'failed'},
-            {'name': 'file_can_be_saved', 'message': 'failed'},
+            {
+                'type': 'upload',
+                'validations': [
+                    {'name': 'answer_required', 'message': 'failed'},
+                    {
+                        'name': 'file_is_open_document_format',
+                        'message': 'failed'
+                    },
+                    {'name': 'file_is_less_than_5mb', 'message': 'failed'},
+                    {'name': 'file_can_be_saved', 'message': 'failed'},
+                ]
+            }
         )
         self.assertEquals(self.validate.errors, {})
 
     def test_multiple_fields_list_of_validations(self):
-        validations = [
-            {'name': 'file_is_open_document_format', 'message': 'format'},
-            {'name': 'file_is_less_than_5mb', 'message': 'size'},
-        ]
+        content = {
+            'type': 'upload',
+            'validations': [
+                {'name': 'file_is_open_document_format', 'message': 'format'},
+                {'name': 'file_is_less_than_5mb', 'message': 'size'}
+            ]
+        }
 
-        self.set_question('q0', mock_file('a.pdf', 1),
-                          value='b.pdf', *validations)
-        self.set_question('q1', mock_file('a.txt', 1),
-                          value='b.pdf', *validations)
-        self.set_question('q2', mock_file('a.pdf', 5400001),
-                          value='b.pdf', *validations)
-        self.set_question('q3', mock_file('a.txt', 5400001),
-                          value='b.pdf', *validations)
+        self.set_question('q0', mock_file('a.pdf', 1), content,
+                          value='b.pdf')
+        self.set_question('q1', mock_file('a.txt', 1), content,
+                          value='b.pdf')
+        self.set_question('q2', mock_file('a.pdf', 5400001), content,
+                          value='b.pdf')
+        self.set_question('q3', mock_file('a.txt', 5400001), content,
+                          value='b.pdf')
 
         self.assertEquals(self.validate.errors, {
             'q1': 'format',

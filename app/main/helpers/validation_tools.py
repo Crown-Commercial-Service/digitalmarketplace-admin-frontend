@@ -1,6 +1,9 @@
 import datetime
 import os.path
 import six
+import re
+import locale
+import werkzeug.datastructures
 
 try:
     import urlparse
@@ -17,7 +20,8 @@ class Validate(object):
         self.service = service
         self.posted_data = posted_data
         self.uploader = uploader
-        self.clean_data = None
+        self.clean_data = {}
+        self.dirty_data = {}
         self._errors = None
 
     @property
@@ -25,7 +29,6 @@ class Validate(object):
         if self._errors is not None:
             return self._errors
         errors = {}
-        self.clean_data = {}
         for question_id in self.posted_data:
             question_errors = self.question_errors(question_id)
             if question_errors:
@@ -44,11 +47,9 @@ class Validate(object):
             # File has previously been uploaded
             if (
                 question_id in self.service and
-                "upload" == question_content["type"]
+                'upload' == question_content.get('type')
             ):
                 return
-
-        print(question_content)
 
         for rule in question_content["validations"]:
             if not self.test(question_id, question, rule["name"]):
@@ -60,9 +61,13 @@ class Validate(object):
         return getattr(self, rule)(question_id, question)
 
     def answer_required(self, question_id, question):
-        if os.path.isfile(question):
-            return self.file_has_been_uploaded(self, question_id, question)
-        elif isinstance(question, six.string_types) and "" != question:
+        content = self.content.get_question(question_id)
+        if isinstance(question, list):
+            question_as_string = "".join(question).strip()
+            return len(question_as_string)
+        elif 'upload' == content.get('type'):
+            return self.file_has_been_uploaded(question_id, question)
+        elif isinstance(question, six.string_types) and not empty(question):
             self.clean_data[question_id] = question
             return True
 
@@ -72,6 +77,7 @@ class Validate(object):
         return not_empty
 
     def file_can_be_saved(self, question_id, question):
+
         file_path = generate_file_name(
             self.service['supplierId'],
             self.service['id'],
@@ -106,6 +112,58 @@ class Validate(object):
             ".pdf", ".pda", ".odt", ".ods", ".odp"
         ]
 
+    def no_min_price_specified(self, question_id, question):
+        min_price = question[0]
+        self.dirty_data["priceMin"] = min_price
+        return not empty(min_price)
+
+    def min_price_not_a_number(self, question_id, question):
+        min_price = question[0]
+        self.dirty_data["priceMin"] = min_price
+        if is_a_float(min_price) and less_than_5_decimal_places(min_price):
+            return True
+        return False
+
+    def max_price_not_a_number(self, question_id, question):
+        max_price = question[1]
+        self.dirty_data["priceMax"] = max_price
+        if empty(max_price):
+            return True
+        if is_a_float(max_price) and less_than_5_decimal_places(max_price):
+            return True
+        return False
+
+    def max_less_than_min(self, question_id, question):
+        min_price, max_price = question[0:2]
+        if empty(max_price):
+            return True
+        return float(max_price) > float(min_price)
+
+    def no_unit_specified(self, question_id, question):
+        price_unit = question[2]
+        self.dirty_data["priceUnit"] = price_unit
+        return not empty(price_unit)
+
+    def price_string_can_be_composed(self, question_id, question):
+        min_price, max_price, price_unit, price_interval = question
+        price_string = "£" + min_price
+        self.clean_data["priceMin"] = format_price_to_number(min_price)
+        if not empty(max_price):
+            price_string = price_string + " to £" + question[1]
+            self.clean_data["priceMax"] = format_price_to_number(max_price)
+        else:
+            self.clean_data["priceMax"] = None  # This doesn't work -- API
+        price_string = price_string + " per "
+        price_string = price_string + price_unit.lower()
+        self.clean_data["priceUnit"] = price_unit
+        if not empty(price_interval):
+            price_string = price_string + " per " + price_interval.lower()
+            self.clean_data["priceInterval"] = price_interval
+        else:
+            self.clean_data["priceInterval"] = ""
+        self.clean_data["priceString"] = price_string
+        return True
+
 
 def generate_file_name(supplier_id, service_id, question_id, filename,
                        suffix=None):
@@ -135,3 +193,27 @@ def default_file_suffix():
 def get_extension(filename):
     file_name, file_extension = os.path.splitext(filename)
     return file_extension.lower()
+
+
+def is_a_float(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
+def less_than_5_decimal_places(number):
+    return re.match(r'^[0-9]+(\.\d{1,5})?$', number)
+
+
+def format_price_to_number(number):
+    try:
+        int(number)
+        return int(number)
+    except ValueError:
+        return float(number)
+
+
+def empty(string):
+    return 0 == len(string.strip())

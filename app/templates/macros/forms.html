@@ -26,41 +26,41 @@
   </p>
 {%- endmacro %}
 
-{% macro textbox(field, value='') -%}
+{% macro textbox(field, value='', service_data) -%}
   <input type="text" class="text-box" name="{{ field.id }}" id="{{ field.id }}-text-box" value="{{ value }}" />
 {%- endmacro %}
 
-{% macro text(field, value='') -%}
+{% macro text(field, value='', service_data) -%}
   <input type="text" class="text-box" name="{{ field.id }}" id="{{ field.id }}-text-box" value="{{ value }}" />
 {%- endmacro %}
 
-{% macro textbox_large(field, value='') -%}
+{% macro textbox_large(field, value='', service_data) -%}
   <textarea type="text" class="text-box text-box-large" name="{{ field.id }}" id="{{ field.id }}-text-box">{{ value }}</textarea>
 {%- endmacro %}
 
-{% macro upload(question, value='') -%}
+{% macro upload(question, value='', service_data) -%}
   <p>
     {{ value }}
   </p>
   <input type="file" name="{{ question.id }}" id="{{ question.id }}-file-upload" />
 {%- endmacro %}
 
-{% macro radio(field, value='') -%}
+{% macro radio(field, value='', service_data) -%}
   {{ selection_button("radio", field, value) }}
 {%- endmacro %}
 
-{% macro checkbox(field, value='') -%}
+{% macro checkbox(field, value='', service_data) -%}
   {{ selection_button("radio", field, value) }}
 {%- endmacro %}
 
-{% macro selection_button(type, field, value='') -%}
+{% macro selection_button(type, field, value='', service_data) -%}
   <label class="selection-button">
     {{ field.label }}
     <input type="{{ type }}" name="{{ field.name }}" id="{{ field.name }}" value="{{ value }}">
   </label>
 {%- endmacro %}
 
-{% macro boolean(field, value='') -%}
+{% macro boolean(field, value='', service_data) -%}
   <label class="selection-button selection-button-boolean">
     Yes
     <input type="radio" name="boolean-1" id="boolean-1" value="val-1">
@@ -71,7 +71,7 @@
   </label>
 {%- endmacro %}
 
-{% macro pricing(field, value='', service_data, content) -%}
+{% macro pricing(field, value='', service_data) -%}
   <div class='pricing'>
     <div class='pricing-column'>
       <label for='pricingMinPrice' >
@@ -79,7 +79,7 @@
         <span class='hidden'>in</span>
         <span class='pricing-unit'>£</span>
       </label>
-      <input type='text' class='text-box pricing-input-with-unit' name='priceMin' id='priceMin' value='{{service_data["priceMin"]}}'/>
+      <input type='text' class='text-box pricing-input-with-unit' name='priceString' id='priceMin' value='{{service_data["priceMin"]}}'/>
     </div>
     <div class='pricing-column'>
       <span class='pricing-preposition'>to</span>
@@ -93,7 +93,7 @@
       <p class='question-hint'>
         Optional
       </p>
-      <input type='text' class='text-box pricing-input-with-unit' name='priceMax' id='priceMax' value='{{service_data["priceMax"]}}' />
+      <input type='text' class='text-box pricing-input-with-unit' name='priceString' id='priceMax' value='{{service_data["priceMax"]}}' />
     </div>
     <div class='pricing-column'>
       <span class='pricing-preposition'>per</span>
@@ -102,7 +102,7 @@
       <label for='priceUnit'>
         Unit
       </label>
-      <select class='pricing-input-select' name='priceUnit' id='priceUnit'>
+      <select class='pricing-input-select' name='priceString' id='priceUnit'>
         {{ option('', service_data['priceUnit']) }}
         {{ option('Unit', service_data['priceUnit']) }}
         {{ option('Person', service_data['priceUnit']) }}
@@ -128,7 +128,7 @@
       <p class='question-hint'>
         Optional
       </p>
-      <select class='pricing-input-select' name='priceInterval' id='priceInterval'>
+      <select class='pricing-input-select' name='priceString' id='priceInterval'>
         {{ option('', service_data['priceUnit']) }}
         {{ option('Second', service_data["priceInterval"]) }}
         {{ option('Minute', service_data["priceInterval"]) }}
