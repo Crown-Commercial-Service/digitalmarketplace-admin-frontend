@@ -3,6 +3,11 @@
 {%- endmacro %}
 
 
+{% macro text(value='') -%}
+  {{ value }}
+{%- endmacro %}
+
+
 {% macro upload(value) -%}
   {% if 'url' in value and 'filename' in value %}
     <a href="{{ value.url }}">{{ value.filename }}</a>

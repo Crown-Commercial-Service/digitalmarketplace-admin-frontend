@@ -5,6 +5,12 @@
     - id
     - lot
 -
+  name: Description
+  editable: false
+  questions:
+    - serviceName
+    - serviceSummary
+-
   name: Documents
   editable: true
   questions:
