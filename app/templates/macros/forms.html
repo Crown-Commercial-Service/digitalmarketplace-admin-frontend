@@ -169,9 +169,9 @@
 
 {% macro list_item(name, index, number, values, list_item_name) %}
   <div class='list-entry'>
-    <label for='${_name}' class='text-box-number-label'>
+    <label for='{{ name }}-item-{{ number }}' class='text-box-number-label'>
       <span class='visuallyhidden'>{{ list_item_name }} number </span>{{ number }}.
     </label>
-    <input type='text' name='{{ name }}' id='{{ name }}' class='text-box' value="{{ values[index] }}" />
+    <input type='text' name='{{ name }}' id='{{ name }}-item-{{ number }}' class='text-box' value="{{ values[index] }}" />
   </div>
 {% endmacro %}

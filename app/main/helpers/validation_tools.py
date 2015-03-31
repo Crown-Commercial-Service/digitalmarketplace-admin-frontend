@@ -56,6 +56,7 @@ class Validate(object):
 
         for rule in question_content["validations"]:
             if not self.test(question_id, question, rule["name"]):
+                self.dirty_data[question_id] = question
                 return rule["message"]
 
     def test(self, question_id, question, rule):
@@ -171,7 +172,17 @@ class Validate(object):
         return len(question) <= 100
 
     def under_50_words(self, question_id, question):
-        return len(question.split()) <= 50
+        return within_word_limit(question, 50)
+
+    def items_under_10_words_each(self, question_id, question):
+        has_long_item = False
+        for item in question:
+            if not within_word_limit(item, 10):
+                has_long_item = True
+        return not has_long_item
+
+    def under_10_items(self, question_id, question):
+        return len(question) <= 10
 
 
 def generate_file_name(supplier_id, service_id, question_id, filename,
@@ -226,3 +237,7 @@ def format_price_to_number(number):
 
 def empty(string):
     return 0 == len(string.strip())
+
+
+def within_word_limit(string, limit):
+    return len(string.split()) <= limit
