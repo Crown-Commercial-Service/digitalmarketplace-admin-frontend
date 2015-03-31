@@ -3,7 +3,6 @@ import os.path
 import six
 import re
 import locale
-import werkzeug.datastructures
 
 try:
     import urlparse
@@ -163,6 +162,12 @@ class Validate(object):
             self.clean_data["priceInterval"] = ""
         self.clean_data["priceString"] = price_string
         return True
+
+    def under_100_characters(self, question_id, question):
+        return len(question) <= 100
+
+    def under_50_words(self, question_id, question):
+        return len(question.split()) <= 50
 
 
 def generate_file_name(supplier_id, service_id, question_id, filename,

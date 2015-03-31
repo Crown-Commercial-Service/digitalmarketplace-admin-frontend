@@ -234,6 +234,208 @@ class TestValidate(unittest.TestCase):
             'q3': 'format'
         })
 
+    def test_min_price_specified(self):
+        self.set_question(
+            'q1', ['1'],
+            {
+                'type': 'pricing',
+                'validations': [
+                    {'name': 'no_min_price_specified', 'message': 'failed'},
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {})
+
+    def test_min_price_not_specified(self):
+        self.set_question(
+            'q1', [''],
+            {
+                'type': 'pricing',
+                'validations': [
+                    {'name': 'no_min_price_specified', 'message': 'failed'},
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {'q1': 'failed'})
+
+    def test_prices_are_numbers(self):
+        self.set_question(
+            'q1', ['1', '2'],
+            {
+                'type': 'pricing',
+                'validations': [
+                    {'name': 'min_price_not_a_number', 'message': 'failed'},
+                    {'name': 'max_price_not_a_number', 'message': 'failed'},
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {})
+
+    def test_min_price_isnt_a_number(self):
+        self.set_question(
+            'q1', ['£1', '2'],
+            {
+                'type': 'pricing',
+                'validations': [
+                    {'name': 'min_price_not_a_number', 'message': 'failed'},
+                    {'name': 'max_price_not_a_number', 'message': 'failed'},
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {'q1': 'failed'})
+
+    def test_max_price_isnt_a_number(self):
+        self.set_question(
+            'q1', ['1', '£2'],
+            {
+                'type': 'pricing',
+                'validations': [
+                    {'name': 'min_price_not_a_number', 'message': 'failed'},
+                    {'name': 'max_price_not_a_number', 'message': 'failed'},
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {'q1': 'failed'})
+
+    def test_max_price_is_less_than_min(self):
+        self.set_question(
+            'q1', ['2', '1'],
+            {
+                'type': 'pricing',
+                'validations': [
+                    {'name': 'max_less_than_min', 'message': 'failed'}
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {'q1': 'failed'})
+
+    def test_max_price_is_greater_than_min(self):
+        self.set_question(
+            'q1', ['1', '2'],
+            {
+                'type': 'pricing',
+                'validations': [
+                    {'name': 'max_less_than_min', 'message': 'failed'}
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {})
+
+    def test_max_price_is_empty(self):
+        self.set_question(
+            'q1', ['1', ''],
+            {
+                'type': 'pricing',
+                'validations': [
+                    {'name': 'max_less_than_min', 'message': 'failed'}
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {})
+
+    def test_price_unit_is_missing(self):
+        self.set_question(
+            'q1', ['1', '2', ''],
+            {
+                'type': 'pricing',
+                'validations': [
+                    {'name': 'no_unit_specified', 'message': 'failed'}
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {'q1': 'failed'})
+
+    def test_price_unit_is_present(self):
+        self.set_question(
+            'q1', ['1', '2', 'Virtual machine'],
+            {
+                'type': 'pricing',
+                'validations': [
+                    {'name': 'no_unit_specified', 'message': 'failed'}
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {})
+
+    def test_price_string_can_be_composed(self):
+        self.set_question(
+            'q2', ['1', '2', 'Instance', 'Year'],
+            {
+                'type': 'pricing',
+                'validations': [
+                    {
+                        'name': 'price_string_can_be_composed',
+                        'message': 'failed'
+                    }
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {})
+        self.assertEquals(
+            self.validate.clean_data.get('priceString'),
+            '£1 to £2 per instance per year'
+        )
+
+    def test_string_over_100_characters(self):
+        self.set_question(
+            'q1', " ".join('a' for i in range(0, 101)),
+            {
+                'type': 'text',
+                'validations': [
+                    {
+                        'name': 'under_100_characters',
+                        'message': 'failed'
+                    }
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {'q1': 'failed'})
+
+    def test_string_under_100_characters(self):
+        self.set_question(
+            'q1', "".join('a' for i in range(0, 100)),
+            {
+                'type': 'text',
+                'validations': [
+                    {
+                        'name': 'under_100_characters',
+                        'message': 'failed'
+                    }
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {})
+
+    def test_string_over_50_words(self):
+        self.set_question(
+            'q1', " ".join(str(i) for i in range(0, 51)),
+            {
+                'type': 'text',
+                'validations': [
+                    {
+                        'name': 'under_50_words',
+                        'message': 'failed'
+                    }
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {'q1': 'failed'})
+
+    def test_string_under_50_words(self):
+        self.set_question(
+            'q1', " ".join(str(i) for i in range(0, 50)),
+            {
+                'type': 'text',
+                'validations': [
+                    {
+                        'name': 'under_50_words',
+                        'message': 'failed'
+                    }
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {})
+
 
 def mock_file(filename, length, name=None):
     mock_file = mock.MagicMock()
