@@ -151,3 +151,27 @@
     <option value='{{ label }}'>{{ label }}</option>
   {% endif %}
 {% endmacro -%}
+
+
+{% macro list(field, value='', service_data) -%}
+  <div class="input-list" data-list-item-name="feature">
+    {% for index in range(10) %}
+      {{ list_item(
+        field.id,
+        index,
+        index + 1,
+        value,
+        "thing"
+      ) }}
+    {% endfor %}
+  </div>
+{% endmacro -%}
+
+{% macro list_item(name, index, number, values, list_item_name) %}
+  <div class='list-entry'>
+    <label for='${_name}' class='text-box-number-label'>
+      <span class='visuallyhidden'>{{ list_item_name }} number </span>{{ number }}.
+    </label>
+    <input type='text' name='{{ name }}' id='{{ name }}' class='text-box' value="{{ values[index] }}" />
+  </div>
+{% endmacro %}
