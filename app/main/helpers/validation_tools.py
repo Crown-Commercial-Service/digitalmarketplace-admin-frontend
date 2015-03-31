@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import datetime
 import os.path
 import six
@@ -145,10 +147,10 @@ class Validate(object):
 
     def price_string_can_be_composed(self, question_id, question):
         min_price, max_price, price_unit, price_interval = question
-        price_string = "£" + min_price
+        price_string = u"£" + min_price
         self.clean_data["priceMin"] = format_price_to_number(min_price)
         if not empty(max_price):
-            price_string = price_string + " to £" + question[1]
+            price_string = price_string + u" to £" + question[1]
             self.clean_data["priceMax"] = format_price_to_number(max_price)
         else:
             self.clean_data["priceMax"] = None  # This doesn't work -- API

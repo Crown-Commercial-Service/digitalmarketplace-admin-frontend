@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import unittest
 import datetime
 
@@ -373,7 +375,7 @@ class TestValidate(unittest.TestCase):
         self.assertEquals(self.validate.errors, {})
         self.assertEquals(
             self.validate.clean_data.get('priceString'),
-            '£1 to £2 per instance per year'
+            u'£1 to £2 per instance per year'
         )
 
     def test_string_over_100_characters(self):
