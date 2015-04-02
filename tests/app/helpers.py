@@ -7,22 +7,27 @@ class BaseApplicationTest(TestCase):
     def setUp(self):
         self.app = create_app('test')
         self.client = self.app.test_client()
-        self.s3 = mock.patch('app.main.views.S3').start()
+
+        self._s3_patch = mock.patch('app.main.views.S3')
+        self.s3 = self._s3_patch.start()
+
         self.service_loader = mock.Mock()
         self._service_loader_patch = mock.patch(
             'app.main.views.ServiceLoader',
             return_value=self.service_loader
-        ).start()
+        )
+        self._service_loader_patch.start()
 
-        self.default_suffix_patch = mock.patch(
+        self._default_suffix_patch = mock.patch(
             'app.main.helpers.validation_tools.default_file_suffix',
             return_value='2015-01-01-1200'
-        ).start()
+        )
+        self._default_suffix_patch.start()
 
     def tearDown(self):
-        self.s3.stop()
+        self._s3_patch.stop()
         self._service_loader_patch.stop()
-        self.default_suffix_patch.stop()
+        self._default_suffix_patch.stop()
 
 
 class LoggedInApplicationTest(BaseApplicationTest):
