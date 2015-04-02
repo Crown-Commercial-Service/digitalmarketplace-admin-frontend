@@ -21,8 +21,8 @@ class Validate(object):
         self.service = service
         self.posted_data = posted_data
         self.uploader = uploader
-        self.clean_data = {}
-        self.dirty_data = {}
+        self.clean_data = None
+        self.dirty_data = None
         self._errors = None
 
     @property
@@ -30,6 +30,8 @@ class Validate(object):
         if self._errors is not None:
             return self._errors
         errors = {}
+        self.clean_data = {}
+        self.dirty_data = {}
         for question_id in self.posted_data:
             question_errors = self.question_errors(question_id)
             if question_errors:

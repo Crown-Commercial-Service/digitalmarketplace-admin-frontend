@@ -118,9 +118,10 @@ def update(service_id, section):
             if question_id in form.clean_data:
                 update[question_id] = form.clean_data[question_id]
 
-    for question_id in form.clean_data:
-        if question_id not in form.errors and question_id not in update:
-            update[question_id] = form.clean_data[question_id]
+    if form.clean_data is not None:
+        for question_id in form.clean_data:
+            if question_id not in form.errors and question_id not in update:
+                update[question_id] = form.clean_data[question_id]
 
     if update:
         service_loader.post(
