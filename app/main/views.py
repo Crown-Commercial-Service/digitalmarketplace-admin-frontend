@@ -83,7 +83,7 @@ def edit(service_id, section):
 
     template_data = get_template_data({
         "section": content.get_section(section),
-        "service_data": service_loader.get(service_id),
+        "service_data": service_loader.get(service_id)
     })
     return render_template("edit_section.html", **template_data)
 
@@ -104,12 +104,24 @@ def update(service_id, section):
         list(request.form.items()) + list(request.files.items())
     )
 
+    # Turn responses which have multiple parts into lists
+    for item in request.form.items():
+        item_as_list = request.form.getlist(item[0])
+        if len(item_as_list) > 1:
+            posted_data[item[0]] = item_as_list
+
     form = Validate(content, service, posted_data, s3_uploader)
     update = {}
 
     for question_id in posted_data:
-        if question_id not in form.errors and question_id in form.clean_data:
-            update[question_id] = form.clean_data[question_id]
+        if question_id not in form.errors:
+            if question_id in form.clean_data:
+                update[question_id] = form.clean_data[question_id]
+
+    if form.clean_data is not None:
+        for question_id in form.clean_data:
+            if question_id not in form.errors and question_id not in update:
+                update[question_id] = form.clean_data[question_id]
 
     if update:
         service_loader.post(
@@ -120,10 +132,10 @@ def update(service_id, section):
         )
 
     if form.errors:
+        service.update(form.dirty_data)
         return render_template("edit_section.html", **get_template_data({
             "section": content.get_section(section),
             "service_data": service,
-            "edits_submitted": posted_data,
             "service_id": service_id,
             "errors": form.errors
         }))

@@ -26,37 +26,41 @@
   </p>
 {%- endmacro %}
 
-{% macro textbox(field, value='') -%}
-  <input type="text" class="text-box" name="{{ field.name }}" id="{{ field.name }}-text-box" value="{{ value }}" />
+{% macro textbox(field, value='', service_data) -%}
+  <input type="text" class="text-box" name="{{ field.id }}" id="{{ field.id }}-text-box" value="{{ value }}" />
 {%- endmacro %}
 
-{% macro textbox_large(field, value='') -%}
-  <textarea type="text" class="text-box text-box-large" name="{{ field.name }}" id="{{ field.name }}-text-box">{{ value }}</textarea>
+{% macro text(field, value='', service_data) -%}
+  <input type="text" class="text-box" name="{{ field.id }}" id="{{ field.id }}-text-box" value="{{ value }}" />
 {%- endmacro %}
 
-{% macro upload(question, value='') -%}
+{% macro textbox_large(field, value='', service_data) -%}
+  <textarea type="text" class="text-box text-box-large" name="{{ field.id }}" id="{{ field.id }}-text-box">{{ value }}</textarea>
+{%- endmacro %}
+
+{% macro upload(question, value='', service_data) -%}
   <p>
     {{ value }}
   </p>
   <input type="file" name="{{ question.id }}" id="{{ question.id }}-file-upload" />
 {%- endmacro %}
 
-{% macro radio(field, value='') -%}
+{% macro radio(field, value='', service_data) -%}
   {{ selection_button("radio", field, value) }}
 {%- endmacro %}
 
-{% macro checkbox(field, value='') -%}
+{% macro checkbox(field, value='', service_data) -%}
   {{ selection_button("radio", field, value) }}
 {%- endmacro %}
 
-{% macro selection_button(type, field, value='') -%}
+{% macro selection_button(type, field, value='', service_data) -%}
   <label class="selection-button">
     {{ field.label }}
     <input type="{{ type }}" name="{{ field.name }}" id="{{ field.name }}" value="{{ value }}">
   </label>
 {%- endmacro %}
 
-{% macro boolean(field, value='') -%}
+{% macro boolean(field, value='', service_data) -%}
   <label class="selection-button selection-button-boolean">
     Yes
     <input type="radio" name="boolean-1" id="boolean-1" value="val-1">
@@ -66,3 +70,84 @@
     <input type="radio" name="boolean-1" id="boolean-1" value="val-1">
   </label>
 {%- endmacro %}
+
+{% macro pricing(field, value='', service_data) -%}
+  <div class='pricing'>
+    <div class='pricing-column'>
+      <label for='pricingMinPrice' >
+        Minimum price
+        <span class='visually-hidden'>in</span>
+        <span class='pricing-unit'>£</span>
+      </label>
+      <input type='text' class='text-box pricing-input-with-unit' name='priceString' id='priceMin' value='{{service_data["priceMin"]}}'/>
+    </div>
+    <div class='pricing-column'>
+      <span class='pricing-preposition'>to</span>
+    </div>
+    <div class='pricing-column'>
+      <label for='pricingMaxPrice'>
+        Maximum price
+        <span class='visually-hidden'>in</span>
+        <span class='pricing-unit'>£</span>
+      </label>
+      <p class='question-hint'>
+        Optional
+      </p>
+      <input type='text' class='text-box pricing-input-with-unit' name='priceString' id='priceMax' value='{{service_data["priceMax"]}}' />
+    </div>
+    <div class='pricing-column'>
+      <span class='pricing-preposition'>per</span>
+    </div>
+    <div class='pricing-column'>
+      <label for='priceUnit'>
+        Unit
+      </label>
+      <select class='pricing-input-select' name='priceString' id='priceUnit'>
+        {{ option('', service_data['priceUnit']) }}
+        {{ option('Unit', service_data['priceUnit']) }}
+        {{ option('Person', service_data['priceUnit']) }}
+        {{ option('Licence', service_data['priceUnit']) }}
+        {{ option('User', service_data['priceUnit']) }}
+        {{ option('Device', service_data['priceUnit']) }}
+        {{ option('Instance', service_data['priceUnit']) }}
+        {{ option('Server', service_data['priceUnit']) }}
+        {{ option('Virtual machine', service_data['priceUnit']) }}
+        {{ option('Transaction', service_data['priceUnit']) }}
+        {{ option('Megabyte', service_data['priceUnit']) }}
+        {{ option('Gigabyte', service_data['priceUnit']) }}
+        {{ option('Terabyte', service_data['priceUnit']) }}
+      </select>
+    </div>
+    <div class='pricing-column'>
+      <span class='pricing-preposition'>per</span>
+    </div>
+    <div class='pricing-column'>
+      <label for='priceInterval'>
+        Interval
+      </label>
+      <p class='question-hint'>
+        Optional
+      </p>
+      <select class='pricing-input-select' name='priceString' id='priceInterval'>
+        {{ option('', service_data['priceUnit']) }}
+        {{ option('Second', service_data["priceInterval"]) }}
+        {{ option('Minute', service_data["priceInterval"]) }}
+        {{ option('Hour', service_data["priceInterval"]) }}
+        {{ option('Day', service_data["priceInterval"]) }}
+        {{ option('Week', service_data["priceInterval"]) }}
+        {{ option('Month', service_data["priceInterval"]) }}
+        {{ option('Quarter', service_data["priceInterval"]) }}
+        {{ option('6 months', service_data["priceInterval"]) }}
+        {{ option('Year', service_data["priceInterval"]) }}
+      </select>
+    </div>
+  </div>
+{% endmacro -%}
+
+{% macro option(label, current) -%}
+  {% if label == current %}
+    <option value='{{ label }}' selected='selected'>{{ label }}</option>
+  {% else %}
+    <option value='{{ label }}'>{{ label }}</option>
+  {% endif %}
+{% endmacro -%}

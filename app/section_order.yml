@@ -5,6 +5,17 @@
     - id
     - lot
 -
+  name: Description
+  editable: true
+  questions:
+    - serviceName
+    - serviceSummary
+-
+  name: Pricing
+  editable: true
+  questions:
+    - priceString
+-
   name: Documents
   editable: true
   questions:
