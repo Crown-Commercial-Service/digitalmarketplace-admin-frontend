@@ -106,9 +106,12 @@ def update(service_id, section):
 
     # Turn responses which have multiple parts into lists
     for item in request.form.items():
-        item_as_list = request.form.getlist(item[0])
+        key = item[0]
+        item_as_list = request.form.getlist(key)
         if len(item_as_list) > 1:
-            posted_data[item[0]] = item_as_list
+            posted_data[key] = [
+                list_item for list_item in item_as_list if list_item.strip()
+            ]
 
     form = Validate(content, service, posted_data, s3_uploader)
     update = {}

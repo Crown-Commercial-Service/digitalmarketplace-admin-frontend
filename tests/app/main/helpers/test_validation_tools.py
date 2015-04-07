@@ -489,7 +489,7 @@ class TestValidate(unittest.TestCase):
                 "one two three four five six seven eight nine ten" for i in range(0, 3)  # noqa
             ],
             {
-                'type': 'text',
+                'type': 'list',
                 'validations': [
                     {
                         'name': 'items_under_10_words_each',
@@ -506,7 +506,7 @@ class TestValidate(unittest.TestCase):
                 "one two three four five six seven eight nine ten eleven" for i in range(0, 3)  # noqa
             ],
             {
-                'type': 'text',
+                'type': 'list',
                 'validations': [
                     {
                         'name': 'items_under_10_words_each',
