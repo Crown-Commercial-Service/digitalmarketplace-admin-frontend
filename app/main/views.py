@@ -105,8 +105,7 @@ def update(service_id, section):
     )
 
     # Turn responses which have multiple parts into lists
-    for item in request.form.items():
-        key = item[0]
+    for key in request.form:
         item_as_list = request.form.getlist(key)
         if len(item_as_list) > 1:
             posted_data[key] = [
