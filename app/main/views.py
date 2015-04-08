@@ -128,12 +128,14 @@ def update(service_id, section):
                 update[question_id] = form.clean_data[question_id]
 
     if update:
-        service_loader.post(
+        api_response = service_loader.post(
             service['id'],
             update,
             session['username'],
             'admin app'
         )
+        if not api_response.ok:
+            return "Error: " + str(api_response.content)
 
     if form.errors:
         service.update(form.dirty_data)
