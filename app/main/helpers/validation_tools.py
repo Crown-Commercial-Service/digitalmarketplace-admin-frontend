@@ -182,7 +182,14 @@ class Validate(object):
         return not has_long_item
 
     def under_10_items(self, question_id, question):
-        return len(question) <= 10
+        items_with_empty_removed = [
+            list_item for list_item in question if list_item.strip()
+        ]
+        if len(items_with_empty_removed) <= 10:
+            self.clean_data[question_id] = items_with_empty_removed
+            return True
+        else:
+            return False
 
 
 def generate_file_name(supplier_id, service_id, question_id, filename,
