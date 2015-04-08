@@ -438,6 +438,85 @@ class TestValidate(unittest.TestCase):
         )
         self.assertEquals(self.validate.errors, {})
 
+    def test_list_with_1_item(self):
+        self.set_question(
+            'q1', ["1"],
+            {
+                'type': 'list',
+                'validations': [
+                    {
+                        'name': 'under_10_items',
+                        'message': 'failed'
+                    }
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {})
+
+    def test_list_with_10_items(self):
+        self.set_question(
+            'q1', ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+            {
+                'type': 'list',
+                'validations': [
+                    {
+                        'name': 'under_10_items',
+                        'message': 'failed'
+                    }
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {})
+
+    def test_list_with_11_items(self):
+        self.set_question(
+            'q1', ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"],
+            {
+                'type': 'list',
+                'validations': [
+                    {
+                        'name': 'under_10_items',
+                        'message': 'failed'
+                    }
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {'q1': 'failed'})
+
+    def test_list_with_short_items(self):
+        self.set_question(
+            'q1', [
+                "one two three four five six seven eight nine ten" for i in range(0, 3)  # noqa
+            ],
+            {
+                'type': 'list',
+                'validations': [
+                    {
+                        'name': 'items_under_10_words_each',
+                        'message': 'failed'
+                    }
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {})
+
+    def test_list_with_long_items(self):
+        self.set_question(
+            'q1', [
+                "one two three four five six seven eight nine ten eleven" for i in range(0, 3)  # noqa
+            ],
+            {
+                'type': 'list',
+                'validations': [
+                    {
+                        'name': 'items_under_10_words_each',
+                        'message': 'failed'
+                    }
+                ]
+            }
+        )
+        self.assertEquals(self.validate.errors, {'q1': 'failed'})
+
 
 def mock_file(filename, length, name=None):
     mock_file = mock.MagicMock()

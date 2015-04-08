@@ -11,6 +11,12 @@
     - serviceName
     - serviceSummary
 -
+  name: Features and benefits
+  editable: true
+  questions:
+    - serviceFeatures
+    - serviceBenefits
+-
   name: Pricing
   editable: true
   questions:

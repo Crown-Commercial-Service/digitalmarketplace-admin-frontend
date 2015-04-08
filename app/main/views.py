@@ -105,10 +105,12 @@ def update(service_id, section):
     )
 
     # Turn responses which have multiple parts into lists
-    for item in request.form.items():
-        item_as_list = request.form.getlist(item[0])
+    for key in request.form:
+        item_as_list = request.form.getlist(key)
         if len(item_as_list) > 1:
-            posted_data[item[0]] = item_as_list
+            posted_data[key] = [
+                list_item for list_item in item_as_list if list_item.strip()
+            ]
 
     form = Validate(content, service, posted_data, s3_uploader)
     update = {}
@@ -117,6 +119,8 @@ def update(service_id, section):
         if question_id not in form.errors:
             if question_id in form.clean_data:
                 update[question_id] = form.clean_data[question_id]
+            else:
+                update[question_id] = posted_data[question_id]
 
     if form.clean_data is not None:
         for question_id in form.clean_data:
