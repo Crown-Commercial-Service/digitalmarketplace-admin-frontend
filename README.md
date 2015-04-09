@@ -45,6 +45,22 @@ Install frontend dependencies with npm and gulp
 npm install
 ```
 
+### Compile the front-end code
+
+For development usage:
+
+```
+npm run frontend-build:development
+```
+
+For production:
+
+```
+npm run frontend-build:production
+```
+
+Note: running `npm run frontend-build:watch` will also build the front-end code.
+
 ### Run the tests
 
 ```
