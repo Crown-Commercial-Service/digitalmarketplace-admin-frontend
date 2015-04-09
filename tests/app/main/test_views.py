@@ -128,3 +128,22 @@ class TestServiceEdit(LoggedInApplicationTest):
         self.assertIn(b'Your document is not in an open format', response.data)
         self.assertIn(b'This question requires an answer', response.data)
         self.assertEquals(200, response.status_code)
+
+    def test_service_edit_when_API_returns_error(self):
+        self.service_loader.get.return_value = {
+            'id': 1,
+            'supplierId': 2,
+            'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
+            'sfiaRateDocumentURL': None
+        }
+        self.service_loader.post.return_value.ok = False
+        self.service_loader.post.return_value.content = 'API ERROR'
+        response = self.client.post(
+            '/service/1/edit/documents',
+            data={
+                'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
+                'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.txt'),
+                'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
+            }
+        )
+        self.assertIn(b'API ERROR', response.data)
