@@ -1,4 +1,9 @@
-// Load all the things
+/*
+  The following comments are parsed by Gulp include
+  (https://www.npmjs.com/package/gulp-include) which uses
+  Sprockets-style (https://github.com/sstephenson/sprockets)
+  directives to concatenate multiple Javascript files into one.
+*/
 //= include ../../../bower_components/jquery/dist/jquery.js
 //= include ../../../bower_components/hogan/web/builds/3.0.2/hogan-3.0.2.js
 //= include ../../../bower_components/digitalmarketplace-frontend-toolkit/toolkit/javascripts/list-entry.js
