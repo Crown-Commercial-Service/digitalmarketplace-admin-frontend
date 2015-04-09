@@ -42,7 +42,7 @@ Install new Python dependencies with pip
 Install frontend dependencies with npm and gulp
 
 ```
-npm install
+npm run init
 ```
 
 ### Run the tests
@@ -77,5 +77,8 @@ The admin frontend runs on port 5004. Use the app at [http://127.0.0.1:5004/](ht
 - `npm run frontend-build:production` (compile the frontend files for production)
 - `npm run frontend-build:watch` (watch all frontend files & rebuild when anything changes)
 - `npm run frontend-install` (install all non-NPM dependancies)
+- `npm init:development` (install all non-NPM dependancies and compile the frontend files for development)
+- `npm init:production` (install all non-NPM dependancies and compile the frontend files for production)
+- `npm init` (alias for `npm run init:development)
 
 Note: `npm run frontend-install` is run as a post-install task after you run `npm install`.

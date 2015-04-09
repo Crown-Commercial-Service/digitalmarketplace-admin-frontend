@@ -13,11 +13,17 @@
     "gulp-sass": "1.3.3",
     "gulp-shell": "0.2.9"
   },
+  "config": {
+    "environment": "development"
+  },
   "scripts": {
     "frontend-install": "./node_modules/bower/bin/bower install",
-    "frontend-build:development" : "./node_modules/gulp/bin/gulp.js build:development",
-    "frontend-build:production" : "./node_modules/gulp/bin/gulp.js build:production",
-    "frontend-build:watch" : "./node_modules/gulp/bin/gulp.js watch",
-    "postinstall": "npm run frontend-install"
+    "frontend-build:development": "./node_modules/gulp/bin/gulp.js build:development",
+    "frontend-build:production": "./node_modules/gulp/bin/gulp.js build:production",
+    "frontend-build:watch": "./node_modules/gulp/bin/gulp.js watch",
+    "init:development": "npm install",
+    "init:production": "npm config set digitalmartketplace-admin-frontend:environment production && npm install",
+    "init": "npm run init:development",
+    "postinstall": "npm run frontend-install && npm run frontend-build:$npm_package_config_environment"
   }
 }
