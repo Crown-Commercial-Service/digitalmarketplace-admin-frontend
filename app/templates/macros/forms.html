@@ -1,5 +1,5 @@
 {% macro question_wrapper_open(question) -%}
-  <div class="question" id="{{ question.id }}">
+  <div class="question">
     <label class="question-heading" for="{{ question.name }}">{{ question.question }}</label>
     {% if "hint" in question %}
       <p class="hint">
@@ -35,7 +35,13 @@
 {%- endmacro %}
 
 {% macro textbox_large(field, value='', service_data) -%}
-  <textarea type="text" class="text-box text-box-large" name="{{ field.id }}" id="{{ field.id }}-text-box">{{ value }}</textarea>
+  {% if field.maxLengthInWords %}
+    <div class="word-count">
+      <textarea class="text-box text-box-large" name="{{ field.id }}" id="{{ field.id }}-text-box" data-max-length-in-words="{{ field.maxLengthInWords }}">{{ value }}</textarea>
+    </div>
+  {% else %}
+    <textarea class="text-box text-box-large" name="{{ field.id }}" id="{{ field.id }}-text-box">{{ value }}</textarea>
+  {% endif %}
 {%- endmacro %}
 
 {% macro upload(question, value='', service_data) -%}
@@ -154,14 +160,14 @@
 
 
 {% macro list(field, value='', service_data) -%}
-  <div class="input-list" data-list-item-name="feature">
+  <div class="input-list" id="{{field.id}}" data-list-item-name="{{field.listItemName}}">
     {% for index in range(10) %}
       {{ list_item(
         field.id,
         index,
         index + 1,
         value,
-        "thing"
+        field.listItemName
       ) }}
     {% endfor %}
   </div>
@@ -172,6 +178,6 @@
     <label for='{{ name }}-item-{{ number }}' class='text-box-number-label'>
       <span class='visuallyhidden'>{{ list_item_name }} number </span>{{ number }}.
     </label>
-    <input type='text' name='{{ name }}' id='{{ name }}-item-{{ number }}' class='text-box' value="{{ values[index] }}" />
+    <input type='text' name='{{ name }}' id='{{ input_name }}-item-{{ number }}' class='text-box' value="{{ values[index] }}" />
   </div>
 {% endmacro %}

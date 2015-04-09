@@ -2,6 +2,7 @@ var gulp = require('gulp');
 var uglify = require('gulp-uglifyjs');
 var deleteFiles = require('del');
 var sass = require('gulp-sass');
+var include = require('gulp-include');
 
 var environment;
 var repoRoot = __dirname + '/';
@@ -77,7 +78,7 @@ gulp.task('sass', function () {
     .pipe(gulp.dest(cssDistributionFolder));
 
   stream.on('end', function () {
-    console.log('Compressed CSS saved as .css files in ' + cssDistributionFolder)
+    console.log('Compressed CSS saved as .css files in ' + cssDistributionFolder);
   });
 
   return stream;
@@ -87,6 +88,7 @@ gulp.task('js', function () {
   // produce full array of JS files from vendor + local scripts
   jsFiles = jsVendorFiles.concat(jsSourceFiles);
   var stream = gulp.src(jsFiles)
+    .pipe(include())
     .pipe(uglify(
       jsDistributionFile,
       uglifyOptions[environment]
@@ -126,7 +128,7 @@ gulp.task('watch', ['build:development'], function () {
   var cssWatcher = gulp.watch([ assetsFolder + '/**/*.scss' ], ['sass']);
   var notice = function (event) {
     console.log('File ' + event.path + ' was ' + event.type + ' running tasks...');
-  }
+  };
 
   cssWatcher.on('change', notice);
   jsWatcher.on('change', notice);
@@ -134,7 +136,7 @@ gulp.task('watch', ['build:development'], function () {
 
 gulp.task('copy_toolkit_assets:images', function () {
   return gulp.src(dmToolkitAssetsFolder + '/images/**/*', { base : dmToolkitAssetsFolder + '/images' })
-    .pipe(gulp.dest(staticFolder + '/images'))
+    .pipe(gulp.dest(staticFolder + '/images'));
 });
 
 gulp.task('build:development', ['clean'], function () {
