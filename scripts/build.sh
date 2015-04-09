@@ -1,4 +1,3 @@
 #!/bin/sh
 
-npm install
-npm run frontend-build:production
+npm run init:production
