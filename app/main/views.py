@@ -108,9 +108,7 @@ def update(service_id, section):
     for key in request.form:
         item_as_list = request.form.getlist(key)
         if len(item_as_list) > 1:
-            posted_data[key] = [
-                list_item for list_item in item_as_list if list_item.strip()
-            ]
+            posted_data[key] = item_as_list
 
     form = Validate(content, service, posted_data, s3_uploader)
     update = {}

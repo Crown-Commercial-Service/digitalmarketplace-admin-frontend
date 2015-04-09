@@ -483,6 +483,31 @@ class TestValidate(unittest.TestCase):
         )
         self.assertEquals(self.validate.errors, {'q1': 'failed'})
 
+    def test_list_with_empty_items(self):
+        self.set_question(
+            'q1', [
+                "something",
+                "",
+                "something",
+                "",
+                "something"
+            ],
+            {
+                'type': 'list',
+                'validations': [
+                    {
+                        'name': 'under_10_items',
+                        'message': 'failed'
+                    }
+                ]
+            }
+        )
+        errors = self.validate.errors
+        self.assertEquals(
+            self.validate.clean_data['q1'],
+            ["something", "something", "something"]
+        )
+
     def test_list_with_short_items(self):
         self.set_question(
             'q1', [
