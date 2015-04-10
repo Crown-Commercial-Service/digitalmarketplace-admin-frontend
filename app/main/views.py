@@ -135,7 +135,10 @@ def update(service_id, section):
             'admin app'
         )
         if not api_response.ok:
-            return "Error: " + str(api_response.content)
+            try:
+                return api_response.json()['error']
+            except TypeError:
+                return str(api_response.content)
 
     if form.errors:
         service.update(form.dirty_data)
