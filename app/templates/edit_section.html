@@ -10,7 +10,7 @@
 {% block content %}
   {{ breadcrumb([
     {
-      "link": "/service/" + service_data['id']|string,
+      "link": url_for(".view", service_id=service_data.id),
       "text": service_data['serviceName']
     }
   ]) }}
@@ -32,7 +32,7 @@
         </ul>
       </div>
     {% endif %}
-    <form action="/service/{{ service_data['id'] }}/edit/{{ section.id }}" method="post" enctype="multipart/form-data">
+    <form action="{{ url_for('.update', service_id=service_data.id, section=section.id) }}" method="post" enctype="multipart/form-data">
       {% for question in section.questions %}
         {% if question.id in errors %}
           {{ forms.validation_wrapper_open() }}
@@ -49,7 +49,7 @@
       {% endfor %}
       <button class="button-save" type="submit">Save and return to summary</button>
       <p>
-        <a href="/service/{{ service_data['id'] }}">Return without saving</a>
+        <a href="{{ url_for('.view', service_id=service_data.id) }}">Return without saving</a>
       </p>
     </form>
   </div>

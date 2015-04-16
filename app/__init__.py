@@ -1,4 +1,3 @@
-import os
 from flask import Flask
 from flask.ext.bootstrap import Bootstrap
 from config import config
@@ -11,17 +10,20 @@ bootstrap = Bootstrap()
 
 def create_app(config_name):
 
-    application = Flask(__name__)
+    application = Flask(__name__,
+                        static_folder='static/',
+                        static_url_path=config[config_name].STATIC_URL_PATH)
+
     application.config.from_object(config[config_name])
     config[config_name].init_app(application)
 
     bootstrap.init_app(application)
 
-    application.register_blueprint(main_blueprint)
-    main_blueprint.config = application.config.copy()
-
     if application.config['AUTHENTICATION']:
         application.permanent_session_lifetime = timedelta(minutes=60)
-        application.before_request(requires_auth)
+        main_blueprint.before_request(requires_auth)
+
+    application.register_blueprint(main_blueprint, url_prefix='/admin')
+    main_blueprint.config = application.config.copy()
 
     return application
