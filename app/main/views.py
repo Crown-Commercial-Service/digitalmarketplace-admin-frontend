@@ -113,7 +113,7 @@ def update(service_id, section):
     form = Validate(content, service, posted_data, s3_uploader)
     update = {}
 
-    form.errors
+    form.validate()
 
     for question_id in form.clean_data:
         if question_id not in form.errors:

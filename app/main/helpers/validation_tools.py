@@ -23,12 +23,9 @@ class Validate(object):
         self.uploader = uploader
         self.clean_data = None
         self.dirty_data = None
-        self._errors = None
+        self.errors = None
 
-    @property
-    def errors(self):
-        if self._errors is not None:
-            return self._errors
+    def validate(self):
         errors = {}
         self.clean_data = {}
         self.dirty_data = {}
@@ -37,8 +34,8 @@ class Validate(object):
             if question_errors:
                 errors[question_id] = question_errors
 
-        self._errors = errors
-        return errors
+        self.errors = errors
+        return self
 
     def question_errors(self, question_id):
         question = self.posted_data[question_id]

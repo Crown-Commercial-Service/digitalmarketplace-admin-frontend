@@ -65,7 +65,10 @@ class TestValidate(unittest.TestCase):
             self.service[question_id] = kwargs['value']
         self.content[question_id] = content
 
+        self.validate.validate()
+
     def test_validate_empty(self):
+        self.validate.validate()
         self.assertEquals(self.validate.errors, {})
 
     def test_validate_empty_question(self):
