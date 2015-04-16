@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, session
+from flask import render_template, request, redirect, session, url_for
 from . import main
 from .helpers.validation_tools import Validate
 from .helpers.content import ContentLoader
@@ -34,7 +34,7 @@ def login():
         main.config['PASSWORD_HASH']
     ):
         session['username'] = request.form['username']
-        return redirect('/')
+        return redirect(url_for('.index'))
 
     return render_template("login.html", **get_template_data({
         "error": "Could not log in",
@@ -45,12 +45,13 @@ def login():
 @main.route('/logout')
 def logout():
     session.pop('username', None)
-    return redirect('/login?logged_out')
+    return redirect(url_for('.login', logged_out=''))
 
 
 @main.route('/service')
 def find():
-    return redirect("/service/" + request.args.get("service_id"))
+    return redirect(
+        url_for(".view", service_id=request.args.get("service_id")))
 
 
 @main.route('/service/<service_id>')
@@ -147,7 +148,7 @@ def update(service_id, section):
             "errors": form.errors
         }))
     else:
-        return redirect("/service/" + service_id)
+        return redirect(url_for(".view", service_id=service_id))
 
 
 def get_template_data(merged_with={}):

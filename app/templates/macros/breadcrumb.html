@@ -3,7 +3,7 @@
     <nav>
       <ol>
         <li>
-          <a href="/" alt="Back to home">Admin home</a>
+          <a href="{{ url_for('.index') }}" alt="Back to home">Admin home</a>
         </li>
         {% for crumb in crumbs %}
           {% if crumb.link is defined %}

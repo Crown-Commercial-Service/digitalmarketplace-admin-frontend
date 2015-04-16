@@ -15,7 +15,7 @@
     </div>
   {% endif %}
   {{ page_heading("Administrator login") }}
-  <form action="/login" method="post" class="question">
+  <form action="{{ url_for('.login') }}" method="post" class="question">
     {% if error %}
       <div class="validation-masthead">
         <h2 class="validation-masthead-heading">

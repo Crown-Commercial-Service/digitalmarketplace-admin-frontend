@@ -8,7 +8,7 @@
 {% block content %}
 <div class="page-container">
   {{ page_heading("Find a service") }}
-  <form action="/service" method="get" class="question">
+  <form action="{{ url_for('.find') }}" method="get" class="question">
       <label class="question-heading" for="service_id">Service ID</label>
       <input type="text" name="service_id" id="service_id" class="text-box">
       <input type="submit" value="Find service" class="button-save">

@@ -1,6 +1,5 @@
-import os
 import base64
-from flask import redirect, request, session
+from flask import redirect, request, session, url_for
 from pbkdf2 import crypt
 
 
@@ -20,7 +19,7 @@ def requires_auth():
         request.endpoint != 'main.login' and
         request.endpoint != 'static'
     ):
-        return redirect("/login")
+        return redirect(url_for(".login"))
 
 
 def is_authenticated():
