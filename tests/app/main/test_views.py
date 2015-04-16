@@ -86,13 +86,17 @@ class TestServiceEdit(LoggedInApplicationTest):
             'id': 1,
             'supplierId': 2,
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
+            'serviceDefinitionDocumentURL': "http://assets/documents/1/2-service-definition.pdf",  # noqa
+            'termsAndConditionsDocumentURL': "http://assets/documents/1/2-terms-and-conditions.pdf",  # noqa
             'sfiaRateDocumentURL': None
         }
         response = self.client.post(
             '/service/1/edit/documents',
             data={
+                'serviceDefinitionDocumentURL': (StringIO(), ''),
                 'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
-                'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.pdf')
+                'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.pdf'),
+                'termsAndConditionsDocumentURL': (StringIO(b''), ''),
             }
         )
 
@@ -108,12 +112,14 @@ class TestServiceEdit(LoggedInApplicationTest):
         self.service_loader.get.return_value = {
             'id': 1,
             'supplierId': 2,
+            'serviceDefinitionDocumentURL': "http://assets/documents/1/2-service-definition.pdf",  # noqa
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
             'sfiaRateDocumentURL': None
         }
         response = self.client.post(
             '/service/1/edit/documents',
             data={
+                'serviceDefinitionDocumentURL': (StringIO(), ''),
                 'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
                 'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.txt'),
                 'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),

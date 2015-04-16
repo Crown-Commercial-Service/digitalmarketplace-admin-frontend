@@ -113,17 +113,11 @@ def update(service_id, section):
     form = Validate(content, service, posted_data, s3_uploader)
     update = {}
 
-    for question_id in posted_data:
-        if question_id not in form.errors:
-            if question_id in form.clean_data:
-                update[question_id] = form.clean_data[question_id]
-            else:
-                update[question_id] = posted_data[question_id]
+    form.validate()
 
-    if form.clean_data is not None:
-        for question_id in form.clean_data:
-            if question_id not in form.errors and question_id not in update:
-                update[question_id] = form.clean_data[question_id]
+    for question_id in form.clean_data:
+        if question_id not in form.errors:
+            update[question_id] = form.clean_data[question_id]
 
     if update:
         api_response = service_loader.post(
