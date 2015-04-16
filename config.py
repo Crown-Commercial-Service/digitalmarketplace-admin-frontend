@@ -10,9 +10,15 @@ class Config(object):
     DOCUMENTS_URL = 'https://assets.dev.digitalmarketplace.service.gov.uk'
     API_URL = os.getenv('DM_API_URL')
     API_AUTH_TOKEN = os.getenv('DM_ADMIN_FRONTEND_API_AUTH_TOKEN')
-    BASE_TEMPLATE_DATA = {}
     SECRET_KEY = os.getenv('DM_ADMIN_FRONTEND_COOKIE_SECRET')
     PASSWORD_HASH = os.getenv('DM_ADMIN_FRONTEND_PASSWORD_HASH')
+
+    STATIC_URL_PATH = '/admin/static'
+    ASSET_PATH = STATIC_URL_PATH + '/'
+    BASE_TEMPLATE_DATA = {
+        'asset_path': ASSET_PATH,
+        'header_class': 'with-proposition'
+    }
 
     @staticmethod
     def init_app(app):
@@ -32,29 +38,17 @@ class Test(Config):
     DOCUMENTS_URL = 'https://assets.test.digitalmarketplace.service.gov.uk'
     SECRET_KEY = "test_secret"
     PASSWORD_HASH = "JHA1azIkMjcxMCQwYmZiN2Y5YmJlZmI0YTg4YmNkZjQ1ODY0NWUzOGEwNCRoeDBwbUpHZVhSalREUFBGREFydmJQWnlFYnhWU1g1ag=="  # noqa
-    BASE_TEMPLATE_DATA = {
-        'asset_path': '/static/',
-        'header_class': 'with-proposition'
-    }
 
 
 class Development(Config):
     DEBUG = True
     AUTHENTICATION = True
-    BASE_TEMPLATE_DATA = {
-        'asset_path': '/static/',
-        'header_class': 'with-proposition'
-    }
 
 
 class Live(Config):
     DEBUG = False
     AUTHENTICATION = True
     DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
-    BASE_TEMPLATE_DATA = {
-        'asset_path': '/static/',
-        'header_class': 'with-proposition'
-    }
 
 
 config = {
