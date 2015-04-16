@@ -46,6 +46,8 @@ class Validate(object):
 
         if not self.test(question_id, question, "answer_required"):
             if "optional" in question_content:
+                if question_content.get('type') != 'upload':
+                    self.clean_data[question_id] = question
                 return
             # File has previously been uploaded
             if (
