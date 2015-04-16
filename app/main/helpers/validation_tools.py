@@ -4,7 +4,6 @@ import datetime
 import os.path
 import six
 import re
-import locale
 
 try:
     import urlparse
@@ -43,7 +42,7 @@ class Validate(object):
 
         if not self.test(question_id, question, "answer_required"):
             if "optional" in question_content:
-                if question_content.get('type') != 'upload':
+                if isinstance(question, six.string_types):
                     self.clean_data[question_id] = question
                 return
             # File has previously been uploaded
@@ -58,6 +57,9 @@ class Validate(object):
                 self.dirty_data[question_id] = question
                 return rule["message"]
 
+        if question_id not in self.clean_data:
+            self.clean_data[question_id] = question
+
     def test(self, question_id, question, rule):
         if not hasattr(self, rule):
             raise ValueError("Validation rule " + rule + " not found")
@@ -67,12 +69,11 @@ class Validate(object):
         content = self.content.get_question(question_id)
         if isinstance(question, list):
             question_as_string = "".join(question).strip()
-            return len(question_as_string)
+            return not empty(question_as_string)
         elif 'upload' == content.get('type'):
             return self.file_has_been_uploaded(question_id, question)
-        elif isinstance(question, six.string_types) and not empty(question):
-            self.clean_data[question_id] = question
-            return True
+        elif isinstance(question, six.string_types):
+            return not empty(question)
 
     def file_has_been_uploaded(self, question_id, question):
         not_empty = len(question.read(1)) > 0
