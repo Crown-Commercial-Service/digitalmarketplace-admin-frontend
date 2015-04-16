@@ -85,7 +85,7 @@
         <span class='visually-hidden'>in</span>
         <span class='pricing-unit'>£</span>
       </label>
-      <input type='text' class='text-box pricing-input-with-unit' name='priceString' id='priceMin' value='{{service_data["priceMin"]}}'/>
+      <input type='text' class='text-box pricing-input-with-unit' name='priceString' id='priceMin' value='{{ service_data.priceMin }}'/>
     </div>
     <div class='pricing-column'>
       <span class='pricing-preposition'>to</span>
@@ -99,7 +99,7 @@
       <p class='question-hint'>
         Optional
       </p>
-      <input type='text' class='text-box pricing-input-with-unit' name='priceString' id='priceMax' value='{{service_data["priceMax"]}}' />
+      <input type='text' class='text-box pricing-input-with-unit' name='priceString' id='priceMax' value='{{ service_data.priceMax or "" }}' />
     </div>
     <div class='pricing-column'>
       <span class='pricing-preposition'>per</span>
