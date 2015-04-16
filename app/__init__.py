@@ -1,4 +1,3 @@
-import os
 from flask import Flask
 from flask.ext.bootstrap import Bootstrap
 from config import config
@@ -11,7 +10,10 @@ bootstrap = Bootstrap()
 
 def create_app(config_name):
 
-    application = Flask(__name__)
+    application = Flask(__name__,
+                        static_folder='static/',
+                        static_url_path=config[config_name].STATIC_URL_PATH)
+
     application.config.from_object(config[config_name])
     config[config_name].init_app(application)
 
