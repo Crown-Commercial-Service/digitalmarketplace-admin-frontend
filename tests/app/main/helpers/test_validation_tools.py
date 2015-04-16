@@ -84,7 +84,49 @@ class TestValidate(unittest.TestCase):
         )
         self.assertEquals(self.validate.errors, {})
 
-    def test_validate_empty_answer_required(self):
+    def test_validate_text_without_validators(self):
+        self.set_question(
+            'q1', 'value',
+            {
+                'optional': True,
+                'validations': []
+            }
+        )
+
+        self.assertEquals(self.validate.errors, {})
+        self.assertEquals(self.validate.clean_data['q1'], 'value')
+
+    def test_validate_empty_upload_optional(self):
+        self.set_question(
+            'q1', mock_file('a.pdf', 0),
+            {
+                'type': 'upload',
+                'optional': True,
+                'validations': [{
+                    'name': 'answer_required', 'message': 'failed'
+                }]
+            }
+        )
+
+        self.assertEquals(self.validate.errors, {})
+        self.assertNotIn('q1', self.validate.clean_data)
+
+    def test_validate_empty_upload_optional_with_previous_value(self):
+        self.set_question(
+            'q2', mock_file('a.pdf', 0),
+            {
+                'type': 'upload',
+                'optional': True,
+                'validations': [{
+                    'name': 'answer_required', 'message': 'failed'
+                }]
+            },
+            value='b.pdf',
+        )
+        self.assertEquals(self.validate.errors, {})
+        self.assertNotIn('q1', self.validate.clean_data)
+
+    def test_validate_empty_upload_not_optional(self):
         self.set_question(
             'q1', mock_file('a.pdf', 0),
             {
@@ -95,8 +137,9 @@ class TestValidate(unittest.TestCase):
             }
         )
         self.assertEquals(self.validate.errors, {'q1': 'failed'})
+        self.assertNotIn('q1', self.validate.clean_data)
 
-    def test_validate_empty_answer_required_previous_value(self):
+    def test_validate_empty_upload_not_optional_with_previous_value(self):
         self.set_question(
             'q2', mock_file('a.pdf', 0),
             {
@@ -108,6 +151,60 @@ class TestValidate(unittest.TestCase):
             value='b.pdf',
         )
         self.assertEquals(self.validate.errors, {})
+        self.assertNotIn('q1', self.validate.clean_data)
+
+    def test_validate_empty_text_optional(self):
+        self.set_question(
+            'q1', '',
+            {
+                'optional': True,
+                'validations': [{
+                    'name': 'answer_required', 'message': 'failed'
+                }]
+            }
+        )
+
+        self.assertEquals(self.validate.errors, {})
+        self.assertEquals(self.validate.clean_data['q1'], '')
+
+    def test_validate_empty_text_optional_with_previous_value(self):
+        self.set_question(
+            'q2', '',
+            {
+                'optional': True,
+                'validations': [{
+                    'name': 'answer_required', 'message': 'failed'
+                }]
+            },
+            value='Previous value',
+        )
+        self.assertEquals(self.validate.errors, {})
+        self.assertEquals(self.validate.clean_data['q2'], '')
+
+    def test_validate_empty_text_not_optional(self):
+        self.set_question(
+            'q1', '',
+            {
+                'validations': [{
+                    'name': 'answer_required', 'message': 'failed'
+                }]
+            }
+        )
+        self.assertEquals(self.validate.errors, {'q1': 'failed'})
+        self.assertNotIn('q1', self.validate.clean_data)
+
+    def test_validate_empty_text_not_optional_with_previous_value(self):
+        self.set_question(
+            'q2', '',
+            {
+                'validations': [{
+                    'name': 'answer_required', 'message': 'failed'
+                }]
+            },
+            value='Previous value',
+        )
+        self.assertEquals(self.validate.errors, {'q2': 'failed'})
+        self.assertNotIn('q1', self.validate.clean_data)
 
     def test_incorrect_document_format(self):
         self.set_question(
