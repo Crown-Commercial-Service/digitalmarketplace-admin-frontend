@@ -1,7 +1,10 @@
+from datetime import timedelta
+
 from flask import Flask
 from flask.ext.bootstrap import Bootstrap
+from dmutils import logging
+
 from config import config
-from datetime import timedelta
 from .main import main as main_blueprint
 from .status import status as status_blueprint
 from .main.helpers.auth import requires_auth
@@ -19,6 +22,7 @@ def create_app(config_name):
     config[config_name].init_app(application)
 
     bootstrap.init_app(application)
+    logging.init_app(application)
 
     if application.config['AUTHENTICATION']:
         application.permanent_session_lifetime = timedelta(minutes=60)
