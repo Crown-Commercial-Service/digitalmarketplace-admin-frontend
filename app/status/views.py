@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, current_app, json
 from requests.exceptions import ConnectionError
 
 from . import status
@@ -23,10 +23,12 @@ def status():
 
             return jsonify(status="ok",
                            app_version=utils.get_version_label(),
-                           api_status=api_response.json()['status']
-                           )
+                           api_status=json.loads(
+                               api_response.get_data()
+                           )['status'])
 
     except ConnectionError:
         pass
 
-    return utils.return_500_if_problem_with_api()
+    current_app.logger.error("Cannot connect to API.")
+    return jsonify(status="error", message="Cannot connect to API"), 500
