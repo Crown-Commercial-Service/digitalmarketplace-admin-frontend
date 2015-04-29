@@ -23,12 +23,14 @@ def status():
 
             return jsonify(status="ok",
                            app_version=utils.get_version_label(),
-                           api_status=json.loads(
-                               api_response.get_data()
-                           )['status'])
+                           api_status=api_response.json()['status'])
 
     except ConnectionError:
         pass
 
     current_app.logger.error("Cannot connect to API.")
-    return jsonify(status="error", message="Cannot connect to API"), 500
+    return jsonify(
+        status="error",
+        app_version=utils.get_version_label(),
+        message="Cannot connect to API",
+    ), 500
