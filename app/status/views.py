@@ -1,4 +1,4 @@
-from flask import jsonify, current_app, json
+from flask import jsonify, current_app
 from requests.exceptions import ConnectionError
 
 from . import status
@@ -23,7 +23,7 @@ def status():
 
             return jsonify(status="ok",
                            app_version=utils.get_version_label(),
-                           api_status=api_response.json()['status'])
+                           api_status="ok")
 
     except ConnectionError:
         pass

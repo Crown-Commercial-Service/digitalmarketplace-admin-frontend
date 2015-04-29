@@ -18,14 +18,14 @@ class TestStatus(BaseApplicationTest):
         })
         ServiceLoader.return_value.status.return_value = response
 
-        response = self.client.get('/_status')
+        status_response = self.client.get('/_status')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEquals(200, status_response.status_code)
 
-        json_data = json.loads(response.get_data())
+        json_data = json.loads(status_response.get_data())
 
-        self.assertEquals("ok", json_data['status'])
-        self.assertEquals("ok", json_data['api_status'])
+        self.assertEquals("ok", "{}".format(json_data['status']))
+        self.assertEquals("ok", "{}".format(json_data['api_status']))
 
     @mock.patch("app.status.views.ServiceLoader")
     def test_status_error(self, ServiceLoader):
