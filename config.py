@@ -8,8 +8,8 @@ class Config(object):
     DEBUG = True
     S3_DOCUMENT_BUCKET = os.getenv('DM_S3_DOCUMENT_BUCKET')
     DOCUMENTS_URL = 'https://assets.dev.digitalmarketplace.service.gov.uk'
-    API_URL = os.getenv('DM_API_URL')
-    API_AUTH_TOKEN = os.getenv('DM_ADMIN_FRONTEND_API_AUTH_TOKEN')
+    DM_DATA_API_URL = os.getenv('DM_DATA_API_URL')
+    DM_DATA_API_AUTH_TOKEN = os.getenv('DM_DATA_API_AUTH_TOKEN')
     SECRET_KEY = os.getenv('DM_ADMIN_FRONTEND_COOKIE_SECRET')
     PASSWORD_HASH = os.getenv('DM_ADMIN_FRONTEND_PASSWORD_HASH')
 

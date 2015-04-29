@@ -1,8 +1,10 @@
 from flask import render_template, request, redirect, session, url_for
+from dmutils.apiclient import APIError
+
+from .. import data_api_client
 from . import main
 from .helpers.validation_tools import Validate
 from .helpers.content import ContentLoader
-from .helpers.service import ServiceLoader
 from .helpers.presenters import Presenters
 from .helpers.s3 import S3
 from .helpers.auth import check_auth, is_authenticated
@@ -51,16 +53,12 @@ def logout():
 @main.route('/service')
 def find():
     return redirect(
-        url_for(".view", service_id=request.args.get("service_id")))
+        url_for(".view", service_id=request.args.get_service("service_id")))
 
 
 @main.route('/service/<service_id>')
 def view(service_id):
-    service_loader = ServiceLoader(
-        main.config['API_URL'],
-        main.config['API_AUTH_TOKEN'],
-    )
-    service_data = service_loader.get(service_id)
+    service_data = data_api_client.get_service(service_id)
     presented_service_data = {}
     for key, value in service_data.items():
         presented_service_data[key] = presenters.present(
@@ -77,30 +75,20 @@ def view(service_id):
 
 @main.route('/service/<service_id>/edit/<section>')
 def edit(service_id, section):
-    service_loader = ServiceLoader(
-        main.config['API_URL'],
-        main.config['API_AUTH_TOKEN'],
-    )
-
     template_data = get_template_data({
         "section": content.get_section(section),
-        "service_data": service_loader.get(service_id)
+        "service_data": data_api_client.get_service(service_id),
     })
     return render_template("edit_section.html", **template_data)
 
 
 @main.route('/service/<service_id>/edit/<section>', methods=['POST'])
 def update(service_id, section):
-    service_loader = ServiceLoader(
-        main.config['API_URL'],
-        main.config['API_AUTH_TOKEN'],
-    )
-
     s3_uploader = S3(
         bucket_name=main.config['S3_DOCUMENT_BUCKET'],
     )
 
-    service = service_loader.get(service_id)
+    service_data = data_api_client.get_service(service_id)
     posted_data = dict(
         list(request.form.items()) + list(request.files.items())
     )
@@ -111,7 +99,7 @@ def update(service_id, section):
         if len(item_as_list) > 1:
             posted_data[key] = item_as_list
 
-    form = Validate(content, service, posted_data, s3_uploader)
+    form = Validate(content, service_data, posted_data, s3_uploader)
     update = {}
 
     form.validate()
@@ -121,23 +109,20 @@ def update(service_id, section):
             update[question_id] = form.clean_data[question_id]
 
     if update:
-        api_response = service_loader.post(
-            service['id'],
-            update,
-            session['username'],
-            'admin app'
-        )
-        if not api_response.ok:
-            try:
-                return api_response.json()['error']
-            except TypeError:
-                return str(api_response.content)
+        try:
+            data_api_client.update_service(
+                service_data['id'],
+                update,
+                session['username'],
+                "admin app")
+        except APIError as e:
+            return e.response_message
 
     if form.errors:
-        service.update(form.dirty_data)
+        service_data.update(form.dirty_data)
         return render_template("edit_section.html", **get_template_data({
             "section": content.get_section(section),
-            "service_data": service,
+            "service_data": service_data,
             "service_id": service_id,
             "errors": form.errors
         }))

@@ -11,13 +11,6 @@ class BaseApplicationTest(TestCase):
         self._s3_patch = mock.patch('app.main.views.S3')
         self.s3 = self._s3_patch.start()
 
-        self.service_loader = mock.Mock()
-        self._service_loader_patch = mock.patch(
-            'app.main.views.ServiceLoader',
-            return_value=self.service_loader
-        )
-        self._service_loader_patch.start()
-
         self._default_suffix_patch = mock.patch(
             'app.main.helpers.validation_tools.default_file_suffix',
             return_value='2015-01-01-1200'
@@ -26,7 +19,6 @@ class BaseApplicationTest(TestCase):
 
     def tearDown(self):
         self._s3_patch.stop()
-        self._service_loader_patch.stop()
         self._default_suffix_patch.stop()
 
 

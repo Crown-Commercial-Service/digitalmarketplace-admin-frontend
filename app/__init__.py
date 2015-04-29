@@ -3,13 +3,13 @@ from datetime import timedelta
 from flask import Flask
 from flask.ext.bootstrap import Bootstrap
 from dmutils import logging
+from dmutils import apiclient
 
 from config import config
-from .main import main as main_blueprint
-from .status import status as status_blueprint
-from .main.helpers.auth import requires_auth
+
 
 bootstrap = Bootstrap()
+data_api_client = apiclient.DataAPIClient()
 
 
 def create_app(config_name):
@@ -23,8 +23,13 @@ def create_app(config_name):
 
     bootstrap.init_app(application)
     logging.init_app(application)
+    data_api_client.init_app(application)
+
+    from .main import main as main_blueprint
+    from .status import status as status_blueprint
 
     if application.config['AUTHENTICATION']:
+        from .main.helpers.auth import requires_auth
         application.permanent_session_lifetime = timedelta(minutes=60)
         main_blueprint.before_request(requires_auth)
 
