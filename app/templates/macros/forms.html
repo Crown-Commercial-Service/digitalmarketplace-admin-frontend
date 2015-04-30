@@ -51,29 +51,31 @@
   <input type="file" name="{{ question.id }}" id="{{ question.id }}-file-upload" />
 {%- endmacro %}
 
-{% macro radio(field, value='', service_data) -%}
-  {{ selection_button("radio", field, value) }}
-{%- endmacro %}
+{% macro radios(question, value='', service_data) -%}
+  {% for option in question.options %}
+    {{ _selection_button("radio", question.id, option.label, service_data) }}
+  {% endfor %}
+{%- endmacro%}
 
-{% macro checkbox(field, value='', service_data) -%}
-  {{ selection_button("radio", field, value) }}
-{%- endmacro %}
-
-{% macro selection_button(type, field, value='', service_data) -%}
+{% macro _selection_button(type, name, label, service_data) -%}
   <label class="selection-button">
-    {{ field.label }}
-    <input type="{{ type }}" name="{{ field.name }}" id="{{ field.name }}" value="{{ value }}">
+    {{ label }}
+    <input
+      type="{{ type }}" name="{{ name }}"
+      value="{{ label }}"
+      {{ 'checked="checked"' if service_data[name] == label }}
+    />
   </label>
 {%- endmacro %}
 
-{% macro boolean(field, value='', service_data) -%}
-  <label class="selection-button selection-button-boolean">
+{% macro boolean(question, value='', service_data) -%}
+  <label class="selection-button selection-button-boolean" for="{{question.id}}-yes">
     Yes
-    <input type="radio" name="boolean-1" id="boolean-1" value="val-1">
+    <input type="radio" name="{{question.id}}" id="{{question.id}}-yes" value="True" {{ 'checked="checked"' if value }}>
   </label>
-  <label class="selection-button selection-button-boolean">
+  <label class="selection-button selection-button-boolean" for="{{question.id}}-no">
     No
-    <input type="radio" name="boolean-1" id="boolean-1" value="val-1">
+    <input type="radio" name="{{question.id}}" id="{{question.id}}-no" value="False" {{ 'checked="checked"' if not value }}>
   </label>
 {%- endmacro %}
 
