@@ -15,7 +15,7 @@ class TestStatus(BaseApplicationTest):
             'status': 'ok',
             'app_version': None,
             'api_status': 'ok'
-        })
+        }).encode('utf-8')
         ServiceLoader.return_value.status.return_value = response
 
         status_response = self.client.get('/_status')
@@ -25,7 +25,7 @@ class TestStatus(BaseApplicationTest):
         json_data = json.loads(status_response.get_data())
 
         self.assertEquals("ok", "{}".format(json_data['status']))
-        self.assertEquals("ok", "{}".format(json_data['api_status']))
+        self.assertEquals("ok", "{}".format(json_data['api_status']['status']))
 
     @mock.patch("app.status.views.ServiceLoader")
     def test_status_error(self, ServiceLoader):
@@ -36,7 +36,7 @@ class TestStatus(BaseApplicationTest):
             'status': 'error',
             'app_version': None,
             'message': 'Cannot connect to API'
-        })
+        }).encode('utf-8')
 
         # set up the service_loader to return a 500 status-code response
         ServiceLoader.return_value.status.return_value = response

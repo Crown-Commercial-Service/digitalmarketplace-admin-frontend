@@ -1,5 +1,4 @@
 from flask import jsonify, current_app
-from requests.exceptions import ConnectionError
 
 from . import status
 from . import utils
@@ -16,21 +15,32 @@ def status():
         main.config['API_AUTH_TOKEN']
     )
 
-    try:
-        api_response = service_loader.status()
+    api_response = utils.return_response_from_api_status_call(
+        service_loader.status
+    )
 
-        if api_response.status_code is 200:
+    apis_wot_got_errors = []
 
-            return jsonify(status="ok",
-                           app_version=utils.get_version_label(),
-                           api_status="ok")
+    if api_response is None or api_response.status_code is not 200:
+        apis_wot_got_errors.append("(Data) API")
 
-    except ConnectionError:
-        pass
+    # if no errors found, return everything
+    if not apis_wot_got_errors:
+        return jsonify(
+            status="ok",
+            version=utils.get_version_label(),
+            api_status=api_response.json(),
+        )
 
-    current_app.logger.error("Cannot connect to API.")
+    message = "Error connecting to the " \
+              + (" and the ".join(apis_wot_got_errors)) \
+              + "."
+
+    current_app.logger.error(message)
+
     return jsonify(
         status="error",
-        app_version=utils.get_version_label(),
-        message="Cannot connect to API",
+        version=utils.get_version_label(),
+        api_status=utils.return_json_or_none(api_response),
+        message=message,
     ), 500
