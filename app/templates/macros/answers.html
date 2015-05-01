@@ -29,8 +29,13 @@
 {%- endmacro %}
 
 
-{% macro boolean(value='') -%}
+{% macro radios(value='') -%}
   {{ value }}
+{%- endmacro %}
+
+
+{% macro boolean(value='') -%}
+  {{ 'Yes' if value else 'No' }}
 {%- endmacro %}
 
 

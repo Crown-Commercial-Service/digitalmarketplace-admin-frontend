@@ -87,6 +87,27 @@ class TestValidate(unittest.TestCase):
         )
         self.assertEquals(self.validate.errors, {})
 
+    def test_validate_required_boolean_gets_type(self):
+        self.set_question(
+            'q1', 'False',
+            {
+                'type': 'boolean',
+                'validations': [{
+                    'name': 'answer_required', 'message': ''
+                }]
+            }
+        )
+        self.set_question(
+            'q2', 'True',
+            {
+                'type': 'boolean',
+                'validations': [{
+                    'name': 'answer_required', 'message': ''
+                }]
+            }
+        )
+        self.assertEquals(self.validate.clean_data, {'q1': False, 'q2': True})
+
     def test_validate_text_without_validators(self):
         self.set_question(
             'q1', 'value',

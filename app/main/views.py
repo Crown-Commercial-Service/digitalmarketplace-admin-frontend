@@ -53,7 +53,7 @@ def logout():
 @main.route('/service')
 def find():
     return redirect(
-        url_for(".view", service_id=request.args.get_service("service_id")))
+        url_for(".view", service_id=request.args.get("service_id")))
 
 
 @main.route('/service/<service_id>')

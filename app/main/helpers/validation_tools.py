@@ -73,6 +73,10 @@ class Validate(object):
         elif 'upload' == content.get('type'):
             return self.file_has_been_uploaded(question_id, question)
         elif isinstance(question, six.string_types):
+            if question == "True":
+                self.clean_data[question_id] = True
+            if question == "False":
+                self.clean_data[question_id] = False
             return not empty(question)
 
     def file_has_been_uploaded(self, question_id, question):

@@ -21,6 +21,12 @@
   editable: true
   questions:
     - priceString
+    - vatIncluded
+    - educationPricing
+    - terminationCost
+    - trialOption
+    - freeOption
+    - minimumContractPeriod
 -
   name: Documents
   editable: true
