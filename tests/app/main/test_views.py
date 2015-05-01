@@ -125,6 +125,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {
             'id': 1,
             'supplierId': 2,
+            'lot': 'SCS',
             'serviceDefinitionDocumentURL': "http://assets/documents/1/2-service-definition.pdf",  # noqa
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
             'sfiaRateDocumentURL': None
