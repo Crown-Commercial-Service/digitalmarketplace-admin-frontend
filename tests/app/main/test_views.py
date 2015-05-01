@@ -158,8 +158,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         }
         error = mock.Mock()
         error.response.content = "API ERROR"
-        data_api_client.update_service.side_effect = APIError(
-            "Fail!", error)
+        data_api_client.update_service.side_effect = APIError(error)
 
         response = self.client.post(
             '/admin/service/1/edit/documents',
