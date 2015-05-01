@@ -5,6 +5,9 @@ except ImportError:
     from urllib.parse import urlsplit
     from io import BytesIO as StringIO
 
+import mock
+from dmutils.apiclient import APIError
+
 from ..helpers import BaseApplicationTest
 from ..helpers import LoggedInApplicationTest
 
@@ -52,25 +55,28 @@ class TestApplication(LoggedInApplicationTest):
 
 
 class TestServiceView(LoggedInApplicationTest):
-    def test_service_response(self):
-        self.service_loader.get.return_value = {}
+    @mock.patch('app.main.views.data_api_client')
+    def test_service_response(self, data_api_client):
+        data_api_client.get_service.return_value = {}
         response = self.client.get('/admin/service/1')
 
-        self.service_loader.get.assert_called_with('1')
+        data_api_client.get_service.assert_called_with('1')
 
         self.assertEquals(200, response.status_code)
 
 
 class TestServiceEdit(LoggedInApplicationTest):
-    def test_service_edit_documents_get_response(self):
+    @mock.patch('app.main.views.data_api_client')
+    def test_service_edit_documents_get_response(self, data_api_client):
         response = self.client.get('/admin/service/1/edit/documents')
 
-        self.service_loader.get.assert_called_with('1')
+        data_api_client.get_service.assert_called_with('1')
 
         self.assertEquals(200, response.status_code)
 
-    def test_service_edit_documents_empty_post(self):
-        self.service_loader.get.return_value = {
+    @mock.patch('app.main.views.data_api_client')
+    def test_service_edit_documents_empty_post(self, data_api_client):
+        data_api_client.get_service.return_value = {
             'id': 1,
             'supplierId': 2,
         }
@@ -79,14 +85,15 @@ class TestServiceEdit(LoggedInApplicationTest):
             data={}
         )
 
-        self.service_loader.get.assert_called_with('1')
-        self.assertFalse(self.service_loader.post.called)
+        data_api_client.get_service.assert_called_with('1')
+        self.assertFalse(data_api_client.update_service.called)
 
         self.assertEquals(302, response.status_code)
         self.assertEquals("/admin/service/1", urlsplit(response.location).path)
 
-    def test_service_edit_documents_post(self):
-        self.service_loader.get.return_value = {
+    @mock.patch('app.main.views.data_api_client')
+    def test_service_edit_documents_post(self, data_api_client):
+        data_api_client.get_service.return_value = {
             'id': 1,
             'supplierId': 2,
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
@@ -104,16 +111,18 @@ class TestServiceEdit(LoggedInApplicationTest):
             }
         )
 
-        self.service_loader.get.assert_called_with('1')
-        self.service_loader.post.assert_called_with(1, {
+        data_api_client.get_service.assert_called_with('1')
+        data_api_client.update_service.assert_called_with(1, {
             'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
             'sfiaRateDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-sfia-rate-card-2015-01-01-1200.pdf',  # noqa
         }, 'admin', 'admin app')
 
         self.assertEquals(302, response.status_code)
 
-    def test_service_edit_documents_post_with_validation_errors(self):
-        self.service_loader.get.return_value = {
+    @mock.patch("app.main.views.data_api_client")
+    def test_service_edit_documents_post_with_validation_errors(
+            self, data_api_client):
+        data_api_client.get_service.return_value = {
             'id': 1,
             'supplierId': 2,
             'serviceDefinitionDocumentURL': "http://assets/documents/1/2-service-definition.pdf",  # noqa
@@ -130,8 +139,8 @@ class TestServiceEdit(LoggedInApplicationTest):
             }
         )
 
-        self.service_loader.get.assert_called_with('1')
-        self.service_loader.post.assert_called_with(1, {
+        data_api_client.get_service.assert_called_with('1')
+        data_api_client.update_service.assert_called_with(1, {
             'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
         }, 'admin', 'admin app')
 
@@ -139,15 +148,18 @@ class TestServiceEdit(LoggedInApplicationTest):
         self.assertIn(b'This question requires an answer', response.data)
         self.assertEquals(200, response.status_code)
 
-    def test_service_edit_when_API_returns_error(self):
-        self.service_loader.get.return_value = {
+    @mock.patch('app.main.views.data_api_client')
+    def test_service_edit_when_API_returns_error(self, data_api_client):
+        data_api_client.get_service.return_value = {
             'id': 1,
             'supplierId': 2,
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
             'sfiaRateDocumentURL': None
         }
-        self.service_loader.post.return_value.ok = False
-        self.service_loader.post.return_value.content = 'API ERROR'
+        error = mock.Mock()
+        error.response.content = "API ERROR"
+        data_api_client.update_service.side_effect = APIError(error)
+
         response = self.client.post(
             '/admin/service/1/edit/documents',
             data={
