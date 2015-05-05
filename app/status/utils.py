@@ -1,5 +1,5 @@
 import os
-from requests.exceptions import ConnectionError
+from dmutils.apiclient import ConnectionError
 
 
 def get_version_label():
