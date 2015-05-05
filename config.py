@@ -22,7 +22,7 @@ class Config(object):
 
     # Logging
     DM_LOG_LEVEL = 'DEBUG'
-    DM_APP_NAME = 'buyer-frontend'
+    DM_APP_NAME = 'admin-frontend'
     DM_LOG_PATH = '/var/log/digitalmarketplace/application.log'
     DM_DOWNSTREAM_REQUEST_ID_HEADER = 'X-Amz-Cf-Id'
 
