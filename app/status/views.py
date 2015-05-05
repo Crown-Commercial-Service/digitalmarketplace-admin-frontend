@@ -1,22 +1,15 @@
 from flask import jsonify, current_app
 
+from .. import data_api_client
 from . import status
 from . import utils
-from ..main.helpers.service import ServiceLoader
-from ..main import main
 
 
 @status.route('/_status')
 def status():
 
-    # ServiceLoader is the only thing that actually connects to the API
-    service_loader = ServiceLoader(
-        main.config['API_URL'],
-        main.config['API_AUTH_TOKEN']
-    )
-
     api_response = utils.return_response_from_api_status_call(
-        service_loader.status
+        data_api_client.get_status
     )
 
     apis_with_errors = []
