@@ -57,9 +57,9 @@ class Live(Config):
     DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
 
 
-config = {
+configs = {
     'development': Development,
-    'preview': Development,
+    'preview': Live,
     'staging': Live,
     'production': Live,
     'test': Test,

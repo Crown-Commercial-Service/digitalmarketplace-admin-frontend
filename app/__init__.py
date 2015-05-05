@@ -2,10 +2,9 @@ from datetime import timedelta
 
 from flask import Flask
 from flask.ext.bootstrap import Bootstrap
-from dmutils import logging
-from dmutils import apiclient
+from dmutils import apiclient, config, logging
 
-from config import config
+from config import configs
 
 
 bootstrap = Bootstrap()
@@ -16,10 +15,11 @@ def create_app(config_name):
 
     application = Flask(__name__,
                         static_folder='static/',
-                        static_url_path=config[config_name].STATIC_URL_PATH)
+                        static_url_path=configs[config_name].STATIC_URL_PATH)
 
-    application.config.from_object(config[config_name])
-    config[config_name].init_app(application)
+    application.config.from_object(configs[config_name])
+    configs[config_name].init_app(application)
+    config.init_app(application)
 
     bootstrap.init_app(application)
     logging.init_app(application)
