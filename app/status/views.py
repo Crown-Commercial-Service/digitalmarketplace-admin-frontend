@@ -25,9 +25,9 @@ def status():
             api_status=api_response.json(),
         )
 
-    message = "Error connecting to the " \
-              + (" and the ".join(apis_with_errors)) \
-              + "."
+    message = "Error connecting to the {}.".format(
+        " and the ".join(apis_with_errors)
+    )
 
     current_app.logger.error(message)
 
