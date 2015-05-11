@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, session, url_for
+from flask import render_template, request, redirect, session, url_for, abort
 from dmutils.apiclient import APIError
 
 from .. import data_api_client
@@ -58,7 +58,11 @@ def find():
 
 @main.route('/service/<service_id>')
 def view(service_id):
-    service_data = data_api_client.get_service(service_id)
+    try:
+        service_data = data_api_client.get_service(service_id)
+    except APIError as e:
+        abort(e.response.status_code)
+
     presented_service_data = {}
     for key, value in service_data.items():
         presented_service_data[key] = presenters.present(
