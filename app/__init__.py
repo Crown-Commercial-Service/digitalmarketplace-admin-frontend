@@ -33,7 +33,7 @@ def create_app(config_name):
         application.permanent_session_lifetime = timedelta(minutes=60)
         main_blueprint.before_request(requires_auth)
 
-    application.register_blueprint(status_blueprint)
+    application.register_blueprint(status_blueprint, url_prefix='/admin')
     application.register_blueprint(main_blueprint, url_prefix='/admin')
     main_blueprint.config = application.config.copy()
 
