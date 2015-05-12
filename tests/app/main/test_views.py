@@ -161,6 +161,32 @@ class TestServiceEdit(LoggedInApplicationTest):
         self.assertEquals(200, response.status_code)
 
     @mock.patch('app.main.views.data_api_client')
+    def test_service_edit_with_one_service_feature(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'id': 1,
+            'supplierId': 2,
+            'lot': 'SCS',
+            'serviceFeatures': [
+                "foo",
+            ],
+            'serviceBenefits': [
+                "foo",
+            ],
+        }}
+        response = self.client.post(
+            '/admin/service/1/edit/features_and_benefits',
+            data={
+                'serviceFeatures': 'foo',
+                'serviceBenefits': 'foo',
+            }
+        )
+        data_api_client.update_service.assert_called_with(1, {
+            'serviceFeatures': ['foo'],
+            'serviceBenefits': ['foo'],
+        }, 'admin', 'admin app')
+        self.assertEquals(response.status_code, 302)
+
+    @mock.patch('app.main.views.data_api_client')
     def test_service_edit_when_API_returns_error(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
