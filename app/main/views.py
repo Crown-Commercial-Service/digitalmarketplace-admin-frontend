@@ -100,7 +100,8 @@ def update(service_id, section):
     # Turn responses which have multiple parts into lists
     for key in request.form:
         item_as_list = request.form.getlist(key)
-        if content.get_question(key)['type'] == 'list':
+        list_types = ['list', 'checkboxes', 'pricing']
+        if content.get_question(key)['type'] in list_types:
             posted_data[key] = item_as_list
 
     form = Validate(content, service_data, posted_data, s3_uploader)
