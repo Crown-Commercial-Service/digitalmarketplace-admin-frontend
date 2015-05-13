@@ -65,6 +65,17 @@ class TestServiceView(LoggedInApplicationTest):
         self.assertEquals(200, response.status_code)
 
     @mock.patch('app.main.views.data_api_client')
+    def test_service_view_with_no_features_or_benefits(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'lot': 'IaaS',
+        }}
+        response = self.client.get('/admin/service/1')
+
+        data_api_client.get_service.assert_called_with('1')
+
+        self.assertEquals(200, response.status_code)
+
+    @mock.patch('app.main.views.data_api_client')
     def test_responds_with_404_for_api_client_404(self, data_api_client):
         error = mock.Mock()
         error.response.status_code = 404
@@ -185,6 +196,18 @@ class TestServiceEdit(LoggedInApplicationTest):
             'serviceBenefits': ['foo'],
         }, 'admin', 'admin app')
         self.assertEquals(response.status_code, 302)
+
+    @mock.patch('app.main.views.data_api_client')
+    def test_service_edit_with_no_features_or_benefits(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'lot': 'IaaS',
+        }}
+        response = self.client.get(
+            '/admin/service/1/edit/features_and_benefits')
+
+        data_api_client.get_service.assert_called_with('1')
+
+        self.assertEquals(200, response.status_code)
 
     @mock.patch('app.main.views.data_api_client')
     def test_service_edit_when_API_returns_error(self, data_api_client):
