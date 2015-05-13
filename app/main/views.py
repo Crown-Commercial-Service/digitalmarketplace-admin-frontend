@@ -59,7 +59,7 @@ def find():
 @main.route('/service/<service_id>')
 def view(service_id):
     try:
-        service_data = data_api_client.get_service(service_id)
+        service_data = data_api_client.get_service(service_id)['services']
     except APIError as e:
         abort(e.response.status_code)
 
@@ -81,7 +81,7 @@ def view(service_id):
 def edit(service_id, section):
     template_data = get_template_data({
         "section": content.get_section(section),
-        "service_data": data_api_client.get_service(service_id),
+        "service_data": data_api_client.get_service(service_id)['services'],
     })
     return render_template("edit_section.html", **template_data)
 
@@ -92,7 +92,7 @@ def update(service_id, section):
         bucket_name=main.config['S3_DOCUMENT_BUCKET'],
     )
 
-    service_data = data_api_client.get_service(service_id)
+    service_data = data_api_client.get_service(service_id)['services']
     posted_data = dict(
         list(request.form.items()) + list(request.files.items())
     )
@@ -100,7 +100,8 @@ def update(service_id, section):
     # Turn responses which have multiple parts into lists
     for key in request.form:
         item_as_list = request.form.getlist(key)
-        if len(item_as_list) > 1:
+        list_types = ['list', 'checkboxes', 'pricing']
+        if content.get_question(key)['type'] in list_types:
             posted_data[key] = item_as_list
 
     form = Validate(content, service_data, posted_data, s3_uploader)

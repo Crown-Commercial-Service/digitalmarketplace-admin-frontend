@@ -57,7 +57,7 @@ class TestApplication(LoggedInApplicationTest):
 class TestServiceView(LoggedInApplicationTest):
     @mock.patch('app.main.views.data_api_client')
     def test_service_response(self, data_api_client):
-        data_api_client.get_service.return_value = {}
+        data_api_client.get_service.return_value = {'services': {}}
         response = self.client.get('/admin/service/1')
 
         data_api_client.get_service.assert_called_with('1')
@@ -78,6 +78,7 @@ class TestServiceView(LoggedInApplicationTest):
 class TestServiceEdit(LoggedInApplicationTest):
     @mock.patch('app.main.views.data_api_client')
     def test_service_edit_documents_get_response(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {}}
         response = self.client.get('/admin/service/1/edit/documents')
 
         data_api_client.get_service.assert_called_with('1')
@@ -86,10 +87,10 @@ class TestServiceEdit(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.data_api_client')
     def test_service_edit_documents_empty_post(self, data_api_client):
-        data_api_client.get_service.return_value = {
+        data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,
-        }
+        }}
         response = self.client.post(
             '/admin/service/1/edit/documents',
             data={}
@@ -103,14 +104,14 @@ class TestServiceEdit(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.data_api_client')
     def test_service_edit_documents_post(self, data_api_client):
-        data_api_client.get_service.return_value = {
+        data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
             'serviceDefinitionDocumentURL': "http://assets/documents/1/2-service-definition.pdf",  # noqa
             'termsAndConditionsDocumentURL': "http://assets/documents/1/2-terms-and-conditions.pdf",  # noqa
             'sfiaRateDocumentURL': None
-        }
+        }}
         response = self.client.post(
             '/admin/service/1/edit/documents',
             data={
@@ -132,14 +133,14 @@ class TestServiceEdit(LoggedInApplicationTest):
     @mock.patch("app.main.views.data_api_client")
     def test_service_edit_documents_post_with_validation_errors(
             self, data_api_client):
-        data_api_client.get_service.return_value = {
+        data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,
             'lot': 'SCS',
             'serviceDefinitionDocumentURL': "http://assets/documents/1/2-service-definition.pdf",  # noqa
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
             'sfiaRateDocumentURL': None
-        }
+        }}
         response = self.client.post(
             '/admin/service/1/edit/documents',
             data={
@@ -160,13 +161,39 @@ class TestServiceEdit(LoggedInApplicationTest):
         self.assertEquals(200, response.status_code)
 
     @mock.patch('app.main.views.data_api_client')
+    def test_service_edit_with_one_service_feature(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'id': 1,
+            'supplierId': 2,
+            'lot': 'SCS',
+            'serviceFeatures': [
+                "foo",
+            ],
+            'serviceBenefits': [
+                "foo",
+            ],
+        }}
+        response = self.client.post(
+            '/admin/service/1/edit/features_and_benefits',
+            data={
+                'serviceFeatures': 'foo',
+                'serviceBenefits': 'foo',
+            }
+        )
+        data_api_client.update_service.assert_called_with(1, {
+            'serviceFeatures': ['foo'],
+            'serviceBenefits': ['foo'],
+        }, 'admin', 'admin app')
+        self.assertEquals(response.status_code, 302)
+
+    @mock.patch('app.main.views.data_api_client')
     def test_service_edit_when_API_returns_error(self, data_api_client):
-        data_api_client.get_service.return_value = {
+        data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
             'sfiaRateDocumentURL': None
-        }
+        }}
         error = mock.Mock()
         error.response.content = "API ERROR"
         data_api_client.update_service.side_effect = APIError(error)
