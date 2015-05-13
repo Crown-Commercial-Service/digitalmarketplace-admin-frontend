@@ -58,7 +58,7 @@
         </li>
       {% endfor %}
     </ul>
-  {% else %}
+  {% elif value|length == 1 %}
     {{ value.0 }}
   {% endif %}
 {%- endmacro %}

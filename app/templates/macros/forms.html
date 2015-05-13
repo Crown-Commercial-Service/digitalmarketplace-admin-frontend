@@ -180,6 +180,6 @@
     <label for='{{ name }}-item-{{ number }}' class='text-box-number-label'>
       <span class='visuallyhidden'>{{ list_item_name }} number </span>{{ number }}.
     </label>
-    <input type='text' name='{{ name }}' id='{{ input_name }}-item-{{ number }}' class='text-box' value="{{ values[index] }}" />
+    <input type='text' name='{{ name }}' id='{{ input_name }}-item-{{ number }}' class='text-box' value="{% if index in values %}{{ values[index] }}{% endif %}" />
   </div>
 {% endmacro %}
