@@ -82,6 +82,37 @@ def view(service_id):
     return render_template("view_service.html", **template_data)
 
 
+@main.route('/services/status/<string:service_id>', methods=['POST'])
+def update_service_status(service_id):
+
+    frontend_status = request.form['service_status']
+
+    translate_frontend_to_api = {
+        'removed': 'disabled',
+        'public': 'published',
+        'private': 'enabled'
+    }
+
+    if frontend_status in translate_frontend_to_api.keys():
+        backend_status = translate_frontend_to_api[frontend_status]
+    else:
+        flash({'bad_status': frontend_status}, 'error')
+        return redirect(url_for('.view', service_id=service_id))
+
+    try:
+        data_api_client.update_service_status(
+            service_id, backend_status,
+            "Digital Marketplace admin user", "Status changed to '{0}'".format(
+                backend_status))
+
+    except APIError as e:
+        flash({'api_error': e.message}, 'error')
+        return redirect(url_for('.view', service_id=service_id))
+
+    flash({'status_updated': frontend_status})
+    return redirect(url_for('.view', service_id=service_id))
+
+
 @main.route('/services/<service_id>/edit/<section>')
 def edit(service_id, section):
     template_data = get_template_data({
