@@ -18,9 +18,10 @@ class Presenters(object):
             return value
 
     def _service_id(self, value):
-        return re.findall(
-            "....", str(value)
-        )
+        if re.findall("[a-zA-Z]", value):
+            return [value]
+        else:
+            return re.findall("....", str(value))
 
     def _upload(self, value):
         return {
