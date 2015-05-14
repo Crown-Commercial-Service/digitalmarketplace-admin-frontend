@@ -50,13 +50,13 @@ def logout():
     return redirect(url_for('.login', logged_out=''))
 
 
-@main.route('/service')
+@main.route('/services')
 def find():
     return redirect(
         url_for(".view", service_id=request.args.get("service_id")))
 
 
-@main.route('/service/<service_id>')
+@main.route('/services/<service_id>')
 def view(service_id):
     try:
         service_data = data_api_client.get_service(service_id)['services']
@@ -77,7 +77,7 @@ def view(service_id):
     return render_template("view_service.html", **template_data)
 
 
-@main.route('/service/<service_id>/edit/<section>')
+@main.route('/services/<service_id>/edit/<section>')
 def edit(service_id, section):
     template_data = get_template_data({
         "section": content.get_section(section),
@@ -86,7 +86,7 @@ def edit(service_id, section):
     return render_template("edit_section.html", **template_data)
 
 
-@main.route('/service/<service_id>/edit/<section>', methods=['POST'])
+@main.route('/services/<service_id>/edit/<section>', methods=['POST'])
 def update(service_id, section):
     s3_uploader = S3(
         bucket_name=main.config['S3_DOCUMENT_BUCKET'],
