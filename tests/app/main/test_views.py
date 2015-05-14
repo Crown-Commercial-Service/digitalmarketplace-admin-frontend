@@ -85,7 +85,7 @@ class TestServiceView(LoggedInApplicationTest):
         self.assertEquals(302, response1.status_code)
         self.assertEquals(response1.location, 'http://localhost/admin/')
         response2 = self.client.get(response1.location)
-        self.assertIn("Error trying to retrieve service with ID: 1",
+        self.assertIn(b'Error trying to retrieve service with ID: 1',
                       response2.data)
 
 
@@ -246,9 +246,9 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'status': 'disabled'
         }}
         response = self.client.get('/admin/services/1')
-        self.assertIn('<input type="radio" name="service_status" id="service_status_disabled" value="removed" checked="checked" />', response.data)  # noqa
-        self.assertIn('<input type="radio" name="service_status" id="service_status_private" value="private"  />', response.data)  # noqa
-        self.assertNotIn('<input type="radio" name="service_status" id="service_status_published" value="public"  />', response.data)  # noqa
+        self.assertIn(b'<input type="radio" name="service_status" id="service_status_disabled" value="removed" checked="checked" />', response.data)  # noqa
+        self.assertIn(b'<input type="radio" name="service_status" id="service_status_private" value="private"  />', response.data)  # noqa
+        self.assertNotIn(b'<input type="radio" name="service_status" id="service_status_published" value="public"  />', response.data)  # noqa
 
     @mock.patch('app.main.views.data_api_client')
     def test_can_make_private_service_public_or_removed(self, data_api_client):
@@ -258,9 +258,9 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'status': 'enabled'
         }}
         response = self.client.get('/admin/services/1')
-        self.assertIn('<input type="radio" name="service_status" id="service_status_disabled" value="removed"  />', response.data)  # noqa
-        self.assertIn('<input type="radio" name="service_status" id="service_status_private" value="private" checked="checked" />', response.data)  # noqa
-        self.assertIn('<input type="radio" name="service_status" id="service_status_published" value="public"  />', response.data)  # noqa
+        self.assertIn(b'<input type="radio" name="service_status" id="service_status_disabled" value="removed"  />', response.data)  # noqa
+        self.assertIn(b'<input type="radio" name="service_status" id="service_status_private" value="private" checked="checked" />', response.data)  # noqa
+        self.assertIn(b'<input type="radio" name="service_status" id="service_status_published" value="public"  />', response.data)  # noqa
 
     @mock.patch('app.main.views.data_api_client')
     def test_can_make_public_service_private_or_removed(self, data_api_client):
@@ -270,9 +270,9 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'status': 'published'
         }}
         response = self.client.get('/admin/services/1')
-        self.assertIn('<input type="radio" name="service_status" id="service_status_disabled" value="removed"  />', response.data)  # noqa
-        self.assertIn('<input type="radio" name="service_status" id="service_status_private" value="private"  />', response.data)  # noqa
-        self.assertIn('<input type="radio" name="service_status" id="service_status_published" value="public" checked="checked" />', response.data)  # noqa
+        self.assertIn(b'<input type="radio" name="service_status" id="service_status_disabled" value="removed"  />', response.data)  # noqa
+        self.assertIn(b'<input type="radio" name="service_status" id="service_status_private" value="private"  />', response.data)  # noqa
+        self.assertIn(b'<input type="radio" name="service_status" id="service_status_published" value="public" checked="checked" />', response.data)  # noqa
 
     @mock.patch('app.main.views.data_api_client')
     def test_status_update_to_removed(self, data_api_client):
@@ -286,7 +286,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertEquals(response1.location,
                           'http://localhost/admin/services/1')
         response2 = self.client.get(response1.location)
-        self.assertIn("Service status has been updated to: Removed",
+        self.assertIn(b'Service status has been updated to: Removed',
                       response2.data)
 
     @mock.patch('app.main.views.data_api_client')
@@ -301,7 +301,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertEquals(response1.location,
                           'http://localhost/admin/services/1')
         response2 = self.client.get(response1.location)
-        self.assertIn("Service status has been updated to: Private",
+        self.assertIn(b'Service status has been updated to: Private',
                       response2.data)
 
     @mock.patch('app.main.views.data_api_client')
@@ -316,7 +316,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertEquals(response1.location,
                           'http://localhost/admin/services/1')
         response2 = self.client.get(response1.location)
-        self.assertIn("Service status has been updated to: Public",
+        self.assertIn(b'Service status has been updated to: Public',
                       response2.data)
 
     @mock.patch('app.main.views.data_api_client')
@@ -327,5 +327,5 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertEquals(response1.location,
                           'http://localhost/admin/services/1')
         response2 = self.client.get(response1.location)
-        self.assertIn("Not a valid status: 'suspended'",
+        self.assertIn(b"Not a valid status: 'suspended'",
                       response2.data)
