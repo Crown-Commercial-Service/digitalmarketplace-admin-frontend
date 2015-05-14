@@ -58,7 +58,7 @@ class TestServiceView(LoggedInApplicationTest):
     @mock.patch('app.main.views.data_api_client')
     def test_service_response(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {}}
-        response = self.client.get('/admin/service/1')
+        response = self.client.get('/admin/services/1')
 
         data_api_client.get_service.assert_called_with('1')
 
@@ -69,7 +69,7 @@ class TestServiceView(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'IaaS',
         }}
-        response = self.client.get('/admin/service/1')
+        response = self.client.get('/admin/services/1')
 
         data_api_client.get_service.assert_called_with('1')
 
@@ -81,7 +81,7 @@ class TestServiceView(LoggedInApplicationTest):
         error.response.status_code = 404
         data_api_client.get_service.side_effect = APIError(error)
 
-        response = self.client.get('/admin/service/1')
+        response = self.client.get('/admin/services/1')
 
         self.assertEquals(404, response.status_code)
 
@@ -90,7 +90,7 @@ class TestServiceEdit(LoggedInApplicationTest):
     @mock.patch('app.main.views.data_api_client')
     def test_service_edit_documents_get_response(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {}}
-        response = self.client.get('/admin/service/1/edit/documents')
+        response = self.client.get('/admin/services/1/edit/documents')
 
         data_api_client.get_service.assert_called_with('1')
 
@@ -103,7 +103,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             'supplierId': 2,
         }}
         response = self.client.post(
-            '/admin/service/1/edit/documents',
+            '/admin/services/1/edit/documents',
             data={}
         )
 
@@ -111,7 +111,9 @@ class TestServiceEdit(LoggedInApplicationTest):
         self.assertFalse(data_api_client.update_service.called)
 
         self.assertEquals(302, response.status_code)
-        self.assertEquals("/admin/service/1", urlsplit(response.location).path)
+        self.assertEquals(
+            "/admin/services/1", urlsplit(response.location).path
+        )
 
     @mock.patch('app.main.views.data_api_client')
     def test_service_edit_documents_post(self, data_api_client):
@@ -124,7 +126,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             'sfiaRateDocumentURL': None
         }}
         response = self.client.post(
-            '/admin/service/1/edit/documents',
+            '/admin/services/1/edit/documents',
             data={
                 'serviceDefinitionDocumentURL': (StringIO(), ''),
                 'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
@@ -153,7 +155,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             'sfiaRateDocumentURL': None
         }}
         response = self.client.post(
-            '/admin/service/1/edit/documents',
+            '/admin/services/1/edit/documents',
             data={
                 'serviceDefinitionDocumentURL': (StringIO(), ''),
                 'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
@@ -185,7 +187,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             ],
         }}
         response = self.client.post(
-            '/admin/service/1/edit/features_and_benefits',
+            '/admin/services/1/edit/features_and_benefits',
             data={
                 'serviceFeatures': 'foo',
                 'serviceBenefits': 'foo',
@@ -203,7 +205,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             'lot': 'IaaS',
         }}
         response = self.client.get(
-            '/admin/service/1/edit/features_and_benefits')
+            '/admin/services/1/edit/features_and_benefits')
 
         data_api_client.get_service.assert_called_with('1')
 
@@ -222,7 +224,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.update_service.side_effect = APIError(error)
 
         response = self.client.post(
-            '/admin/service/1/edit/documents',
+            '/admin/services/1/edit/documents',
             data={
                 'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
                 'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.txt'),
