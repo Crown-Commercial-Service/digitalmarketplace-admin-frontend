@@ -81,16 +81,16 @@
                   Service status
               </legend>
               <label class="selection-button">
-                  <input type="radio" name="service_status" id="service_status_disabled" value="removed" {{'checked="checked"' if service_data['status'] == 'disabled' }} />
+                  <input type="radio" name="service_status" id="service_status_disabled" value="removed" {% if service_data['status'] == 'disabled' %}checked="checked"{% endif %} />
                   Removed
               </label>
               <label class="selection-button">
-                  <input type="radio" name="service_status" id="service_status_private" value="private" {{'checked="checked"' if service_data['status'] == 'enabled' }} />
+                  <input type="radio" name="service_status" id="service_status_private" value="private" {% if service_data['status'] == 'enabled' %}checked="checked"{% endif %} />
                   Private
               </label>
               {% if service_data.status != 'disabled' %}
               <label class="selection-button">
-                  <input type="radio" name="service_status" id="service_status_published" value="public" {{'checked="checked"' if service_data['status'] == 'published' }} />
+                  <input type="radio" name="service_status" id="service_status_published" value="public" {% if service_data['status'] == 'published' %}checked="checked"{% endif %} />
                   Public
               </label>
               {% endif %}
