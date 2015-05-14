@@ -18,7 +18,7 @@ class Presenters(object):
             return value
 
     def _service_id(self, value):
-        if re.findall("[a-zA-Z]", value):
+        if re.findall("[a-zA-Z]", str(value)):
             return [value]
         else:
             return re.findall("....", str(value))
