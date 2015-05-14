@@ -1,4 +1,5 @@
-from flask import flash, render_template, request, redirect, session, url_for
+from flask import flash, render_template, request, redirect, session, url_for, \
+    current_app
 from dmutils.apiclient import APIError
 
 from .. import data_api_client
@@ -17,7 +18,7 @@ content = ContentLoader(
 presenters = Presenters()
 
 
-@main.route('/')
+@main.route('/', methods=['GET'])
 def index():
     return render_template("index.html", **get_template_data())
 
@@ -44,19 +45,19 @@ def login():
     }))
 
 
-@main.route('/logout')
+@main.route('/logout', methods=['GET'])
 def logout():
     session.pop('username', None)
     return redirect(url_for('.login', logged_out=''))
 
 
-@main.route('/services')
+@main.route('/services', methods=['GET'])
 def find():
     return redirect(
         url_for(".view", service_id=request.args.get("service_id")))
 
 
-@main.route('/services/<service_id>')
+@main.route('/services/<service_id>', methods=['GET'])
 def view(service_id):
     try:
         service = data_api_client.get_service(service_id)
@@ -109,11 +110,14 @@ def update_service_status(service_id):
         flash({'api_error': e.message}, 'error')
         return redirect(url_for('.view', service_id=service_id))
 
+    message = "admin.status.updated: " \
+              "Service ID %s updated to '%s'"
+    current_app.logger.info(message, service_id, frontend_status)
     flash({'status_updated': frontend_status})
     return redirect(url_for('.view', service_id=service_id))
 
 
-@main.route('/services/<service_id>/edit/<section>')
+@main.route('/services/<service_id>/edit/<section>', methods=['GET'])
 def edit(service_id, section):
     template_data = get_template_data({
         "section": content.get_section(section),
