@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, session, url_for, abort
-from dmutils.apiclient import APIError
+from dmutils.apiclient import HTTPError
 
 from .. import data_api_client
 from . import main
@@ -60,8 +60,8 @@ def find():
 def view(service_id):
     try:
         service_data = data_api_client.get_service(service_id)['services']
-    except APIError as e:
-        abort(e.response.status_code)
+    except HTTPError as e:
+        abort(e.status_code)
 
     presented_service_data = {}
     for key, value in service_data.items():
@@ -120,8 +120,8 @@ def update(service_id, section):
                 update,
                 session['username'],
                 "admin app")
-        except APIError as e:
-            return e.response_message
+        except HTTPError as e:
+            return e.message
 
     if form.errors:
         service_data.update(form.dirty_data)

@@ -6,7 +6,7 @@ except ImportError:
     from io import BytesIO as StringIO
 
 import mock
-from dmutils.apiclient import APIError
+from dmutils.apiclient import HTTPError, REQUEST_ERROR_MESSAGE
 
 from ..helpers import BaseApplicationTest
 from ..helpers import LoggedInApplicationTest
@@ -77,9 +77,9 @@ class TestServiceView(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.data_api_client')
     def test_responds_with_404_for_api_client_404(self, data_api_client):
-        error = mock.Mock()
-        error.response.status_code = 404
-        data_api_client.get_service.side_effect = APIError(error)
+        response = mock.Mock()
+        response.status_code = 404
+        data_api_client.get_service.side_effect = HTTPError(response)
 
         response = self.client.get('/admin/services/1')
 
@@ -220,8 +220,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             'sfiaRateDocumentURL': None
         }}
         error = mock.Mock()
-        error.response.content = "API ERROR"
-        data_api_client.update_service.side_effect = APIError(error)
+        data_api_client.update_service.side_effect = HTTPError(error)
 
         response = self.client.post(
             '/admin/services/1/edit/documents',
@@ -231,4 +230,4 @@ class TestServiceEdit(LoggedInApplicationTest):
                 'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
             }
         )
-        self.assertIn(b'API ERROR', response.data)
+        self.assertIn(REQUEST_ERROR_MESSAGE.encode('utf-8'), response.data)
