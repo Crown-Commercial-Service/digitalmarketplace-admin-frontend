@@ -1,6 +1,7 @@
-from flask import flash, render_template, request, redirect, session, url_for, \
-    current_app
-from dmutils.apiclient import APIError
+from dmutils.apiclient import APIError, HTTPError
+
+from flask import current_app, flash, render_template, request, redirect, \
+    session, url_for
 
 from .. import data_api_client
 from . import main
@@ -65,7 +66,7 @@ def view(service_id):
             flash({'no_service': service_id}, 'error')
             return redirect(url_for('.index'))
         service_data = service['services']
-    except APIError:
+    except HTTPError:
         flash({'api_error': service_id}, 'error')
         return redirect(url_for('.index'))
 
@@ -160,8 +161,8 @@ def update(service_id, section):
                 update,
                 session['username'],
                 "admin app")
-        except APIError as e:
-            return e.response_message
+        except HTTPError as e:
+            return e.message
 
     if form.errors:
         service_data.update(form.dirty_data)
