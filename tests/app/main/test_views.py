@@ -178,7 +178,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,
-            'lot': 'SCS',
+            'lot': 'IaaS',
             'serviceFeatures': [
                 "foo",
             ],
@@ -186,6 +186,16 @@ class TestServiceEdit(LoggedInApplicationTest):
                 "foo",
             ],
         }}
+        response = self.client.get(
+            '/admin/services/1/edit/features_and_benefits'
+        )
+        self.assertEquals(200, response.status_code)
+        self.assertIn(
+            b'id="serviceFeatures-item-1" class="text-box" value="foo"',
+            response.data)
+        self.assertIn(
+            b'id="serviceFeatures-item-2" class="text-box" value=""',
+            response.data)
         response = self.client.post(
             '/admin/services/1/edit/features_and_benefits',
             data={
@@ -210,6 +220,9 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.get_service.assert_called_with('1')
 
         self.assertEquals(200, response.status_code)
+        self.assertIn(
+            b'id="serviceFeatures-item-1" class="text-box" value=""',
+            response.data)
 
     @mock.patch('app.main.views.data_api_client')
     def test_service_edit_when_API_returns_error(self, data_api_client):
