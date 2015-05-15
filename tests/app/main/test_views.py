@@ -76,11 +76,7 @@ class TestServiceView(LoggedInApplicationTest):
         self.assertEquals(200, response.status_code)
 
     @mock.patch('app.main.views.data_api_client')
-    # def test_redirect_with_flash_for_api_client_404(self, data_api_client):
-    # error = mock.Mock()
-    # error.response.status_code = 404
-    # data_api_client.get_service.side_effect = APIError(error)
-    def test_responds_with_404_for_api_client_404(self, data_api_client):
+    def test_redirect_with_flash_for_api_client_404(self, data_api_client):
         response = mock.Mock()
         response.status_code = 404
         data_api_client.get_service.side_effect = HTTPError(response)

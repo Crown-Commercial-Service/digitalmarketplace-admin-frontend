@@ -1,7 +1,6 @@
-from dmutils.apiclient import APIError, HTTPError
-
 from flask import current_app, flash, render_template, request, redirect, \
     session, url_for
+from dmutils.apiclient import HTTPError
 
 from .. import data_api_client
 from . import main
@@ -107,7 +106,7 @@ def update_service_status(service_id):
             "Digital Marketplace admin user", "Status changed to '{0}'".format(
                 backend_status))
 
-    except APIError as e:
+    except HTTPError as e:
         flash({'api_error': e.message}, 'error')
         return redirect(url_for('.view', service_id=service_id))
 
