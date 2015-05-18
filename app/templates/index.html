@@ -7,6 +7,27 @@
 
 {% block content %}
 <div class="page-container">
+    
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+{% if category == 'error' %}
+    <div class="banner-destructive-without-action">
+    {% else %}
+    <div class="banner-success-without-action">
+        {% endif %}
+        <p class="banner-message">
+            {% if message['no_service'] %}
+            Could not find a service with ID: {{ message['no_service'] }}
+            {% elif message['api_error'] %}
+            Error trying to retrieve service with ID: {{ message['api_error'] }}
+            {% endif %}
+        </p>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endwith %}
+    
   {{ page_heading("Find a service") }}
   <form action="{{ url_for('.find') }}" method="get" class="question">
       <label class="question-heading" for="service_id">Service ID</label>

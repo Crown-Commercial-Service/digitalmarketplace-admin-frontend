@@ -1,4 +1,5 @@
-from flask import render_template, request, redirect, session, url_for, abort
+from flask import current_app, flash, render_template, request, redirect, \
+    session, url_for
 from dmutils.apiclient import HTTPError
 
 from .. import data_api_client
@@ -17,7 +18,7 @@ content = ContentLoader(
 presenters = Presenters()
 
 
-@main.route('/')
+@main.route('/', methods=['GET'])
 def index():
     return render_template("index.html", **get_template_data())
 
@@ -44,24 +45,29 @@ def login():
     }))
 
 
-@main.route('/logout')
+@main.route('/logout', methods=['GET'])
 def logout():
     session.pop('username', None)
     return redirect(url_for('.login', logged_out=''))
 
 
-@main.route('/services')
+@main.route('/services', methods=['GET'])
 def find():
     return redirect(
         url_for(".view", service_id=request.args.get("service_id")))
 
 
-@main.route('/services/<service_id>')
+@main.route('/services/<service_id>', methods=['GET'])
 def view(service_id):
     try:
-        service_data = data_api_client.get_service(service_id)['services']
-    except HTTPError as e:
-        abort(e.status_code)
+        service = data_api_client.get_service(service_id)
+        if service is None:
+            flash({'no_service': service_id}, 'error')
+            return redirect(url_for('.index'))
+        service_data = service['services']
+    except HTTPError:
+        flash({'api_error': service_id}, 'error')
+        return redirect(url_for('.index'))
 
     presented_service_data = {}
     for key, value in service_data.items():
@@ -77,7 +83,41 @@ def view(service_id):
     return render_template("view_service.html", **template_data)
 
 
-@main.route('/services/<service_id>/edit/<section>')
+@main.route('/services/status/<string:service_id>', methods=['POST'])
+def update_service_status(service_id):
+
+    frontend_status = request.form['service_status']
+
+    translate_frontend_to_api = {
+        'removed': 'disabled',
+        'public': 'published',
+        'private': 'enabled'
+    }
+
+    if frontend_status in translate_frontend_to_api.keys():
+        backend_status = translate_frontend_to_api[frontend_status]
+    else:
+        flash({'bad_status': frontend_status}, 'error')
+        return redirect(url_for('.view', service_id=service_id))
+
+    try:
+        data_api_client.update_service_status(
+            service_id, backend_status,
+            "Digital Marketplace admin user", "Status changed to '{0}'".format(
+                backend_status))
+
+    except HTTPError as e:
+        flash({'api_error': e.message}, 'error')
+        return redirect(url_for('.view', service_id=service_id))
+
+    message = "admin.status.updated: " \
+              "Service ID %s updated to '%s'"
+    current_app.logger.info(message, service_id, frontend_status)
+    flash({'status_updated': frontend_status})
+    return redirect(url_for('.view', service_id=service_id))
+
+
+@main.route('/services/<service_id>/edit/<section>', methods=['GET'])
 def edit(service_id, section):
     template_data = get_template_data({
         "section": content.get_section(section),
