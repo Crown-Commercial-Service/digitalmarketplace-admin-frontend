@@ -17,6 +17,11 @@ class TestSession(BaseApplicationTest):
         response = self.client.get('/admin')
         self.assertEquals(302, response.status_code)
 
+    def test_url_with_non_canonical_trailing_slash(self):
+        response = self.client.get('/admin/')
+        self.assertEquals(301, response.status_code)
+        self.assertEquals("http://localhost/admin", response.location)
+
     def test_login(self):
         response = self.client.post('/admin/login', data=dict(
             username="admin",
