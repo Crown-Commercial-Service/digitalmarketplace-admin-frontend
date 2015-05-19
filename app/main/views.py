@@ -18,7 +18,7 @@ content = ContentLoader(
 presenters = Presenters()
 
 
-@main.route('/', methods=['GET'])
+@main.route('', methods=['GET'])
 def index():
     return render_template("index.html", **get_template_data())
 
