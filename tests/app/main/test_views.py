@@ -14,7 +14,7 @@ from ..helpers import LoggedInApplicationTest
 
 class TestSession(BaseApplicationTest):
     def test_index(self):
-        response = self.client.get('/admin/')
+        response = self.client.get('/admin')
         self.assertEquals(302, response.status_code)
 
     def test_login(self):
@@ -23,9 +23,9 @@ class TestSession(BaseApplicationTest):
             password="admin"
         ))
         self.assertEquals(302, response.status_code)
-        self.assertEquals("/admin/", urlsplit(response.location).path)
+        self.assertEquals("/admin", urlsplit(response.location).path)
 
-        response = self.client.get('/admin/')
+        response = self.client.get('/admin')
         self.assertEquals(200, response.status_code)
 
     def test_invalid_login(self):
@@ -35,14 +35,14 @@ class TestSession(BaseApplicationTest):
         ))
         self.assertEquals(200, response.status_code)
 
-        response = self.client.get('/admin/')
+        response = self.client.get('/admin')
         self.assertEquals(302, response.status_code)
         self.assertEquals("/admin/login", urlsplit(response.location).path)
 
 
 class TestApplication(LoggedInApplicationTest):
     def test_main_index(self):
-        response = self.client.get('/admin/')
+        response = self.client.get('/admin')
         self.assertEquals(200, response.status_code)
 
     def test_404(self):
@@ -83,7 +83,7 @@ class TestServiceView(LoggedInApplicationTest):
 
         response1 = self.client.get('/admin/services/1')
         self.assertEquals(302, response1.status_code)
-        self.assertEquals(response1.location, 'http://localhost/admin/')
+        self.assertEquals(response1.location, 'http://localhost/admin')
         response2 = self.client.get(response1.location)
         self.assertIn(b'Error trying to retrieve service with ID: 1',
                       response2.data)

@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from flask import Flask
+from flask import Flask, request, redirect
 from flask.ext.bootstrap import Bootstrap
 from dmutils import apiclient, config, logging
 
@@ -36,5 +36,10 @@ def create_app(config_name):
     application.register_blueprint(status_blueprint, url_prefix='/admin')
     application.register_blueprint(main_blueprint, url_prefix='/admin')
     main_blueprint.config = application.config.copy()
+
+    @application.before_request
+    def remove_trailing_slash():
+        if request.path != '/' and request.path.endswith('/'):
+            return redirect(request.path[:-1])
 
     return application
