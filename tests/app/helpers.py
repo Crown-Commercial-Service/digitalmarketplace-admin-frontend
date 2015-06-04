@@ -12,7 +12,7 @@ class BaseApplicationTest(TestCase):
         self.s3 = self._s3_patch.start()
 
         self._default_suffix_patch = mock.patch(
-            'app.main.helpers.validation_tools.default_file_suffix',
+            'dmutils.validation.default_file_suffix',
             return_value='2015-01-01-1200'
         )
         self._default_suffix_patch.start()

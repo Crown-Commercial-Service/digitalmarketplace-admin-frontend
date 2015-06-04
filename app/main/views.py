@@ -4,10 +4,10 @@ from dmutils.apiclient import HTTPError
 
 from .. import data_api_client
 from . import main
-from .helpers.validation_tools import Validate
+from dmutils.validation import Validate
 from .helpers.content import ContentLoader
 from .helpers.presenters import Presenters
-from .helpers.s3 import S3
+from dmutils.s3 import S3
 from .helpers.auth import check_auth, is_authenticated
 
 
@@ -144,7 +144,8 @@ def update(service_id, section):
         if content.get_question(key)['type'] in list_types:
             posted_data[key] = item_as_list
 
-    form = Validate(content, service_data, posted_data, s3_uploader)
+    form = Validate(content, service_data, posted_data,
+                    main.config['DOCUMENTS_URL'], s3_uploader)
     update = {}
 
     form.validate()
