@@ -5,8 +5,8 @@ from dmutils.apiclient import HTTPError
 from .. import data_api_client
 from . import main
 from dmutils.validation import Validate
-from .helpers.content import ContentLoader
-from .helpers.presenters import Presenters
+from dmutils.content_loader import ContentLoader
+from dmutils.presenters import Presenters
 from dmutils.s3 import S3
 from .helpers.auth import check_auth, is_authenticated
 
