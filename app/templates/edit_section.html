@@ -15,7 +15,25 @@
     }
   ]) }}
   <div class="page-container edit-section">
-    {{ page_heading(section.name, null, "page-heading-smaller") }}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    {% if category == 'error' %}
+      <div class="banner-destructive-without-action">
+    {% else %}
+      <div class="banner-success-without-action">
+    {% endif %}
+        <p class="banner-message">
+          {% if message['update_fail'] %}
+          Could not update service: {{ message['update_fail'] }}
+          {% endif %}
+        </p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+      {{ page_heading(section.name, null, "page-heading-smaller") }}
     {% if errors %}
       <div class="validation-masthead">
         <h2 class="validation-masthead-heading">
@@ -33,6 +51,7 @@
       </div>
     {% endif %}
     <form action="{{ url_for('.update', service_id=service_data.id, section=section.id) }}" method="post" enctype="multipart/form-data">
+      {{ form.hidden_tag() }}
       {% for question in section.questions %}
         {% if service_data['lot']|lower in question['depends_on_lots'] %}
           {% if question.id in errors %}

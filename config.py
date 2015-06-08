@@ -6,6 +6,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
     DEBUG = True
+    WTF_CSRF_ENABLED = True
     S3_DOCUMENT_BUCKET = os.getenv('DM_S3_DOCUMENT_BUCKET')
     DOCUMENTS_URL = 'https://assets.dev.digitalmarketplace.service.gov.uk'
     DM_DATA_API_URL = os.getenv('DM_DATA_API_URL')
@@ -41,6 +42,7 @@ class Config(object):
 class Test(Config):
     DEBUG = True
     AUTHENTICATION = True
+    WTF_CSRF_ENABLED = False
     DOCUMENTS_URL = 'https://assets.test.digitalmarketplace.service.gov.uk'
     SECRET_KEY = "test_secret"
     PASSWORD_HASH = "JHA1azIkMjcxMCQwYmZiN2Y5YmJlZmI0YTg4YmNkZjQ1ODY0NWUzOGEwNCRoeDBwbUpHZVhSalREUFBGREFydmJQWnlFYnhWU1g1ag=="  # noqa
