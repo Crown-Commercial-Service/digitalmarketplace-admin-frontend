@@ -157,9 +157,11 @@ def update(service_id, section):
     for key in request.form:
         item_as_list = request.form.getlist(key)
         list_types = ['list', 'checkboxes', 'pricing']
-        if content.get_question(key)['type'] in list_types:
+        if key != 'csrf_token' \
+                and content.get_question(key)['type'] in list_types:
             posted_data[key] = item_as_list
 
+    posted_data.pop('csrf_token', None)
     form = Validate(content, service_data, posted_data,
                     main.config['DOCUMENTS_URL'], s3_uploader)
     update = {}
