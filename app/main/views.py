@@ -1,6 +1,5 @@
 from flask import current_app, flash, render_template, request, redirect, \
     session, url_for
-from flask.ext.wtf import Form
 from dmutils.apiclient import HTTPError
 
 from .. import data_api_client
@@ -27,12 +26,11 @@ def index():
 @main.route('/login', methods=['POST', 'GET'])
 def login():
     if request.method == 'GET':
-        return render_template("login.html", form=Form(), **get_template_data({
+        return render_template("login.html", **get_template_data({
             "previous_responses": None,
             "logged_out": "logged_out" in request.args
         }))
-    form = Form()
-    if form.validate_on_submit() and check_auth(
+    if check_auth(
         request.form['username'],
         request.form['password'],
         main.config['PASSWORD_HASH']
@@ -40,7 +38,7 @@ def login():
         session['username'] = request.form['username']
         return redirect(url_for('.index'))
 
-    return render_template("login.html", form=Form(), **get_template_data({
+    return render_template("login.html", **get_template_data({
         "error": "Could not log in",
         "previous_responses": request.form
     }))
@@ -81,15 +79,11 @@ def view(service_id):
         "service_data": presented_service_data,
         "service_id": service_id
     })
-    return render_template("view_service.html", form=Form(), **template_data)
+    return render_template("view_service.html", **template_data)
 
 
 @main.route('/services/status/<string:service_id>', methods=['POST'])
 def update_service_status(service_id):
-    form = Form()
-    if not form.validate_on_submit():
-        flash({'status_error': 'Invalid CSRF token supplied'}, 'error')
-        return redirect(url_for('.view', service_id=service_id))
 
     frontend_status = request.form['service_status']
 
@@ -128,21 +122,11 @@ def edit(service_id, section):
         "section": content.get_section(section),
         "service_data": data_api_client.get_service(service_id)['services'],
     })
-    return render_template("edit_section.html", form=Form(), **template_data)
+    return render_template("edit_section.html", **template_data)
 
 
 @main.route('/services/<service_id>/edit/<section>', methods=['POST'])
 def update(service_id, section):
-    form = Form()
-    if not form.validate_on_submit():
-        flash({'update_fail': 'Invalid CSRF token supplied'}, 'error')
-        template_data = get_template_data({
-            "section": content.get_section(section),
-            "service_data": data_api_client.get_service(service_id)
-            ['services'],
-        })
-        return render_template("edit_section.html", form=Form(),
-                               **template_data)
 
     s3_uploader = S3(
         bucket_name=main.config['S3_DOCUMENT_BUCKET'],
@@ -157,26 +141,27 @@ def update(service_id, section):
     for key in request.form:
         item_as_list = request.form.getlist(key)
         list_types = ['list', 'checkboxes', 'pricing']
-        if key != 'csrf_token' \
-                and content.get_question(key)['type'] in list_types:
+        if (
+            key != 'csrf_token'
+            and content.get_question(key)['type'] in list_types
+        ):
             posted_data[key] = item_as_list
 
     posted_data.pop('csrf_token', None)
     form = Validate(content, service_data, posted_data,
                     main.config['DOCUMENTS_URL'], s3_uploader)
-    update = {}
-
     form.validate()
 
+    update_data = {}
     for question_id in form.clean_data:
         if question_id not in form.errors:
-            update[question_id] = form.clean_data[question_id]
+            update_data[question_id] = form.clean_data[question_id]
 
-    if update:
+    if update_data:
         try:
             data_api_client.update_service(
                 service_data['id'],
-                update,
+                update_data,
                 session['username'],
                 "admin app")
         except HTTPError as e:
@@ -184,15 +169,12 @@ def update(service_id, section):
 
     if form.errors:
         service_data.update(form.dirty_data)
-        return render_template("edit_section.html", form=Form(),
-                               **get_template_data(
-                                   {
-                                       "section": content.get_section(section),
-                                       "service_data": service_data,
-                                       "service_id": service_id,
-                                       "errors": form.errors
-                                       }
-                                   ))
+        return render_template("edit_section.html", **get_template_data({
+            "section": content.get_section(section),
+            "service_data": service_data,
+            "service_id": service_id,
+            "errors": form.errors
+            }))
     else:
         return redirect(url_for(".view", service_id=service_id))
 
