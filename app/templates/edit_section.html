@@ -15,25 +15,7 @@
     }
   ]) }}
   <div class="page-container edit-section">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    {% if category == 'error' %}
-      <div class="banner-destructive-without-action">
-    {% else %}
-      <div class="banner-success-without-action">
-    {% endif %}
-        <p class="banner-message">
-          {% if message['update_fail'] %}
-          Could not update service: {{ message['update_fail'] }}
-          {% endif %}
-        </p>
-        {% endfor %}
-    </div>
-    {% endif %}
-    {% endwith %}
-
-      {{ page_heading(section.name, null, "page-heading-smaller") }}
+    {{ page_heading(section.name, null, "page-heading-smaller") }}
     {% if errors %}
       <div class="validation-masthead">
         <h2 class="validation-masthead-heading">
