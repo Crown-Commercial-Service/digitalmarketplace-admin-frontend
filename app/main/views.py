@@ -30,7 +30,6 @@ def login():
             "previous_responses": None,
             "logged_out": "logged_out" in request.args
         }))
-
     if check_auth(
         request.form['username'],
         request.form['password'],
@@ -107,7 +106,7 @@ def update_service_status(service_id):
                 backend_status))
 
     except HTTPError as e:
-        flash({'api_error': e.message}, 'error')
+        flash({'status_error': e.message}, 'error')
         return redirect(url_for('.view', service_id=service_id))
 
     message = "admin.status.updated: " \
@@ -128,6 +127,7 @@ def edit(service_id, section):
 
 @main.route('/services/<service_id>/edit/<section>', methods=['POST'])
 def update(service_id, section):
+
     s3_uploader = S3(
         bucket_name=main.config['S3_DOCUMENT_BUCKET'],
     )
@@ -141,24 +141,27 @@ def update(service_id, section):
     for key in request.form:
         item_as_list = request.form.getlist(key)
         list_types = ['list', 'checkboxes', 'pricing']
-        if content.get_question(key)['type'] in list_types:
+        if (
+            key != 'csrf_token'
+            and content.get_question(key)['type'] in list_types
+        ):
             posted_data[key] = item_as_list
 
+    posted_data.pop('csrf_token', None)
     form = Validate(content, service_data, posted_data,
                     main.config['DOCUMENTS_URL'], s3_uploader)
-    update = {}
-
     form.validate()
 
+    update_data = {}
     for question_id in form.clean_data:
         if question_id not in form.errors:
-            update[question_id] = form.clean_data[question_id]
+            update_data[question_id] = form.clean_data[question_id]
 
-    if update:
+    if update_data:
         try:
             data_api_client.update_service(
                 service_data['id'],
-                update,
+                update_data,
                 session['username'],
                 "admin app")
         except HTTPError as e:
@@ -171,7 +174,7 @@ def update(service_id, section):
             "service_data": service_data,
             "service_id": service_id,
             "errors": form.errors
-        }))
+            }))
     else:
         return redirect(url_for(".view", service_id=service_id))
 

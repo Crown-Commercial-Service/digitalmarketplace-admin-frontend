@@ -33,6 +33,7 @@
       </div>
     {% endif %}
     <form action="{{ url_for('.update', service_id=service_data.id, section=section.id) }}" method="post" enctype="multipart/form-data">
+      <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
       {% for question in section.questions %}
         {% if service_data['lot']|lower in question['depends_on_lots'] %}
           {% if question.id in errors %}

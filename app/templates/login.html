@@ -16,6 +16,7 @@
   {% endif %}
   {{ page_heading("Administrator login") }}
   <form action="{{ url_for('.login') }}" method="post" class="question">
+    <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
     {% if error %}
       <div class="validation-masthead">
         <h2 class="validation-masthead-heading">

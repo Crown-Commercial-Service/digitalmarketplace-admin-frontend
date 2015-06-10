@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from flask import Flask, request, redirect
 from flask.ext.bootstrap import Bootstrap
+from flask_wtf.csrf import CsrfProtect
 from dmutils import apiclient, config, logging
 
 from config import configs
@@ -9,6 +10,7 @@ from config import configs
 
 bootstrap = Bootstrap()
 data_api_client = apiclient.DataAPIClient()
+csrf = CsrfProtect()
 
 
 def create_app(config_name):
@@ -24,6 +26,7 @@ def create_app(config_name):
     bootstrap.init_app(application)
     logging.init_app(application)
     data_api_client.init_app(application)
+    csrf.init_app(application)
 
     from .main import main as main_blueprint
     from .status import status as status_blueprint

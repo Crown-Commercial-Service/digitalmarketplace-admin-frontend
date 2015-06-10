@@ -22,8 +22,8 @@
       <p class="banner-message">
           {% if message['bad_status'] %}
           Not a valid status: '{{ message['bad_status'] }}'
-          {% elif message['api_error'] %}
-          Error trying to update status of service: {{ message['api_error'] }}
+          {% elif message['status_error'] %}
+          Error trying to update status of service: {{ message['status_error'] }}
           {% elif message['status_updated'] %}
           Service status has been updated to: {{ message['status_updated']|title }}
           {% endif %}
@@ -75,7 +75,8 @@
         {% endif %}
       {% endfor %}
 
-      <form action="{{ url_for('.update_service_status', service_id=service_id ) }}" method="POST">
+      <form action="{{ url_for('.update_service_status', service_id=service_id ) }}" method="post">
+          <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
           <fieldset class="question">
               <legend class="question-heading">
                   Service status
