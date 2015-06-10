@@ -7,18 +7,18 @@
 
 // Digital Marketplace front end toolkit components
 $path: "/static/images/";
-@import "breadcrumb";
-@import "page-headings";
-@import "forms/summary";
-@import "forms/questions";
-@import "forms/hint";
-@import "forms/textboxes";
-@import "forms/word-counter";
-@import "forms/list-entry";
-@import "forms/selection-buttons";
-@import "forms/validation";
-@import "buttons";
-@import "notification-banners";
+@import "toolkit/breadcrumb";
+@import "toolkit/page-headings";
+@import "toolkit/forms/summary";
+@import "toolkit/forms/questions";
+@import "toolkit/forms/hint";
+@import "toolkit/forms/textboxes";
+@import "toolkit/forms/word-counter";
+@import "toolkit/forms/list-entry";
+@import "toolkit/forms/selection-buttons";
+@import "toolkit/forms/validation";
+@import "toolkit/buttons";
+@import "toolkit/notification-banners";
 
 // Patterns specific to this app
 @import "patterns/service-id";
