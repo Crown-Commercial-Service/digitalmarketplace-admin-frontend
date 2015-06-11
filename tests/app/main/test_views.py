@@ -33,6 +33,7 @@ class TestSession(BaseApplicationTest):
         response = self.client.get('/admin')
         self.assertEquals(200, response.status_code)
         self.assertIn('Secure;', response.headers['Set-Cookie'])
+        self.assertIn('DENY', response.headers['X-Frame-Options'])
 
     def test_invalid_login(self):
         response = self.client.post('/admin/login', data=dict(
