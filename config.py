@@ -7,6 +7,10 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config(object):
     DEBUG = True
     WTF_CSRF_ENABLED = True
+    SESSION_COOKIE_NAME = 'dm_admin_session'
+    SESSION_COOKIE_PATH = '/admin'
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SECURE = True
     S3_DOCUMENT_BUCKET = os.getenv('DM_S3_DOCUMENT_BUCKET')
     DOCUMENTS_URL = 'https://assets.dev.digitalmarketplace.service.gov.uk'
     DM_DATA_API_URL = os.getenv('DM_DATA_API_URL')
@@ -50,6 +54,7 @@ class Test(Config):
 
 class Development(Config):
     DEBUG = True
+    SESSION_COOKIE_SECURE = False
     AUTHENTICATION = True
 
 
