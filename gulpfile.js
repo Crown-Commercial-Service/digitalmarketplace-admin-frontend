@@ -12,6 +12,7 @@ var bowerRoot = repoRoot + 'bower_components';
 var npmRoot = repoRoot + 'node_modules';
 var govukToolkitRoot = npmRoot + '/govuk_frontend_toolkit';
 var dmToolkitRoot = bowerRoot + '/digitalmarketplace-frontend-toolkit/toolkit';
+var sspContentRoot = bowerRoot + '/digital-marketplace-ssp-content';
 var assetsFolder = repoRoot + 'app/assets';
 var staticFolder = repoRoot + 'app/static';
 var govukTemplateFolder = repoRoot + 'bower_components/govuk_template';
@@ -200,6 +201,14 @@ gulp.task(
   )
 );
 
+gulp.task(
+  'copy:ssp_content',
+  copyFactory(
+    "content YAML into app folder",
+    sspContentRoot, 'app/content'
+  )
+);
+
 gulp.task('watch', ['build:development'], function () {
   var jsWatcher = gulp.watch([ assetsFolder + '/**/*.js' ], ['js']);
   var cssWatcher = gulp.watch([ assetsFolder + '/**/*.scss' ], ['sass']);
@@ -224,6 +233,7 @@ gulp.task('set_environment_to_production', function (cb) {
 gulp.task(
   'copy',
   [
+    'copy:ssp_content',
     'copy:template_assets:images',
     'copy:template_assets:stylesheets',
     'copy:template_assets:javascripts',
