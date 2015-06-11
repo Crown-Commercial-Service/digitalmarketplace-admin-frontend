@@ -59,6 +59,10 @@ target/
 node_modules
 bower_components
 npm-debug.log
+app/assets/scss/toolkit
+app/templates/govuk
+app/templates/toolkit
+app/content
 
 # Front end generated assets
 app/static
