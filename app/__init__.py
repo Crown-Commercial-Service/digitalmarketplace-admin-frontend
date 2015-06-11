@@ -3,7 +3,7 @@ from datetime import timedelta
 from flask import Flask, request, redirect
 from flask.ext.bootstrap import Bootstrap
 from flask_wtf.csrf import CsrfProtect
-from dmutils import apiclient, config, logging
+from dmutils import apiclient, init_app, flask_featureflags
 
 from config import configs
 
@@ -11,6 +11,7 @@ from config import configs
 bootstrap = Bootstrap()
 data_api_client = apiclient.DataAPIClient()
 csrf = CsrfProtect()
+feature_flags = flask_featureflags.FeatureFlag()
 
 
 def create_app(config_name):
@@ -19,13 +20,14 @@ def create_app(config_name):
                         static_folder='static/',
                         static_url_path=configs[config_name].STATIC_URL_PATH)
 
-    application.config.from_object(configs[config_name])
-    configs[config_name].init_app(application)
-    config.init_app(application)
-
-    bootstrap.init_app(application)
-    logging.init_app(application)
-    data_api_client.init_app(application)
+    init_app(
+        application,
+        configs[config_name],
+        bootstrap=bootstrap,
+        data_api_client=data_api_client,
+        feature_flags=feature_flags
+    )
+    # Should be incorporated into digitalmarketplace-utils as well
     csrf.init_app(application)
 
     from .main import main as main_blueprint
