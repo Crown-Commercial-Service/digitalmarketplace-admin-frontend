@@ -47,9 +47,4 @@ def create_app(config_name):
         if request.path != '/' and request.path.endswith('/'):
             return redirect(request.path[:-1], code=301)
 
-    @application.after_request
-    def add_header(response):
-        response.headers['X-Frame-Options'] = 'DENY'
-        return response
-
     return application
