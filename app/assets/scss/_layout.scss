@@ -14,3 +14,7 @@
   @extend %grid-row;
   clear: both;
 }
+
+.third-column {
+  @include grid-column(1/3);
+}

@@ -19,6 +19,8 @@ $path: "/static/images/";
 @import "toolkit/forms/validation";
 @import "toolkit/buttons";
 @import "toolkit/notification-banners";
+@import "_pagination.scss";
+@import "forms/_option-select.scss";
 
 // Patterns specific to this app
 @import "patterns/service-id";

@@ -1,0 +1,175 @@
+{% from 'macros/page_heading.html' import page_heading %}
+
+{% extends "_base_page.html" %}
+{% block page_title %}
+Digital Marketplace admin
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="grid-row">
+        <div class="service-title">
+            {{ page_heading("12/06/2015", "Activity for", "page-heading-smaller") }}
+        </div>
+    </div>
+    <div class="grid-row">
+
+        <div class="grid-column third-column">
+            <div class="govuk-option-select">
+                <div class="container-head">
+                    <label class="option-select-label" for="activity-date">
+                        Date
+                    </label>
+                </div>
+                <input class="filter-field-text" type="text" name="activity-date" id="activity-date" value="2015-06-12">
+            </div>
+            <div class="govuk-option-select">
+                <div class="container-head js-container-head">
+                    <div class="option-select-label">Audit event type</div>
+                </div>
+                <div class="options-container">
+                    <div class="js-auto-height-inner">
+
+                        <label for="audit-event-type-1">
+                            <input name="audit-type" value="update-service" id="audit-event-type-1" type="radio"
+                                   aria-controls="">
+                            Update service
+                        </label>
+                        <label for="audit-event-type-2">
+                            <input name="audit-type" value="import-service" id="audit-event-type-2" type="radio"
+                                   aria-controls="">
+                            Import service
+                        </label>
+                        <label for="audit-event-type-3">
+                            <input name="audit-type" value="update-service-status" id="audit-event-type-3" type="radio"
+                                   aria-controls="">
+                            Update service status
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="govuk-option-select">
+                <div class="container-head js-container-head">
+                    <div class="option-select-label">Show</div>
+                </div>
+                <div class="options-container">
+                    <div class="js-auto-height-inner">
+
+                        <label for="acknowledged-1">
+                            <input name="acknowledged" value="acknowledged" id="acknowledged-1" type="radio"
+                                   aria-controls="">
+                            All
+                        </label>
+                        <label for="acknowledged-2">
+                            <input name="acknowledged" value="not-acknowledged" id="acknowledged-2" type="radio"
+                                   aria-controls="">
+                            Acknowledged
+                        </label>
+                        <label for="acknowledged-3">
+                            <input name="acknowledged" value="not-acknowledged" id="acknowledged-3" type="radio"
+                                   aria-controls="">
+                            Not acknowledged
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <button class="button-save" type="submit">Filter</button>
+        </div>
+        <div class="grid-column third-column">
+            <table class="summary-item-body">
+                <thead class="summary-item-field-headings">
+                <tr>
+                    <th>Audit event</th>
+                    <th>Supplier</th>
+                    <th>Date</th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody class="summary-item-body">
+                <tr class="summary-item-row">
+                    <td class="summary-item-field-name">Service update</td>
+                    <td class="summary-item-field-content">
+                        Skyscape Ltd
+                    </td>
+                    <td class="summary-item-field-content">
+                        19:31 12/06/2015
+                    </td>
+                    <td class="summary-item-field-content">
+                        <a href="{{ url_for('.activity') }}">View service</a>
+                    </td>
+                    <td class="summary-item-field-content">
+                        <a href="{{ url_for('.activity') }}">View changes</a>
+                    </td>
+                    <td class="summary-item-field-content">
+                        <a href="{{ url_for('.activity') }}">
+                            <button class="button-secondary">Acknowledge</button>
+                        </a>
+                    </td>
+                </tr>
+                <tr class="summary-item-row">
+                    <td class="summary-item-field-name">Service update</td>
+                    <td class="summary-item-field-content">
+                        Amazon Ltd
+                    </td>
+                    <td class="summary-item-field-content">
+                        12:31 12/06/2015
+                    </td>
+                    <td class="summary-item-field-content">
+                        <a href="{{ url_for('.activity') }}">View service</a>
+                    </td>
+                    <td class="summary-item-field-content">
+                        <a href="{{ url_for('.activity') }}">View changes</a>
+                    </td>
+                    <td class="summary-item-field-content">
+                        <a href="{{ url_for('.activity') }}">
+                            <button class="button-secondary">Acknowledge</button>
+                        </a>
+                    </td>
+                </tr>
+                <tr class="summary-item-row">
+                    <td class="summary-item-field-name">Service update</td>
+                    <td class="summary-item-field-content">
+                        Affinity
+                    </td>
+                    <td class="summary-item-field-content">
+                        09:35 12/06/2015
+                    </td>
+                    <td class="summary-item-field-content">
+                        <a href="{{ url_for('.activity') }}">View service</a>
+                    </td>
+                    <td class="summary-item-field-content">
+                        <a href="{{ url_for('.activity') }}">View changes</a>
+                    </td>
+                    <td class="summary-item-field-content">
+                        <a href="{{ url_for('.activity') }}">
+                            <button class="button-secondary">Acknowledge</button>
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <nav role="navigation">
+                <ul class="previous-next-navigation">
+
+                    <li class="previous">
+                        <a href="">
+                            Previous <span class="visuallyhidden">page</span>
+                            <span class="page-numbers">1 of 3</span>
+                        </a>
+                    </li>
+
+                    <li class="next">
+                        <a href="">
+                            Next <span class="visuallyhidden">page</span>
+                            <span class="page-numbers">2 of 3</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
