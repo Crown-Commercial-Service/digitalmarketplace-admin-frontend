@@ -1,8 +1,11 @@
+nav[role=navigation] {
+display: block;
+}
+
 .previous-next-navigation {
   padding-left: 0;
   position: relative;
   overflow: hidden;
-  margin: $gutter*2 0 0;
   width: $full-width;
 
   li {

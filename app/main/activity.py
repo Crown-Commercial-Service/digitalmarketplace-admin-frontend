@@ -1,41 +1,43 @@
-import time
 from datetime import datetime
-from flask import render_template, request
+from flask import render_template, redirect, url_for, request
 from . import main
 from .helpers.auth import is_authenticated
+from forms import FilterAuditEventsForm
 
 
 @main.route('/activity', methods=['GET'])
 def activity():
-    return render_template(
-        "activity.html",
-        today=datetime.now().strftime("%d/%m/%Y"),
-        audit_events=None,
-        **get_template_data())
+    form = FilterAuditEventsForm(request.args)
+
+    if form.validate():
+        return render_template(
+            "activity.html",
+            today=datetime.now().strftime("%d/%m/%Y"),
+            audit_events=None,
+            form=form,
+            **get_template_data())
+    else:
+        return render_template(
+            "activity.html",
+            today=datetime.now().strftime("%d/%m/%Y"),
+            audit_events=None,
+            form=form,
+            **get_template_data())
 
 
-@main.route('/activity', methods=['POST'])
-def submit_activity():
-    print "\n\n\n\n\n request.form['acknowledged']  \n\n\n"
-    print request.form['acknowledged']
-    print request.form['activity-date']
-    print validate_date(request.form['activity-date'])
-    print "\n\n\n\n\n "
-    return render_template(
-        "activity.html",
-        today=datetime.now().strftime("%d/%m/%Y"),
-        audit_events=None,
-        **get_template_data())
+@main.route('/acknowledge/<audit_id>', methods=['POST'])
+def submit_acknowledgment(audit_id):
+    form = FilterAuditEventsForm()
+    if form.validate():
+        return redirect(url_for('.activity', csrf_token=form.csrf_token.data, audit_date=form.audit_date.data, acknowledged=form.acknowledged.data))
+    else:
+        return render_template(
+            "activity.html",
+            today=datetime.now().strftime("%d/%m/%Y"),
+            audit_events=None,
+            form=form,
+            **get_template_data())
 
-
-def validate_date(date):
-    if date:
-        try:
-            actual_date = datetime.strptime(date, "%d/%m/%Y")
-            return actual_date.strftime('%Y-%m-%d')
-        except ValueError:
-            return None
-    return None
 
 
 def get_template_data(merged_with={}):
