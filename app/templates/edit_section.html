@@ -8,14 +8,28 @@
 {% endblock %}
 
 {% block content %}
-  {{ breadcrumb([
-    {
-      "link": url_for(".view", service_id=service_data.id),
-      "text": service_data['serviceName']
-    }
-  ]) }}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      },
+      {
+        "link": url_for(".view", service_id=service_data.id),
+        "text": service_data['serviceName']
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
   <div class="page-container edit-section">
-    {{ page_heading(section.name, null, "page-heading-smaller") }}
+    {%
+      with
+      heading = section.name,
+      smaller = True
+    %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
     {% if errors %}
       <div class="validation-masthead">
         <h2 class="validation-masthead-heading">
@@ -35,20 +49,25 @@
     <form action="{{ url_for('.update', service_id=service_data.id, section=section.id) }}" method="post" enctype="multipart/form-data">
       <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
       {% for question in section.questions %}
-        {% if service_data['lot']|lower in question['depends_on_lots'] %}
-          {% if question.id in errors %}
-            {{ forms.validation_wrapper_open() }}
-          {% endif %}
-          {{ forms.question_wrapper_open(question) }}
-            {% if question.id in errors %}
-              {{ forms.validation_message(errors[question.id ], question.id) }}
-            {% endif %}
-            {{ forms[question.type](question, service_data[question.id], service_data) }}
-          {{ forms.question_wrapper_close(question) }}
-          {% if question.id in errors %}
-            {{ forms.validation_wrapper_close() }}
-          {% endif %}
+
+        {% if question.id in errors %}
+          {{ forms.validation_wrapper_open() }}
         {% endif %}
+
+        {{ forms.question_wrapper_open(question) }}
+
+          {% if question.id in errors %}
+            {{ forms.validation_message(errors[question.id ], question.id) }}
+          {% endif %}
+
+          {{ forms[question.type](question, service_data[question.id], service_data) }}
+
+        {{ forms.question_wrapper_close(question) }}
+
+        {% if question.id in errors %}
+          {{ forms.validation_wrapper_close() }}
+        {% endif %}
+
       {% endfor %}
       <button class="button-save" type="submit">Save and return to summary</button>
       <p>

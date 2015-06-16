@@ -104,9 +104,7 @@ class TestServiceView(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.data_api_client')
     def test_service_view_with_no_features_or_benefits(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {
-            'lot': 'IaaS',
-        }}
+        data_api_client.get_service.return_value = {'services': {}}
         response = self.client.get('/admin/services/1')
 
         data_api_client.get_service.assert_called_with('1')
@@ -141,7 +139,7 @@ class TestServiceEdit(LoggedInApplicationTest):
     def test_service_edit_documents_empty_post(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
-            'supplierId': 2,
+            'supplierId': 2
         }}
         response = self.client.post(
             '/admin/services/1/edit/documents',
@@ -253,7 +251,7 @@ class TestServiceEdit(LoggedInApplicationTest):
     @mock.patch('app.main.views.data_api_client')
     def test_service_edit_with_no_features_or_benefits(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
-            'lot': 'IaaS',
+            'lot': 'SaaS'
         }}
         response = self.client.get(
             '/admin/services/1/edit/features_and_benefits')

@@ -8,7 +8,16 @@
 {% endblock %}
 
 {% block content %}
-  {{ breadcrumb() }}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
   <div class="page-container">
 
 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -32,11 +41,18 @@
   </div>
   {% endif %}
   {% endwith %}
-          
+
     {% if service_data %}
       <div class="grid-row">
         <div class="service-title">
-          {{ page_heading(service_data['serviceName'], service_data['supplierName'], "page-heading-smaller") }}
+          {%
+            with
+            context = service_data['supplierName'],
+            heading = service_data['serviceName'],
+            smaller = True
+          %}
+            {% include "toolkit/page-heading.html" %}
+          {% endwith %}
         </div>
         <div class="service-view">
           <a href="https://www.digitalmarketplace.service.gov.uk/service/{{ service_id }}">View service</a>
@@ -44,35 +60,31 @@
       </div>
 
       {% for section in sections %}
-        {% if service_data['lot']|lower in section['depends_on_lots'] %}
-          <h2 class="summary-item-heading">
-            {{section.name}}
-          </h2>
-          {% if section.editable %}
-            <p class="summary-item-top-level-action">
-              <a href="{{ url_for('.edit', service_id=service_id, section=section.id) }}">Edit</a>
-            </p>
-          {% endif %}
-          <table class="summary-item-body">
-            <thead class="summary-item-field-headings">
-              <tr>
-                <th>Service attribute name</th><th>Service attribute</th>
-              </tr>
-            </thead>
-            <tbody class="summary-item-body">
-              {% for question in section.questions %}
-                {% if service_data['lot']|lower in question['depends_on_lots'] %}
-                  <tr class="summary-item-row">
-                    <td class="summary-item-field-name">{{ question.question }}</td>
-                    <td class="summary-item-field-content">
-                      {{ answers[question.type](service_data[question.id]) }}
-                    </td>
-                  </tr>
-                {% endif %}
-              {% endfor %}
-            </tbody>
-          </table>
+        <h2 class="summary-item-heading">
+          {{section.name}}
+        </h2>
+        {% if section.editable %}
+          <p class="summary-item-top-level-action">
+            <a href="{{ url_for('.edit', service_id=service_id, section=section.id) }}">Edit</a>
+          </p>
         {% endif %}
+        <table class="summary-item-body">
+          <thead class="summary-item-field-headings">
+            <tr>
+              <th>Service attribute name</th><th>Service attribute</th>
+            </tr>
+          </thead>
+          <tbody class="summary-item-body">
+            {% for question in section.questions %}
+              <tr class="summary-item-row">
+                <td class="summary-item-field-name">{{ question.question }}</td>
+                <td class="summary-item-field-content">
+                  {{ answers[question.type](service_data[question.id]) }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       {% endfor %}
 
       <form action="{{ url_for('.update_service_status', service_id=service_id ) }}" method="post">
