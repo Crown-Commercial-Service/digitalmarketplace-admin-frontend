@@ -4,7 +4,10 @@ from wtforms.validators import DataRequired, Optional, Regexp
 
 
 class FilterAuditEventsForm(Form):
-    audit_date = DateField('Audit Date', format='%Y-%m-%d', validators=[Optional()])
+    audit_date = DateField(
+        'Audit Date',
+        format='%Y-%m-%d',
+        validators=[Optional()])
     acknowledged = StringField(
         'acknowledged',
         default="all",

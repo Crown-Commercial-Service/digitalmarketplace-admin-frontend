@@ -5,9 +5,9 @@ from .helpers.auth import is_authenticated
 from forms import FilterAuditEventsForm
 
 
-@main.route('/activity', methods=['GET'])
-def activity():
-    form = FilterAuditEventsForm(request.args)
+@main.route('/audits', methods=['GET'])
+def audits():
+    form = FilterAuditEventsForm(request.args, csrf_enabled=False)
 
     if form.validate():
         return render_template(
@@ -29,7 +29,12 @@ def activity():
 def submit_acknowledgment(audit_id):
     form = FilterAuditEventsForm()
     if form.validate():
-        return redirect(url_for('.activity', csrf_token=form.csrf_token.data, audit_date=form.audit_date.data, acknowledged=form.acknowledged.data))
+        return redirect(
+            url_for(
+                '.audits',
+                audit_date=form.audit_date.data,
+                acknowledged=form.acknowledged.data)
+        )
     else:
         return render_template(
             "activity.html",
@@ -37,7 +42,6 @@ def submit_acknowledgment(audit_id):
             audit_events=None,
             form=form,
             **get_template_data())
-
 
 
 def get_template_data(merged_with={}):

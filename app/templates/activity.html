@@ -32,11 +32,7 @@ Digital Marketplace admin
 
 
         <div class="grid-column third-column">
-        <form action="{{ url_for('.activity') }}" method="get" class="question">
-            <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden"
-                                              value="{{ csrf }}"></div>
-
-
+        <form action="{{ url_for('.audits') }}" method="get" class="question">
             <div class="govuk-option-select">
                 {{ form.audit_date.label(class="option-select-label") }}
                 {% if form.audit_date.errors %}
@@ -102,10 +98,10 @@ Digital Marketplace admin
                         09:35 12/06/2015
                     </td>
                     <td class="summary-item-field-content">
-                        <a href="{{ url_for('.activity') }}">View service</a>
+                        <a href="{{ url_for('.audits') }}">View service</a>
                     </td>
                     <td class="summary-item-field-content">
-                        <a href="{{ url_for('.activity') }}">View changes</a>
+                        <a href="{{ url_for('.audits') }}">View changes</a>
                     </td>
                     <td class="summary-item-field-content">
                         <form action="{{ url_for('.submit_acknowledgment', audit_id='123') }}" method="post">
