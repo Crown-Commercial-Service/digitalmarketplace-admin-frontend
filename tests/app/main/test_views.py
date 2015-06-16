@@ -1,3 +1,4 @@
+from lxml import html
 try:
     from urlparse import urlsplit
     from StringIO import StringIO
@@ -45,6 +46,36 @@ class TestSession(BaseApplicationTest):
         response = self.client.get('/admin')
         self.assertEquals(302, response.status_code)
         self.assertEquals("/admin/login", urlsplit(response.location).path)
+
+
+class TestLoginFormsNotAutofillable(BaseApplicationTest):
+
+    def _forms_and_inputs_not_autofillable(
+            self, url, expected_title
+    ):
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        page_title = document.xpath(
+            '//div[@class="page-container"]//h1/text()')[0].strip()
+        self.assertEqual(expected_title, page_title)
+
+        forms = document.xpath('//div[@class="page-container"]//form')
+
+        for form in forms:
+            self.assertEqual("off", form.get('autocomplete'))
+            non_hidden_inputs = form.xpath('//input[@type!="hidden"]')
+
+            for input in non_hidden_inputs:
+                self.assertEqual("off", input.get('autocomplete'))
+
+    def test_login_form_and_inputs_not_autofillable(self):
+        self._forms_and_inputs_not_autofillable(
+            "/admin/login",
+            "Administrator login"
+        )
 
 
 class TestApplication(LoggedInApplicationTest):
