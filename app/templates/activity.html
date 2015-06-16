@@ -9,72 +9,59 @@ Digital Marketplace admin
 <div class="page-container">
     <div class="grid-row">
         <div class="service-title">
-            {{ page_heading("12/06/2015", "Activity for", "page-heading-smaller") }}
+            {{ page_heading(today, "Activity for", "page-heading-smaller") }}
         </div>
     </div>
     <div class="grid-row">
-
-        <div class="grid-column third-column">
-            <div class="govuk-option-select">
-                <div class="container-head">
-                    <label class="option-select-label" for="activity-date">
-                        Date
-                    </label>
-                </div>
-                <input class="filter-field-text" type="text" name="activity-date" id="activity-date" value="2015-06-12">
-            </div>
-            <div class="govuk-option-select">
-                <div class="container-head js-container-head">
-                    <div class="option-select-label">Audit event type</div>
-                </div>
-                <div class="options-container">
-                    <div class="js-auto-height-inner">
-
-                        <label for="audit-event-type-1">
-                            <input name="audit-type" value="update-service" id="audit-event-type-1" type="radio"
-                                   aria-controls="">
-                            Update service
-                        </label>
-                        <label for="audit-event-type-2">
-                            <input name="audit-type" value="import-service" id="audit-event-type-2" type="radio"
-                                   aria-controls="">
-                            Import service
-                        </label>
-                        <label for="audit-event-type-3">
-                            <input name="audit-type" value="update-service-status" id="audit-event-type-3" type="radio"
-                                   aria-controls="">
-                            Update service status
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="govuk-option-select">
-                <div class="container-head js-container-head">
-                    <div class="option-select-label">Show</div>
-                </div>
-                <div class="options-container">
-                    <div class="js-auto-height-inner">
-
-                        <label for="acknowledged-1">
-                            <input name="acknowledged" value="acknowledged" id="acknowledged-1" type="radio"
-                                   aria-controls="">
-                            All
-                        </label>
-                        <label for="acknowledged-2">
-                            <input name="acknowledged" value="not-acknowledged" id="acknowledged-2" type="radio"
-                                   aria-controls="">
-                            Acknowledged
-                        </label>
-                        <label for="acknowledged-3">
-                            <input name="acknowledged" value="not-acknowledged" id="acknowledged-3" type="radio"
-                                   aria-controls="">
-                            Not acknowledged
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <button class="button-save" type="submit">Filter</button>
+        {% if error %}
+        <div class="validation-masthead">
+            <h2 class="validation-masthead-heading">
+                {{error}}
+            </h2>
         </div>
+        {% endif %}
+        <form action="{{ url_for('.submit_activity') }}" method="post" class="question">
+            <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden"
+                                              value="{{ csrf_token() }}"></div>
+            <div class="grid-column third-column">
+                <div class="govuk-option-select">
+                    <div class="container-head">
+                        <label class="option-select-label" for="activity-date">
+                            Date
+                        </label>
+                    </div>
+                    <input class="filter-field-text" type="text" name="activity-date" id="activity-date" value="">
+                </div>
+                <div class="govuk-option-select">
+                    <div class="container-head js-container-head">
+                        <div class="option-select-label">Show</div>
+                    </div>
+                    <div class="options-container">
+                        <div class="js-auto-height-inner">
+
+                            <label for="acknowledged-1">
+                                <input name="acknowledged" value="all" id="acknowledged-1" type="radio"
+                                       aria-controls="" checked>
+                                All
+                            </label>
+                            <label for="acknowledged-2">
+                                <input name="acknowledged" value="acknowledged" id="acknowledged-2" type="radio"
+                                       aria-controls="">
+                                Acknowledged
+                            </label>
+                            <label for="acknowledged-3">
+                                <input name="acknowledged" value="not-acknowledged" id="acknowledged-3" type="radio"
+                                       aria-controls="">
+                                Not acknowledged
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <button class="button-save" type="submit">Filter</button>
+            </div>
+        </form>
+
+
         <div class="grid-column third-column">
             <table class="summary-item-body">
                 <thead class="summary-item-field-headings">

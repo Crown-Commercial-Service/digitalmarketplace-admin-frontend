@@ -1,22 +1,42 @@
-from flask import current_app, flash, render_template, request, redirect, \
-    session, url_for
-from dmutils.apiclient import HTTPError
-
-from .. import data_api_client
+import time
+from datetime import datetime
+from flask import render_template, request
 from . import main
-from dmutils.validation import Validate
-from dmutils.content_loader import ContentLoader
-from dmutils.presenters import Presenters
-from dmutils.s3 import S3
-from .helpers.auth import check_auth, is_authenticated
-
-
+from .helpers.auth import is_authenticated
 
 
 @main.route('/activity', methods=['GET'])
 def activity():
-    audits = data_api_client.find_audit_events()
-    return render_template("activity.html", audit_events=audits['auditEvents'], **get_template_data())
+    return render_template(
+        "activity.html",
+        today=datetime.now().strftime("%d/%m/%Y"),
+        audit_events=None,
+        **get_template_data())
+
+
+@main.route('/activity', methods=['POST'])
+def submit_activity():
+    print "\n\n\n\n\n request.form['acknowledged']  \n\n\n"
+    print request.form['acknowledged']
+    print request.form['activity-date']
+    print validate_date(request.form['activity-date'])
+    print "\n\n\n\n\n "
+    return render_template(
+        "activity.html",
+        today=datetime.now().strftime("%d/%m/%Y"),
+        audit_events=None,
+        **get_template_data())
+
+
+def validate_date(date):
+    if date:
+        try:
+            actual_date = datetime.strptime(date, "%d/%m/%Y")
+            return actual_date.strftime('%Y-%m-%d')
+        except ValueError:
+            return None
+    return None
+
 
 def get_template_data(merged_with={}):
     template_data = dict(main.config['BASE_TEMPLATE_DATA'], **merged_with)
