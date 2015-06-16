@@ -7,6 +7,9 @@ def check_auth(username, password, password_hash):
     """This function is called to check if a username /
     password combination is valid.
     """
+    if not username or not password:
+        return False
+
     secret = base64.b64decode(
         password_hash
     ).decode('utf-8')
