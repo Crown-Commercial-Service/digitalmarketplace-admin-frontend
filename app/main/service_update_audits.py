@@ -17,6 +17,9 @@ def service_update_audits():
             acknowledged=form.default_acknowledged(),
             audit_date=form.format_date()
         )
+
+        print audit_events
+
         if not form.acknowledged.data:
             form.acknowledged.data = 'all'
         return render_template(

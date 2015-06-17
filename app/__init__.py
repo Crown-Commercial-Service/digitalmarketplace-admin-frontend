@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from flask import Flask, request, redirect
 from flask.ext.bootstrap import Bootstrap
@@ -51,5 +51,13 @@ def create_app(config_name):
     def add_header(response):
         response.headers['X-Frame-Options'] = 'DENY'
         return response
+
+    @application.template_filter('timeformat')
+    def timeformat(value):
+        return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S').strftime('%H:%M:%S')
+
+    @application.template_filter('dateformat')
+    def dateformat(value):
+        return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S').strftime('%d/%m/%Y')
 
     return application

@@ -240,6 +240,91 @@ class TestActivity(LoggedInApplicationTest):
             response.get_data(as_text=True)
         )
 
+    @mock.patch('app.main.service_update_audits.data_api_client')
+    def test_should_show_no_updates_if_none_returned(self, data_api_client):
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
 
-    # TODO TESTS for rendered data after presenter made
+        response = self.client.get('/admin/service-updates?audit_date=2006-01-01')  # noqa
+        self.assertEquals(200, response.status_code)
 
+        self.assertIn(
+            self._replace_whitespace(
+                'No events for this search'),  # noqa
+            self._replace_whitespace(response.get_data(as_text=True))
+        )
+        data_api_client.find_audit_events.assert_called_with(
+            audit_date='2006-01-01',
+            audit_type='update_service',
+            acknowledged='all')
+
+    @mock.patch('app.main.service_update_audits.data_api_client')
+    def test_should_show_no_updates_if_invalid_search(self, data_api_client):
+        response = self.client.get('/admin/service-updates?audit_date=invalid')  # noqa
+        self.assertEquals(400, response.status_code)
+
+        self.assertIn(
+            self._replace_whitespace(
+                'No events for this search'),  # noqa
+            self._replace_whitespace(response.get_data(as_text=True))
+        )
+        data_api_client.find_audit_events.assert_not_called()
+
+    @mock.patch('app.main.service_update_audits.data_api_client')
+    def test_should_show_updates_if_valid_search(self, data_api_client):
+
+        audit_event = {
+            'auditEvents': [
+                {
+                    'links': {
+                        'self': 'http://localhost:5000/adit-events'
+                    },
+                    'data': {
+                        'serviceName': 'new name',
+                        'supplierId': 93518,
+                        'supplierName': 'Clouded Networks'
+                    },
+                    'user': 'joeblogs',
+                    'type': 'update_service',
+                    'id': 25,
+                    'createdAt': '2015-06-17T08:49:22'
+                }
+            ],
+            'links': {}
+        }
+
+        data_api_client.find_audit_events.return_value = audit_event
+        response = self.client.get('/admin/service-updates?audit_date=2010-01-01')  # noqa
+        self.assertEquals(200, response.status_code)
+
+        self.assertIn(
+            self._replace_whitespace(
+               '<td class="summary-item-field-content">Clouded Networks</td>'),  # noqa
+            self._replace_whitespace(response.get_data(as_text=True))
+        )
+        self.assertIn(
+            self._replace_whitespace(
+               '<td class="summary-item-field-content">08:49:22<br/>17/06/2015</td>'),  # noqa
+            self._replace_whitespace(response.get_data(as_text=True))
+        )
+        self.assertIn(
+            self._replace_whitespace(
+               '<td class="summary-item-field-content"><a href="/admin/service-updates">View changes</a></td>'),  # noqa
+            self._replace_whitespace(response.get_data(as_text=True))
+        )
+
+        self.assertIn(
+            self._replace_whitespace(
+               '<form action="/admin/acknowledge/25" method="post">'),  # noqa
+            self._replace_whitespace(response.get_data(as_text=True))
+        )
+
+        self.assertIn(
+            self._replace_whitespace(
+               '<input name="audit_date" type="hidden" value="2010-01-01">'),  # noqa
+            self._replace_whitespace(response.get_data(as_text=True))
+        )
+
+        data_api_client.find_audit_events.assert_called_with(
+            audit_type='update_service',
+            acknowledged='all',
+            audit_date='2010-01-01')

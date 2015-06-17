@@ -77,7 +77,7 @@ Digital Marketplace admin
         </div>
 
 
-        {% if audit_events %}
+        {% if audit_events and audit_events|length > 0 %}
         <div class="grid-column two-third-column">
             <table class="summary-item-body">
                 <thead class="summary-item-field-headings">
@@ -95,13 +95,15 @@ Digital Marketplace admin
                         {{ audit_event.data.supplierName }}
                     </td>
                     <td class="summary-item-field-content">
-                        {{ audit_event.createdAt }}
+                        {{ audit_event.createdAt|timeformat }}
+                        <br/>
+                        {{ audit_event.createdAt|dateformat }}
                     </td>
                     <td class="summary-item-field-content">
-                        <a href="{{ url_for('.audits') }}">View changes</a>
+                        <a href="{{ url_for('.service_update_audits') }}">View changes</a>
                     </td>
                     <td class="summary-item-field-content">
-                        <form action="{{ url_for('.submit_acknowledgment', audit_id=audit_event.id) }}" method="post">
+                        <form action="{{ url_for('.submit_service_update_acknowledgment', audit_id=audit_event.id) }}" method="post">
                             <div style="display:none;">
                                 <input name="csrf_token" type="hidden" value="{{ csrf }}">
                                 <input name="acknowledged" type="hidden" value="{{ acknowledged }}">
@@ -132,6 +134,8 @@ Digital Marketplace admin
                     </li>
                 </ul>
             </nav>
+            {% else %}
+            No events for this search
             {% endif %}
         </div>
     </div>
