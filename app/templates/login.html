@@ -15,7 +15,7 @@
     </div>
   {% endif %}
   {{ page_heading("Administrator login") }}
-  <form action="{{ url_for('.login') }}" method="post" class="question">
+  <form autocomplete="off" action="{{ url_for('.login') }}" method="post" class="question">
     <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
     {% if error %}
       <div class="validation-masthead">
@@ -25,10 +25,10 @@
       </div>
     {% endif %}
     <label class="question-heading" for="username">Username</label>
-    <input type="text" name="username" id="username" class="text-box" value="{{previous_responses.username}}">
+    <input autocomplete="off" type="text" name="username" id="username" class="text-box" value="{{previous_responses.username}}">
     <label class="question-heading" for="password">Password</label>
-    <input type="password" name="password" id="password" class="text-box">
-    <input type="submit" value="Log in" class="button-save">
+    <input autocomplete="off" type="password" name="password" id="password" class="text-box">
+    <button class="button-save">Log in</button>
   </form>
 </div>
 {% endblock %}

@@ -85,6 +85,11 @@ python application.py runserver
 
 The admin frontend runs on port 5004. Use the app at [http://127.0.0.1:5004/](http://127.0.0.1:5004/)
 
+### Using FeatureFlags
+
+To use feature flags, check out the documentation in (the README of)
+[digitalmarketplace-utils](https://github.com/alphagov/digitalmarketplace-utils#using-featureflags).
+
 ## Frontend tasks
 
 [NPM](https://www.npmjs.org/) is used for all frontend build tasks. The commands available are:
