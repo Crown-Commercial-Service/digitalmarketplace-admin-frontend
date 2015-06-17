@@ -4,7 +4,7 @@ from wtforms.validators import DataRequired, Optional, Regexp
 from datetime import datetime
 
 
-class FilterAuditEventsForm(Form):
+class ServiceUpdateAuditEventsForm(Form):
     audit_date = DateField(
         'Audit Date',
         format='%Y-%m-%d',

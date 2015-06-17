@@ -33,7 +33,7 @@ Digital Marketplace admin
 
 
         <div class="grid-column third-column">
-        <form action="{{ url_for('.audits') }}" method="get" class="question">
+        <form action="{{ url_for('.service_update_audits') }}" method="get" class="question">
             <div class="govuk-option-select">
                 {{ form.audit_date.label(class="option-select-label") }}
                 {% if form.audit_date.errors %}
@@ -82,7 +82,6 @@ Digital Marketplace admin
             <table class="summary-item-body">
                 <thead class="summary-item-field-headings">
                 <tr>
-                    <th>Audit event</th>
                     <th>Supplier</th>
                     <th>Date</th>
                     <th></th>
@@ -92,7 +91,6 @@ Digital Marketplace admin
                 <tbody class="summary-item-body">
                 {% for audit_event in audit_events %}
                 <tr class="summary-item-row">
-                    <td class="summary-item-field-name">{{ audit_event.type }}</td>
                     <td class="summary-item-field-content">
                         {{ audit_event.data.supplierName }}
                     </td>

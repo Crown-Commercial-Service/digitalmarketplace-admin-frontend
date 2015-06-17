@@ -3,13 +3,13 @@ from flask import render_template, redirect, url_for, request
 from . import main
 from .. import data_api_client
 from .helpers.auth import is_authenticated
-from forms import FilterAuditEventsForm
+from forms import ServiceUpdateAuditEventsForm
 from dmutils.audit import AuditTypes
 
 
-@main.route('/audits', methods=['GET'])
-def audits():
-    form = FilterAuditEventsForm(request.args, csrf_enabled=False)
+@main.route('/service-updates', methods=['GET'])
+def service_update_audits():
+    form = ServiceUpdateAuditEventsForm(request.args, csrf_enabled=False)
 
     if form.validate():
         audit_events = data_api_client.find_audit_events(
@@ -20,7 +20,7 @@ def audits():
         if not form.acknowledged.data:
             form.acknowledged.data = 'all'
         return render_template(
-            "activity.html",
+            "service_update_audits.html",
             today=form.format_date_for_display(),
             acknowledged=form.default_acknowledged(),
             audit_events=audit_events['auditEvents'],
@@ -28,7 +28,7 @@ def audits():
             **get_template_data())
     else:
         return render_template(
-            "activity.html",
+            "service_update_audits.html",
             today=datetime.now().strftime("%d/%m/%Y"),
             acknowledged=form.default_acknowledged(),
             audit_events=[],
@@ -37,18 +37,18 @@ def audits():
 
 
 @main.route('/acknowledge/<audit_id>', methods=['POST'])
-def submit_acknowledgment(audit_id):
-    form = FilterAuditEventsForm()
+def submit_service_update_acknowledgment(audit_id):
+    form = ServiceUpdateAuditEventsForm()
     if form.validate():
         return redirect(
             url_for(
-                '.audits',
+                '.service_update_audits',
                 audit_date=form.audit_date.data,
                 acknowledged=form.acknowledged.data)
         )
     else:
         return render_template(
-            "activity.html",
+            "service_update_audits.html",
             today=datetime.now().strftime("%d/%m/%Y"),
             audit_events=None,
             acknowledged=form.default_acknowledged(),
