@@ -8,6 +8,7 @@ Digital Marketplace admin
 {% set csrf = csrf_token() %}
 
 {% block content %}
+
 <div class="page-container">
     <div class="grid-row">
         <div class="service-title">
@@ -52,19 +53,19 @@ Digital Marketplace admin
                         <label for="acknowledged-1">
                             <input name="acknowledged" value="all" id="acknowledged-1" type="radio"
                                    aria-controls=""
-                                   {% if form.acknowledged.data=="all" %} checked {% endif %}>
+                                   {% if acknowledged=="all" %} checked {% endif %}>
                             All
                         </label>
                         <label for="acknowledged-2">
                             <input name="acknowledged" value="acknowledged" id="acknowledged-2" type="radio"
                                    aria-controls=""
-                                   {% if form.acknowledged.data=="acknowledged" %} checked {% endif %}>
+                                   {% if acknowledged=="acknowledged" %} checked {% endif %}>
                             Acknowledged
                         </label>
                         <label for="acknowledged-3">
                             <input name="acknowledged" value="not-acknowledged" id="acknowledged-3" type="radio"
                                    aria-controls=""
-                                   {% if form.acknowledged.data=="not-acknowledged" %} checked {% endif %}>
+                                   {% if acknowledged=="not-acknowledged" %} checked {% endif %}>
                             Not acknowledged
                         </label>
 
@@ -85,35 +86,33 @@ Digital Marketplace admin
                     <th>Date</th>
                     <th></th>
                     <th></th>
-                    <th></th>
                 </tr>
                 </thead>
                 <tbody class="summary-item-body">
+                {% for audit_event in audit_events %}
                 <tr class="summary-item-row">
-                    <td class="summary-item-field-name">Service update</td>
+                    <td class="summary-item-field-name">{{ audit_event.type }}</td>
                     <td class="summary-item-field-content">
-                        Affinity
+                        {{ audit_event.data.supplierName }}
                     </td>
                     <td class="summary-item-field-content">
-                        09:35 12/06/2015
-                    </td>
-                    <td class="summary-item-field-content">
-                        <a href="{{ url_for('.audits') }}">View service</a>
+                        {{ audit_event.createdAt }}
                     </td>
                     <td class="summary-item-field-content">
                         <a href="{{ url_for('.audits') }}">View changes</a>
                     </td>
                     <td class="summary-item-field-content">
-                        <form action="{{ url_for('.submit_acknowledgment', audit_id='123') }}" method="post">
+                        <form action="{{ url_for('.submit_acknowledgment', audit_id=audit_event.id) }}" method="post">
                             <div style="display:none;">
                                 <input name="csrf_token" type="hidden" value="{{ csrf }}">
-                                <input name="acknowledged" type="hidden" value="{{ form.acknowledged.data }}">
+                                <input name="acknowledged" type="hidden" value="{{ acknowledged }}">
                                 <input name="audit_date" type="hidden" value="{% if form.audit_date.data %}{{ form.audit_date.data }}{% endif %}">
                             </div>
                             <button class="button-secondary">Acknowledge</button>
                         </form>
                     </td>
                 </tr>
+                {% endfor %}
                 </tbody>
             </table>
             <nav role="navigation">
