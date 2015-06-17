@@ -37,8 +37,7 @@ def service_update_audits():
 
 @main.route('/service-updates/<audit_id>/acknowledge', methods=['POST'])
 def submit_service_update_acknowledgment(audit_id):
-    form = ServiceUpdateAuditEventsForm(request.args)
-    print form.audit_date.data
+    form = ServiceUpdateAuditEventsForm(request.form)
     if form.validate():
         data_api_client.acknowledge_audit_event(audit_id, session['username'])
         return redirect(

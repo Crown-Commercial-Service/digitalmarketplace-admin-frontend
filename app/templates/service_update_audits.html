@@ -103,6 +103,7 @@ Digital Marketplace admin
                         <a href="{{ url_for('.service_update_audits') }}">View changes</a>
                     </td>
                     <td class="summary-item-field-content">
+                        {% if not audit_event.acknowledged %}
                         <form action="{{ url_for('.submit_service_update_acknowledgment', audit_id=audit_event.id) }}" method="post">
                             <div style="display:none;">
                                 <input name="csrf_token" type="hidden" value="{{ csrf }}">
@@ -111,6 +112,13 @@ Digital Marketplace admin
                             </div>
                             <button class="button-secondary">Acknowledge</button>
                         </form>
+                        {% else %}
+                            {{ audit_event.acknowledged_by }}
+                            <br/>
+                            {{ audit_event.createdAt|timeformat }}
+                            <br/>
+                            {{ audit_event.createdAt|dateformat }}
+                            {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

@@ -11,7 +11,7 @@ class ServiceUpdateAuditEventsForm(Form):
         validators=[Optional()])
     acknowledged = StringField(
         'acknowledged',
-        default="all",
+        default="not-acknowledged",
         validators=[
             Regexp('^(all|acknowledged|not-acknowledged)$'),
             Optional()]

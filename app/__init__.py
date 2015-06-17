@@ -54,10 +54,12 @@ def create_app(config_name):
 
     @application.template_filter('timeformat')
     def timeformat(value):
-        return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S').strftime('%H:%M:%S')
+        return datetime.strptime(
+            value, '%Y-%m-%dT%H:%M:%S').strftime('%H:%M:%S')
 
     @application.template_filter('dateformat')
     def dateformat(value):
-        return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S').strftime('%d/%m/%Y')
+        return datetime.strptime(
+            value, '%Y-%m-%dT%H:%M:%S').strftime('%d/%m/%Y')
 
     return application
