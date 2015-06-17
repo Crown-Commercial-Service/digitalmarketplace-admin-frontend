@@ -3,7 +3,7 @@ from flask import render_template, redirect, url_for, request, session
 from . import main
 from .. import data_api_client
 from .helpers.auth import is_authenticated
-from forms import ServiceUpdateAuditEventsForm
+from .forms import ServiceUpdateAuditEventsForm
 from dmutils.audit import AuditTypes
 
 
