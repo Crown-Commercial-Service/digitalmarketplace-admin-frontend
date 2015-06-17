@@ -200,5 +200,46 @@ class TestActivity(LoggedInApplicationTest):
 
         data_api_client.find_audit_events.assert_called()
 
+    @mock.patch('app.main.activity.data_api_client')
+    def test_should_redirect_to_update_page_with_correct_query_params(self, data_api_client):
+        response = self.client.post(
+            '/admin/acknowledge/123',
+            data={
+                'acknowledged': 'all',
+                'audit_date': '2010-01-05'
+            }
+        )
 
+        self.assertEquals(302, response.status_code)
+        self.assertEquals('http://localhost/admin/audits?acknowledged=all&audit_date=2010-01-05', response.location)
+        data_api_client.acknowledge_audit_event.assert_called(
+            audit_event_id=123,
+            user='admin'
+        )
+
+    @mock.patch('app.main.activity.data_api_client')
+    def test_should_not_call_api_when_form_errors(self, data_api_client):
+        response = self.client.post(
+            '/admin/acknowledge/123',
+            data={
+                'acknowledged': 'not-acknowledged',
+                'audit_date': 'invalid'
+            }
+        )
+
+        self.assertEquals(400, response.status_code)
+        data_api_client.acknowledge_audit_event.assert_not_called()
+        self.assertIn(
+            self._replace_whitespace(
+                '<inputname="acknowledged"value="not-acknowledged"id="acknowledged-3"type="radio"aria-controls=""checked>'),  # noqa
+            self._replace_whitespace(response.get_data(as_text=True))
+        )
+        self.assertIn(
+            '<input class="filter-field-text" id="audit_date" name="audit_date" type="text" value="invalid">',
+            # noqa
+            response.get_data(as_text=True)
+        )
+
+
+    # TODO TESTS for rendered data after presenter made
 

@@ -51,8 +51,9 @@ def submit_acknowledgment(audit_id):
             "activity.html",
             today=datetime.now().strftime("%d/%m/%Y"),
             audit_events=None,
+            acknowledged=form.default_acknowledged(),
             form=form,
-            **get_template_data())
+            **get_template_data()), 400
 
 
 def get_template_data(merged_with={}):
