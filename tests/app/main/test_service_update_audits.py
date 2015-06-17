@@ -5,7 +5,7 @@ from datetime import datetime
 from ..helpers import LoggedInApplicationTest
 
 
-class TestActivity(LoggedInApplicationTest):
+class TestServiceUpdates(LoggedInApplicationTest):
     @mock.patch('app.main.service_update_audits.data_api_client')
     def test_should_render_activity_page_with_default_date(self, data_api_client):
         today = datetime.now().strftime("%d/%m/%Y")
@@ -203,7 +203,7 @@ class TestActivity(LoggedInApplicationTest):
     @mock.patch('app.main.service_update_audits.data_api_client')
     def test_should_redirect_to_update_page_with_correct_query_params(self, data_api_client):
         response = self.client.post(
-            '/admin/acknowledge/123',
+            '/admin/service-updates/123/acknowledge',
             data={
                 'acknowledged': 'all',
                 'audit_date': '2010-01-05'
@@ -220,7 +220,7 @@ class TestActivity(LoggedInApplicationTest):
     @mock.patch('app.main.service_update_audits.data_api_client')
     def test_should_not_call_api_when_form_errors(self, data_api_client):
         response = self.client.post(
-            '/admin/acknowledge/123',
+            '/admin/service-updates/123/acknowledge',
             data={
                 'acknowledged': 'not-acknowledged',
                 'audit_date': 'invalid'
@@ -314,7 +314,7 @@ class TestActivity(LoggedInApplicationTest):
 
         self.assertIn(
             self._replace_whitespace(
-               '<form action="/admin/acknowledge/25" method="post">'),  # noqa
+               '<form action="/admin/service-updates/25/acknowledge" method="post">'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
 
@@ -328,3 +328,10 @@ class TestActivity(LoggedInApplicationTest):
             audit_type='update_service',
             acknowledged='all',
             audit_date='2010-01-01')
+
+    @mock.patch('app.main.service_update_audits.data_api_client')
+    def test_should_call_api_ack_audit_event(self, data_api_client):
+        response = self.client.post('/admin/service-updates/123/acknowledge?audit_date=2010-01-01&acknowledged=all')  # noqa
+        self.assertEquals(302, response.status_code)
+
+        data_api_client.acknowledge_audit_event.assert_called_with('123', 'admin')
