@@ -1,0 +1,132 @@
+{% import 'macros/answers.html' as answers %}
+{% from 'macros/breadcrumb.html' import breadcrumb as breadcrumb %}
+{% from 'macros/page_heading.html' import page_heading %}
+
+{% extends "_base_page.html" %}
+{% block page_title %}
+  {{ service_data['serviceName'] }} – Digital Marketplace admin
+{% endblock %}
+
+{% block content %}
+  {{ breadcrumb() }}
+  <div class="page-container">
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+    {% if category == 'error' %}
+        <div class="banner-destructive-without-action">
+    {% else %}
+        <div class="banner-success-without-action">
+    {% endif %}
+      <p class="banner-message">
+          {% if message['bad_status'] %}
+          Not a valid status: '{{ message['bad_status'] }}'
+          {% elif message['status_error'] %}
+          Error trying to update status of service: {{ message['status_error'] }}
+          {% elif message['status_updated'] %}
+          Service status has been updated to: {{ message['status_updated']|title }}
+          {% endif %}
+      </p>
+      {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+          
+    {% if service_data %}
+      <div class="grid-row">
+        <div class="service-title">
+          {{ page_heading(service_data['serviceName'], service_data['supplierName'], "page-heading-smaller") }}
+        </div>
+        <div class="service-view">
+          <a href="https://www.digitalmarketplace.service.gov.uk/service/{{ service_id }}">View service</a>
+        </div>
+      </div>
+
+      {% for section in sections %}
+        {% if section.name in diffs %}
+          <table class="diff">
+            <caption>Changes to {{ section.name }}</caption>
+            <thead>
+              <tr>
+                <th class="line-number"><span class="visuallyhidden">Revision 1 line number</span></th>
+                <th class="line-content"><span class="visuallyhidden">Revision 1 changes</span></th>
+                <th class="line-number"><span class="visuallyhidden">Revision 2 line number</span></th>
+                <th class="line-content"><span class="visuallyhidden">Revision 2 changes</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for question in diffs[section.name].questions %}
+                {% for line in question.revision_1 %}
+                <tr>
+                  {{ line }}
+                </tr>
+                {% endfor %} 
+                {% for line in question.revision_2 %}
+                <tr>
+                  {{ line }}
+                </tr>
+                {% endfor %} 
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          {% if service_data['lot']|lower in section['depends_on_lots'] %}
+            <h2 class="summary-item-heading">
+              {{section.name}}
+            </h2>
+            <table class="summary-item-body">
+              <thead class="summary-item-field-headings">
+                <tr>
+                  <th>Service attribute name</th><th>Service attribute</th>
+                </tr>
+              </thead>
+              <tbody class="summary-item-body">
+                {% for question in section.questions %}
+                  {% if service_data['lot']|lower in question['depends_on_lots'] %}
+                    <tr class="summary-item-row">
+                      <td class="summary-item-field-name">{{ question.question }}</td>
+                      <td class="summary-item-field-content">
+                        {{ answers[question.type](service_data[question.id]) }}
+                      </td>
+                    </tr>
+                  {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+
+      <form action="{{ url_for('.update_service_status', service_id=service_id ) }}" method="post">
+          <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
+          <fieldset class="question">
+              <legend class="question-heading">
+                  Service status
+              </legend>
+              <label class="selection-button">
+                  <input type="radio" name="service_status" id="service_status_disabled" value="removed" {% if service_data['status'] == 'disabled' %}checked="checked"{% endif %} />
+                  Removed
+              </label>
+              <label class="selection-button">
+                  <input type="radio" name="service_status" id="service_status_private" value="private" {% if service_data['status'] == 'enabled' %}checked="checked"{% endif %} />
+                  Private
+              </label>
+              {% if service_data.status != 'disabled' %}
+              <label class="selection-button">
+                  <input type="radio" name="service_status" id="service_status_published" value="public" {% if service_data['status'] == 'published' %}checked="checked"{% endif %} />
+                  Public
+              </label>
+              {% endif %}
+          </fieldset>
+          <button type="submit" class="button-save">Update status</button>
+      </form>
+
+    {% else %}
+    <h1>Error</h1>
+    <p>
+      No service data
+    </p>
+    {% endif %}
+  </div>
+{% endblock %}
