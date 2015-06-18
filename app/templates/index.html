@@ -19,7 +19,7 @@
         {%
           with
           message = displayed_message,
-          type = "error" if category == 'error' else "success"
+          type = "destructive" if category == 'error' else "success"
         %}
           {% include "toolkit/notification-banner.html" %}
         {% endwith %}
