@@ -7,23 +7,31 @@
 
 {% block content %}
 <div class="page-container">
+
   {% if logged_out %}
-    <div class="banner-success-without-action">
-      <p class="banner-message">
-        You have been logged out
-      </p>
-    </div>
+    {%
+      with
+      message = "You have been logged out",
+      type = "success"
+    %}
+      {% include "toolkit/notification-banner.html" %}
+    {% endwith %}
   {% endif %}
-  {{ page_heading("Administrator login") }}
+
+  {%
+    with
+    heading = "Administrator login"
+  %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+
+  {% if error %}
+    {% with lede = error %}
+      {% include "toolkit/forms/validation.html" %}
+    {% endwith %}
+  {% endif %}
   <form autocomplete="off" action="{{ url_for('.login') }}" method="post" class="question">
     <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
-    {% if error %}
-      <div class="validation-masthead">
-        <h2 class="validation-masthead-heading">
-          {{error}}
-        </h2>
-      </div>
-    {% endif %}
     <label class="question-heading" for="username">Username</label>
     <input autocomplete="off" type="text" name="username" id="username" class="text-box" value="{{previous_responses.username}}">
     <label class="question-heading" for="password">Password</label>

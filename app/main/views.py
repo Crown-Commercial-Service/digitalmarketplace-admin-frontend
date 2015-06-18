@@ -67,16 +67,9 @@ def view(service_id):
     except HTTPError:
         flash({'api_error': service_id}, 'error')
         return redirect(url_for('.index'))
-
-    presented_service_data = {}
-    for key, value in service_data.items():
-        presented_service_data[key] = presenters.present(
-            value, content.get_question(key)
-        )
-
     template_data = get_template_data({
-        "sections": content.sections,
-        "service_data": presented_service_data,
+        "sections": content.get_sections_filtered_by(service_data),
+        "service_data": presenters.present_all(service_data, content),
         "service_id": service_id
     })
     return render_template("view_service.html", **template_data)
@@ -118,9 +111,10 @@ def update_service_status(service_id):
 
 @main.route('/services/<service_id>/edit/<section>', methods=['GET'])
 def edit(service_id, section):
+    service_data = data_api_client.get_service(service_id)['services']
     template_data = get_template_data({
-        "section": content.get_section(section),
-        "service_data": data_api_client.get_service(service_id)['services'],
+        "section": content.get_section_filtered_by(section, service_data),
+        "service_data": service_data,
     })
     return render_template("edit_section.html", **template_data)
 
@@ -170,7 +164,7 @@ def update(service_id, section):
     if form.errors:
         service_data.update(form.dirty_data)
         return render_template("edit_section.html", **get_template_data({
-            "section": content.get_section(section),
+            "section": content.get_section_filtered_by(section, service_data),
             "service_data": service_data,
             "service_id": service_id,
             "errors": form.errors
