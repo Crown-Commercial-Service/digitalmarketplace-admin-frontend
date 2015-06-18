@@ -399,3 +399,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         response2 = self.client.get(response1.location)
         self.assertIn(b"Not a valid status: 'suspended'",
                       response2.data)
+
+    def test_services_with_missing_id(self):
+        response = self.client.get('/admin/services')
+        self.assertEquals(404, response.status_code)
