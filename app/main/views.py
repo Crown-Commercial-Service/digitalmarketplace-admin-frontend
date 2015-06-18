@@ -1,5 +1,5 @@
 from flask import current_app, flash, render_template, request, redirect, \
-    session, url_for
+    session, url_for, abort
 from dmutils.apiclient import HTTPError
 
 from .. import data_api_client
@@ -52,6 +52,8 @@ def logout():
 
 @main.route('/services', methods=['GET'])
 def find():
+    if request.args.get("service_id") is None:
+        abort(404)
     return redirect(
         url_for(".view", service_id=request.args.get("service_id")))
 
