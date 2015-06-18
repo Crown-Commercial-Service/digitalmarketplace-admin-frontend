@@ -53,7 +53,7 @@ def logout():
 @main.route('/services', methods=['GET'])
 def find():
     if request.args.get("service_id") is None:
-        abort(404)
+        return render_template("index.html", **get_template_data()), 404
     return redirect(
         url_for(".view", service_id=request.args.get("service_id")))
 
