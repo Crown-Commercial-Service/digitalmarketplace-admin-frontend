@@ -84,25 +84,25 @@ Digital Marketplace admin
                 <tr>
                     <th>Supplier</th>
                     <th>Date</th>
-                    <th></th>
-                    <th></th>
+                    <th>Diff</th>
+                    <th>Acknowledge</th>
                 </tr>
                 </thead>
                 <tbody class="summary-item-body">
                 {% for audit_event in audit_events %}
                 <tr class="summary-item-row">
-                    <td class="summary-item-field-content">
+                    <td class="summary-item-field-name">
                         {{ audit_event.data.supplierName }}
                     </td>
-                    <td class="summary-item-field-content">
+                    <td class="summary-item-field-name">
                         {{ audit_event.createdAt|timeformat }}
                         <br/>
                         {{ audit_event.createdAt|dateformat }}
                     </td>
-                    <td class="summary-item-field-content">
+                    <td class="summary-item-field-name">
                         <a href="{{ url_for('.service_update_audits') }}">View changes</a>
                     </td>
-                    <td class="summary-item-field-content">
+                    <td class="summary-item-field-name">
                         {% if not audit_event.acknowledged %}
                         <form action="{{ url_for('.submit_service_update_acknowledgment', audit_id=audit_event.id) }}" method="post">
                             <div style="display:none;">
