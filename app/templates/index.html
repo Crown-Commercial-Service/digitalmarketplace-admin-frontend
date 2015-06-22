@@ -7,28 +7,30 @@
 
 {% block content %}
 <div class="page-container">
-    
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
-{% if category == 'error' %}
-    <div class="banner-destructive-without-action">
-    {% else %}
-    <div class="banner-success-without-action">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        {% if message['no_service'] %}
+          {% set displayed_message = "Could not find a service with ID: {}".format(message['no_service']) %}
+        {% elif message['api_error'] %}
+          {% set displayed_message = "Error trying to retrieve service with ID: {}".format(message['api_error']) %}
         {% endif %}
-        <p class="banner-message">
-            {% if message['no_service'] %}
-            Could not find a service with ID: {{ message['no_service'] }}
-            {% elif message['api_error'] %}
-            Error trying to retrieve service with ID: {{ message['api_error'] }}
-            {% endif %}
-        </p>
-        {% endfor %}
-    </div>
-{% endif %}
-{% endwith %}
-    
-  {{ page_heading("Find a service") }}
+        {%
+          with
+          message = displayed_message,
+          type = "destructive" if category == 'error' else "success"
+        %}
+          {% include "toolkit/notification-banner.html" %}
+        {% endwith %}
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  {%
+    with heading = "Find a service"
+  %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
   <form action="{{ url_for('.find') }}" method="get" class="question">
       <label class="question-heading" for="service_id">Service ID</label>
       <input type="text" name="service_id" id="service_id" class="text-box">

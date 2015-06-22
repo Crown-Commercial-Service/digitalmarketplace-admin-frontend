@@ -126,9 +126,7 @@ class TestServiceView(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.data_api_client')
     def test_service_view_with_no_features_or_benefits(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {
-            'lot': 'IaaS',
-        }}
+        data_api_client.get_service.return_value = {'services': {}}
         response = self.client.get('/admin/services/1')
 
         data_api_client.get_service.assert_called_with('1')
@@ -163,7 +161,7 @@ class TestServiceEdit(LoggedInApplicationTest):
     def test_service_edit_documents_empty_post(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
-            'supplierId': 2,
+            'supplierId': 2
         }}
         response = self.client.post(
             '/admin/services/1/edit/documents',
@@ -275,7 +273,7 @@ class TestServiceEdit(LoggedInApplicationTest):
     @mock.patch('app.main.views.data_api_client')
     def test_service_edit_with_no_features_or_benefits(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
-            'lot': 'IaaS',
+            'lot': 'SaaS'
         }}
         response = self.client.get(
             '/admin/services/1/edit/features_and_benefits')
@@ -401,3 +399,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         response2 = self.client.get(response1.location)
         self.assertIn(b"Not a valid status: 'suspended'",
                       response2.data)
+
+    def test_services_with_missing_id(self):
+        response = self.client.get('/admin/services')
+        self.assertEquals(404, response.status_code)
