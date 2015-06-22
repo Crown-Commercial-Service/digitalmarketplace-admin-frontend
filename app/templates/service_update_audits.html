@@ -57,15 +57,15 @@ Digital Marketplace admin
                             All
                         </label>
                         <label for="acknowledged-2">
-                            <input name="acknowledged" value="acknowledged" id="acknowledged-2" type="radio"
+                            <input name="acknowledged" value="true" id="acknowledged-2" type="radio"
                                    aria-controls=""
-                                   {% if acknowledged=="acknowledged" %} checked {% endif %}>
+                                   {% if acknowledged=="true" %} checked {% endif %}>
                             Acknowledged
                         </label>
                         <label for="acknowledged-3">
-                            <input name="acknowledged" value="not-acknowledged" id="acknowledged-3" type="radio"
+                            <input name="acknowledged" value="false" id="acknowledged-3" type="radio"
                                    aria-controls=""
-                                   {% if acknowledged=="not-acknowledged" %} checked {% endif %}>
+                                   {% if acknowledged=="false" %} checked {% endif %}>
                             Not acknowledged
                         </label>
 
@@ -113,7 +113,7 @@ Digital Marketplace admin
                             <button class="button-secondary">Acknowledge</button>
                         </form>
                         {% else %}
-                            {{ audit_event.acknowledged_by }}
+                            {{ audit_event.acknowledgedBy }}
                             <br/>
                             {{ audit_event.createdAt|timeformat }}
                             <br/>

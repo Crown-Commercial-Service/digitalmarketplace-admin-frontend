@@ -41,7 +41,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         self.assertIn(
             self._replace_whitespace(
-                '<input name="acknowledged" value="not-acknowledged" id="acknowledged-3" type="radio" aria-controls="" checked>'),  # noqa
+                '<input name="acknowledged" value="false" id="acknowledged-3" type="radio" aria-controls="" checked>'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
 
@@ -120,19 +120,19 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         self.assertIn(
             self._replace_whitespace(
-                '<inputname="acknowledged"value="not-acknowledged"id="acknowledged-3"type="radio"aria-controls=""checked>'),  # noqa
+                '<inputname="acknowledged"value="false"id="acknowledged-3"type="radio"aria-controls=""checked>'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
         data_api_client.find_audit_events.assert_called_with(
             audit_date='2006-01-01',
             audit_type='update_service',
-            acknowledged='not-acknowledged')
+            acknowledged='false')
 
     @mock.patch('app.main.service_update_audits.data_api_client')
     def test_should_allow_acknowledged_fields(self, data_api_client):
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
 
-        response = self.client.get('/admin/service-updates?acknowledged=not-acknowledged')  # noqa
+        response = self.client.get('/admin/service-updates?acknowledged=false')  # noqa
         self.assertEquals(200, response.status_code)
         self.assertIn(
             '<input class="filter-field-text" id="audit_date" name="audit_date" type="text" value="">',  # noqa
@@ -141,13 +141,13 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         self.assertIn(
             self._replace_whitespace(
-                '<inputname="acknowledged"value="not-acknowledged"id="acknowledged-3"type="radio"aria-controls=""checked>'),  # noqa
+                '<inputname="acknowledged"value="false"id="acknowledged-3"type="radio"aria-controls=""checked>'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
         data_api_client.find_audit_events.assert_called_with(
             audit_date=None,
             audit_type='update_service',
-            acknowledged='not-acknowledged')
+            acknowledged='false')
 
     @mock.patch('app.main.service_update_audits.data_api_client')
     def test_should_call_api_with_correct_params(self, data_api_client):
@@ -202,14 +202,14 @@ class TestServiceUpdates(LoggedInApplicationTest):
         response = self.client.post(
             '/admin/service-updates/123/acknowledge',
             data={
-                'acknowledged': 'not-acknowledged',
+                'acknowledged': 'false',
                 'audit_date': '2010-01-05'
             }
         )
 
         self.assertEquals(302, response.status_code)
         self.assertEquals(
-            'http://localhost/admin/service-updates?acknowledged=not-acknowledged&audit_date=2010-01-05',  # noqa
+            'http://localhost/admin/service-updates?acknowledged=false&audit_date=2010-01-05',  # noqa
             response.location)
         data_api_client.acknowledge_audit_event.assert_called(
             audit_event_id=123,
@@ -221,7 +221,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         response = self.client.post(
             '/admin/service-updates/123/acknowledge',
             data={
-                'acknowledged': 'not-acknowledged',
+                'acknowledged': 'false',
                 'audit_date': 'invalid'
             }
         )
@@ -230,7 +230,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         data_api_client.acknowledge_audit_event.assert_not_called()
         self.assertIn(
             self._replace_whitespace(
-                '<inputname="acknowledged"value="not-acknowledged"id="acknowledged-3"type="radio"aria-controls=""checked>'),  # noqa
+                '<inputname="acknowledged"value="false"id="acknowledged-3"type="radio"aria-controls=""checked>'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
         self.assertIn(
@@ -253,7 +253,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         data_api_client.find_audit_events.assert_called_with(
             audit_date='2006-01-01',
             audit_type='update_service',
-            acknowledged='not-acknowledged')
+            acknowledged='false')
 
     @mock.patch('app.main.service_update_audits.data_api_client')
     def test_should_show_no_updates_if_invalid_search(self, data_api_client):
@@ -284,7 +284,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                     'user': 'joeblogs',
                     'type': 'update_service',
                     'id': 25,
-                    'createdAt': '2015-06-17T08:49:22'
+                    'createdAt': '2015-06-17T08:49:22.999Z'
                 }
             ],
             'links': {}
@@ -324,7 +324,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         data_api_client.find_audit_events.assert_called_with(
             audit_type='update_service',
-            acknowledged='not-acknowledged',
+            acknowledged='false',
             audit_date='2010-01-01')
 
     @mock.patch('app.main.service_update_audits.data_api_client')
