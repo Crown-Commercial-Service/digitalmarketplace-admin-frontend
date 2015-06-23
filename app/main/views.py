@@ -5,16 +5,17 @@ from dmutils.apiclient import HTTPError
 from .. import data_api_client
 from . import main
 from dmutils.validation import Validate
-from dmutils.content_loader import ContentLoader
+from dmutils.content_loader import YAMLLoader, ContentBuilder
 from dmutils.presenters import Presenters
 from dmutils.s3 import S3
 from .helpers.auth import check_auth, is_authenticated
 
 
-content = ContentLoader(
+existing_service_options = [
     "app/section_order.yml",
-    "app/content/g6/"
-)
+    "app/content/g6/",
+    YAMLLoader()
+]
 presenters = Presenters()
 
 
@@ -69,8 +70,12 @@ def view(service_id):
     except HTTPError:
         flash({'api_error': service_id}, 'error')
         return redirect(url_for('.index'))
+
+    content = ContentBuilder(*existing_service_options)
+    content.filter(service_data)
+
     template_data = get_template_data({
-        "sections": content.get_sections_filtered_by(service_data),
+        "sections": content.sections,
         "service_data": presenters.present_all(service_data, content),
         "service_id": service_id
     })
@@ -113,9 +118,14 @@ def update_service_status(service_id):
 
 @main.route('/services/<service_id>/edit/<section>', methods=['GET'])
 def edit(service_id, section):
+
     service_data = data_api_client.get_service(service_id)['services']
+
+    content = ContentBuilder(*existing_service_options)
+    content.filter(service_data)
+
     template_data = get_template_data({
-        "section": content.get_section_filtered_by(section, service_data),
+        "section": content._get_section_filtered_by(section, service_data),
         "service_data": service_data,
     })
     return render_template("edit_section.html", **template_data)
@@ -133,13 +143,16 @@ def update(service_id, section):
         list(request.form.items()) + list(request.files.items())
     )
 
+    content = ContentBuilder(*existing_service_options)
+    content.filter(service_data)
+
     # Turn responses which have multiple parts into lists
     for key in request.form:
         item_as_list = request.form.getlist(key)
         list_types = ['list', 'checkboxes', 'pricing']
         if (
-            key != 'csrf_token'
-            and content.get_question(key)['type'] in list_types
+            key != 'csrf_token' and
+            content.get_question(key)['type'] in list_types
         ):
             posted_data[key] = item_as_list
 
@@ -166,7 +179,7 @@ def update(service_id, section):
     if form.errors:
         service_data.update(form.dirty_data)
         return render_template("edit_section.html", **get_template_data({
-            "section": content.get_section_filtered_by(section, service_data),
+            "section": content.get_section(section),
             "service_data": service_data,
             "service_id": service_id,
             "errors": form.errors
