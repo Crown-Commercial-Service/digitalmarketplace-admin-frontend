@@ -208,9 +208,16 @@ class TestServiceUpdates(LoggedInApplicationTest):
         )
 
         self.assertEquals(302, response.status_code)
-        self.assertEquals(
-            'http://localhost/admin/service-updates?acknowledged=false&audit_date=2010-01-05',  # noqa
+        self.assertIn(
+            'http://localhost/admin/service-updates',
             response.location)
+        self.assertIn(
+            'acknowledged=false',
+            response.location)
+        self.assertIn(
+            'audit_date=2010-01-05',
+            response.location)
+
         data_api_client.acknowledge_audit_event.assert_called(
             audit_event_id=123,
             user='admin'
