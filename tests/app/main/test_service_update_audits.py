@@ -247,7 +247,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         self.assertIn(
             self._replace_whitespace(
-                'No events for this search'),  # noqa
+                'No activity for this search'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
         data_api_client.find_audit_events.assert_called_with(
@@ -262,7 +262,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         self.assertIn(
             self._replace_whitespace(
-                'No events for this search'),  # noqa
+                'No activity for this search'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
         data_api_client.find_audit_events.assert_not_called()
@@ -296,17 +296,17 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         self.assertIn(
             self._replace_whitespace(
-               '<td class="summary-item-field-content">Clouded Networks</td>'),  # noqa
+               '<td class="summary-item-field-name">Clouded Networks</td>'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
         self.assertIn(
             self._replace_whitespace(
-               '<td class="summary-item-field-content">08:49:22<br/>17/06/2015</td>'),  # noqa
+               '<td class="summary-item-field-name">08:49:22<br/>17/06/2015</td>'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
         self.assertIn(
             self._replace_whitespace(
-               '<td class="summary-item-field-content"><a href="/admin/service-updates">View changes</a></td>'),  # noqa
+               '<td class="summary-item-field-name"><a href="/admin/service-updates">View changes</a></td>'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
 
