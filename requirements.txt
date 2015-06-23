@@ -8,7 +8,7 @@ six==1.9.0
 
 boto==2.36.0
 
-git+https://github.com/alphagov/digitalmarketplace-utils.git@1.0.6#egg=digitalmarketplace-utils==1.0.6
+git+https://github.com/alphagov/digitalmarketplace-utils.git@2.0.4#egg=digitalmarketplace-utils==2.0.4
 
 # Required for SNI to work in requests
 pyOpenSSL==0.14
