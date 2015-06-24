@@ -62,4 +62,8 @@ def create_app(config_name):
         return datetime.strptime(
             value, formats.DATETIME_FORMAT).strftime('%d/%m/%Y')
 
+    @application.template_filter('displaydateformat')
+    def display_date_format(value):
+        return value.strftime('%d/%m/%Y')
+
     return application

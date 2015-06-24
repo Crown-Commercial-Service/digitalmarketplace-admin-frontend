@@ -31,6 +31,6 @@ class ServiceUpdateAuditEventsForm(Form):
 
     def format_date_for_display(self):
         if self.audit_date.data:
-            return datetime.strftime(self.audit_date.data, '%d/%m/%Y')
+            return self.audit_date.data
         else:
-            return datetime.now().strftime("%d/%m/%Y")
+            return datetime.now()
