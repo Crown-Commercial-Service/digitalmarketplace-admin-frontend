@@ -1,6 +1,6 @@
 from flask_wtf import Form
 from wtforms import StringField, DateField
-from wtforms.validators import DataRequired, Optional, Regexp
+from wtforms.validators import DataRequired, Optional, Regexp, AnyOf
 from datetime import datetime
 
 
@@ -13,7 +13,7 @@ class ServiceUpdateAuditEventsForm(Form):
         'acknowledged',
         default="false",
         validators=[
-            Regexp('^(all|true|false)$'),
+            AnyOf(['all', 'true', 'false']),
             Optional()]
     )
 
