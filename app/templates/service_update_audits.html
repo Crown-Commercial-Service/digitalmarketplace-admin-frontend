@@ -1,0 +1,154 @@
+{% from 'macros/page_heading.html' import page_heading %}
+
+{% extends "_base_page.html" %}
+{% block page_title %}
+Digital Marketplace admin
+{% endblock %}
+
+{% set csrf = csrf_token() %}
+
+{% block content %}
+
+<div class="page-container">
+    <div class="grid-row">
+        <div class="service-title">
+            {{ page_heading(today|displaydateformat, "Activity for", "page-heading-smaller") }}
+        </div>
+    </div>
+    <div class="grid-row">
+        {% if form.errors|length >= 1 %}
+        <div class="validation-masthead" aria-labelledby="validation-masthead-heading">
+            <h3 class="validation-masthead-heading" id="validation-masthead-heading">
+                There was a problem with your answer to the following questions
+            </h3>
+            {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+            {% for error in field_errors %}
+            <a href="#example-textbox" class="validation-masthead-link">{{ form[field_name].label }}</a>
+            {% endfor %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+
+
+
+        <div class="grid-column third-column">
+        <form action="{{ url_for('.service_update_audits') }}" method="get" class="question">
+            <div class="govuk-option-select">
+                {{ form.audit_date.label(class="option-select-label") }}
+                {% if form.audit_date.errors %}
+                <p class="validation-message" id="error-email-address-textbox">
+                    {% for error in form.audit_date.errors %}{{ error }}{% endfor %}
+                </p>
+                {% endif %}
+                {{ form.audit_date(class="filter-field-text") }}
+            </div>
+
+            <div class="govuk-option-select">
+                <div class="container-head js-container-head">
+                    <div class="option-select-label">Show</div>
+                </div>
+                <div class="options-container">
+                    <div class="js-auto-height-inner">
+                        <label for="acknowledged-1">
+                            <input name="acknowledged" value="all" id="acknowledged-1" type="radio"
+                                   aria-controls=""
+                                   {% if acknowledged=="all" %} checked {% endif %}>
+                            All
+                        </label>
+                        <label for="acknowledged-2">
+                            <input name="acknowledged" value="true" id="acknowledged-2" type="radio"
+                                   aria-controls=""
+                                   {% if acknowledged=="true" %} checked {% endif %}>
+                            Acknowledged
+                        </label>
+                        <label for="acknowledged-3">
+                            <input name="acknowledged" value="false" id="acknowledged-3" type="radio"
+                                   aria-controls=""
+                                   {% if acknowledged=="false" %} checked {% endif %}>
+                            Not acknowledged
+                        </label>
+
+                    </div>
+                </div>
+            </div>
+            <button class="button-save" type="submit">Filter</button>
+            </form>
+        </div>
+
+
+        {% if audit_events and audit_events|length > 0 %}
+        <div class="grid-column two-third-column">
+            <table class="summary-item-body">
+                <thead class="summary-item-field-headings">
+                <tr>
+                    <th>Supplier</th>
+                    <th>Date</th>
+                    <th>Diff</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody class="summary-item-body">
+                {% for audit_event in audit_events %}
+                <tr class="summary-item-row">
+                    <td class="summary-item-field-name">
+                        {{ audit_event.data.supplierName }}
+                    </td>
+                    <td class="summary-item-field-name">
+                        {{ audit_event.createdAt|timeformat }}
+                        <br/>
+                        {{ audit_event.createdAt|dateformat }}
+                    </td>
+                    <td class="summary-item-field-name">
+                        <a href="{{ url_for('.service_update_audits') }}">View changes</a>
+                    </td>
+                    <td class="summary-item-field-name">
+                        {% if not audit_event.acknowledged %}
+                        <form action="{{ url_for('.submit_service_update_acknowledgment', audit_id=audit_event.id) }}" method="post">
+                            <div style="display:none;">
+                                <input name="csrf_token" type="hidden" value="{{ csrf }}">
+                                <input name="acknowledged" type="hidden" value="{{ acknowledged }}">
+                                <input name="audit_date" type="hidden" value="{% if form.audit_date.data %}{{ form.audit_date.data }}{% endif %}">
+                            </div>
+                            <button class="button-secondary">Acknowledge</button>
+                        </form>
+                        {% else %}
+                            {{ audit_event.acknowledgedBy }}
+                            <br/>
+                            {{ audit_event.createdAt|timeformat }}
+                            <br/>
+                            {{ audit_event.createdAt|dateformat }}
+                            {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <!--
+            <nav role="navigation">
+                <ul class="previous-next-navigation">
+
+                    <li class="previous">
+                        <a href="">
+                            Previous <span class="visuallyhidden">page</span>
+                            <span class="page-numbers">1 of 3</span>
+                        </a>
+                    </li>
+
+                    <li class="next">
+                        <a href="">
+                            Next <span class="visuallyhidden">page</span>
+                            <span class="page-numbers">2 of 3</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            -->
+            {% else %}
+            No activity for this search
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

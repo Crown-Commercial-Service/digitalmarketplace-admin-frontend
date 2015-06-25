@@ -6,7 +6,7 @@
 @import "layout";
 
 // Digital Marketplace front end toolkit components
-$path: "/static/images/";
+$path: "/admin/static/images/";
 @import "toolkit/breadcrumb";
 @import "toolkit/page-headings";
 @import "toolkit/forms/summary";
@@ -19,6 +19,8 @@ $path: "/static/images/";
 @import "toolkit/forms/validation";
 @import "toolkit/buttons";
 @import "toolkit/notification-banners";
+@import "_pagination.scss";
+@import "forms/_option-select.scss";
 
 // Patterns specific to this app
 @import "patterns/service-id";
@@ -27,3 +29,4 @@ $path: "/static/images/";
 // Layout of specific views
 @import "views/view_service";
 @import "views/edit_section";
+@import "views/view_audits";

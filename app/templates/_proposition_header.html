@@ -9,7 +9,10 @@
     {% if authenticated %}
       <ul id="proposition-links">
         <li>
-          <a href="{{ url_for('.logout') }}">Log out</a>
+            <a href="{{ url_for('.service_update_audits') }}">Service Updates</a>
+        </li>
+        <li>
+            <a href="{{ url_for('.logout') }}">Log out</a>
         </li>
       </ul>
     {% endif %}

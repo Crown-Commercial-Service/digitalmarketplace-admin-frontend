@@ -1,9 +1,9 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from flask import Flask, request, redirect
 from flask.ext.bootstrap import Bootstrap
 from flask_wtf.csrf import CsrfProtect
-from dmutils import apiclient, init_app, flask_featureflags
+from dmutils import apiclient, init_app, flask_featureflags, formats
 
 from config import configs
 
@@ -46,5 +46,19 @@ def create_app(config_name):
     def remove_trailing_slash():
         if request.path != '/' and request.path.endswith('/'):
             return redirect(request.path[:-1], code=301)
+
+    @application.template_filter('timeformat')
+    def timeformat(value):
+        return datetime.strptime(
+            value, formats.DATETIME_FORMAT).strftime('%H:%M:%S')
+
+    @application.template_filter('dateformat')
+    def dateformat(value):
+        return datetime.strptime(
+            value, formats.DATETIME_FORMAT).strftime('%d/%m/%Y')
+
+    @application.template_filter('displaydateformat')
+    def display_date_format(value):
+        return value.strftime('%d/%m/%Y')
 
     return application

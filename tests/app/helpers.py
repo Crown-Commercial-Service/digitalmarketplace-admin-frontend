@@ -1,4 +1,6 @@
 import mock
+import re
+
 from app import create_app
 from unittest import TestCase
 
@@ -27,3 +29,7 @@ class LoggedInApplicationTest(BaseApplicationTest):
         super(LoggedInApplicationTest, self).setUp()
         with self.client.session_transaction() as session:
             session['username'] = 'admin'
+
+    def _replace_whitespace(self, string, replacement_substring=""):
+            # Replace all runs of whitespace with replacement_substring
+            return re.sub(r"\s+", replacement_substring, string)
