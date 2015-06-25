@@ -1,97 +1,13 @@
-from lxml import html
 try:
     from urlparse import urlsplit
     from StringIO import StringIO
 except ImportError:
     from urllib.parse import urlsplit
     from io import BytesIO as StringIO
-
 import mock
+
 from dmutils.apiclient import HTTPError, REQUEST_ERROR_MESSAGE
-
-from ..helpers import BaseApplicationTest
-from ..helpers import LoggedInApplicationTest
-
-
-class TestSession(BaseApplicationTest):
-
-    def _login(self, username, password, is_authenticated=True):
-        post_response = self.client.post('/admin/login', data=dict(
-            username=username,
-            password=password
-        ))
-
-        get_response = self.client.get('/admin')
-
-        if is_authenticated:
-            self.assertEquals(302, post_response.status_code)
-            self.assertEquals(
-                "/admin", urlsplit(post_response.location).path)
-            self.assertEquals(200, get_response.status_code)
-        else:
-            self.assertEquals(200, post_response.status_code)
-            self.assertEquals(302, get_response.status_code)
-            self.assertEquals(
-                "/admin/login", urlsplit(get_response.location).path)
-
-    def test_index(self):
-        response = self.client.get('/admin')
-        self.assertEquals(302, response.status_code)
-
-    def test_url_with_non_canonical_trailing_slash(self):
-        response = self.client.get('/admin/')
-        self.assertEquals(301, response.status_code)
-        self.assertEquals("http://localhost/admin", response.location)
-
-    def test_valid_login(self):
-        self._login(
-            username="admin",
-            password="admin"
-        )
-
-    def test_invalid_logins(self):
-        invalid_logins = [
-            ("admin", "wrong"),
-            ("adminadmin", ""),
-            ("", "adminadmin")
-        ]
-
-        for invalid_login in invalid_logins:
-            self._login(
-                username=invalid_login[0],
-                password=invalid_login[1],
-                is_authenticated=False
-            )
-
-
-class TestLoginFormsNotAutofillable(BaseApplicationTest):
-
-    def _forms_and_inputs_not_autofillable(
-            self, url, expected_title
-    ):
-        response = self.client.get(url)
-        self.assertEqual(200, response.status_code)
-
-        document = html.fromstring(response.get_data(as_text=True))
-
-        page_title = document.xpath(
-            '//div[@class="page-container"]//h1/text()')[0].strip()
-        self.assertEqual(expected_title, page_title)
-
-        forms = document.xpath('//div[@class="page-container"]//form')
-
-        for form in forms:
-            self.assertEqual("off", form.get('autocomplete'))
-            non_hidden_inputs = form.xpath('//input[@type!="hidden"]')
-
-            for input in non_hidden_inputs:
-                self.assertEqual("off", input.get('autocomplete'))
-
-    def test_login_form_and_inputs_not_autofillable(self):
-        self._forms_and_inputs_not_autofillable(
-            "/admin/login",
-            "Administrator login"
-        )
+from ...helpers import LoggedInApplicationTest
 
 
 class TestApplication(LoggedInApplicationTest):
@@ -115,7 +31,7 @@ class TestApplication(LoggedInApplicationTest):
 
 
 class TestServiceView(LoggedInApplicationTest):
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_service_response(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {}}
         response = self.client.get('/admin/services/1')
@@ -124,7 +40,7 @@ class TestServiceView(LoggedInApplicationTest):
 
         self.assertEquals(200, response.status_code)
 
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_service_view_with_no_features_or_benefits(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {}}
         response = self.client.get('/admin/services/1')
@@ -133,7 +49,7 @@ class TestServiceView(LoggedInApplicationTest):
 
         self.assertEquals(200, response.status_code)
 
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_redirect_with_flash_for_api_client_404(self, data_api_client):
         response = mock.Mock()
         response.status_code = 404
@@ -146,7 +62,7 @@ class TestServiceView(LoggedInApplicationTest):
         self.assertIn(b'Error trying to retrieve service with ID: 1',
                       response2.data)
 
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_independence_of_viewing_services(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'SCS'
@@ -168,7 +84,7 @@ class TestServiceView(LoggedInApplicationTest):
 
 
 class TestServiceEdit(LoggedInApplicationTest):
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_documents_get_response(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {}}
         response = self.client.get('/admin/services/1/edit/documents')
@@ -177,7 +93,7 @@ class TestServiceEdit(LoggedInApplicationTest):
 
         self.assertEquals(200, response.status_code)
 
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_documents_empty_post(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -196,7 +112,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             "/admin/services/1", urlsplit(response.location).path
         )
 
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_documents_post(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -224,7 +140,7 @@ class TestServiceEdit(LoggedInApplicationTest):
 
         self.assertEquals(302, response.status_code)
 
-    @mock.patch("app.main.views.data_api_client")
+    @mock.patch("app.main.views.services.data_api_client")
     def test_service_edit_documents_post_with_validation_errors(
             self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -254,7 +170,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         self.assertIn(b'This question requires an answer', response.data)
         self.assertEquals(200, response.status_code)
 
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_with_one_service_feature(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -290,7 +206,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         }, 'admin', 'admin app')
         self.assertEquals(response.status_code, 302)
 
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_with_no_features_or_benefits(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'SaaS'
@@ -305,7 +221,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             b'id="serviceFeatures-item-1" class="text-box" value=""',
             response.data)
 
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_when_API_returns_error(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -328,7 +244,7 @@ class TestServiceEdit(LoggedInApplicationTest):
 
 
 class TestServiceStatusUpdate(LoggedInApplicationTest):
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_cannot_make_removed_service_public(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -340,7 +256,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertIn(b'<input type="radio" name="service_status" id="service_status_private" value="private"  />', response.data)  # noqa
         self.assertNotIn(b'<input type="radio" name="service_status" id="service_status_published" value="public"  />', response.data)  # noqa
 
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_can_make_private_service_public_or_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -352,7 +268,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertIn(b'<input type="radio" name="service_status" id="service_status_private" value="private" checked="checked" />', response.data)  # noqa
         self.assertIn(b'<input type="radio" name="service_status" id="service_status_published" value="public"  />', response.data)  # noqa
 
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_can_make_public_service_private_or_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -364,7 +280,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertIn(b'<input type="radio" name="service_status" id="service_status_private" value="private"  />', response.data)  # noqa
         self.assertIn(b'<input type="radio" name="service_status" id="service_status_published" value="public" checked="checked" />', response.data)  # noqa
 
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_status_update_to_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {}}
         response1 = self.client.post('/admin/services/status/1',
@@ -379,7 +295,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertIn(b'Service status has been updated to: Removed',
                       response2.data)
 
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_status_update_to_private(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {}}
         response1 = self.client.post('/admin/services/status/1',
@@ -394,7 +310,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertIn(b'Service status has been updated to: Private',
                       response2.data)
 
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_status_update_to_published(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {}}
         response1 = self.client.post('/admin/services/status/1',
@@ -409,7 +325,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertIn(b'Service status has been updated to: Public',
                       response2.data)
 
-    @mock.patch('app.main.views.data_api_client')
+    @mock.patch('app.main.views.services.data_api_client')
     def test_bad_status_gives_error_message(self, data_api_client):
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'suspended'})

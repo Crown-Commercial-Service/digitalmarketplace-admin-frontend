@@ -1,10 +1,13 @@
 from datetime import datetime
-from flask import render_template, redirect, url_for, request, session
-from . import main
-from .. import data_api_client
-from .helpers.auth import is_authenticated
-from .forms import ServiceUpdateAuditEventsForm
+
+from flask import request, render_template, redirect, url_for, session
+
 from dmutils.audit import AuditTypes
+
+from ... import data_api_client
+from .. import main
+from ..forms import ServiceUpdateAuditEventsForm
+from . import get_template_data
 
 
 @main.route('/service-updates', methods=['GET'])
@@ -54,9 +57,3 @@ def submit_service_update_acknowledgment(audit_id):
             acknowledged=form.default_acknowledged(),
             form=form,
             **get_template_data()), 400
-
-
-def get_template_data(merged_with={}):
-    template_data = dict(main.config['BASE_TEMPLATE_DATA'], **merged_with)
-    template_data["authenticated"] = is_authenticated()
-    return template_data
