@@ -146,6 +146,26 @@ class TestServiceView(LoggedInApplicationTest):
         self.assertIn(b'Error trying to retrieve service with ID: 1',
                       response2.data)
 
+    @mock.patch('app.main.views.data_api_client')
+    def test_independence_of_viewing_services(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'lot': 'SCS'
+        }}
+        response = self.client.get('/admin/services/1')
+        self.assertIn(b'Termination cost', response.data)
+
+        data_api_client.get_service.return_value = {'services': {
+            'lot': 'SaaS'
+        }}
+        response = self.client.get('/admin/services/1')
+        self.assertNotIn(b'Termination cost', response.data)
+
+        data_api_client.get_service.return_value = {'services': {
+            'lot': 'SCS'
+        }}
+        response = self.client.get('/admin/services/1')
+        self.assertIn(b'Termination cost', response.data)
+
 
 class TestServiceEdit(LoggedInApplicationTest):
     @mock.patch('app.main.views.data_api_client')
