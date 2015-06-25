@@ -10,7 +10,7 @@ class BaseApplicationTest(TestCase):
         self.app = create_app('test')
         self.client = self.app.test_client()
 
-        self._s3_patch = mock.patch('app.main.views.S3')
+        self._s3_patch = mock.patch('app.main.views.services.S3')
         self.s3 = self._s3_patch.start()
 
         self._default_suffix_patch = mock.patch(

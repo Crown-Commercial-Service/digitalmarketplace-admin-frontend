@@ -1,14 +1,15 @@
-from flask import current_app, flash, render_template, request, redirect, \
-    session, url_for, abort
-from dmutils.apiclient import HTTPError
+from flask import render_template, request, redirect, url_for, flash, \
+    current_app, session
 
-from .. import data_api_client
-from . import main
-from dmutils.validation import Validate
+from dmutils.apiclient import HTTPError
 from dmutils.content_loader import YAMLLoader, ContentBuilder
 from dmutils.presenters import Presenters
 from dmutils.s3 import S3
-from .helpers.auth import check_auth, is_authenticated
+from dmutils.validation import Validate
+
+from ... import data_api_client
+from .. import main
+from . import get_template_data
 
 
 existing_service_options = [
@@ -22,33 +23,6 @@ presenters = Presenters()
 @main.route('', methods=['GET'])
 def index():
     return render_template("index.html", **get_template_data())
-
-
-@main.route('/login', methods=['POST', 'GET'])
-def login():
-    if request.method == 'GET':
-        return render_template("login.html", **get_template_data({
-            "previous_responses": None,
-            "logged_out": "logged_out" in request.args
-        }))
-    if check_auth(
-        request.form['username'],
-        request.form['password'],
-        main.config['PASSWORD_HASH']
-    ):
-        session['username'] = request.form['username']
-        return redirect(url_for('.index'))
-
-    return render_template("login.html", **get_template_data({
-        "error": "Could not log in",
-        "previous_responses": request.form
-    }))
-
-
-@main.route('/logout', methods=['GET'])
-def logout():
-    session.pop('username', None)
-    return redirect(url_for('.login', logged_out=''))
 
 
 @main.route('/services', methods=['GET'])
@@ -186,9 +160,3 @@ def update(service_id, section):
             }))
     else:
         return redirect(url_for(".view", service_id=service_id))
-
-
-def get_template_data(merged_with={}):
-    template_data = dict(main.config['BASE_TEMPLATE_DATA'], **merged_with)
-    template_data["authenticated"] = is_authenticated()
-    return template_data

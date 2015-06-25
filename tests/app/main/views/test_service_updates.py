@@ -2,11 +2,11 @@ import mock
 
 from datetime import datetime
 
-from ..helpers import LoggedInApplicationTest
+from ...helpers import LoggedInApplicationTest
 
 
 class TestServiceUpdates(LoggedInApplicationTest):
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_render_activity_page_with_date(self, data_api_client):
         today = datetime.now().strftime("%d/%m/%Y")
 
@@ -29,7 +29,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         data_api_client.find_audit_events.assert_called()
 
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_render_correct_form_defaults(self, data_api_client):
         response = self.client.get('/admin/service-updates')
         self.assertEquals(200, response.status_code)
@@ -47,7 +47,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         data_api_client.find_audit_events.assert_called()
 
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_not_allow_invalid_dates(self, data_api_client):
         response = self.client.get('/admin/service-updates?audit_date=invalid')
         self.assertEquals(400, response.status_code)
@@ -73,7 +73,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         data_api_client.find_audit_events.assert_not_called()
 
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_not_allow_invalid_acknowledges(self, data_api_client):
         response = self.client.get(
             '/admin/service-updates?acknowledged=invalid'
@@ -87,7 +87,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         )
         data_api_client.find_audit_events.assert_not_called()
 
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_allow_valid_submission_all(self, data_api_client):
         data_api_client.find_audit_events.return_value = {
             'auditEvents': []
@@ -107,7 +107,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         )
         data_api_client.find_audit_events.assert_called()
 
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_allow_valid_submission_date_fields(self, data_api_client):
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
 
@@ -128,7 +128,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             audit_type='update_service',
             acknowledged='false')
 
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_allow_acknowledged_fields(self, data_api_client):
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
 
@@ -149,7 +149,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             audit_type='update_service',
             acknowledged='false')
 
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_call_api_with_correct_params(self, data_api_client):
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
 
@@ -161,7 +161,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             audit_date='2006-01-01',
             acknowledged='all')
 
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_call_api_with_none_date(self, data_api_client):
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
 
@@ -173,7 +173,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             audit_date=None,
             acknowledged='all')
 
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_render_activity_page_with_form_date(self, data_api_client):
         response = self.client.get(
             '/admin/service-updates?audit_date=2010-01-01'
@@ -197,7 +197,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         data_api_client.find_audit_events.assert_called()
 
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_redirect_to_update_page(self, data_api_client):
         response = self.client.post(
             '/admin/service-updates/123/acknowledge',
@@ -223,7 +223,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             user='admin'
         )
 
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_not_call_api_when_form_errors(self, data_api_client):
         response = self.client.post(
             '/admin/service-updates/123/acknowledge',
@@ -245,7 +245,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             response.get_data(as_text=True)
         )
 
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_show_no_updates_if_none_returned(self, data_api_client):
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
 
@@ -262,7 +262,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             audit_type='update_service',
             acknowledged='false')
 
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_show_no_updates_if_invalid_search(self, data_api_client):
         response = self.client.get('/admin/service-updates?audit_date=invalid')  # noqa
         self.assertEquals(400, response.status_code)
@@ -274,7 +274,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         )
         data_api_client.find_audit_events.assert_not_called()
 
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_show_updates_if_valid_search(self, data_api_client):
 
         audit_event = {
@@ -334,7 +334,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             acknowledged='false',
             audit_date='2010-01-01')
 
-    @mock.patch('app.main.service_update_audits.data_api_client')
+    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_call_api_ack_audit_event(self, data_api_client):
         response = self.client.post('/admin/service-updates/123/acknowledge?audit_date=2010-01-01&acknowledged=all')  # noqa
         self.assertEquals(302, response.status_code)
