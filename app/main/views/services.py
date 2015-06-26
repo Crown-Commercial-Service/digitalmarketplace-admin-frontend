@@ -12,8 +12,7 @@ from ... import service_content
 from .. import main
 from . import get_template_data
 
-from .helpers.auth import check_auth, is_authenticated
-from .helpers.diff_tools import StringDiffTool, ListDiffTool
+from ..helpers.diff_tools import StringDiffTool, ListDiffTool
 
 existing_service_options = [
     "app/section_order.yml",
@@ -27,47 +26,46 @@ def make_diffs_from_service_data(
         sections_to_diff=None, sections=None, revision_1=None, revision_2=None
 ):
     def is_string(value):
-        if type(value).__name__ == 'str' or type(value).__name__ == 'unicode':
-            return True
-        else:
-            return False
+        return type(value).__name__ == 'str' \
+            or type(value).__name__ == 'unicode'
 
     def is_list(value):
-        if type(value).__name__ == 'list':
-            return True
-        else:
-            return False
+        return type(value).__name__ == 'list'
 
     diffs = {}
+
     for section in sections:
         if section['name'] in sections_to_diff:
-            section_diffs = {}
+            section_diffs = {'questions': []}
+
             for question in section['questions']:
-                if revision_1['lot'].lower() in question['depends_on_lots']:
-                    question_revision_1 = revision_1[question['id']]
-                    question_revision_2 = revision_2[question['id']]
+                question_revision_1 = revision_1[question['id']]
+                question_revision_2 = revision_2[question['id']]
 
-                    if is_string(question_revision_1) \
-                            and is_string(question_revision_2):
-                        diff = StringDiffTool(
-                            question_revision_1, question_revision_2)
+                if is_string(question_revision_1) \
+                        and is_string(question_revision_2):
+                    diff = StringDiffTool(
+                        question_revision_1, question_revision_2)
 
-                    elif is_list(question_revision_1) \
-                            and is_list(question_revision_2):
-                        diff = ListDiffTool(
-                            question_revision_1, question_revision_2)
+                elif is_list(question_revision_1) \
+                        and is_list(question_revision_2):
+                    diff = ListDiffTool(
+                        question_revision_1, question_revision_2)
 
-                    else:
-                        continue
-                    question_diff = diff.get_rendered_lines()
-                    if 'questions' not in section_diffs:
-                        section_diffs = {'questions': []}
-                    section_diffs['questions'].append({
-                        'label': question['question'],
-                        'revision_1': question_diff['revision_1'],
-                        'revision_2': question_diff['revision_2']
-                    })
-            if len(section_diffs) > 0:
+                else:
+                    continue
+                question_diff = diff.get_rendered_lines()
+
+                section_diffs['questions'].append({
+                    'label': question['question'],
+                    'revision_1': question_diff['revision_1'],
+                    'revision_2': question_diff['revision_2'],
+                    'revisions':
+                        [val + question_diff['revision_2'][i]
+                         for i, val in enumerate(question_diff['revision_1'])]
+                })
+
+            if section_diffs['questions']:
                 diffs[section['name']] = section_diffs
 
     return diffs
@@ -77,33 +75,6 @@ def make_diffs_from_service_data(
 @login_required
 def index():
     return render_template("index.html", **get_template_data())
-
-
-@main.route('/login', methods=['POST', 'GET'])
-def login():
-    if request.method == 'GET':
-        return render_template("login.html", **get_template_data({
-            "previous_responses": None,
-            "logged_out": "logged_out" in request.args
-        }))
-    if check_auth(
-            request.form['username'],
-            request.form['password'],
-            main.config['PASSWORD_HASH']
-    ):
-        session['username'] = request.form['username']
-        return redirect(url_for('.index'))
-
-    return render_template("login.html", **get_template_data({
-        "error": "Could not log in",
-        "previous_responses": request.form
-    }))
-
-
-@main.route('/logout', methods=['GET'])
-def logout():
-    session.pop('username', None)
-    return redirect(url_for('.login', logged_out=''))
 
 
 @main.route('/services', methods=['GET'])
@@ -202,12 +173,15 @@ def review(service_id, revision_1, revision_2):
         flash({'api_error': service_id}, 'error')
         return redirect(url_for('.index'))
 
+    content = ContentBuilder(*existing_service_options)
+    content.filter(service_data)
+
     service_data_revision_1_path = os.path.join(
         os.path.dirname(__file__),
-        'helpers', 'service_data_revision_1.json')
+        '..', 'helpers', 'service_data_revision_1.json')
     service_data_revision_2_path = os.path.join(
         os.path.dirname(__file__),
-        'helpers', 'service_data_revision_2.json')
+        '..', 'helpers', 'service_data_revision_2.json')
 
     with open(service_data_revision_1_path, 'r') as file:
         service_data_revision_1 = json.load(file)
@@ -215,20 +189,20 @@ def review(service_id, revision_1, revision_2):
         service_data_revision_2 = json.load(file)
 
     presented_service_data_revision_1 = {}
-    presented_service_data_revision_2 = {}
+    # presented_service_data_revision_2 = {}
     for key, value in service_data.items():
         presented_service_data_revision_1[key] = presenters.present(
             value, content.get_question(key)
         )
-        presented_service_data_revision_2[key] = presenters.present(
-            value, content.get_question(key)
-        )
+    #     presented_service_data_revision_2[key] = presenters.present(
+    #         value, content.get_question(key)
+    #     )
 
     service_diffs = make_diffs_from_service_data(
         sections_to_diff=['Description', 'Features and benefits'],
         sections=content.sections,
-        revision_1=presented_service_data_revision_1,
-        revision_2=presented_service_data_revision_2)
+        revision_1=service_data_revision_1['services'],
+        revision_2=service_data_revision_2['services'])
 
     template_data = get_template_data({
         "diffs": service_diffs,

@@ -3,28 +3,49 @@ table.diff {
 
   thead th {
     &.line-number {
-      width: 1%;
+      width: 4%;
     }
 
     &.line-content {
-      width: 99%;
+      width: 42%;
     }
   }
 
   tbody td {
-    padding: 0.5em;
+    /* padding: 0.5em; */
 
-    span {
-      display: block;
-      width: 100%;
-      height: 100%;
+    width: 42%;
+    padding-top: 3px;
+    padding-bottom: 4px;
+    vertical-align: top;
+    border-right: 5px solid white;
+    line-height: 26px;
 
-      .addition {
-        background-color: $green;
+    &.line-number {
+      width: 4%;
+      border-right: none;
+      padding-right: 10px;
+    }
+
+    &.number {
+      text-align: right;
+      @include core-19($tabular-numbers: true);
+    }
+
+    &.removal {
+      background-color: rgba(255,0,0,0.1);
+
+      strong {
+        background-color: rgba(255,0,0,0.25);
+        font-weight: normal;
       }
+    }
+    &.addition {
+      background-color: rgba(0,255,0,0.1);
 
-      .removal {
-        background-color: $red;
+      strong {
+        background-color: rgba(0,255,0,0.25);
+        font-weight: normal;
       }
     }
   }
