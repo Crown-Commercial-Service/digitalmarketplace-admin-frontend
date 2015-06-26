@@ -4,6 +4,7 @@ from flask import Flask, request, redirect
 from flask.ext.bootstrap import Bootstrap
 from flask_wtf.csrf import CsrfProtect
 from dmutils import apiclient, init_app, flask_featureflags, formats
+from dmutils.content_loader import ContentLoader
 
 from config import configs
 
@@ -12,6 +13,10 @@ bootstrap = Bootstrap()
 data_api_client = apiclient.DataAPIClient()
 csrf = CsrfProtect()
 feature_flags = flask_featureflags.FeatureFlag()
+
+service_content = ContentLoader(
+    "app/section_order.yml", "app/content/g6/"
+)
 
 
 def create_app(config_name):
