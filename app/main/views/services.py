@@ -1,10 +1,13 @@
 from flask import render_template, request, redirect, url_for, flash, \
     current_app
 from flask_login import login_required, current_user
+from datetime import datetime
 
 from dmutils.apiclient import HTTPError
 from dmutils.presenters import Presenters
 from dmutils.s3 import S3
+from dmutils.validation import Validate
+from dmutils.formats import DATETIME_FORMAT
 
 from ... import data_api_client
 from ... import service_content
@@ -41,31 +44,45 @@ def make_diffs_from_service_data(
                 if is_string(question_revision_1) \
                         and is_string(question_revision_2):
                     diff = StringDiffTool(
-                        question_revision_1, question_revision_2)
+                        question_revision_1, question_revision_2, if_unchanged)
 
                 elif is_list(question_revision_1) \
                         and is_list(question_revision_2):
                     diff = ListDiffTool(
-                        question_revision_1, question_revision_2)
+                        question_revision_1, question_revision_2, if_unchanged)
 
                 else:
                     continue
                 question_diff = diff.get_rendered_lines()
 
-                section_diffs.append({
-                    'section_name': section['name'],
-                    'label': question['question'],
-                    'revision_1': question_diff['revision_1'],
-                    'revision_2': question_diff['revision_2'],
-                    'revisions':
-                        [val + question_diff['revision_2'][i]
-                         for i, val in enumerate(question_diff['revision_1'])]
-                })
-
-            if section_diffs:
-                diffs.extend(section_diffs)
+                # if arrays are empty, there are no changes for this question
+                if question_diff['revision_1'] or question_diff['revision_2']:
+                    diffs.append({
+                        'section_name': section['name'],
+                        'label': question['question'],
+                        'revision_1': question_diff['revision_1'],
+                        'revision_2': question_diff['revision_2'],
+                        'revisions':
+                            [val + question_diff['revision_2'][i]
+                             for i, val
+                             in enumerate(question_diff['revision_1'])]
+                    })
 
     return diffs
+
+
+def get_revision_dates(revision_1=None, revision_2=None):
+
+    def get_revision_date(date_string):
+        # Tuesday, 10 June 2015 at 14:00
+        return datetime.strptime(
+            date_string, DATETIME_FORMAT
+        ).strftime('%A, %d %B %Y at %H:%M')
+
+    return {
+        'revision_1': get_revision_date(revision_1['updatedAt']),
+        'revision_2': get_revision_date(revision_2['updatedAt'])
+    }
 
 
 @main.route('', methods=['GET'])
@@ -202,8 +219,15 @@ def review(service_id, revision_1, revision_2):
         if_unchanged=False
     )
 
+    revision_dates = None if not service_diffs else \
+        get_revision_dates(
+            service_data_revision_1['services'],
+            service_data_revision_2['services']
+        )
+
     template_data = get_template_data({
         "diffs": service_diffs,
+        "revision_dates": revision_dates,
         "sections": content.sections,
         "service_data": presented_service_data_revision_1,
         "service_id": service_id

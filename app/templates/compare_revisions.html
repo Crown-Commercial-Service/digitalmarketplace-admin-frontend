@@ -55,6 +55,12 @@
             </tr>
           </thead>
           <tbody>
+          {% if revision_dates %}
+          <tr class="head-row">
+              <td class="line-number" colspan="2"><h3>Original</h3>{{ revision_dates.revision_1 }}</td>
+              <td class="line-number" colspan="2"><h3>Revised</h3>{{ revision_dates.revision_2 }}</td>
+          </tr>
+          {% endif %}
       {% for section in sections %}
         {% for diff in diffs %}
           {% if section.name in diff.section_name %}

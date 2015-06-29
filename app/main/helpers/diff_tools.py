@@ -39,7 +39,7 @@ class BaseDiffTool(object):
             'revision_2': 0
         }
 
-        last_changed_line, line_number = None, 0
+        last_changed_line = None
         for line in line_diff:
             type = self.get_line_type(line)
             if type == 'detail' and last_changed_line is not None:
