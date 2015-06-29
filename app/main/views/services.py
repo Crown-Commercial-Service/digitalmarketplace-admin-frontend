@@ -1,22 +1,18 @@
 from flask import render_template, request, redirect, url_for, flash, \
     current_app, session
-
 from dmutils.apiclient import HTTPError
-from dmutils.content_loader import YAMLLoader, ContentBuilder
+
+from dmutils.validation import Validate
 from dmutils.presenters import Presenters
 from dmutils.s3 import S3
 from dmutils.validation import Validate
 
 from ... import data_api_client
+from ... import service_content
 from .. import main
 from . import get_template_data
 
 
-existing_service_options = [
-    "app/section_order.yml",
-    "app/content/g6/",
-    YAMLLoader()
-]
 presenters = Presenters()
 
 
@@ -45,12 +41,11 @@ def view(service_id):
         flash({'api_error': service_id}, 'error')
         return redirect(url_for('.index'))
 
-    content = ContentBuilder(*existing_service_options)
-    content.filter(service_data)
+    content = service_content.get_builder().filter(service_data)
 
     template_data = get_template_data({
-        "sections": content.sections,
-        "service_data": presenters.present_all(service_data, content),
+        "sections": content,
+        "service_data": presenters.present_all(service_data, service_content),
         "service_id": service_id
     })
     return render_template("view_service.html", **template_data)
@@ -95,8 +90,7 @@ def edit(service_id, section):
 
     service_data = data_api_client.get_service(service_id)['services']
 
-    content = ContentBuilder(*existing_service_options)
-    content.filter(service_data)
+    content = service_content.get_builder().filter(service_data)
 
     template_data = get_template_data({
         "section": content.get_section(section),
@@ -117,8 +111,7 @@ def update(service_id, section):
         list(request.form.items()) + list(request.files.items())
     )
 
-    content = ContentBuilder(*existing_service_options)
-    content.filter(service_data)
+    content = service_content.get_builder().filter(service_data)
 
     # Turn responses which have multiple parts into lists
     for key in request.form:
@@ -126,12 +119,12 @@ def update(service_id, section):
         list_types = ['list', 'checkboxes', 'pricing']
         if (
             key != 'csrf_token' and
-            content.get_question(key)['type'] in list_types
+            service_content.get_question(key)['type'] in list_types
         ):
             posted_data[key] = item_as_list
 
     posted_data.pop('csrf_token', None)
-    form = Validate(content, service_data, posted_data,
+    form = Validate(service_content, service_data, posted_data,
                     main.config['DOCUMENTS_URL'], s3_uploader)
     form.validate()
 
