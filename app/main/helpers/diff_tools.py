@@ -111,9 +111,13 @@ class DiffLine(object):
         self.line_number = line_number
 
     def render(self):
-        return u"<td class='line-number'>{}</td><td class='{}'>{}</td>".format(
-            self.line_number, self.type, self.line[2:]
-        )
+        return \
+            u"<td class='number line-number {type}'>{line_number}</td>" \
+            u"<td class='{type}'>{line}</td>".format(
+                type=self.type,
+                line_number=self.line_number,
+                line=self.line[2:]
+            )
 
     def add_detail(self, line):
         self.detail_line = line

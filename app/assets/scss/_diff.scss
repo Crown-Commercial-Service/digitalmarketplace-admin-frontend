@@ -1,36 +1,27 @@
-table.diff {
-  width: 100%;
+.diff {
 
-  thead th {
-    &.line-number {
-      width: 4%;
-    }
-
-    &.line-content {
-      width: 42%;
-    }
+  .diff--title {
+    @include heading-27;
+    font-weight: bold;
   }
 
-  tbody td {
-    /* padding: 0.5em; */
+  table {
 
+    width: 100%;
+    margin-bottom: $gutter;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid white;
+  }
+
+  td {
     width: 42%;
     padding-top: 3px;
     padding-bottom: 4px;
     vertical-align: top;
     border-right: 5px solid white;
     line-height: 26px;
-
-    &.line-number {
-      width: 4%;
-      border-right: none;
-      padding-right: 10px;
-    }
-
-    &.number {
-      text-align: right;
-      @include core-19($tabular-numbers: true);
-    }
 
     &.removal {
       background-color: rgba(255,0,0,0.1);
@@ -48,5 +39,36 @@ table.diff {
         font-weight: normal;
       }
     }
+  }
+
+  .head-row {
+    td {
+      padding-top: 10px;
+      padding-bottom: 0px;
+      h3 {
+        display: inline-block;
+        margin-right: 15px;
+        margin-bottom: 5px;
+      }
+    }
+  }
+
+  .revision-date {
+    padding-top: 0px !important;
+  }
+
+  .border-bottom {
+    border-bottom: 1px solid #dee0e2;
+  }
+
+  .line-number {
+    width: 4%;
+    border-right: none;
+    padding-right: 10px;
+  }
+
+  .number {
+    text-align: right;
+    @include core-19($tabular-numbers: true);
   }
 }

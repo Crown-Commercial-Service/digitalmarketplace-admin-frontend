@@ -43,55 +43,56 @@
         </div>
       </div>
 
+      <div class="diff">
+        <h2 class="diff--title">Service Revisions</h2>
+        <table class="diff--content">
+          <thead>
+            <tr>
+              <th class="line-number"><span class="visuallyhidden">Revision 1 line number</span></th>
+              <th class="line-content"><span class="visuallyhidden">Revision 1 changes</span></th>
+              <th class="line-number"><span class="visuallyhidden">Revision 2 line number</span></th>
+              <th class="line-content"><span class="visuallyhidden">Revision 2 changes</span></th>
+            </tr>
+          </thead>
+          <tbody>
       {% for section in sections %}
         {% for diff in diffs %}
           {% if section.name in diff.section_name %}
-            <table class="diff">
-              <caption>Changes to {{ diff.label }}</caption>
-              <thead>
-                <tr>
-                  <th class="line-number"><span class="visuallyhidden">Revision 1 line number</span></th>
-                  <th class="line-content"><span class="visuallyhidden">Revision 1 changes</span></th>
-                  <th class="line-number"><span class="visuallyhidden">Revision 2 line number</span></th>
-                  <th class="line-content"><span class="visuallyhidden">Revision 2 changes</span></th>
-                </tr>
-              </thead>
-              <tbody>
+                  <tr class="head-row">
+                    <td colspan="4"><h3>{{ diff.label }}</h3></td>
+                  </tr>
                   {% for line in diff.revisions %}
                   <tr>
                     {{ line }}
                   </tr>
                   {% endfor %}
-              </tbody>
-            </table>
           {% else %}
-            {% if service_data['lot']|lower in section['depends_on_lots'] %}
-              <h2 class="summary-item-heading">
-                {{section.name}}
-              </h2>
-              <table class="summary-item-body">
-                <thead class="summary-item-field-headings">
-                  <tr>
-                    <th>Service attribute name</th><th>Service attribute</th>
-                  </tr>
-                </thead>
-                <tbody class="summary-item-body">
-                  {% for question in section.questions %}
-                    {% if service_data['lot']|lower in question['depends_on_lots'] %}
-                      <tr class="summary-item-row">
-                        <td class="summary-item-field-name">{{ question.question }}</td>
-                        <td class="summary-item-field-content">
-                          {{ answers[question.type](service_data[question.id]) }}
-                        </td>
-                      </tr>
-                    {% endif %}
-                  {% endfor %}
-                </tbody>
-              </table>
-            {% endif %}
+              <!--<h2 class="summary-item-heading">-->
+                <!--{{section.name}}-->
+              <!--</h2>-->
+              <!--<table class="summary-item-body">-->
+                <!--<thead class="summary-item-field-headings">-->
+                  <!--<tr>-->
+                    <!--<th>Service attribute name</th><th>Service attribute</th>-->
+                  <!--</tr>-->
+                <!--</thead>-->
+                <!--<tbody class="summary-item-body">-->
+                  <!--{% for question in section.questions %}-->
+                      <!--<tr class="summary-item-row">-->
+                        <!--<td class="summary-item-field-name">{{ question.question }}</td>-->
+                        <!--<td class="summary-item-field-content">-->
+                          <!--{{ answers[question.type](service_data[question.id]) }}-->
+                        <!--</td>-->
+                      <!--</tr>-->
+                  <!--{% endfor %}-->
+                <!--</tbody>-->
+              <!--</table>-->
           {% endif %}
         {% endfor %}
       {% endfor %}
+          </tbody>
+        </table><!-- end of .diff--content -->
+      </div><!-- end of .diff -->
 
       <form action="{{ url_for('.update_service_status', service_id=service_id ) }}" method="post">
           <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
