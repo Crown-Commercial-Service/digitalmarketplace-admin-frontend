@@ -3,7 +3,6 @@ from flask import render_template, request, redirect, url_for, flash, \
 from flask_login import login_required, current_user
 
 from dmutils.apiclient import HTTPError
-from dmutils.validation import Validate
 from dmutils.presenters import Presenters
 from dmutils.s3 import S3
 
@@ -14,11 +13,6 @@ from . import get_template_data
 
 from ..helpers.diff_tools import StringDiffTool, ListDiffTool
 
-existing_service_options = [
-    "app/section_order.yml",
-    "app/content/g6/",
-    YAMLLoader()
-]
 presenters = Presenters()
 
 
@@ -32,11 +26,11 @@ def make_diffs_from_service_data(
     def is_list(value):
         return type(value).__name__ == 'list'
 
-    diffs = {}
+    diffs = []
 
     for section in sections:
         if section['name'] in sections_to_diff:
-            section_diffs = {'questions': []}
+            section_diffs = []
 
             for question in section['questions']:
                 question_revision_1 = revision_1[question['id']]
@@ -56,7 +50,8 @@ def make_diffs_from_service_data(
                     continue
                 question_diff = diff.get_rendered_lines()
 
-                section_diffs['questions'].append({
+                section_diffs.append({
+                    'section_name': section['name'],
                     'label': question['question'],
                     'revision_1': question_diff['revision_1'],
                     'revision_2': question_diff['revision_2'],
@@ -65,8 +60,8 @@ def make_diffs_from_service_data(
                          for i, val in enumerate(question_diff['revision_1'])]
                 })
 
-            if section_diffs['questions']:
-                diffs[section['name']] = section_diffs
+            if section_diffs:
+                diffs.extend(section_diffs)
 
     return diffs
 
@@ -173,8 +168,7 @@ def review(service_id, revision_1, revision_2):
         flash({'api_error': service_id}, 'error')
         return redirect(url_for('.index'))
 
-    content = ContentBuilder(*existing_service_options)
-    content.filter(service_data)
+    content = service_content.get_builder().filter(service_data)
 
     service_data_revision_1_path = os.path.join(
         os.path.dirname(__file__),

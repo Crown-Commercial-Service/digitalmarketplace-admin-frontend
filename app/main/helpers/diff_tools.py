@@ -32,29 +32,43 @@ class BaseDiffTool(object):
             'revision_1': [],
             'revision_2': []
         }
-        revision_1_number, revision_2_number = 1, 1
-        last_changed_line = None
+
+        column_indexes = {
+            'revision_1': 1,
+            'revision_2': 1
+        }
+
+        last_changed_line, line_number = None, 0
         for line in line_diff:
             type = self.get_line_type(line)
             if type == 'detail' and last_changed_line is not None:
                 pass
-                # last_changed_line.add_detail(line)  # what is this for?
+                # last_changed_line.add_detail(line)
             else:
                 if type == 'removal':
-                    last_changed_line = DiffLine(line, 'revision_1', type)
+                    last_changed_line = DiffLine(
+                        line, column_indexes['revision_1'], type
+                    )
                     columns['revision_1'].append(last_changed_line)
+                    column_indexes['revision_1'] += 1
 
                 if type == 'addition':
-                    last_changed_line = DiffLine(line, 'revision_2', type)
+                    last_changed_line = DiffLine(
+                        line, column_indexes['revision_2'], type
+                    )
                     columns['revision_2'].append(last_changed_line)
+                    column_indexes['revision_2'] += 1
 
                 if type == 'unchanged':
                     columns['revision_1'].append(
-                        DiffLine(line, 'revision_1', 'unchanged')
+                        DiffLine(line, column_indexes['revision_1'], type)
                     )
                     columns['revision_2'].append(
-                        DiffLine(line, 'revision_2', 'unchanged')
+                        DiffLine(line, column_indexes['revision_2'], type)
                     )
+                    column_indexes['revision_1'] += 1
+                    column_indexes['revision_2'] += 1
+
         return columns
 
     def get_line_type(self, string):
@@ -86,17 +100,11 @@ class StringDiffTool(BaseDiffTool):
 
 
 class DiffLine(object):
-    # This will probably persist longer than we want
-    column_indexes = {
-        'revision_1': 1,
-        'revision_2': 1
-    }
 
-    def __init__(self, line, column, type):
+    def __init__(self, line, line_number, type):
         self.line = line
         self.type = type
-        self.line_number = DiffLine.column_indexes[column]
-        DiffLine.column_indexes[column] += 1
+        self.line_number = line_number
 
     def render(self):
         return u"<td class='line-number'>{}</td><td class='{}'>{}</td>".format(

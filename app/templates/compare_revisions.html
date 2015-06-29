@@ -44,53 +44,53 @@
       </div>
 
       {% for section in sections %}
-        {% if section.name in diffs %}
-          <table class="diff">
-            <caption>Changes to {{ section.name }}</caption>
-            <thead>
-              <tr>
-                <th class="line-number"><span class="visuallyhidden">Revision 1 line number</span></th>
-                <th class="line-content"><span class="visuallyhidden">Revision 1 changes</span></th>
-                <th class="line-number"><span class="visuallyhidden">Revision 2 line number</span></th>
-                <th class="line-content"><span class="visuallyhidden">Revision 2 changes</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for question in diffs[section.name].questions %}
-                {% for line in question.revisions %}
+        {% for diff in diffs %}
+          {% if section.name in diff.section_name %}
+            <table class="diff">
+              <caption>Changes to {{ diff.label }}</caption>
+              <thead>
                 <tr>
-                  {{ line }}
-                </tr>
-                {% endfor %}
-              {% endfor %}
-            </tbody>
-          </table>
-        {% else %}
-          {% if service_data['lot']|lower in section['depends_on_lots'] %}
-            <h2 class="summary-item-heading">
-              {{section.name}}
-            </h2>
-            <table class="summary-item-body">
-              <thead class="summary-item-field-headings">
-                <tr>
-                  <th>Service attribute name</th><th>Service attribute</th>
+                  <th class="line-number"><span class="visuallyhidden">Revision 1 line number</span></th>
+                  <th class="line-content"><span class="visuallyhidden">Revision 1 changes</span></th>
+                  <th class="line-number"><span class="visuallyhidden">Revision 2 line number</span></th>
+                  <th class="line-content"><span class="visuallyhidden">Revision 2 changes</span></th>
                 </tr>
               </thead>
-              <tbody class="summary-item-body">
-                {% for question in section.questions %}
-                  {% if service_data['lot']|lower in question['depends_on_lots'] %}
-                    <tr class="summary-item-row">
-                      <td class="summary-item-field-name">{{ question.question }}</td>
-                      <td class="summary-item-field-content">
-                        {{ answers[question.type](service_data[question.id]) }}
-                      </td>
-                    </tr>
-                  {% endif %}
-                {% endfor %}
+              <tbody>
+                  {% for line in diff.revisions %}
+                  <tr>
+                    {{ line }}
+                  </tr>
+                  {% endfor %}
               </tbody>
             </table>
+          {% else %}
+            {% if service_data['lot']|lower in section['depends_on_lots'] %}
+              <h2 class="summary-item-heading">
+                {{section.name}}
+              </h2>
+              <table class="summary-item-body">
+                <thead class="summary-item-field-headings">
+                  <tr>
+                    <th>Service attribute name</th><th>Service attribute</th>
+                  </tr>
+                </thead>
+                <tbody class="summary-item-body">
+                  {% for question in section.questions %}
+                    {% if service_data['lot']|lower in question['depends_on_lots'] %}
+                      <tr class="summary-item-row">
+                        <td class="summary-item-field-name">{{ question.question }}</td>
+                        <td class="summary-item-field-content">
+                          {{ answers[question.type](service_data[question.id]) }}
+                        </td>
+                      </tr>
+                    {% endif %}
+                  {% endfor %}
+                </tbody>
+              </table>
+            {% endif %}
           {% endif %}
-        {% endif %}
+        {% endfor %}
       {% endfor %}
 
       <form action="{{ url_for('.update_service_status', service_id=service_id ) }}" method="post">
