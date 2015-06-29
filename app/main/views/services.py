@@ -17,7 +17,11 @@ presenters = Presenters()
 
 
 def make_diffs_from_service_data(
-        sections_to_diff=None, sections=None, revision_1=None, revision_2=None
+        sections_to_diff=None,
+        sections=None,
+        revision_1=None,
+        revision_2=None,
+        if_unchanged=False
 ):
     def is_string(value):
         return type(value).__name__ == 'str' \
@@ -30,8 +34,6 @@ def make_diffs_from_service_data(
 
     for section in sections:
         if section['name'] in sections_to_diff:
-            section_diffs = []
-
             for question in section['questions']:
                 question_revision_1 = revision_1[question['id']]
                 question_revision_2 = revision_2[question['id']]
@@ -186,7 +188,7 @@ def review(service_id, revision_1, revision_2):
     # presented_service_data_revision_2 = {}
     for key, value in service_data.items():
         presented_service_data_revision_1[key] = presenters.present(
-            value, content.get_question(key)
+            value, service_content.get_question(key)
         )
     #     presented_service_data_revision_2[key] = presenters.present(
     #         value, content.get_question(key)
@@ -196,7 +198,9 @@ def review(service_id, revision_1, revision_2):
         sections_to_diff=['Description', 'Features and benefits'],
         sections=content.sections,
         revision_1=service_data_revision_1['services'],
-        revision_2=service_data_revision_2['services'])
+        revision_2=service_data_revision_2['services'],
+        if_unchanged=False
+    )
 
     template_data = get_template_data({
         "diffs": service_diffs,

@@ -5,9 +5,10 @@ from flask import Markup
 class BaseDiffTool(object):
     """Creates a line-by-line diff from two lists of items"""
 
-    def __init__(self, revision_1, revision_2):
+    def __init__(self, revision_1, revision_2, if_unchanged=False):
         self.revision_1 = revision_1
         self.revision_2 = revision_2
+        self.if_unchanged = if_unchanged
         self.lines = self.get_lines(
             self.get_line_diff(revision_1, revision_2)
         )
@@ -34,8 +35,8 @@ class BaseDiffTool(object):
         }
 
         column_indexes = {
-            'revision_1': 1,
-            'revision_2': 1
+            'revision_1': 0,
+            'revision_2': 0
         }
 
         last_changed_line, line_number = None, 0
@@ -46,28 +47,30 @@ class BaseDiffTool(object):
                 # last_changed_line.add_detail(line)
             else:
                 if type == 'removal':
+                    column_indexes['revision_1'] += 1
                     last_changed_line = DiffLine(
                         line, column_indexes['revision_1'], type
                     )
                     columns['revision_1'].append(last_changed_line)
-                    column_indexes['revision_1'] += 1
 
                 if type == 'addition':
+                    column_indexes['revision_2'] += 1
                     last_changed_line = DiffLine(
                         line, column_indexes['revision_2'], type
                     )
                     columns['revision_2'].append(last_changed_line)
-                    column_indexes['revision_2'] += 1
 
                 if type == 'unchanged':
-                    columns['revision_1'].append(
-                        DiffLine(line, column_indexes['revision_1'], type)
-                    )
-                    columns['revision_2'].append(
-                        DiffLine(line, column_indexes['revision_2'], type)
-                    )
                     column_indexes['revision_1'] += 1
                     column_indexes['revision_2'] += 1
+
+                    if self.if_unchanged:
+                        columns['revision_1'].append(
+                            DiffLine(line, column_indexes['revision_1'], type)
+                        )
+                        columns['revision_2'].append(
+                            DiffLine(line, column_indexes['revision_2'], type)
+                        )
 
         return columns
 
@@ -91,9 +94,10 @@ class ListDiffTool(BaseDiffTool):
 class StringDiffTool(BaseDiffTool):
     """Creates a line-by-line diff from two strings"""
 
-    def __init__(self, revision_1, revision_2):
+    def __init__(self, revision_1, revision_2, if_unchanged=False):
         self.revision_1 = revision_1.splitlines()
         self.revision_2 = revision_2.splitlines()
+        self.if_unchanged = if_unchanged
         self.lines = self.get_lines(
             self.get_line_diff(self.revision_1, self.revision_2)
         )
