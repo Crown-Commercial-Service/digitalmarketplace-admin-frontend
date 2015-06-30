@@ -1,12 +1,11 @@
 from flask import request, render_template, url_for, redirect, \
     current_app, flash
 from flask_login import login_user, logout_user, login_required
-from dmutils.user import user_has_role
+from dmutils.user import user_has_role, User
 
 from .. import main
 from ... import data_api_client
 from ..forms import LoginForm
-from ...model import User
 from . import get_template_data
 
 

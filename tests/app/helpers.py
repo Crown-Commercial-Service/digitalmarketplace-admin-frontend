@@ -1,9 +1,10 @@
 import mock
 import re
 
+from dmutils.user import User
+
 from app import create_app
 from app import login_manager
-from app.model import User
 from unittest import TestCase
 
 

@@ -5,10 +5,10 @@ from flask.ext.bootstrap import Bootstrap
 from flask_login import LoginManager
 from flask_wtf.csrf import CsrfProtect
 from dmutils import apiclient, init_app, flask_featureflags, formats
+from dmutils.user import User
 from dmutils.content_loader import ContentLoader
 
 from config import configs
-from .model import User
 
 
 bootstrap = Bootstrap()
