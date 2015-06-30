@@ -220,7 +220,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         data_api_client.acknowledge_audit_event.assert_called(
             audit_event_id=123,
-            user='admin'
+            user='test@example.com'
         )
 
     @mock.patch('app.main.views.service_updates.data_api_client')
@@ -340,5 +340,5 @@ class TestServiceUpdates(LoggedInApplicationTest):
         self.assertEquals(302, response.status_code)
 
         data_api_client.acknowledge_audit_event.assert_called_with(
-            '123', 'admin'
+            '123', 'test@example.com'
         )

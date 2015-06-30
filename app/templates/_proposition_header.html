@@ -1,18 +1,18 @@
 <div class="header-proposition">
   <div class="content">
-    {% if authenticated %}
+    {% if current_user.email_address %}
       <a href="#proposition-links" class="js-header-toggle menu">Menu</a>
     {% endif %}
     <nav id="proposition-menu">
       <a href="/" id="proposition-name">Digital Marketplace</a>
     </nav>
-    {% if authenticated %}
+    {% if current_user.email_address %}
       <ul id="proposition-links">
         <li>
-            <a href="{{ url_for('.service_update_audits') }}">Service Updates</a>
+            <a href="{{ url_for('main.service_update_audits') }}">Service Updates</a>
         </li>
         <li>
-            <a href="{{ url_for('.logout') }}">Log out</a>
+            <a href="{{ url_for('main.logout') }}">Log out</a>
         </li>
       </ul>
     {% endif %}

@@ -8,15 +8,26 @@
 {% block content %}
 <div class="page-container">
 
-  {% if logged_out %}
-    {%
-      with
-      message = "You have been logged out",
-      type = "success"
-    %}
-      {% include "toolkit/notification-banner.html" %}
-    {% endwith %}
-  {% endif %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        {% if message == 'no_account' %}
+          {% set displayed_message = "Sorry, we couldn't find a admin account with that username" %}
+        {% elif message == 'logged_out' %}
+          {% set displayed_message = "You have been logged out" %}
+        {% else %}
+          {% set displayed_message = message %}
+        {% endif %}
+        {%
+          with
+          message = displayed_message,
+          type = "destructive" if category == 'error' else "success"
+        %}
+          {% include "toolkit/notification-banner.html" %}
+        {% endwith %}
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 
   {%
     with
@@ -25,17 +36,44 @@
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
 
-  {% if error %}
-    {% with lede = error %}
-      {% include "toolkit/forms/validation.html" %}
-    {% endwith %}
-  {% endif %}
-  <form autocomplete="off" action="{{ url_for('.login') }}" method="post" class="question">
-    <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
-    <label class="question-heading" for="username">Username</label>
-    <input autocomplete="off" type="text" name="username" id="username" class="text-box" value="{{previous_responses.username}}">
-    <label class="question-heading" for="password">Password</label>
-    <input autocomplete="off" type="password" name="password" id="password" class="text-box">
+  <form autocomplete="off" action="{{ url_for('.render_login') }}" method="post">
+    {{ form.hidden_tag() }}
+
+    {% if form.email_address.errors %}
+      <div class="validation-wrapper">
+    {% endif %}
+      <div class="question">
+            {{ form.email_address.label(class="question-heading-with-hint") }}
+            <p class="hint">
+                Enter the email address you used to register with the Digital Marketplace
+            </p>
+            {% if form.email_address.errors %}
+            <p class="validation-message" id="error-email-address-textbox">
+                {% for error in form.email_address.errors %}{{ error }}{% endfor %}
+            </p>
+            {% endif %}
+            {{ form.email_address(class="text-box", autocomplete="off") }}
+        </div>
+    {% if form.email_address.errors %}
+        </div>
+    {% endif %}
+
+    {% if form.password.errors %}
+        <div class="validation-wrapper">
+    {% endif %}
+        <div class="question">
+            {{ form.password.label(class="question-heading") }}
+            {% if form.password.errors %}
+            <p class="validation-message" id="error-password-textbox">
+                {% for error in form.password.errors %}{{ error }}{% endfor %}
+            </p>
+            {% endif %}
+            {{ form.password(class="text-box", autocomplete="off") }}
+        </div>
+    {% if form.password.errors %}
+        </div>
+    {% endif %}
+
     <button class="button-save">Log in</button>
   </form>
 </div>

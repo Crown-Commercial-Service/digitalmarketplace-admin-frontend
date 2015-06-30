@@ -16,8 +16,9 @@ class TestApplication(LoggedInApplicationTest):
         self.assertEquals(200, response.status_code)
 
     def test_404(self):
-        response = self.client.get('/admin/not-found')
-        self.assertEquals(404, response.status_code)
+        with self.app.app_context():
+            response = self.client.get('/admin/not-found')
+            self.assertEquals(404, response.status_code)
 
     def test_index_is_404(self):
         response = self.client.get('/')
@@ -136,7 +137,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.update_service.assert_called_with(1, {
             'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
             'sfiaRateDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-sfia-rate-card-2015-01-01-1200.pdf',  # noqa
-        }, 'admin', 'admin app')
+        }, 'test@example.com', 'admin app')
 
         self.assertEquals(302, response.status_code)
 
@@ -164,7 +165,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.get_service.assert_called_with('1')
         data_api_client.update_service.assert_called_with(1, {
             'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
-        }, 'admin', 'admin app')
+        }, 'test@example.com', 'admin app')
 
         self.assertIn(b'Your document is not in an open format', response.data)
         self.assertIn(b'This question requires an answer', response.data)
@@ -203,7 +204,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.update_service.assert_called_with(1, {
             'serviceFeatures': ['foo'],
             'serviceBenefits': ['foo'],
-        }, 'admin', 'admin app')
+        }, 'test@example.com', 'admin app')
         self.assertEquals(response.status_code, 302)
 
     @mock.patch('app.main.views.services.data_api_client')
