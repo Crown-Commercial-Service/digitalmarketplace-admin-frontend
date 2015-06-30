@@ -13,9 +13,7 @@ from . import get_template_data
 @main.route('/login', methods=['GET'])
 def render_login():
     form = LoginForm()
-    return render_template('login.html', **get_template_data({
-        'form': form,
-    }))
+    return render_template('login.html', **get_template_data(form=form))
 
 
 @main.route('/login', methods=['POST'])
@@ -34,10 +32,8 @@ def process_login():
             flash('no_account', 'error')
             return render_template(
                 'login.html',
-                **get_template_data({
-                    'form': form,
-                    'next': next_url,
-                })), 403
+                **get_template_data(form=form, next=next_url)
+            ), 403
 
         user = User.from_json(user_json)
         login_user(user)
@@ -49,9 +45,8 @@ def process_login():
     else:
         return render_template(
             'login.html',
-            **get_template_data({
-                'form': form,
-            })), 400
+            **get_template_data(form=form)
+        ), 400
 
 
 @main.route('/logout', methods=['GET'])

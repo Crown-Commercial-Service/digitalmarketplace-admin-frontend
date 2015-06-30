@@ -47,11 +47,11 @@ def view(service_id):
 
     content = service_content.get_builder().filter(service_data)
 
-    template_data = get_template_data({
-        "sections": content,
-        "service_data": presenters.present_all(service_data, service_content),
-        "service_id": service_id
-    })
+    template_data = get_template_data(
+        sections=content,
+        service_data=presenters.present_all(service_data, service_content),
+        service_id=service_id
+    )
     return render_template("view_service.html", **template_data)
 
 
@@ -98,10 +98,10 @@ def edit(service_id, section):
 
     content = service_content.get_builder().filter(service_data)
 
-    template_data = get_template_data({
-        "section": content.get_section(section),
-        "service_data": service_data,
-    })
+    template_data = get_template_data(
+        section=content.get_section(section),
+        service_data=service_data
+    )
     return render_template("edit_section.html", **template_data)
 
 
@@ -152,11 +152,11 @@ def update(service_id, section):
 
     if form.errors:
         service_data.update(form.dirty_data)
-        return render_template("edit_section.html", **get_template_data({
-            "section": content.get_section(section),
-            "service_data": service_data,
-            "service_id": service_id,
-            "errors": form.errors
-            }))
+        return render_template("edit_section.html", **get_template_data(
+            section=content.get_section(section),
+            service_data=service_data,
+            service_id=service_id,
+            errors=form.errors
+        ))
     else:
         return redirect(url_for(".view", service_id=service_id))
