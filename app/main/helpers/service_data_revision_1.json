@@ -116,7 +116,7 @@
     "dataBackupRecovery": true,
     "freeOption": true,
     "serviceOnboarding": true,
-    "serviceSummary": "Do you have a project collaboration team with 5 people or fewer? Do you have a document review team that needs to quickly and securely share files? Do you have zero budget or time for formal procurement?\r\n\r\nThen use our Kahootz G-Cloud Starter App which is FREE FOR 1 YEAR!\r\n",
+    "serviceSummary": "Do you have a project collaboration team with 5 people or fewer? Do you have a document review team that needs to quickly a securely share files? Do you have zero budget or time for formal procurement?\r\n\r\nThen use our Kahootz G-Cloud Starter App which is FREE FOR 1 YEAR!\r\n",
     "identityAuthenticationControls": {
       "value": [
         "Username and password",

@@ -54,12 +54,13 @@
               <th class="line-content"><span class="visuallyhidden">Revision 2 changes</span></th>
             </tr>
           </thead>
-          <tbody>
+          <tr>
           {% if revision_dates %}
           <tr class="head-row">
-              <td class="line-number" colspan="2"><h3>Original</h3>{{ revision_dates.revision_1 }}</td>
               <td class="line-number" colspan="2"><h3>Revised</h3>{{ revision_dates.revision_2 }}</td>
           </tr>
+          <!-- blank row --><tr><td colspan="2"><br /></td></tr>
+
           {% endif %}
       {% for section in sections %}
         {% for diff in diffs %}
@@ -67,32 +68,16 @@
                   <tr class="head-row">
                     <td colspan="4"><h3>{{ diff.label }}</h3></td>
                   </tr>
-                  {% for line in diff.revisions %}
-                  <tr>
-                    {{ line }}
-                  </tr>
+                  {% for line in diff.revision_1 %}
+                    {# Terrible bug if lists don't have same number of indexes #}
+                    <tr class="diff--row">
+                      {{ diff.revision_1[loop.index0] }}
+                    </tr>
+                    <tr class="diff--row">
+                      {{ diff.revision_2[loop.index0] }}
+                    </tr>
+                    <!-- blank row --><tr><td colspan="2"><br /></td></tr>
                   {% endfor %}
-          {% else %}
-              <!--<h2 class="summary-item-heading">-->
-                <!--{{section.name}}-->
-              <!--</h2>-->
-              <!--<table class="summary-item-body">-->
-                <!--<thead class="summary-item-field-headings">-->
-                  <!--<tr>-->
-                    <!--<th>Service attribute name</th><th>Service attribute</th>-->
-                  <!--</tr>-->
-                <!--</thead>-->
-                <!--<tbody class="summary-item-body">-->
-                  <!--{% for question in section.questions %}-->
-                      <!--<tr class="summary-item-row">-->
-                        <!--<td class="summary-item-field-name">{{ question.question }}</td>-->
-                        <!--<td class="summary-item-field-content">-->
-                          <!--{{ answers[question.type](service_data[question.id]) }}-->
-                        <!--</td>-->
-                      <!--</tr>-->
-                  <!--{% endfor %}-->
-                <!--</tbody>-->
-              <!--</table>-->
           {% endif %}
         {% endfor %}
       {% endfor %}

@@ -16,7 +16,7 @@
   }
 
   td {
-    width: 42%;
+    width: 96%;
     padding-top: 3px;
     padding-bottom: 4px;
     vertical-align: top;
@@ -51,6 +51,11 @@
         margin-bottom: 5px;
       }
     }
+  }
+
+  .diff--row td {
+    white-space: pre-wrap;
+    font-family: monospace
   }
 
   .revision-date {
