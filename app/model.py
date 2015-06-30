@@ -1,8 +1,10 @@
 
 class User(object):
-    def __init__(self, user_id, email_address):
+    def __init__(self, user_id, email_address, supplier_id, supplier_name):
         self.id = user_id
         self.email_address = email_address
+        self.supplier_id = supplier_id
+        self.supplier_name = supplier_name
 
     @staticmethod
     def is_authenticated():
@@ -18,13 +20,20 @@ class User(object):
 
     def get_id(self):
         try:
-            return unicode(self.id)
+            return unicode(self.id)  # python 2
         except NameError:
-            return str(self.id)
+            return str(self.id)  # python 3
 
     @staticmethod
     def from_json(user_json):
         user = user_json['users']
+        supplier_id = None
+        supplier_name = None
+        if 'supplier' in user:
+            supplier_id = user['supplier']['supplierId']
+            supplier_name = user['supplier']['supplierName']
         return User(
             user_id=user['id'],
-            email_address=user['emailAddress'])
+            email_address=user['emailAddress'],
+            supplier_id=supplier_id,
+            supplier_name=supplier_name)
