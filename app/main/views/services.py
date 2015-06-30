@@ -173,64 +173,48 @@ def edit(service_id, section):
 
 
 @main.route(
-    '/services/<service_id>/compare/<revision_1>...<revision_2>',
+    '/services/compare/<old_archived_service_id>...<new_archived_service_id>',
     methods=['GET']
 )
-def review(service_id, revision_1, revision_2):
+def review(old_archived_service_id, new_archived_service_id):
+
     try:
-        service = data_api_client.get_service(service_id)
-        if service is None:
-            flash({'no_service': service_id}, 'error')
-            return redirect(url_for('.index'))
-        service_data = service['services']
-    except HTTPError:
-        flash({'api_error': service_id}, 'error')
+        id_which_may_fail = old_archived_service_id
+        service_data_revision_1 = data_api_client.get_archived_service(
+            old_archived_service_id)['services']
+
+        id_which_may_fail = new_archived_service_id
+        service_data_revision_2 = data_api_client.get_archived_service(
+            new_archived_service_id)['services']
+
+        id_which_may_fail = service_id = service_data_revision_1['id']
+        service_data = data_api_client.get_service(service_id)['services']
+
+    except (HTTPError, TypeError, KeyError):
+        flash({'api_error': id_which_may_fail}, 'error')
         return redirect(url_for('.index'))
 
     content = service_content.get_builder().filter(service_data)
 
-    service_data_revision_1_path = os.path.join(
-        os.path.dirname(__file__),
-        '..', 'helpers', 'service_data_revision_1.json')
-    service_data_revision_2_path = os.path.join(
-        os.path.dirname(__file__),
-        '..', 'helpers', 'service_data_revision_2.json')
-
-    with open(service_data_revision_1_path, 'r') as file:
-        service_data_revision_1 = json.load(file)
-    with open(service_data_revision_2_path, 'r') as file:
-        service_data_revision_2 = json.load(file)
-
-    presented_service_data_revision_1 = {}
-    # presented_service_data_revision_2 = {}
-    for key, value in service_data.items():
-        presented_service_data_revision_1[key] = presenters.present(
-            value, service_content.get_question(key)
-        )
-    #     presented_service_data_revision_2[key] = presenters.present(
-    #         value, content.get_question(key)
-    #     )
-
     service_diffs = make_diffs_from_service_data(
         sections_to_diff=['Description', 'Features and benefits'],
         sections=content.sections,
-        revision_1=service_data_revision_1['services'],
-        revision_2=service_data_revision_2['services'],
+        revision_1=service_data_revision_1,
+        revision_2=service_data_revision_2,
         if_unchanged=False
     )
 
     revision_dates = None if not service_diffs else \
         get_revision_dates(
-            service_data_revision_1['services'],
-            service_data_revision_2['services']
+            service_data_revision_1,
+            service_data_revision_2
         )
 
     template_data = get_template_data({
         "diffs": service_diffs,
         "revision_dates": revision_dates,
         "sections": content.sections,
-        "service_data": presented_service_data_revision_1,
-        "service_id": service_id
+        "service_data": service_data
     })
     return render_template("compare_revisions.html", **template_data)
 

@@ -39,7 +39,7 @@
           {{ page_heading(service_data['serviceName'], service_data['supplierName'], "page-heading-smaller") }}
         </div>
         <div class="service-view">
-          <a href="https://www.digitalmarketplace.service.gov.uk/service/{{ service_id }}">View service</a>
+          <a href="https://www.digitalmarketplace.service.gov.uk/service/{{ service_data.id }}">View service</a>
         </div>
       </div>
 
@@ -68,14 +68,9 @@
                   <tr class="head-row">
                     <td colspan="4"><h3>{{ diff.label }}</h3></td>
                   </tr>
-                  {% for line in diff.revision_1 %}
+                  {% for line in diff.revisions %}
                     {# Terrible bug if lists don't have same number of indexes #}
-                    <tr class="diff--row">
-                      {{ diff.revision_1[loop.index0] }}
-                    </tr>
-                    <tr class="diff--row">
-                      {{ diff.revision_2[loop.index0] }}
-                    </tr>
+                    {{ line }}
                     <!-- blank row --><tr><td colspan="2"><br /></td></tr>
                   {% endfor %}
           {% endif %}
@@ -85,7 +80,7 @@
         </table><!-- end of .diff--content -->
       </div><!-- end of .diff -->
 
-      <form action="{{ url_for('.update_service_status', service_id=service_id ) }}" method="post">
+      <form action="{{ url_for('.update_service_status', service_id=service_data.id ) }}" method="post">
           <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
           <fieldset class="question">
               <legend class="question-heading">

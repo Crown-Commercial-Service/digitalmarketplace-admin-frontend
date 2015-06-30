@@ -112,8 +112,10 @@ class DiffLine(object):
 
     def render(self):
         return \
+            u"<tr class='diff--row'>" \
             u"<td class='number line-number {type}'>{line_number}</td>" \
-            u"<td class='{type}'>{line}</td>".format(
+            u"<td class='{type}'>{line}</td>" \
+            u"</tr>".format(
                 type=self.type if self.type == 'addition' else None,
                 line_number=self.line_number,
                 line=self.line[2:]
