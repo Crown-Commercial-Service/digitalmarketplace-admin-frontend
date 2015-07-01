@@ -53,7 +53,7 @@ def make_diffs_from_service_data(
 
                 else:
                     continue
-                question_diff = diff.get_rendered_lines()
+                question_diff = diff.get_lines()
 
                 # if arrays are empty, there are no changes for this question
                 if question_diff['revision_1'] or question_diff['revision_2']:
