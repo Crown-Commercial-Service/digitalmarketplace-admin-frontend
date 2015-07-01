@@ -44,8 +44,9 @@
       </div>
 
       <div class="diff">
-        <h2 class="diff--title">Service Revisions</h2>
         <table class="diff--content">
+        <h2 class="diff--title">Service Revisions</h2>
+        <tr class="diff--content">
           <thead>
             <tr>
               <th class="line-number"><span class="visuallyhidden">Revision 1 line number</span></th>
@@ -54,9 +55,10 @@
               <th class="line-content"><span class="visuallyhidden">Revision 2 changes</span></th>
             </tr>
           </thead>
-          <tr>
+          <tbody>
           {% if revision_dates %}
           <tr class="head-row">
+              <td class="line-number" colspan="2"><h3>Original</h3>{{ revision_dates.revision_1 }}</td>
               <td class="line-number" colspan="2"><h3>Revised</h3>{{ revision_dates.revision_2 }}</td>
           </tr>
           <!-- blank row --><tr><td colspan="2"><br /></td></tr>
@@ -70,8 +72,9 @@
                   </tr>
                   {% for line in diff.revisions %}
                     {# Terrible bug if lists don't have same number of indexes #}
-                    {{ line }}
-                    <!-- blank row --><tr><td colspan="2"><br /></td></tr>
+                    <tr class='diff--row'>
+                      {{ line }}
+                    </tr>
                   {% endfor %}
           {% endif %}
         {% endfor %}

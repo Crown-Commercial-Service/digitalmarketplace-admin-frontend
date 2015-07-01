@@ -12,11 +12,11 @@
   }
 
   tbody tr {
-    border-bottom: 1px solid white;
+    border-bottom: 6px solid white;
   }
 
   td {
-    width: 96%;
+    width: 42%;
     padding-top: 3px;
     padding-bottom: 4px;
     vertical-align: top;
@@ -51,11 +51,6 @@
         margin-bottom: 5px;
       }
     }
-  }
-
-  .diff--row td {
-    white-space: pre-wrap;
-    font-family: monospace
   }
 
   .revision-date {

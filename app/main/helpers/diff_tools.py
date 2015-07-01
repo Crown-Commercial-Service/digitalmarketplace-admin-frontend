@@ -61,10 +61,8 @@ class BaseDiffTool(object):
     def _render_words_html(self, words, expected_type, line_number):
 
         return \
-            u"<tr class='diff--row'>" \
             u"<td class='number line-number {type}'>{line_number}</td>" \
-            u"<td class='{type}'>{line}</td>" \
-            u"</tr>".format(
+            u"<td class='{type}'>{line}</td>".format(
                 type=expected_type,
                 line_number=line_number,
                 line=self._render_words_inner_html(words, expected_type)
