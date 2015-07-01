@@ -1,102 +1,167 @@
 import difflib
+from abc import ABCMeta, abstractmethod
 from flask import Markup
 
 
 class BaseDiffTool(object):
-    """Creates a line-by-line diff from two lists of items"""
+    """
+    Creates a line-by-line diff from two lists of items
+    """
+    __metaclass__ = ABCMeta
 
-    def __init__(self, revision_1, revision_2, if_unchanged=False):
-        self.revision_1 = revision_1  # list of multiple-word strings
-        self.revision_2 = revision_2  # list of multiple-word strings
+    @abstractmethod
+    def __init__(self, revision_1, revision_2, if_unchanged):
+        # revisions are lists of strings to diff against each other
+        self.revision_1 = revision_1
+        self.revision_2 = revision_2
         self.include_unchanged_lines_in_output = if_unchanged
 
-        # pass in both revisions
-        self.lines = self._render_lines(self.revision_1, self.revision_2)
+    def render_lines(self):
+        """
+        Returns rendered HTML lines to be displayed in a diff page
+        """
 
-    def _get_words_diff(self, revision_1, revision_2):
-        differ = difflib.Differ()
-        # Splitting the lines on whitespace to that we get a word diff
-        return list(differ.compare(revision_1.split(), revision_2.split()))
+        lines = {
+            'revision_1': [],
+            'revision_2': []
+        }
+
+        # Make sure lists of strings are same length
+        # Pad the shorter list with empty strings if necessary
+        # Also means pair of lists in returned dictionary are of equal length
+        revision_1, revision_2 = self._pad_lists_to_max_length(
+            self.revision_1, self.revision_2)
+
+        for index, string in enumerate(revision_1):
+
+            diff = self._get_words_diff(revision_1[index], revision_2[index])
+
+            # create an array of removed words and one of added rows
+            revision_1_words, revision_2_words = \
+                self._split_words_diff(diff)
+
+            # if revisions are equal and we want to skip unchanged lines
+            if revision_1_words == revision_2_words \
+                    and not self.include_unchanged_lines_in_output:
+                continue
+
+            lines['revision_1'].append(Markup(
+                self._render_words_html(revision_1_words, index+1)
+            ))
+
+            lines['revision_2'].append(Markup(
+                self._render_words_html(revision_2_words, index+1)
+            ))
+
+        return lines
 
     def _split_words_diff(self, words_diff):
+        """
+        Accepts a list of words that have been diffed
+        Returns two lists: one with removals ('-') and one with additions ('+')
+        Ignores detail ('?') lines
 
-        revision_1_words = []
-        revision_2_words = []
-        is_unchanged = True
+        In:  ['  Hi', '- there', '+ there!', '?      +\n']
+        Out: (['  Hi', '- there'], ['  Hi', '+ there!'])
+        """
+
+        words = {
+            'removal': [],
+            'addition': []
+        }
 
         for word in words_diff:
             type = self._get_line_type(word)
             if type == 'detail':
                 pass
-                # i don't need you
+
             else:
                 if type == 'removal':
-                    is_unchanged = False
-                    revision_1_words.append(word)
+                    words[type].append(word)
 
                 if type == 'addition':
-                    is_unchanged = False
-                    revision_2_words.append(word)
+                    words[type].append(word)
 
                 if type == 'unchanged':
-                    revision_1_words.append(word)
-                    revision_2_words.append(word)
+                    for key in words.keys():
+                        words[key].append(word)
 
-        return revision_1_words, revision_2_words, is_unchanged
+        return words['removal'], words['addition']
 
-    def _render_words_inner_html(self, words, expected_type):
+    def _render_words_html(self, words, line_number):
 
-        html_words = []
+        def _get_type(words):
 
-        for word in words:
-            type = self._get_line_type(word)
-            if type == 'unchanged':
-                html_words.append(word[2:])
+            for word in words:
+                type = self._get_line_type(word)
+                if type == 'addition' or type == 'removal':
+                    return type
 
-            if type == expected_type:
-                html_words.append("<strong>{}</strong>".format(word[2:]))
+            return 'unchanged'
 
-        return ' '.join(html_words).replace('</strong> <strong>', ' ')
+        def _render_words_inner_html(words, expected_type):
 
-    def _render_words_html(self, words, expected_type, line_number):
+            html_words = []
+
+            for word in words:
+                type = self._get_line_type(word)
+                if type == 'unchanged':
+                    html_words.append(word[2:])
+
+                if type == expected_type:
+                    html_words.append("<strong>{}</strong>".format(word[2:]))
+
+            return ' '.join(html_words).replace('</strong> <strong>', ' ')
+
+        # Can only have one expected type per line
+        expected_type = _get_type(words)
 
         return \
             u"<td class='number line-number {type}'>{line_number}</td>" \
             u"<td class='{type}'>{line}</td>".format(
                 type=expected_type,
                 line_number=line_number,
-                line=self._render_words_inner_html(words, expected_type)
+                line=_render_words_inner_html(words, expected_type)
             )
 
-    def _render_lines(self, revision_1, revision_2):
-        lines = {
-            'revision_1': [],
-            'revision_2': []
-        }
+    @staticmethod
+    def _get_words_diff(revision_1_line, revision_2_line):
+        """
+        Accepts two strings which are split into lists
+        Returns a list of word-diffs
 
-        # TODO: don't assume lists of same length
-        for index, string in enumerate(revision_1):
-            line = self._get_words_diff(revision_1[index], revision_2[index])
+        In:  'Hi there', 'Hi there!'
+        Out: ['  Hi', '- there', '+ there!', '?      +\n']
+        """
+        differ = difflib.Differ()
+        # Splitting the lines on whitespace to that we get a word diff
+        return list(differ.compare(
+            revision_1_line.split(), revision_2_line.split()
+        ))
 
-            revision_1_words, revision_2_words, is_unchanged = \
-                self._split_words_diff(line)
+    @staticmethod
+    def _pad_lists_to_max_length(list_1, list_2, padding=''):
+        """
+        if lists are not the same length,
+        pad the shorter list to the length of the longest list
+        with a given placeholder element
 
-            # if this line is unchanged and we don't want unchanged lines
-            if is_unchanged and not self.include_unchanged_lines_in_output:
-                continue
+        In:  [ 1, 2, 3, 4 ], [ 1, 2 ], 'new'
+        Out: [ 1, 2, 3, 4 ], [ 1, 2, 'new', 'new']
+        """
 
-            lines['revision_1'].append(Markup(
-                self._render_words_html(revision_1_words, 'removal', index+1)
-            ))
+        def _pad_list_to_max_length(list, new_length, padding):
+            return list + [padding] * (new_length - len(list))
 
-            lines['revision_2'].append(Markup(
-                self._render_words_html(revision_2_words, 'addition', index+1)
-            ))
+        # if same length, return
+        if len(list_1) == len(list_2):
+            return list_1, list_2
 
-        return lines
+        max_len = max(len(list_1), len(list_2))
 
-    def get_lines(self):
-        return self.lines
+        return \
+            _pad_list_to_max_length(list_1, max_len, padding), \
+            _pad_list_to_max_length(list_2, max_len, padding)
 
     @staticmethod
     def _get_line_type(string):
@@ -113,14 +178,14 @@ class BaseDiffTool(object):
 class ListDiffTool(BaseDiffTool):
     """Creates a line-by-line diff from two lists"""
 
-    pass
-
+    def __init__(self, revision_1, revision_2, if_unchanged=False):
+        super(
+            ListDiffTool, self).__init__(revision_1, revision_2, if_unchanged)
 
 class StringDiffTool(BaseDiffTool):
     """Creates a line-by-line diff from two strings"""
 
     def __init__(self, revision_1, revision_2, if_unchanged=False):
-        self.revision_1 = revision_1.splitlines()
-        self.revision_2 = revision_2.splitlines()
-        self.include_unchanged_lines_in_output = if_unchanged
-        self.lines = self._render_lines(self.revision_1, self.revision_2)
+        super(StringDiffTool, self).__init__(
+            revision_1.splitlines(), revision_2.splitlines(), if_unchanged
+        )

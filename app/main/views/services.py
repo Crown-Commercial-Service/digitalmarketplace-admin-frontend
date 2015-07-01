@@ -53,15 +53,13 @@ def make_diffs_from_service_data(
 
                 else:
                     continue
-                question_diff = diff.get_lines()
+                question_diff = diff.render_lines()
 
                 # if arrays are empty, there are no changes for this question
                 if question_diff['revision_1'] or question_diff['revision_2']:
                     diffs.append({
                         'section_name': section['name'],
                         'label': question['question'],
-                        'revision_1': question_diff['revision_1'],
-                        'revision_2': question_diff['revision_2'],
                         'revisions':
                             [val + question_diff['revision_2'][i]
                              for i, val

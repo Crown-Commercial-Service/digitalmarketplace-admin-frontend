@@ -313,22 +313,19 @@ class TestServiceUpdates(LoggedInApplicationTest):
         )
         self.assertIn(
             self._replace_whitespace(
-               '<td class="summary-item-field-name"><a href="/admin/service-updates">View changes</a></td>'),  # noqa
+               '<td class="summary-item-field-name"><a href="/admin/services/compare/...">View changes</a></td>'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
-
         self.assertIn(
             self._replace_whitespace(
                '<form action="/admin/service-updates/25/acknowledge" method="post">'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
-
         self.assertIn(
             self._replace_whitespace(
                '<input name="audit_date" type="hidden" value="2010-01-01">'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
-
         data_api_client.find_audit_events.assert_called_with(
             audit_type='update_service',
             acknowledged='false',
