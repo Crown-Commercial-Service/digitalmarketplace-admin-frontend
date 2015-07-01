@@ -19,6 +19,7 @@ def authenticate_user(func):
                     'id': 12345,
                     'emailAddress': 'valid@example.com',
                     'role': 'admin',
+                    'locked': False,
                 }
             }
             return func(*args, **kwargs)

@@ -26,7 +26,7 @@ class BaseApplicationTest(TestCase):
 
         def user_loader(user_id):
             if user_id:
-                return User(user_id, 'test@example.com', None, None)
+                return User(user_id, 'test@example.com', None, None, False)
 
         login_manager.user_loader(user_loader)
 
@@ -45,6 +45,7 @@ class LoggedInApplicationTest(BaseApplicationTest):
                     'id': 1234,
                     'emailAddress': 'test@example.com',
                     'role': 'admin',
+                    'locked': False,
                     'passwordChangedAt': '2015-01-01T00:00:00Z'
                 }
             }
