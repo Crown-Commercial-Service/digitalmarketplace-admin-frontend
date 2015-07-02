@@ -10,26 +10,6 @@ from dmutils.apiclient import HTTPError, REQUEST_ERROR_MESSAGE
 from ...helpers import LoggedInApplicationTest
 
 
-class TestApplication(LoggedInApplicationTest):
-    def test_main_index(self):
-        response = self.client.get('/admin')
-        self.assertEquals(200, response.status_code)
-
-    def test_404(self):
-        response = self.client.get('/admin/not-found')
-        self.assertEquals(404, response.status_code)
-
-    def test_index_is_404(self):
-        response = self.client.get('/')
-        self.assertEquals(404, response.status_code)
-
-    def test_headers(self):
-        res = self.client.get('/admin')
-        assert 200 == res.status_code
-        self.assertIn('Secure;', res.headers['Set-Cookie'])
-        self.assertIn('DENY', res.headers['X-Frame-Options'])
-
-
 class TestServiceView(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_response(self, data_api_client):
@@ -136,7 +116,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.update_service.assert_called_with(1, {
             'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
             'sfiaRateDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-sfia-rate-card-2015-01-01-1200.pdf',  # noqa
-        }, 'admin', 'admin app')
+        }, 'test@example.com', 'admin app')
 
         self.assertEquals(302, response.status_code)
 
@@ -164,7 +144,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.get_service.assert_called_with('1')
         data_api_client.update_service.assert_called_with(1, {
             'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
-        }, 'admin', 'admin app')
+        }, 'test@example.com', 'admin app')
 
         self.assertIn(b'Your document is not in an open format', response.data)
         self.assertIn(b'This question requires an answer', response.data)
@@ -203,7 +183,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.update_service.assert_called_with(1, {
             'serviceFeatures': ['foo'],
             'serviceBenefits': ['foo'],
-        }, 'admin', 'admin app')
+        }, 'test@example.com', 'admin app')
         self.assertEquals(response.status_code, 302)
 
     @mock.patch('app.main.views.services.data_api_client')

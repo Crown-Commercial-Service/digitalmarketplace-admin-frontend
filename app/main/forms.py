@@ -1,6 +1,7 @@
 from flask_wtf import Form
-from wtforms import StringField, DateField
-from wtforms.validators import Optional, AnyOf
+from wtforms import StringField, DateField, PasswordField
+from wtforms.validators import Optional, AnyOf, DataRequired, \
+    Email
 from datetime import datetime
 
 
@@ -34,3 +35,13 @@ class ServiceUpdateAuditEventsForm(Form):
             return self.audit_date.data
         else:
             return datetime.now()
+
+
+class LoginForm(Form):
+    email_address = StringField('Email address', validators=[
+        DataRequired(message='Email cannot be empty'),
+        Email(message='Please enter a valid email address')
+    ])
+    password = PasswordField('Password', validators=[
+        DataRequired(message='Please enter your password')
+    ])

@@ -21,7 +21,6 @@ class Config(object):
     DM_DATA_API_URL = os.getenv('DM_DATA_API_URL')
     DM_DATA_API_AUTH_TOKEN = os.getenv('DM_DATA_API_AUTH_TOKEN')
     SECRET_KEY = os.getenv('DM_ADMIN_FRONTEND_COOKIE_SECRET')
-    PASSWORD_HASH = os.getenv('DM_ADMIN_FRONTEND_PASSWORD_HASH')
 
     STATIC_URL_PATH = '/admin/static'
     ASSET_PATH = STATIC_URL_PATH + '/'
@@ -55,7 +54,6 @@ class Test(Config):
     WTF_CSRF_ENABLED = False
     DOCUMENTS_URL = 'https://assets.test.digitalmarketplace.service.gov.uk'
     SECRET_KEY = "test_secret"
-    PASSWORD_HASH = "JHA1azIkMjcxMCQwYmZiN2Y5YmJlZmI0YTg4YmNkZjQ1ODY0NWUzOGEwNCRoeDBwbUpHZVhSalREUFBGREFydmJQWnlFYnhWU1g1ag=="  # noqa
 
 
 class Development(Config):

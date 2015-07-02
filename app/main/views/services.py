@@ -1,5 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash, \
     current_app, session
+from flask_login import login_required, current_user
 from dmutils.apiclient import HTTPError
 
 from dmutils.validation import Validate
@@ -17,11 +18,13 @@ presenters = Presenters()
 
 
 @main.route('', methods=['GET'])
+@login_required
 def index():
     return render_template("index.html", **get_template_data())
 
 
 @main.route('/services', methods=['GET'])
+@login_required
 def find():
     if request.args.get("service_id") is None:
         return render_template("index.html", **get_template_data()), 404
@@ -30,6 +33,7 @@ def find():
 
 
 @main.route('/services/<service_id>', methods=['GET'])
+@login_required
 def view(service_id):
     try:
         service = data_api_client.get_service(service_id)
@@ -43,15 +47,16 @@ def view(service_id):
 
     content = service_content.get_builder().filter(service_data)
 
-    template_data = get_template_data({
-        "sections": content,
-        "service_data": presenters.present_all(service_data, service_content),
-        "service_id": service_id
-    })
+    template_data = get_template_data(
+        sections=content,
+        service_data=presenters.present_all(service_data, service_content),
+        service_id=service_id
+    )
     return render_template("view_service.html", **template_data)
 
 
 @main.route('/services/status/<string:service_id>', methods=['POST'])
+@login_required
 def update_service_status(service_id):
 
     frontend_status = request.form['service_status']
@@ -86,20 +91,22 @@ def update_service_status(service_id):
 
 
 @main.route('/services/<service_id>/edit/<section>', methods=['GET'])
+@login_required
 def edit(service_id, section):
 
     service_data = data_api_client.get_service(service_id)['services']
 
     content = service_content.get_builder().filter(service_data)
 
-    template_data = get_template_data({
-        "section": content.get_section(section),
-        "service_data": service_data,
-    })
+    template_data = get_template_data(
+        section=content.get_section(section),
+        service_data=service_data
+    )
     return render_template("edit_section.html", **template_data)
 
 
 @main.route('/services/<service_id>/edit/<section>', methods=['POST'])
+@login_required
 def update(service_id, section):
 
     s3_uploader = S3(
@@ -138,18 +145,18 @@ def update(service_id, section):
             data_api_client.update_service(
                 service_data['id'],
                 update_data,
-                session['username'],
+                current_user.email_address,
                 "admin app")
         except HTTPError as e:
             return e.message
 
     if form.errors:
         service_data.update(form.dirty_data)
-        return render_template("edit_section.html", **get_template_data({
-            "section": content.get_section(section),
-            "service_data": service_data,
-            "service_id": service_id,
-            "errors": form.errors
-            }))
+        return render_template("edit_section.html", **get_template_data(
+            section=content.get_section(section),
+            service_data=service_data,
+            service_id=service_id,
+            errors=form.errors
+        ))
     else:
         return redirect(url_for(".view", service_id=service_id))
