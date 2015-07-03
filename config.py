@@ -55,6 +55,8 @@ class Test(Config):
     DOCUMENTS_URL = 'https://assets.test.digitalmarketplace.service.gov.uk'
     SECRET_KEY = "test_secret"
 
+    DM_LOG_LEVEL = 'CRITICAL'
+
 
 class Development(Config):
     DEBUG = True
