@@ -44,43 +44,37 @@
       </div>
 
       <div class="diff">
-        <table class="diff--content">
-        <h2 class="diff--title">Service Revisions</h2>
-        <tr class="diff--content">
-          <thead>
-            <tr>
-              <th class="line-number"><span class="visuallyhidden">Revision 1 line number</span></th>
-              <th class="line-content"><span class="visuallyhidden">Revision 1 changes</span></th>
-              <th class="line-number"><span class="visuallyhidden">Revision 2 line number</span></th>
-              <th class="line-content"><span class="visuallyhidden">Revision 2 changes</span></th>
-            </tr>
-          </thead>
-          <tbody>
-          {% if revision_dates %}
-          <tr class="head-row">
-              <td class="line-number" colspan="2"><h3>Original</h3>{{ revision_dates.revision_1 }}</td>
-              <td class="line-number" colspan="2"><h3>Revised</h3>{{ revision_dates.revision_2 }}</td>
-          </tr>
-          <!-- blank row --><tr><td colspan="2"><br /></td></tr>
-
-          {% endif %}
+        <h2 class="diff-title">Service Revisions</h2>
+        {% if revision_dates %}
+        <div class="revision-dates">
+          <p><span class="revision-date-type">Original</span><span class="visuallyhidden">:</span> {{ revision_dates.revision_1 }}</p>
+          <p><span class="revision-date-type">Revised</span><span class="visuallyhidden">:</span> {{ revision_dates.revision_2 }}</p>
+        </div>
+        {% endif %}
       {% for section in sections %}
         {% for diff in diffs %}
           {% if section.name in diff.section_name %}
-                  <tr class="head-row">
-                    <td colspan="4"><h3>{{ diff.label }}</h3></td>
+            <table>
+              <caption>{{ diff.label }}</caption>
+              <thead>
+                <tr>
+                  <th class="line-number"><span class="visuallyhidden">Revision 1 line number</span></th>
+                  <th class="line-content"><span class="visuallyhidden">Revision 1 changes</span></th>
+                  <th class="line-number"><span class="visuallyhidden">Revision 2 line number</span></th>
+                  <th class="line-content"><span class="visuallyhidden">Revision 2 changes</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for line in diff.revisions %}
+                  <tr class='diff-row'>
+                    {{ line }}
                   </tr>
-                  {% for line in diff.revisions %}
-                    {# Terrible bug if lists don't have same number of indexes #}
-                    <tr class='diff--row'>
-                      {{ line }}
-                    </tr>
-                  {% endfor %}
+                {% endfor %}
+              </tbody>
+            </table>
           {% endif %}
         {% endfor %}
       {% endfor %}
-          </tbody>
-        </table><!-- end of .diff--content -->
       </div><!-- end of .diff -->
 
       <form action="{{ url_for('.update_service_status', service_id=service_data.id ) }}" method="post">

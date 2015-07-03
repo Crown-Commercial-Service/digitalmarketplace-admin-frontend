@@ -15,8 +15,28 @@ class BaseDiffTool(object):
         self.revision_1 = revision_1
         self.revision_2 = revision_2
         self.include_unchanged_lines_in_output = if_unchanged
+        self.lines = self._get_lines()
 
     def render_lines(self):
+        lines = {
+            'revision_1': [],
+            'revision_2': []
+        }
+        for index, line in enumerate(self.lines['revision_1']):
+            lines['revision_1'].append(
+                Markup(self._render_words_html(
+                    self.lines['revision_1'][index], index+1)
+                )
+            )
+            lines['revision_2'].append(
+                Markup(self._render_words_html(
+                    self.lines['revision_2'][index], index+1)
+                )
+            )
+
+        return lines
+
+    def _get_lines(self):
         """
         Returns rendered HTML lines to be displayed in a diff page
         """
@@ -41,17 +61,13 @@ class BaseDiffTool(object):
                 self._split_words_diff(diff)
 
             # if revisions are equal and we want to skip unchanged lines
-            if revision_1_words == revision_2_words \
+            if not self.has_changes(revision_1_words) \
+                    and not self.has_changes(revision_2_words) \
                     and not self.include_unchanged_lines_in_output:
                 continue
 
-            lines['revision_1'].append(Markup(
-                self._render_words_html(revision_1_words, index+1)
-            ))
-
-            lines['revision_2'].append(Markup(
-                self._render_words_html(revision_2_words, index+1)
-            ))
+            lines['revision_1'].append(revision_1_words)
+            lines['revision_2'].append(revision_2_words)
 
         return lines
 
@@ -88,16 +104,26 @@ class BaseDiffTool(object):
 
         return words['removal'], words['addition']
 
+    def _get_type(self, words, types_to_look_for=None):
+
+        if not types_to_look_for:
+            types_to_look_for = ['addition', 'removal']
+
+        for word in words:
+            type = self._get_line_type(word)
+            if type in types_to_look_for:
+                return type
+
+        # if words is empty, this is still what we want
+        return 'unchanged'
+
+    def has_changes(self, words):
+
+        return self._get_type(
+            words, ['addition', 'removal', 'detail']
+        ) != 'unchanged'
+
     def _render_words_html(self, words, line_number):
-
-        def _get_type(words):
-
-            for word in words:
-                type = self._get_line_type(word)
-                if type == 'addition' or type == 'removal':
-                    return type
-
-            return 'unchanged'
 
         def _render_words_inner_html(words, expected_type):
 
@@ -114,11 +140,11 @@ class BaseDiffTool(object):
             return ' '.join(html_words).replace('</strong> <strong>', ' ')
 
         # Can only have one expected type per line
-        expected_type = _get_type(words)
+        expected_type = self._get_type(words)
 
         return \
-            u"<td class='number line-number {type}'>{line_number}</td>" \
-            u"<td class='{type}'>{line}</td>".format(
+            u"<td class='line-number line-number-{type}'>{line_number}</td>" \
+            u"<td class='line-content {type}'>{line}</td>".format(
                 type=expected_type,
                 line_number=line_number,
                 line=_render_words_inner_html(words, expected_type)
@@ -181,6 +207,7 @@ class ListDiffTool(BaseDiffTool):
     def __init__(self, revision_1, revision_2, if_unchanged=False):
         super(
             ListDiffTool, self).__init__(revision_1, revision_2, if_unchanged)
+
 
 class StringDiffTool(BaseDiffTool):
     """Creates a line-by-line diff from two strings"""
