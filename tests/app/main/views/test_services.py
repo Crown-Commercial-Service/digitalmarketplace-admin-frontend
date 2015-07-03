@@ -266,7 +266,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'removed'})
         data_api_client.update_service_status.assert_called_with(
-            '1', 'disabled', 'Digital Marketplace admin user',
+            '1', 'disabled', 'test@example.com',
             "Status changed to 'disabled'")
         self.assertEquals(302, response1.status_code)
         self.assertEquals(response1.location,
@@ -281,7 +281,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'private'})
         data_api_client.update_service_status.assert_called_with(
-            '1', 'enabled', 'Digital Marketplace admin user',
+            '1', 'enabled', 'test@example.com',
             "Status changed to 'enabled'")
         self.assertEquals(302, response1.status_code)
         self.assertEquals(response1.location,
@@ -296,7 +296,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'public'})
         data_api_client.update_service_status.assert_called_with(
-            '1', 'published', 'Digital Marketplace admin user',
+            '1', 'published', 'test@example.com',
             "Status changed to 'published'")
         self.assertEquals(302, response1.status_code)
         self.assertEquals(response1.location,

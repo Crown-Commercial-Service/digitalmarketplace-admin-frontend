@@ -1,12 +1,11 @@
 from flask import render_template, request, redirect, url_for, flash, \
-    current_app, session
+    current_app
 from flask_login import login_required, current_user
 from dmutils.apiclient import HTTPError
 
 from dmutils.validation import Validate
 from dmutils.presenters import Presenters
 from dmutils.s3 import S3
-from dmutils.validation import Validate
 
 from ... import data_api_client
 from ... import service_content
@@ -76,7 +75,8 @@ def update_service_status(service_id):
     try:
         data_api_client.update_service_status(
             service_id, backend_status,
-            "Digital Marketplace admin user", "Status changed to '{0}'".format(
+            current_user.email_address,
+            "Status changed to '{0}'".format(
                 backend_status))
 
     except HTTPError as e:
