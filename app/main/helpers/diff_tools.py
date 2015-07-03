@@ -61,8 +61,9 @@ class BaseDiffTool(object):
                 self._split_words_diff(diff)
 
             # if revisions are equal and we want to skip unchanged lines
-            if not self.has_changes(revision_1_words) \
-                    and not self.has_changes(revision_2_words) \
+            if revision_1_words == revision_2_words \
+                and self._get_line_type(revision_1_words) == 'unchanged' \
+                and self._get_line_type(revision_2_words) == 'unchanged' \
                     and not self.include_unchanged_lines_in_output:
                 continue
 
@@ -87,7 +88,7 @@ class BaseDiffTool(object):
         }
 
         for word in words_diff:
-            type = self._get_line_type(word)
+            type = self._get_word_type(word)
             if type == 'detail':
                 pass
 
@@ -104,25 +105,6 @@ class BaseDiffTool(object):
 
         return words['removal'], words['addition']
 
-    def _get_type(self, words, types_to_look_for=None):
-
-        if not types_to_look_for:
-            types_to_look_for = ['addition', 'removal']
-
-        for word in words:
-            type = self._get_line_type(word)
-            if type in types_to_look_for:
-                return type
-
-        # if words is empty, this is still what we want
-        return 'unchanged'
-
-    def has_changes(self, words):
-
-        return self._get_type(
-            words, ['addition', 'removal', 'detail']
-        ) != 'unchanged'
-
     def _render_words_html(self, words, line_number):
 
         def _render_words_inner_html(words, expected_type):
@@ -130,17 +112,18 @@ class BaseDiffTool(object):
             html_words = []
 
             for word in words:
-                type = self._get_line_type(word)
+                type = self._get_word_type(word)
+
                 if type == 'unchanged':
-                    html_words.append(word[2:])
+                    html_words.append(u"{}".format(word[2:]))
 
-                if type == expected_type:
-                    html_words.append("<strong>{}</strong>".format(word[2:]))
+                elif type == expected_type:
+                    html_words.append(u"<strong>{}</strong>".format(word[2:]))
 
-            return ' '.join(html_words).replace('</strong> <strong>', ' ')
+            return ' '.join(html_words).replace(u'</strong> <strong>', ' ')
 
         # Can only have one expected type per line
-        expected_type = self._get_type(words)
+        expected_type = self._get_line_type(words)
 
         return \
             u"<td class='line-number line-number-{type}'>{line_number}</td>" \
@@ -190,7 +173,24 @@ class BaseDiffTool(object):
             _pad_list_to_max_length(list_2, max_len, padding)
 
     @staticmethod
-    def _get_line_type(string):
+    def _get_line_type(words, types_to_look_for=None):
+
+        if not words:
+            return 'empty'
+
+        if not types_to_look_for:
+            types_to_look_for = ['addition', 'removal']
+
+        for word in words:
+            type = BaseDiffTool._get_word_type(word)
+            if type in types_to_look_for:
+                return type
+
+        # if words is empty, this is still what we want
+        return 'unchanged'
+
+    @staticmethod
+    def _get_word_type(string):
         if string.startswith('+ '):
             return 'addition'
         if string.startswith('- '):
@@ -205,14 +205,59 @@ class ListDiffTool(BaseDiffTool):
     """Creates a line-by-line diff from two lists"""
 
     def __init__(self, revision_1, revision_2, if_unchanged=False):
+
+        if not self._is_list(revision_1) or not self._is_list(revision_2):
+            err = ""
+
+            if not self._is_list(revision_1):
+                err += " First parameter is of type {}.".format(
+                    type(revision_1)
+                )
+
+            if not self._is_list(revision_2):
+                err += " Second parameter is of type {}.".format(
+                    type(revision_2)
+                )
+
+            raise ValueError(
+                "ListDiffTool requires two list parameters. {}".format(err)
+            )
+
         super(
             ListDiffTool, self).__init__(revision_1, revision_2, if_unchanged)
+
+    @staticmethod
+    def _is_list(value):
+        return type(value).__name__ == 'list'
 
 
 class StringDiffTool(BaseDiffTool):
     """Creates a line-by-line diff from two strings"""
 
     def __init__(self, revision_1, revision_2, if_unchanged=False):
+
+        if not self._is_string(revision_1) or not self._is_string(revision_2):
+            err = ""
+
+            if not self._is_string(revision_1):
+                err += " First parameter is of type {}.".format(
+                    type(revision_1)
+                )
+
+            if not self._is_string(revision_2):
+                err += " Second parameter is of type {}.".format(
+                    type(revision_2)
+                )
+
+            raise ValueError(
+                "StringDiffTool requires two string parameters. {}".format(err)
+            )
+
         super(StringDiffTool, self).__init__(
             revision_1.splitlines(), revision_2.splitlines(), if_unchanged
         )
+
+    @staticmethod
+    def _is_string(value):
+        return type(value).__name__ == 'str' \
+            or type(value).__name__ == 'unicode'

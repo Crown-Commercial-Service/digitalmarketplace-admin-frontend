@@ -1,11 +1,18 @@
 import unittest
-from app.main.helpers.diff_tools import StringDiffTool
+from app.main.helpers.diff_tools import StringDiffTool, ListDiffTool
 from flask import Markup
+from abc import ABCMeta, abstractmethod
 
 
-class TestDiffTool(unittest.TestCase):
+class TestBaseDiffTool():
 
     maxDiff = None
+
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def _get_diff_tool(self, revision_1, revision_2, if_unchanged):
+        pass
 
     def setUp(self):
         pass
@@ -22,17 +29,42 @@ class TestDiffTool(unittest.TestCase):
         for key in lines.keys():
             self.assertEqual(len(lines[key]), expected_number_of_lines)
 
-    def test_correct_number_of_lines(self):
+    def _check_correct_line_types(self, lines, types):
+
+        for revision in ['revision_1', 'revision_2']:
+
+            for index, line in enumerate(lines[revision]):
+
+                self.assertEqual(
+                    StringDiffTool._get_line_type(lines[revision][index]),
+                    types[revision][index]
+                )
+
+    def _check_correct_line_contents(self, lines, contents):
+
+        for revision in ['revision_1', 'revision_2']:
+
+            for index, line in enumerate(lines[revision]):
+
+                self.assertEqual(
+                    self._get_original_line_from_revision(
+                        lines[revision][index]),
+                    contents[revision][index]
+                )
+
+    def _test_correct_number_of_lines(self):
         revision_1 = """line one"""
         revision_2 = """line one\nline two\nline three"""
 
         self._check_correct_number_of_lines_in_revisions(
-            StringDiffTool(revision_1, revision_2, if_unchanged=True).lines,
+            self._get_diff_tool(
+                revision_1, revision_2, if_unchanged=True).lines,
             3
         )
 
         self._check_correct_number_of_lines_in_revisions(
-            StringDiffTool(revision_1, revision_2, if_unchanged=False).lines,
+            self._get_diff_tool(
+                revision_1, revision_2, if_unchanged=False).lines,
             2
         )
 
@@ -41,146 +73,198 @@ class TestDiffTool(unittest.TestCase):
 
         # all lines should be accounted for
         self._check_correct_number_of_lines_in_revisions(
-            StringDiffTool(revision_1, revision_2, if_unchanged=True).lines,
+            self._get_diff_tool(
+                revision_1, revision_2, if_unchanged=True).lines,
             5
         )
 
         # lines 1 and 2 are unchanged, so they won't be here
         self._check_correct_number_of_lines_in_revisions(
-            StringDiffTool(revision_1, revision_2, if_unchanged=False).lines,
+            self._get_diff_tool(
+                revision_1, revision_2, if_unchanged=False).lines,
             3
         )
 
-    def test_instance_has_correct_properties_for_added_line(self):
+    def _test_instance_has_correct_properties_for_added_line(self):
         revision_1 = """line one"""
         revision_2 = """line one\nline two"""
-        string_diff = StringDiffTool(revision_1, revision_2, if_unchanged=True)
+        diff = StringDiffTool(revision_1, revision_2, if_unchanged=True)
 
-        lines = string_diff.lines
+        lines = diff.lines
         self._check_correct_number_of_lines_in_revisions(lines, 2)
 
-        # first line in each revision is "line one", which is the same
-        self.assertFalse(string_diff.has_changes(lines['revision_1'][0]))
-        self.assertFalse(string_diff.has_changes(lines['revision_2'][0]))
+        types = {
+            'revision_1': ['unchanged', 'empty'],
+            'revision_2': ['unchanged', 'addition']
+        }
+        self._check_correct_line_types(lines, types)
 
-        # revision_2 should register changes
-        self.assertFalse(string_diff.has_changes(lines['revision_1'][1]))
-        self.assertTrue(string_diff.has_changes(lines['revision_2'][1]))
+        contents = {
+            'revision_1': ['line one', ''],
+            'revision_2': ['line one', 'line two']
+        }
+        self._check_correct_line_contents(lines, contents)
 
-        self.assertEqual(
-            self._get_original_line_from_revision(lines['revision_1'][1]),
-            '')
-
-        self.assertEqual(
-            self._get_original_line_from_revision(lines['revision_2'][1]),
-            'line two')
-
-    def test_instance_has_correct_properties_for_removed_line(self):
+    def _test_instance_has_correct_properties_for_removed_line(self):
         revision_1 = """line one\nline two"""
         revision_2 = """line one"""
-        string_diff = StringDiffTool(revision_1, revision_2, if_unchanged=True)
+        diff = StringDiffTool(revision_1, revision_2, if_unchanged=True)
 
-        lines = string_diff.lines
+        lines = diff.lines
         self._check_correct_number_of_lines_in_revisions(lines, 2)
 
-        # first line in each revision is "line one", which is the same
-        self.assertFalse(string_diff.has_changes(lines['revision_1'][0]))
-        self.assertFalse(string_diff.has_changes(lines['revision_2'][0]))
+        types = {
+            'revision_1': ['unchanged', 'removal'],
+            'revision_2': ['unchanged', 'empty']
+        }
+        self._check_correct_line_types(lines, types)
 
-        # revision_1 should register changes
-        self.assertTrue(string_diff.has_changes(lines['revision_1'][1]))
-        self.assertFalse(string_diff.has_changes(lines['revision_2'][1]))
+        contents = {
+            'revision_1': ['line one', 'line two'],
+            'revision_2': ['line one', '']
+        }
+        self._check_correct_line_contents(lines, contents)
 
-        self.assertEqual(
-            self._get_original_line_from_revision(lines['revision_1'][1]),
-            'line two')
-
-        self.assertEqual(
-            self._get_original_line_from_revision(lines['revision_2'][1]),
-            '')
-
-    def test_instance_has_correct_properties_for_edited_line(self):
+    def _test_instance_has_correct_properties_for_edited_line(self):
         revision_1 = """line number one has changed"""
         revision_2 = """line one has actually changed"""
-        string_diff = StringDiffTool(revision_1, revision_2)
+        diff = StringDiffTool(revision_1, revision_2)
 
-        lines = string_diff.lines
+        lines = diff.lines
         for key in lines.keys():
             self.assertEqual(len(lines[key]), 1)
 
-        self.assertTrue(string_diff.has_changes(lines['revision_1'][0]))
-        self.assertTrue(string_diff.has_changes(lines['revision_2'][0]))
+        types = {
+            'revision_1': ['removal'],
+            'revision_2': ['addition']
+        }
+        self._check_correct_line_types(lines, types)
 
-        self.assertEqual(
-            self._get_original_line_from_revision(lines['revision_1'][0]),
-            'line number one has changed')
+        contents = {
+            'revision_1': ['line number one has changed'],
+            'revision_2': ['line one has actually changed']
+        }
+        self._check_correct_line_contents(lines, contents)
 
-        self.assertEqual(
-            self._get_original_line_from_revision(lines['revision_2'][0]),
-            'line one has actually changed')
-
-    def test_rendered_lines_work_for_added_line(self):
+    def _test_rendered_lines_work_for_added_line(self):
         revision_1 = """line one"""
         revision_2 = """line one\nline two"""
-        string_diff = StringDiffTool(revision_1, revision_2)
+        diff = StringDiffTool(revision_1, revision_2)
 
         self.assertEqual(
-            string_diff.render_lines()['revision_1'][0],
+            diff.render_lines()['revision_1'][0],
             Markup(
-                u"<td class='number line-number unchanged'>1</td>"
-                u"<td class='unchanged'></td>"
+                u"<td class='line-number line-number-empty'>1</td>"
+                u"<td class='line-content empty'></td>"
             )
         )
         self.assertEqual(
-            string_diff.render_lines()['revision_2'][0],
+            diff.render_lines()['revision_2'][0],
             Markup(
-                u"<td class='number line-number addition'>1</td>"
-                u"<td class='addition'>"
+                u"<td class='line-number line-number-addition'>1</td>"
+                u"<td class='line-content addition'>"
                 u"<strong>line two</strong>"
                 u"</td>"
             )
         )
 
-    def test_rendered_lines_work_for_removed_line(self):
+    def _test_rendered_lines_work_for_removed_line(self):
         revision_1 = """line one\nline two"""
         revision_2 = """line one"""
-        string_diff = StringDiffTool(revision_1, revision_2)
+        diff = StringDiffTool(revision_1, revision_2)
         self.assertEqual(
-            string_diff.render_lines()['revision_1'][0],
+            diff.render_lines()['revision_1'][0],
             Markup(
-                u"<td class='number line-number removal'>1</td>"
-                u"<td class='removal'>"
+                u"<td class='line-number line-number-removal'>1</td>"
+                u"<td class='line-content removal'>"
                 u"<strong>line two</strong>"
                 u"</td>"
             )
         )
         self.assertEqual(
-            string_diff.render_lines()['revision_2'][0],
+            diff.render_lines()['revision_2'][0],
             Markup(
-                u"<td class='number line-number unchanged'>1</td>"
-                u"<td class='unchanged'></td>"
+                u"<td class='line-number line-number-empty'>1</td>"
+                u"<td class='line-content empty'></td>"
             )
         )
 
-    def test_rendered_lines_work_for_edited_line(self):
+    def _test_rendered_lines_work_for_edited_line(self):
         revision_1 = """line number one has changed"""
         revision_2 = """line one has actually changed"""
-        string_diff = StringDiffTool(revision_1, revision_2)
+        diff = StringDiffTool(revision_1, revision_2)
         self.assertEqual(
-            string_diff.render_lines()['revision_1'][0],
+            diff.render_lines()['revision_1'][0],
             Markup(
-                u"<td class='number line-number removal'>1</td>"
-                u"<td class='removal'>"
+                u"<td class='line-number line-number-removal'>1</td>"
+                u"<td class='line-content removal'>"
                 u"line <strong>number</strong> one has changed"
                 u"</td>"
             )
         )
         self.assertEqual(
-            string_diff.render_lines()['revision_2'][0],
+            diff.render_lines()['revision_2'][0],
             Markup(
-                u"<td class='number line-number addition'>1</td>"
-                u"<td class='addition'>"
+                u"<td class='line-number line-number-addition'>1</td>"
+                u"<td class='line-content addition'>"
                 u"line one has <strong>actually</strong> changed"
                 u"</td>"
             )
         )
+
+
+class TestStringDiffTool(TestBaseDiffTool, unittest.TestCase):
+
+    def _get_diff_tool(self, revision_1, revision_2, if_unchanged):
+        return StringDiffTool(revision_1, revision_2, if_unchanged)
+
+    def test_wrong_input_parameters_raises_value_error(self):
+        StringDiffTool('', '')
+
+        param_list = [
+            ('', ['not a string']),
+            (['not a string'], ['not a string']),
+            ('', None),
+            ('', 0),
+            ('', False)
+        ]
+
+        for params in param_list:
+            with self.assertRaises(ValueError):
+                StringDiffTool(params[0], params[1])
+            with self.assertRaises(ValueError):
+                StringDiffTool(params[1], params[0])
+
+    def test_all_tests(self):
+        for attr in dir(TestBaseDiffTool):
+            if attr.startswith('_test') and callable(getattr(self, attr)):
+                getattr(self, attr)()
+
+
+class TestListDiffTool(TestBaseDiffTool, unittest.TestCase):
+
+    def _get_diff_tool(self, revision_1, revision_2, if_unchanged):
+        return ListDiffTool(
+            revision_1.splitlines(), revision_2.splitlines(), if_unchanged)
+
+    def test_wrong_input_parameters_raises_value_error(self):
+        ListDiffTool([], [])
+
+        param_list = [
+            ([], 'not a list'),
+            ('not a string', 'not a string'),
+            ([], None),
+            ([], 0),
+            ([], False)
+        ]
+
+        for params in param_list:
+            with self.assertRaises(ValueError):
+                ListDiffTool(params[0], params[1])
+            with self.assertRaises(ValueError):
+                ListDiffTool(params[1], params[0])
+
+    def test_all_tests(self):
+        for attr in dir(TestBaseDiffTool):
+            if attr.startswith('_test') and callable(getattr(self, attr)):
+                getattr(self, attr)()
