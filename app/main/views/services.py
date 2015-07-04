@@ -9,7 +9,7 @@ from dmutils.s3 import S3
 from dmutils.validation import Validate
 from dmutils.formats import DATETIME_FORMAT
 
-from ... import data_api_client
+from ... import data_api_client, DISPLAY_DATETIME_FORMAT
 from ... import service_content
 from .. import main
 from . import get_template_data
@@ -75,7 +75,7 @@ def get_revision_dates(revision_1=None, revision_2=None):
         # Tuesday, 10 June 2015 at 14:00
         return datetime.strptime(
             date_string, DATETIME_FORMAT
-        ).strftime('%A, %d %B %Y at %H:%M')
+        ).strftime(DISPLAY_DATETIME_FORMAT)
 
     return {
         'revision_1': get_revision_date(revision_1['updatedAt']),
@@ -230,12 +230,12 @@ def compare(old_archived_service_id, new_archived_service_id):
             service_data_revision_2
         )
 
-    template_data = get_template_data({
-        "diffs": service_diffs,
-        "revision_dates": revision_dates,
-        "sections": content.sections,
-        "service_data": service_data
-    })
+    template_data = get_template_data(
+        diffs=service_diffs,
+        revision_dates=revision_dates,
+        sections=content.sections,
+        service_data=service_data
+    )
     return render_template("compare_revisions.html", **template_data)
 
 

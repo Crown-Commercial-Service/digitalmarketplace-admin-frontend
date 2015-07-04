@@ -16,6 +16,9 @@ csrf = CsrfProtect()
 data_api_client = apiclient.DataAPIClient()
 feature_flags = flask_featureflags.FeatureFlag()
 login_manager = LoginManager()
+DISPLAY_DATE_FORMAT = '%d/%m/%Y'
+DISPLAY_TIME_FORMAT = '%H:%M:%S'
+DISPLAY_DATETIME_FORMAT = '%A, %d %B %Y at %H:%M'
 
 service_content = ContentLoader(
     "app/section_order.yml", "app/content/g6/"
@@ -56,16 +59,16 @@ def create_app(config_name):
     @application.template_filter('timeformat')
     def timeformat(value):
         return datetime.strptime(
-            value, formats.DATETIME_FORMAT).strftime('%H:%M:%S')
+            value, formats.DATETIME_FORMAT).strftime(DISPLAY_TIME_FORMAT)
 
     @application.template_filter('dateformat')
     def dateformat(value):
         return datetime.strptime(
-            value, formats.DATETIME_FORMAT).strftime('%d/%m/%Y')
+            value, formats.DATETIME_FORMAT).strftime(DISPLAY_DATE_FORMAT)
 
     @application.template_filter('displaydateformat')
     def display_date_format(value):
-        return value.strftime('%d/%m/%Y')
+        return value.strftime(DISPLAY_DATE_FORMAT)
 
     return application
 

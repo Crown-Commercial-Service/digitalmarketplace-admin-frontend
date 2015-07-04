@@ -1,6 +1,7 @@
 import mock
 
 from datetime import datetime
+from app import DISPLAY_DATE_FORMAT
 
 from ...helpers import LoggedInApplicationTest
 
@@ -8,7 +9,7 @@ from ...helpers import LoggedInApplicationTest
 class TestServiceUpdates(LoggedInApplicationTest):
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_render_activity_page_with_date(self, data_api_client):
-        today = datetime.now().strftime("%d/%m/%Y")
+        today = datetime.utcnow().strftime(DISPLAY_DATE_FORMAT)
 
         response = self.client.get('/admin/service-updates')
         self.assertEquals(200, response.status_code)
