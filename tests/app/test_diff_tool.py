@@ -62,6 +62,7 @@ class TestBaseDiffTool():
             3
         )
 
+        # first line is ignored because it is unchanged
         self._check_correct_number_of_lines_in_revisions(
             self._get_diff_tool(
                 revision_1, revision_2, if_unchanged=False).lines,
@@ -78,7 +79,7 @@ class TestBaseDiffTool():
             5
         )
 
-        # lines 1 and 2 are unchanged, so they won't be here
+        # first and second lines are ignored because they are unchanged
         self._check_correct_number_of_lines_in_revisions(
             self._get_diff_tool(
                 revision_1, revision_2, if_unchanged=False).lines,

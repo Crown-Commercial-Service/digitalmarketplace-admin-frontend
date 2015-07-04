@@ -35,6 +35,11 @@ class BaseApplicationTest(TestCase):
         self._default_suffix_patch.stop()
         login_manager.user_loader(self._user_callback)
 
+    @staticmethod
+    def strip_all_whitespace(content):
+        pattern = re.compile(r'\s+')
+        return re.sub(pattern, '', content)
+
 
 class LoggedInApplicationTest(BaseApplicationTest):
     def setUp(self):

@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash, \
-    current_app
+    current_app, abort
 from flask_login import login_required, current_user
 from datetime import datetime
 
@@ -209,8 +209,7 @@ def compare(old_archived_service_id, new_archived_service_id):
             service_data_revision_1['id'])['services']
 
     except (HTTPError, KeyError, ValueError):
-        flash({'compare_error': True}, 'error')
-        return redirect(url_for('.index'))
+        return abort(404)
 
     content = service_content.get_builder().filter(service_data)
 

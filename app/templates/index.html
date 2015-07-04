@@ -15,8 +15,6 @@
           {% set displayed_message = "Could not find a service with ID: {}".format(message['no_service']) %}
         {% elif message['api_error'] %}
           {% set displayed_message = "Error trying to retrieve service with ID: {}".format(message['api_error']) %}
-        {% elif message['compare_error'] %}
-          {% set displayed_message = "Error trying to compare specified versions." %}
         {% endif %}
         {%
           with
