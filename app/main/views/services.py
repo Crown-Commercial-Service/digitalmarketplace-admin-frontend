@@ -9,78 +9,14 @@ from dmutils.s3 import S3
 from dmutils.validation import Validate
 from dmutils.formats import DATETIME_FORMAT
 
-from ... import data_api_client, DISPLAY_DATETIME_FORMAT
+from ... import data_api_client
 from ... import service_content
 from .. import main
 from . import get_template_data
 
-from ..helpers.diff_tools import StringDiffTool, ListDiffTool
+from ..helpers.diff_tools import get_diffs_from_service_data, get_revision_dates
 
 presenters = Presenters()
-
-
-def make_diffs_from_service_data(
-        sections_to_diff=None,
-        sections=None,
-        revision_1=None,
-        revision_2=None,
-        if_unchanged=False
-):
-    def is_string(value):
-        return type(value).__name__ == 'str' \
-            or type(value).__name__ == 'unicode'
-
-    def is_list(value):
-        return type(value).__name__ == 'list'
-
-    diffs = []
-
-    for section in sections:
-        if section['name'] in sections_to_diff:
-            for question in section['questions']:
-                question_revision_1 = revision_1[question['id']]
-                question_revision_2 = revision_2[question['id']]
-
-                if is_string(question_revision_1) \
-                        and is_string(question_revision_2):
-                    diff = StringDiffTool(
-                        question_revision_1, question_revision_2, if_unchanged)
-
-                elif is_list(question_revision_1) \
-                        and is_list(question_revision_2):
-                    diff = ListDiffTool(
-                        question_revision_1, question_revision_2, if_unchanged)
-
-                else:
-                    continue
-                question_diff = diff.render_lines()
-
-                # if arrays are empty, there are no changes for this question
-                if question_diff['revision_1'] or question_diff['revision_2']:
-                    diffs.append({
-                        'section_name': section['name'],
-                        'label': question['question'],
-                        'revisions':
-                            [val + question_diff['revision_2'][i]
-                             for i, val
-                             in enumerate(question_diff['revision_1'])]
-                    })
-
-    return diffs
-
-
-def get_revision_dates(revision_1=None, revision_2=None):
-
-    def get_revision_date(date_string):
-        # Tuesday, 10 June 2015 at 14:00
-        return datetime.strptime(
-            date_string, DATETIME_FORMAT
-        ).strftime(DISPLAY_DATETIME_FORMAT)
-
-    return {
-        'revision_1': get_revision_date(revision_1['updatedAt']),
-        'revision_2': get_revision_date(revision_2['updatedAt'])
-    }
 
 
 @main.route('', methods=['GET'])
@@ -215,12 +151,12 @@ def compare(old_archived_service_id, new_archived_service_id):
 
     # It's possible to have an empty array if none of the lines were changed.
     # TODO This possibility isn't actually handled.
-    service_diffs = make_diffs_from_service_data(
+    service_diffs = get_diffs_from_service_data(
         sections_to_diff=['Description', 'Features and benefits'],
         sections=content.sections,
         revision_1=service_data_revision_1,
         revision_2=service_data_revision_2,
-        if_unchanged=False
+        include_unchanged_lines_in_output=False
     )
 
     revision_dates = None if not service_diffs else \

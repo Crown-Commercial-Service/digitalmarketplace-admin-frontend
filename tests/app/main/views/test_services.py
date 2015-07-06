@@ -325,7 +325,7 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
                 'id': 1,
                 'supplierId': 2,
                 'updatedAt': '2014-12-10T10:55:25.00000Z',
-                'serviceName': 'Cloudy Cloud Service',
+                'serviceName': '<h1>Cloudy</h1> Cloud Service',
                 'status': 'published',
                 'serviceSummary': 'Something'
             }}
@@ -343,7 +343,7 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
                 'id': 1,
                 'supplierId': 2,
                 'updatedAt': '2014-12-02T10:55:25.00000Z',
-                'serviceName': 'Cloudy Cloud Service',
+                'serviceName': '<h1>Cloudy</h1> Cloud Service',
                 'serviceSummary': 'Something'
             }},
             # Service id doesn't exist
@@ -423,7 +423,7 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
         self.assertEqual(404, response.status_code)
 
     @mock.patch('app.main.views.services.service_content')
-    def test_can_get_archived_services_with_dates_and_dFiffs(self, service_content):
+    def test_can_get_archived_services_with_dates_and_diffs(self, service_content):
 
         class TestContent(object):
             def __init__(self):
@@ -453,7 +453,7 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
 
         # check title is there
         self.assertTrue(
-            self.strip_all_whitespace('<h1>Cloudy Cloud Service</h1>')
+            self.strip_all_whitespace('<h1>&lt;h1&gt;Cloudy&lt;/h1&gt; Cloud Service</h1>')  # noqa
             in self.strip_all_whitespace(response.get_data(as_text=True))
         )
 
@@ -473,7 +473,7 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
             in self.strip_all_whitespace(response.get_data(as_text=True))
         )
         self.assertTrue(
-            self.strip_all_whitespace('<td class=\'line-content addition\'><strong>Cloudy</strong> Cloud Service</td>')  # noqa
+                self.strip_all_whitespace('<td class=\'line-content addition\'><strong>&lt;h1&gt;Cloudy&lt;/h1&gt;</strong> Cloud Service</td>')  # noqa
             in self.strip_all_whitespace(response.get_data(as_text=True))
         )
 
