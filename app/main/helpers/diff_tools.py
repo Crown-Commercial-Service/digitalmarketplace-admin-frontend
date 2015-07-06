@@ -18,6 +18,10 @@ class BaseDiffTool(object):
         self.lines = self._get_lines()
 
     def render_lines(self):
+        """
+        Returns rendered HTML lines to be displayed in a diff page
+        """
+
         lines = {
             'revision_1': [],
             'revision_2': []
@@ -38,7 +42,15 @@ class BaseDiffTool(object):
 
     def _get_lines(self):
         """
-        Returns rendered HTML lines to be displayed in a diff page
+        Turns a pair of input lines into a list of word diffs
+
+        In:
+        self.revision_1: ['Hi there', 'Less letters']
+        self.revision_2: ['Hi there!', 'Less let']
+
+        Out:
+        self.lines: { 'revision_1': ['  Hi', '- there'], ['  Less', '- letters'],
+                      'revision_2': ['  Hi', '+ there!'], ['  Less', '+ let'] }
         """
 
         lines = {
@@ -107,7 +119,7 @@ class BaseDiffTool(object):
 
     def _render_words_html(self, words, line_number):
 
-        def _render_words_inner_html(words, expected_type):
+        def _render_words_inner_html(words, inferred_type):
 
             html_words = []
 
@@ -117,20 +129,20 @@ class BaseDiffTool(object):
                 if type == 'unchanged':
                     html_words.append(u"{}".format(word[2:]))
 
-                elif type == expected_type:
+                elif type == inferred_type:
                     html_words.append(u"<strong>{}</strong>".format(word[2:]))
 
             return ' '.join(html_words).replace(u'</strong> <strong>', ' ')
 
-        # Can only have one expected type per line
-        expected_type = self._get_line_type(words)
+        # Can only have one inferred type per line
+        inferred_type = self._get_line_type(words)
 
         return \
             u"<td class='line-number line-number-{type}'>{line_number}</td>" \
             u"<td class='line-content {type}'>{line}</td>".format(
-                type=expected_type,
+                type=inferred_type,
                 line_number=line_number,
-                line=_render_words_inner_html(words, expected_type)
+                line=_render_words_inner_html(words, inferred_type)
             )
 
     @staticmethod
