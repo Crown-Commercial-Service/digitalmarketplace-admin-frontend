@@ -1,4 +1,8 @@
 import difflib
+try:
+    from itertools import izip_longest
+except ImportError:
+    from itertools import zip_longest as izip_longest
 from datetime import datetime
 from flask import Markup, escape
 from flask._compat import string_types
@@ -79,12 +83,12 @@ def render_lines(
     Turns a pair of input lines into a list of word diffs
 
     In:
-    self.revision_1: ['Hi there', 'Less letters']
-    self.revision_2: ['Hi there!', 'Less let']
+    revision_1: ['Hi there', 'Less letters']
+    revision_2: ['Hi there!', 'Less let']
 
     Out:
-    self.lines: { 'revision_1': ['  Hi', '- there'], ['  Less', '- letters'],
-                  'revision_2': ['  Hi', '+ there!'], ['  Less', '+ let'] }
+    { 'revision_1': ['  Hi', '- there'], ['  Less', '- letters'],
+      'revision_2': ['  Hi', '+ there!'], ['  Less', '+ let'] }
     """
 
     lines = {
@@ -92,14 +96,10 @@ def render_lines(
         'revision_2': []
     }
 
-    # Make sure lists of strings are same length
-    # Pad the shorter list with empty strings if necessary
-    # Also means pair of lists in returned dictionary are of equal length
-    revision_1, revision_2 = pad_lists_to_max_length(revision_1, revision_2)
-
-    for index, string in enumerate(revision_1):
-
-        diff = get_words_diff(revision_1[index], revision_2[index])
+    for index, revisions in enumerate(
+            izip_longest(revision_1, revision_2, fillvalue='')
+    ):
+        diff = get_words_diff(revisions[0], revisions[1])
 
         # create an array of removed words and one of added rows
         revision_1_words, revision_2_words = split_words_diff(diff)
@@ -180,29 +180,6 @@ def get_words_diff(revision_1_line, revision_2_line):
     return list(differ.compare(
         revision_1_line.split(), revision_2_line.split()
     ))
-
-
-def pad_lists_to_max_length(list_1, list_2, padding=''):
-    """
-    if lists are not the same length,
-    pad the shorter list to the length of the longest list
-    with a given placeholder element
-
-    In:  [ 1, 2, 3, 4 ], [ 1, 2 ], 'new'
-    Out: [ 1, 2, 3, 4 ], [ 1, 2, 'new', 'new']
-    """
-
-    def pad_list_to_max_length(list, new_length, padding):
-        return list + [padding] * (new_length - len(list))
-
-    # if same length, return
-    if len(list_1) == len(list_2):
-        return list_1, list_2
-
-    max_len = max(len(list_1), len(list_2))
-
-    return pad_list_to_max_length(list_1, max_len, padding), \
-        pad_list_to_max_length(list_2, max_len, padding)
 
 
 def get_line_type(words, types_to_look_for=None):
