@@ -1,6 +1,6 @@
 import difflib
 from abc import ABCMeta, abstractmethod
-from flask import Markup
+from flask import Markup, escape
 
 
 class BaseDiffTool(object):
@@ -124,6 +124,7 @@ class BaseDiffTool(object):
             html_words = []
 
             for word in words:
+                word = escape(word)
                 type = self._get_word_type(word)
 
                 if type == 'unchanged':
