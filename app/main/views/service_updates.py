@@ -33,7 +33,7 @@ def service_update_audits():
     else:
         return render_template(
             "service_update_audits.html",
-            today=datetime.now(),
+            today=datetime.utcnow(),
             acknowledged=form.default_acknowledged(),
             audit_events=[],
             form=form,
@@ -56,7 +56,7 @@ def submit_service_update_acknowledgment(audit_id):
     else:
         return render_template(
             "service_update_audits.html",
-            today=datetime.now(),
+            today=datetime.utcnow(),
             audit_events=None,
             acknowledged=form.default_acknowledged(),
             form=form,

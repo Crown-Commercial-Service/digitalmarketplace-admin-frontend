@@ -3,12 +3,13 @@ from wtforms import StringField, DateField, PasswordField
 from wtforms.validators import Optional, AnyOf, DataRequired, \
     Email
 from datetime import datetime
+from dmutils.formats import DATE_FORMAT
 
 
 class ServiceUpdateAuditEventsForm(Form):
     audit_date = DateField(
         'Audit Date',
-        format='%Y-%m-%d',
+        format=DATE_FORMAT,
         validators=[Optional()])
     acknowledged = StringField(
         'acknowledged',
@@ -26,7 +27,7 @@ class ServiceUpdateAuditEventsForm(Form):
 
     def format_date(self):
         if self.audit_date.data:
-            return datetime.strftime(self.audit_date.data, '%Y-%m-%d')
+            return datetime.strftime(self.audit_date.data, DATE_FORMAT)
         else:
             return None
 
@@ -34,7 +35,7 @@ class ServiceUpdateAuditEventsForm(Form):
         if self.audit_date.data:
             return self.audit_date.data
         else:
-            return datetime.now()
+            return datetime.utcnow()
 
 
 class LoginForm(Form):

@@ -100,7 +100,11 @@ Digital Marketplace admin
                         {{ audit_event.createdAt|dateformat }}
                     </td>
                     <td class="summary-item-field-name">
-                        <a href="{{ url_for('.service_update_audits') }}">View changes</a>
+                        <a href="{{ url_for(
+                        '.compare',
+                        old_archived_service_id=audit_event.data.oldArchivedServiceId,
+                        new_archived_service_id=audit_event.data.newArchivedServiceId
+                        ) }}">View changes</a>
                     </td>
                     <td class="summary-item-field-name">
                         {% if not audit_event.acknowledged %}

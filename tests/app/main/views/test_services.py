@@ -223,8 +223,9 @@ class TestServiceEdit(LoggedInApplicationTest):
         self.assertIn(REQUEST_ERROR_MESSAGE.encode('utf-8'), response.data)
 
 
+@mock.patch('app.main.views.services.data_api_client')
 class TestServiceStatusUpdate(LoggedInApplicationTest):
-    @mock.patch('app.main.views.services.data_api_client')
+
     def test_cannot_make_removed_service_public(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -236,7 +237,6 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertIn(b'<input type="radio" name="service_status" id="service_status_private" value="private"  />', response.data)  # noqa
         self.assertNotIn(b'<input type="radio" name="service_status" id="service_status_published" value="public"  />', response.data)  # noqa
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_can_make_private_service_public_or_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -248,7 +248,6 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertIn(b'<input type="radio" name="service_status" id="service_status_private" value="private" checked="checked" />', response.data)  # noqa
         self.assertIn(b'<input type="radio" name="service_status" id="service_status_published" value="public"  />', response.data)  # noqa
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_can_make_public_service_private_or_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -260,7 +259,6 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertIn(b'<input type="radio" name="service_status" id="service_status_private" value="private"  />', response.data)  # noqa
         self.assertIn(b'<input type="radio" name="service_status" id="service_status_published" value="public" checked="checked" />', response.data)  # noqa
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_status_update_to_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {}}
         response1 = self.client.post('/admin/services/status/1',
@@ -275,7 +273,6 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertIn(b'Service status has been updated to: Removed',
                       response2.data)
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_status_update_to_private(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {}}
         response1 = self.client.post('/admin/services/status/1',
@@ -290,7 +287,6 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertIn(b'Service status has been updated to: Private',
                       response2.data)
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_status_update_to_published(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {}}
         response1 = self.client.post('/admin/services/status/1',
@@ -305,7 +301,6 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertIn(b'Service status has been updated to: Public',
                       response2.data)
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_bad_status_gives_error_message(self, data_api_client):
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'suspended'})
@@ -316,6 +311,174 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertIn(b"Not a valid status: 'suspended'",
                       response2.data)
 
-    def test_services_with_missing_id(self):
+    def test_services_with_missing_id(self, data_api_client):
         response = self.client.get('/admin/services')
         self.assertEquals(404, response.status_code)
+
+
+class TestCompareServiceArchives(LoggedInApplicationTest):
+
+    def setUp(self):
+        super(TestCompareServiceArchives, self).setUp()
+        self._services = {
+            1: {'services': {
+                'id': 1,
+                'supplierId': 2,
+                'updatedAt': '2014-12-10T10:55:25.00000Z',
+                'serviceName': '<h1>Cloudy</h1> Cloud Service',
+                'status': 'published',
+                'serviceSummary': 'Something'
+            }}
+        }
+
+        self._archived_services = {
+            10: {'services': {
+                'id': 1,
+                'supplierId': 2,
+                'updatedAt': '2014-12-01T10:55:25.00000Z',
+                'serviceName': 'Cloud Service',
+                'serviceSummary': 'Something'
+            }},
+            20: {'services': {
+                'id': 1,
+                'supplierId': 2,
+                'updatedAt': '2014-12-02T10:55:25.00000Z',
+                'serviceName': '<h1>Cloudy</h1> Cloud Service',
+                'serviceSummary': 'Something'
+            }},
+            # Service id doesn't exist
+            30: {'services': {
+                'id': 2,
+                'supplierId': 2,
+                'updatedAt': '2014-12-03T10:55:25.00000Z'
+            }},
+            # Service id doesn't exist
+            40: {'services': {
+                'id': 2,
+                'supplierId': 2,
+                'updatedAt': '2014-12-04T10:55:25.00000Z'
+            }}
+        }
+
+        self._service_not_found = {
+            'error': 'The requested URL was not found on the server.  If you '
+                     'entered the URL manually please check your spelling and '
+                     'try again.'
+            }
+
+    def _get_archived_service(self, *args):
+        try:
+            return self._archived_services[int(args[0])]
+        except KeyError:
+            return self._service_not_found
+
+    def _get_service(self, *args):
+        try:
+            return self._services[int(args[0])]
+        except KeyError:
+            return self._service_not_found
+
+    @mock.patch('app.main.views.services.data_api_client')
+    def _get_archived_services_response(
+            self,
+            archived_service_id_1,
+            archived_service_id_2,
+            data_api_client
+    ):
+        data_api_client.get_archived_service.side_effect = \
+            self._get_archived_service
+        data_api_client.get_service.side_effect = self._get_service
+
+        return self.client.get('/admin/services/compare/{}...{}'.format(
+            archived_service_id_1, archived_service_id_2
+        ))
+
+    def test_cannot_get_nonexistent_archived_service(self):
+
+        # Both archived services don't exist
+        response = self._get_archived_services_response('1', '2')
+        self.assertEqual(404, response.status_code)
+
+        # First archived service doesn't exist
+        response = self._get_archived_services_response('1', '20')
+        self.assertEqual(404, response.status_code)
+
+        # Second archived service doesn't exist
+        response = self._get_archived_services_response('10', '2')
+        self.assertEqual(404, response.status_code)
+
+    def test_cannot_get_same_archived_service(self):
+
+        response = self._get_archived_services_response('10', '10')
+        self.assertEqual(404, response.status_code)
+
+    def test_cannot_get_archived_services_in_non_chronological_order(self):
+
+        response = self._get_archived_services_response('20', '10')
+        self.assertEqual(404, response.status_code)
+
+    def test_cannot_get_archived_services_for_nonexistent_service_ids(self):
+
+        response = self._get_archived_services_response('30', '40')
+        self.assertEqual(404, response.status_code)
+
+    @mock.patch('app.main.views.services.service_content')
+    def test_can_get_archived_services_with_dates_and_diffs(self, service_content):
+
+        class TestContent(object):
+            def __init__(self):
+                self.sections = [{
+                    'editable': True,
+                    'name': 'Description',
+                    'questions': [
+                        {
+                            'question': 'Service name',
+                            'id': 'serviceName'
+                        },
+                        {
+                            'question': 'Service summary',
+                            'id': 'serviceSummary',
+                        }
+                    ],
+                    'id': 'description'
+                }]
+
+        class TestBuilder(object):
+            @staticmethod
+            def filter(*args):
+                return TestContent()
+
+        service_content.get_builder.return_value = TestBuilder()
+        response = self._get_archived_services_response('10', '20')
+
+        # check title is there
+        self.assertTrue(
+            self.strip_all_whitespace('<h1>&lt;h1&gt;Cloudy&lt;/h1&gt; Cloud Service</h1>')  # noqa
+            in self.strip_all_whitespace(response.get_data(as_text=True))
+        )
+
+        # check dates are right
+        self.assertTrue(
+            self.strip_all_whitespace('Monday, 01 December 2014 at 10:55')
+            in self.strip_all_whitespace(response.get_data(as_text=True))
+        )
+        self.assertTrue(
+            self.strip_all_whitespace('Tuesday, 02 December 2014 at 10:55')
+            in self.strip_all_whitespace(response.get_data(as_text=True))
+        )
+
+        # check lines are there
+        self.assertTrue(
+            self.strip_all_whitespace('<td class=\'line-content unchanged\'>Cloud Service</td>')  # noqa
+            in self.strip_all_whitespace(response.get_data(as_text=True))
+        )
+        self.assertTrue(
+                self.strip_all_whitespace('<td class=\'line-content addition\'><strong>&lt;h1&gt;Cloudy&lt;/h1&gt;</strong> Cloud Service</td>')  # noqa
+            in self.strip_all_whitespace(response.get_data(as_text=True))
+        )
+
+        # check status is right
+        self.assertTrue(self.strip_all_whitespace(
+            '<input type="radio" name="service_status" id="service_status_published" value="public" checked="checked" />')  # noqa
+            in self.strip_all_whitespace(response.get_data(as_text=True))
+        )

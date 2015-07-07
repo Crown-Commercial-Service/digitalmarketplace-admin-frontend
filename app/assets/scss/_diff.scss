@@ -1,0 +1,110 @@
+.diff {
+  margin-bottom: $gutter;
+
+  .diff-title {
+    @include heading-27;
+    font-weight: bold;
+    margin-bottom: $gutter-half;
+  }
+
+  .revision-dates {
+    @extend %contain-floats;
+    margin-bottom: $gutter-half;
+
+    p {
+      float: none;
+      width: 100%;
+      @include media(tablet) {
+        float: left;
+        width: 50%;
+      }
+
+      .revision-date-type {
+        font-weight: bold;
+        margin-right: $gutter-half;
+      }
+    }
+  }
+
+  table {
+    @include core-14;
+    @include media(tablet) {
+      @include core-19;
+    }
+
+    width: 100%;
+
+    caption {
+      font-weight: bold;
+      text-align: left;
+      padding: $gutter 0 10px;
+    }
+
+    tbody tr {
+      border-bottom: 6px solid white;
+    }
+
+    td {
+      padding-top: 3px;
+      padding-bottom: 4px;
+      vertical-align: top;
+      border-right: none;
+      @include media(tablet) {
+        border-right: 5px solid white;
+      }
+
+      &.removal {
+        background-color: #FEE5E5;
+
+        strong {
+          background-color: #FDABAB;
+          font-weight: normal;
+        }
+      }
+      &.addition {
+        background-color: #E5FEE5;
+
+        strong {
+          background-color: #ABFDAB;
+          font-weight: normal;
+        }
+      }
+
+      &.line-number {
+        @include core-14($tabular-numbers: true);
+        text-align: right;
+        float: left;
+        clear: both;
+        background-color: transparent;
+        width: 3%;
+        padding-right: 1%;
+        border-right: none;
+
+        @include media(tablet) {
+          @include core-19($tabular-numbers: true);
+          float: none;
+        }
+      }
+
+      @include media(tablet) {
+        &.line-number-removal {
+          background-color: #FEE5E5;
+        }
+        &.line-number-addition {
+          background-color: #E5FEE5;
+        }
+      }
+
+      &.line-content {
+        width: 95%;
+        padding-left: 1%;
+        float: right;
+
+        @include media(tablet) {
+          width: 41%;
+          float: none;
+        }
+      }
+    }
+  }
+}

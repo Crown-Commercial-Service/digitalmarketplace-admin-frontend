@@ -1,6 +1,7 @@
 import mock
 
 from datetime import datetime
+from app import DISPLAY_DATE_FORMAT
 
 from ...helpers import LoggedInApplicationTest
 
@@ -8,7 +9,7 @@ from ...helpers import LoggedInApplicationTest
 class TestServiceUpdates(LoggedInApplicationTest):
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_render_activity_page_with_date(self, data_api_client):
-        today = datetime.now().strftime("%d/%m/%Y")
+        today = datetime.utcnow().strftime(DISPLAY_DATE_FORMAT)
 
         response = self.client.get('/admin/service-updates')
         self.assertEquals(200, response.status_code)
@@ -313,22 +314,19 @@ class TestServiceUpdates(LoggedInApplicationTest):
         )
         self.assertIn(
             self._replace_whitespace(
-               '<td class="summary-item-field-name"><a href="/admin/service-updates">View changes</a></td>'),  # noqa
+               '<td class="summary-item-field-name"><a href="/admin/services/compare/...">View changes</a></td>'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
-
         self.assertIn(
             self._replace_whitespace(
                '<form action="/admin/service-updates/25/acknowledge" method="post">'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
-
         self.assertIn(
             self._replace_whitespace(
                '<input name="audit_date" type="hidden" value="2010-01-01">'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
-
         data_api_client.find_audit_events.assert_called_with(
             audit_type='update_service',
             acknowledged='false',
