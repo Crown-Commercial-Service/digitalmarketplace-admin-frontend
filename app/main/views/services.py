@@ -152,7 +152,6 @@ def compare(old_archived_service_id, new_archived_service_id):
     # It's possible to have an empty array if none of the lines were changed.
     # TODO This possibility isn't actually handled.
     service_diffs = get_diffs_from_service_data(
-        sections_to_diff=['Description', 'Features and benefits'],
         sections=content.sections,
         revision_1=service_data_revision_1,
         revision_2=service_data_revision_2,

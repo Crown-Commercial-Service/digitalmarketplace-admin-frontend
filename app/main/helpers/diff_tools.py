@@ -11,7 +11,6 @@ from ... import DISPLAY_DATETIME_FORMAT
 
 
 def get_diffs_from_service_data(
-        sections_to_diff=None,
         sections=None,
         revision_1=None,
         revision_2=None,
@@ -26,39 +25,38 @@ def get_diffs_from_service_data(
     diffs = []
 
     for section in sections:
-        if section['name'] in sections_to_diff:
-            for question in section['questions']:
-                revisions_are_valid = True
-                question_revision_1 = revision_1[question['id']]
-                question_revision_2 = revision_2[question['id']]
+        for question in section['questions']:
+            revisions_are_valid = True
+            question_revision_1 = revision_1[question['id']]
+            question_revision_2 = revision_2[question['id']]
 
-                if all_are_lists(question_revision_1, question_revision_2):
-                    pass
+            if all_are_lists(question_revision_1, question_revision_2):
+                pass
 
-                elif all_are_strings(question_revision_1, question_revision_2):
-                    question_revision_1 = question_revision_1.splitlines()
-                    question_revision_2 = question_revision_2.splitlines()
+            elif all_are_strings(question_revision_1, question_revision_2):
+                question_revision_1 = question_revision_1.splitlines()
+                question_revision_2 = question_revision_2.splitlines()
 
-                else:
-                    revisions_are_valid = False
+            else:
+                revisions_are_valid = False
 
-                if revisions_are_valid:
-                    question_diff = render_lines(
-                        question_revision_1,
-                        question_revision_2,
-                        include_unchanged_lines_in_output
-                    )
+            if revisions_are_valid:
+                question_diff = render_lines(
+                    question_revision_1,
+                    question_revision_2,
+                    include_unchanged_lines_in_output
+                )
 
-                    # if arrays are empty, there are no changes for this question
-                    if question_diff['revision_1'] or question_diff['revision_2']:
-                        diffs.append({
-                            'section_name': section['name'],
-                            'label': question['question'],
-                            'revisions':
-                                [val + question_diff['revision_2'][i]
-                                 for i, val
-                                 in enumerate(question_diff['revision_1'])]
-                        })
+                # if arrays are empty, there are no changes for this question
+                if question_diff['revision_1'] or question_diff['revision_2']:
+                    diffs.append({
+                        'section_name': section['name'],
+                        'label': question['question'],
+                        'revisions':
+                            [val + question_diff['revision_2'][i]
+                             for i, val
+                             in enumerate(question_diff['revision_1'])]
+                    })
 
     return diffs
 
