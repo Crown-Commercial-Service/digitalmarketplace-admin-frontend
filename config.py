@@ -70,10 +70,17 @@ class Live(Config):
     DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
 
 
+class Staging(Config):
+    DEBUG = False
+    AUTHENTICATION = True
+    WTF_CSRF_ENABLED = False
+    DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
+
+
 configs = {
     'development': Development,
     'preview': Live,
-    'staging': Live,
+    'staging': Staging,
     'production': Live,
     'test': Test,
 }
