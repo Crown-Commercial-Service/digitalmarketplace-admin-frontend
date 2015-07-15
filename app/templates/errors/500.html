@@ -1,14 +1,12 @@
 {% extends "_base_page.html" %}
 
-{% block main_content %}
-
-<header class="page-heading-smaller">
-  <h1>Sorry, we're experiencing technical difficulties</h1>
-</header>
-
-<p>
-    Try again later.
-</p>
-
-
+{% block content %}
+  <div class="page-container">
+    {% with heading = "Sorry, we're experiencing technical difficulties" %}
+      {% include 'toolkit/page-heading.html' %}
+    {% endwith %}
+    <p>
+        Try again later.
+    </p>
+  </div>
 {% endblock %}
