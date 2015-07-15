@@ -1,4 +1,4 @@
-from flask import jsonify, current_app
+from flask import jsonify, current_app, request
 
 from .. import data_api_client
 from . import status
@@ -7,6 +7,11 @@ from dmutils.status import get_flags
 
 @status.route('/_status')
 def status():
+
+    if 'ignore-dependencies' in request.args:
+        return jsonify(
+            status="ok",
+        ), 200
 
     version = current_app.config['VERSION']
     status = data_api_client.get_status()

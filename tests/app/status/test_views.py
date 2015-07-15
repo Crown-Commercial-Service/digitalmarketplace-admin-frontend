@@ -7,6 +7,12 @@ from ..helpers import BaseApplicationTest
 class TestStatus(BaseApplicationTest):
 
     @mock.patch('app.status.views.data_api_client')
+    def test_should_return_200_from_elb_status_check(self, data_api_client):
+        status_response = self.client.get('/admin/_status?ignore-dependencies')
+        self.assertEquals(200, status_response.status_code)
+        self.assertFalse(data_api_client.called)
+
+    @mock.patch('app.status.views.data_api_client')
     def test_status_ok(self, data_api_client):
 
         data_api_client.get_status.return_value = {"status": "ok"}
