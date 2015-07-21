@@ -27,8 +27,8 @@ def get_diffs_from_service_data(
     for section in sections:
         for question in section['questions']:
             revisions_are_valid = True
-            question_revision_1 = revision_1[question['id']]
-            question_revision_2 = revision_2[question['id']]
+            question_revision_1 = revision_1.get(question['id'], None)
+            question_revision_2 = revision_2.get(question['id'], None)
 
             if all_are_lists(question_revision_1, question_revision_2):
                 pass

@@ -357,7 +357,13 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
                 'id': 2,
                 'supplierId': 2,
                 'updatedAt': '2014-12-04T10:55:25.00000Z'
-            }}
+            }},
+            50: {'services': {
+                'id': 1,
+                'supplierId': 2,
+                'updatedAt': '2014-12-02T10:55:25.00000Z',
+                'serviceName': '<h1>Cloudy</h1> Cloud Service'
+            }},
         }
 
         self._service_not_found = {
@@ -482,3 +488,33 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
             '<input type="radio" name="service_status" id="service_status_published" value="public" checked="checked" />')  # noqa
             in self.strip_all_whitespace(response.get_data(as_text=True))
         )
+
+    @mock.patch('app.main.views.services.service_content')
+    def test_can_get_archived_services_with_differing_keys(self, service_content):
+
+        class TestContent(object):
+            def __init__(self):
+                self.sections = [{
+                    'editable': True,
+                    'name': 'Description',
+                    'questions': [
+                        {
+                            'question': 'Service name',
+                            'id': 'serviceName'
+                        },
+                        {
+                            'question': 'Service summary',
+                            'id': 'serviceSummary',
+                        }
+                    ],
+                    'id': 'description'
+                }]
+
+        class TestBuilder(object):
+            @staticmethod
+            def filter(*args):
+                return TestContent()
+
+        service_content.get_builder.return_value = TestBuilder()
+        response = self._get_archived_services_response('10', '50')
+        self.assertEqual(200, response.status_code)
