@@ -358,10 +358,11 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
                 'supplierId': 2,
                 'updatedAt': '2014-12-04T10:55:25.00000Z'
             }},
+            # missing the serviceSummary
             50: {'services': {
                 'id': 1,
                 'supplierId': 2,
-                'updatedAt': '2014-12-02T10:55:25.00000Z',
+                'updatedAt': '2014-12-03T10:55:25.00000Z',
                 'serviceName': '<h1>Cloudy</h1> Cloud Service'
             }},
         }

@@ -27,8 +27,8 @@ def get_diffs_from_service_data(
     for section in sections:
         for question in section['questions']:
             revisions_are_valid = True
-            question_revision_1 = revision_1.get(question['id'], None)
-            question_revision_2 = revision_2.get(question['id'], None)
+            question_revision_1 = revision_1.get(question['id'], [])
+            question_revision_2 = revision_2.get(question['id'], [])
 
             if all_are_lists(question_revision_1, question_revision_2):
                 pass
@@ -47,16 +47,16 @@ def get_diffs_from_service_data(
                     include_unchanged_lines_in_output
                 )
 
-                # if arrays are empty, there are no changes for this question
-                if question_diff['revision_1'] or question_diff['revision_2']:
-                    diffs.append({
-                        'section_name': section['name'],
-                        'label': question['question'],
-                        'revisions':
-                            [val + question_diff['revision_2'][i]
-                             for i, val
-                             in enumerate(question_diff['revision_1'])]
-                    })
+            # if arrays are empty, there are no changes for this question
+            if question_diff['revision_1'] or question_diff['revision_2']:
+                diffs.append({
+                    'section_name': section['name'],
+                    'label': question['question'],
+                    'revisions':
+                        [val + question_diff['revision_2'][i]
+                         for i, val
+                         in enumerate(question_diff['revision_1'])]
+                })
 
     return diffs
 
@@ -115,7 +115,6 @@ def render_lines(
         lines['revision_2'].append(
             Markup(render_words_html(revision_2_words, index+1))
         )
-
     return lines
 
 
