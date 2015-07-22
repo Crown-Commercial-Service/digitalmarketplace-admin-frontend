@@ -36,5 +36,17 @@
       <input type="text" name="service_id" id="service_id" class="text-box">
       <input type="submit" value="Find service" class="button-save">
   </form>
+
+  <form action="{{ url_for('.find_supplier_services') }}" method="get" class="question">
+      <label class="question-heading" for="supplier_id_for_services">Supplier ID</label>
+      <input type="text" name="supplier_id" id="supplier_id_for_services" class="text-box">
+      <input type="submit" value="Find supplier services" class="button-save">
+  </form>
+
+  <form action="{{ url_for('.find_supplier_users') }}" method="get" class="question">
+      <label class="question-heading" for="supplier_id_for_users">Supplier ID</label>
+      <input type="text" name="supplier_id" id="supplier_id_for_users" class="text-box">
+      <input type="submit" value="Find supplier users" class="button-save">
+  </form>
 </div>
 {% endblock %}

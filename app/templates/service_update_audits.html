@@ -8,7 +8,19 @@ Digital Marketplace admin
 {% set csrf = csrf_token() %}
 
 {% block content %}
-
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      },
+      {
+        "label": "Audits",
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
 <div class="page-container">
     <div class="grid-row">
         <div class="service-title">
