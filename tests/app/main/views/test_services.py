@@ -364,7 +364,7 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
                 'supplierId': 2,
                 'updatedAt': '2014-12-03T10:55:25.00000Z',
                 'serviceName': '<h1>Cloudy</h1> Cloud Service'
-            }},
+            }}
         }
 
         self._service_not_found = {
@@ -372,6 +372,24 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
                      'entered the URL manually please check your spelling and '
                      'try again.'
             }
+
+    class TestContent(object):
+        def __init__(self):
+            self.sections = [{
+                'editable': True,
+                'name': 'Description',
+                'questions': [
+                    {
+                        'question': 'Service name',
+                        'id': 'serviceName'
+                    },
+                    {
+                        'question': 'Service summary',
+                        'id': 'serviceSummary',
+                    }
+                ],
+                'id': 'description'
+            }]
 
     def _get_archived_service(self, *args):
         try:
@@ -432,28 +450,10 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.service_content')
     def test_can_get_archived_services_with_dates_and_diffs(self, service_content):
 
-        class TestContent(object):
-            def __init__(self):
-                self.sections = [{
-                    'editable': True,
-                    'name': 'Description',
-                    'questions': [
-                        {
-                            'question': 'Service name',
-                            'id': 'serviceName'
-                        },
-                        {
-                            'question': 'Service summary',
-                            'id': 'serviceSummary',
-                        }
-                    ],
-                    'id': 'description'
-                }]
-
         class TestBuilder(object):
             @staticmethod
             def filter(*args):
-                return TestContent()
+                return self.TestContent()
 
         service_content.get_builder.return_value = TestBuilder()
         response = self._get_archived_services_response('10', '20')
@@ -493,28 +493,10 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.service_content')
     def test_can_get_archived_services_with_differing_keys(self, service_content):
 
-        class TestContent(object):
-            def __init__(self):
-                self.sections = [{
-                    'editable': True,
-                    'name': 'Description',
-                    'questions': [
-                        {
-                            'question': 'Service name',
-                            'id': 'serviceName'
-                        },
-                        {
-                            'question': 'Service summary',
-                            'id': 'serviceSummary',
-                        }
-                    ],
-                    'id': 'description'
-                }]
-
         class TestBuilder(object):
             @staticmethod
             def filter(*args):
-                return TestContent()
+                return self.TestContent()
 
         service_content.get_builder.return_value = TestBuilder()
         response = self._get_archived_services_response('10', '50')
