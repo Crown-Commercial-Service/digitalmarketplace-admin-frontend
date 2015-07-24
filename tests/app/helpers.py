@@ -49,6 +49,18 @@ class BaseApplicationTest(TestCase):
         pattern = re.compile(r'\s+')
         return re.sub(pattern, '', content)
 
+class Response:
+    def __init__(self, status_code=503, message=None):
+        self._status_code = status_code
+        self._message = message
+
+    @property
+    def message(self):
+        return self._message
+
+    @property
+    def status_code(self):
+        return self._status_code
 
 class LoggedInApplicationTest(BaseApplicationTest):
     def setUp(self):

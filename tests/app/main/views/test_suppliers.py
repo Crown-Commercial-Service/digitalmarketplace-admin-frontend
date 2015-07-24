@@ -5,8 +5,8 @@ except ImportError:
     from urllib.parse import urlsplit
     from io import BytesIO as StringIO
 import mock
-
-from ...helpers import LoggedInApplicationTest
+from dmutils.apiclient.errors import HTTPError
+from ...helpers import LoggedInApplicationTest, Response
 
 
 class TestSupplierView(LoggedInApplicationTest):
@@ -15,7 +15,7 @@ class TestSupplierView(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_404_if_no_supplier_does_not_exist(self, data_api_client):
-        data_api_client.get_supplier.return_value = None
+        data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers/users?supplier_id=999')
         self.assertEquals(404, response.status_code)
 
@@ -188,7 +188,7 @@ class TestSupplierView(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_404_if_supplier_does_not_exist_on_services(self, data_api_client):
-        data_api_client.get_supplier.return_value = None
+        data_api_client.get_supplier.side_effect =  HTTPError(Response(404))
         response = self.client.get('/admin/suppliers/services?supplier_id=999')
         self.assertEquals(404, response.status_code)
 
