@@ -4,129 +4,146 @@
 
 {% extends "_base_page.html" %}
 {% block page_title %}
-  {{ supplier.name }} – Digital Marketplace admin
+{{ supplier.name }} – Digital Marketplace admin
 {% endblock %}
 
 {% block content %}
-  {%
-    with items = [
-      {
-        "link": url_for('.index'),
-        "label": "Admin home"
-      },
-      {
-        "label": supplier.name
-      }
-    ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
-  <div class="page-container">
+{%
+with items = [
+{
+"link": url_for('.index'),
+"label": "Admin home"
+},
+{
+"label": supplier.name
+}
+]
+%}
+{% include "toolkit/breadcrumb.html" %}
+{% endwith %}
+<div class="page-container">
     {% if users|length <= 0 %}
-      <h2 class="summary-item-heading first-summary-item-heading">
+    <h2 class="summary-item-heading first-summary-item-heading">
         No users
-      </h2>
-      <p class="hint summary-item-no-content">
+    </h2>
+
+    <p class="hint summary-item-no-content">
         This supplier has no users on the digital marketplace
-      </p>
+    </p>
     {% else %}
     <table class="summary-item-body">
-    <thead class="summary-item-field-headings">
-      <tr>
-        <th scope="col">
-          Name
-        </th>
-        <th scope="col">
-          Email address
-        </th>
-        <th scope="col">
-          Last login at
-        </th>
-        <th scope="col">
-          Last password change at
-        </th>
-        <th scope="col">
-          Locked
-        </th>
-        <th scope="col">
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for user in users %}
-      <tr class="summary-item-row">
-        <td class="summary-item-field">
-          {{ user.name}}
-        </td>
-        <td class="summary-item-field">
-          {{ user.emailAddress}}
-        </td>
-         <td class="summary-item-field">
+        <thead class="summary-item-field-headings">
+        <tr>
+            <th scope="col">
+                Name
+            </th>
+            <th scope="col">
+                Email address
+            </th>
+            <th scope="col">
+                Last login at
+            </th>
+            <th scope="col">
+                Last password change at
+            </th>
+            <th scope="col">
+                Locked
+            </th>
+            <th scope="col">
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for user in users %}
+        <tr class="summary-item-row">
+            <td class="summary-item-field">
+                {{ user.name}}
+            </td>
+            <td class="summary-item-field">
+                {{ user.emailAddress}}
+            </td>
+            <td class="summary-item-field">
 
-           {% if user.loggedInAt %}
-            {{ user.loggedInAt|timeformat }}<br/>
-            {{ user.loggedInAt|dateformat }}
-           {% else %}
-            Never
-           {% endif %}
-        </td>
-        <td class="summary-item-field">
-          {% if user.passwordChangedAt %}
-             {{ user.passwordChangedAt|timeformat }}<br/>
-             {{ user.passwordChangedAt|dateformat }}
-           {% else %}
-            Never
-          {% endif %}
-        </td>
-         <td class="summary-item-field">
-          {% if user.locked %}
-            {%
-              with
-              type = "secondary",
-              label = "Unlock"
-            %}
-              {% include "toolkit/button.html" %}
-            {% endwith %}
-           {% else %}
-          No
-           {% endif %}
-        </td>
-        <td class="summary-item-field">
-          {% if user.active %}
-            {%
-              with
-              type = "destructive",
-              label = "Deactivate"
-            %}
-              {% include "toolkit/button.html" %}
-            {% endwith %}
-          {% else %}
-           <button class="button-secondary">Activate</button>
-           {% endif %}
-        </td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-      {% endif %}
+                {% if user.loggedInAt %}
+                {{ user.loggedInAt|timeformat }}<br/>
+                {{ user.loggedInAt|dateformat }}
+                {% else %}
+                Never
+                {% endif %}
+            </td>
+            <td class="summary-item-field">
+                {% if user.passwordChangedAt %}
+                {{ user.passwordChangedAt|timeformat }}<br/>
+                {{ user.passwordChangedAt|dateformat }}
+                {% else %}
+                Never
+                {% endif %}
+            </td>
+            <td class="summary-item-field">
+                {% if user.locked %}
+                <form action="{{ url_for('.unlock_user', user_id=user.id) }}" method="post" class="question">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-   <form>
-  {%
-    with
-    question = "Invite new user",
-    name = "invite-user"
-  %}
-    {% include "toolkit/forms/textbox.html" %}
-  {% endwith %}
-      {%
-              with
-              type = "save",
-              label = "Send invitation"
-            %}
-              {% include "toolkit/button.html" %}
-            {% endwith %}
-</form>
+                    {%
+                    with
+                    type = "secondary",
+                    label = "Unlock"
+                    %}
+                    {% include "toolkit/button.html" %}
+                    {% endwith %}
+                </form>
+                {% else %}
+                No
+                {% endif %}
+            </td>
+            <td class="summary-item-field">
+                {% if user.active %}
+                <form action="{{ url_for('.deactivate_user', user_id=user.id) }}" method="post" class="question">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    {%
+                    with
+                    type = "destructive",
+                    label = "Deactivate"
+                    %}
+                    {% include "toolkit/button.html" %}
+                    {% endwith %}
+                </form>
+                {% else %}
+                <form action="{{ url_for('.activate_user', user_id=user.id) }}" method="post" class="question">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    {%
+                    with
+                    type = "secondary",
+                    label = "Activate"
+                    %}
+                    {% include "toolkit/button.html" %}
+                    {% endwith %}
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
 
-  </div>
+    <form>
+        {%
+        with
+        question = "Invite new user",
+        name = "invite-user"
+        %}
+        {% include "toolkit/forms/textbox.html" %}
+        {% endwith %}
+        {%
+        with
+        type = "save",
+        label = "Send invitation"
+        %}
+        {% include "toolkit/button.html" %}
+        {% endwith %}
+    </form>
+
+</div>
 
 {% endblock %}

@@ -15,7 +15,7 @@
         "postcode": "11 AB",
         "links": {
           "self": "http://localhost:5000/suppliers/1234/contact-information/1234"
-        },
+        }
       }
     ],
     "description": "Supplier Description",
