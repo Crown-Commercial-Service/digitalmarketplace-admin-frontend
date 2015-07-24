@@ -1,0 +1,1618 @@
+{
+  "links": {},
+  "services": [
+    {
+      "analyticsAvailable": true,
+      "apiAccess": true,
+      "apiType": "SOAP",
+      "auditInformationProvided": {
+        "assurance": "Service provider assertion",
+        "value": "Data made available"
+      },
+      "changeImpactAssessment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "cloudDeploymentModel": {
+        "assurance": "Service provider assertion",
+        "value": "Public cloud"
+      },
+      "codeLibraryLanguages": [
+        "dot net"
+      ],
+      "createdAt": "2014-12-17T13:39:40.000000Z",
+      "dataAtRestProtections": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Other encryption"
+        ]
+      },
+      "dataBackupRecovery": true,
+      "dataExtractionRemoval": true,
+      "dataManagementLocations": {
+        "assurance": "Contractual commitment",
+        "value": [
+          "UK"
+        ]
+      },
+      "dataProtectionBetweenUserAndService": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "No encryption"
+        ]
+      },
+      "dataSecureDeletion": {
+        "assurance": "Service provider assertion",
+        "value": "Other secure erasure process"
+      },
+      "datacentreLocations": {
+        "assurance": "Contractual commitment",
+        "value": [
+          "UK"
+        ]
+      },
+      "datacentreProtectionDisclosure": {
+        "assurance": "Contractual commitment",
+        "value": true
+      },
+      "datacentreTier": "Uptime Institute Tier 3",
+      "datacentresEUCode": true,
+      "datacentresSpecifyLocation": false,
+      "deprovisioningTime": "NA",
+      "deviceAccessMethod": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Corporate/enterprise devices"
+        ]
+      },
+      "educationPricing": false,
+      "elasticCloud": false,
+      "eventMonitoring": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "frameworkName": "G-Cloud 6",
+      "freeOption": false,
+      "governanceFramework": {
+        "assurance": "Independent validation of assertion",
+        "value": true
+      },
+      "guaranteedResources": true,
+      "id": "5687123785023488",
+      "identityAuthenticationControls": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Username and two-factor authentication",
+          "Limited access over dedicated link, enterprise or community network",
+          "Username and password"
+        ]
+      },
+      "identityStandards": [
+        "SAML"
+      ],
+      "incidentDefinitionPublished": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "incidentEscalation": true,
+      "incidentManagementProcess": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "incidentManagementReporting": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "legalJurisdiction": {
+        "assurance": "Contractual commitment",
+        "value": "UK"
+      },
+      "links": {
+        "self": "http://localhost:5000/services/5687123785023488"
+      },
+      "lot": "SaaS",
+      "minimumContractPeriod": "Year",
+      "networksConnected": [
+        "Internet",
+        "New NHS Network (N3)"
+      ],
+      "offlineWorking": true,
+      "openSource": false,
+      "openStandardsSupported": false,
+      "otherConsumers": {
+        "assurance": "Service provider assertion",
+        "value": "A specific consumer group, eg Police, Defence or Health"
+      },
+      "persistentStorage": true,
+      "personnelSecurityChecks": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Background checks in accordance with BS7858:2012",
+          "Employment checks"
+        ]
+      },
+      "priceInterval": "Year",
+      "priceMax": 25000,
+      "priceMin": 12000,
+      "priceString": "\u00a312000 to \u00a325000 per licence per year",
+      "priceUnit": "Licence",
+      "pricingDocument": "PROACTIS G Cloud CM Document.pdf",
+      "pricingDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/5687123785023488-pricing-document.pdf",
+      "provisioningTime": "NA",
+      "restrictAdministratorPermissions": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "secureConfigurationManagement": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "secureDesign": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "secureDevelopment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "selfServiceProvisioning": false,
+      "serviceAvailabilityPercentage": {
+        "assurance": "Service provider assertion",
+        "value": 99.97
+      },
+      "serviceBenefits": [
+        "Greater on-contract spend to increase savings",
+        "Timely re-negotiation before renewal",
+        "Reduced cost of unwanted contract renewals ",
+        "Better information and analysis for contract negotiation and consolidation",
+        "Reduced cost of admin support in Procurement and Accounts Payable",
+        "Increased contract commitment visibility",
+        "Reduced risk on supplier non-performance with contract provisions"
+      ],
+      "serviceDefinitionDocument": "PROACTIS Lot SAAS Contracts Management.pdf",
+      "serviceDefinitionDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/5687123785023488-service-definition-document.pdf",
+      "serviceFeatures": [
+        "Central electronic repository of all supplier contracts",
+        "Scheduled monitoring ensures that contract performance is periodically reviewed",
+        "Event monitoring ensures key milestones/expirations are addressed in proper time",
+        "Performance analysis to monitor contract activity to ensure compliance",
+        "Integration between contract repository and the organisation's purchasing/invoice system ",
+        "Browser based allowing remote access and visibility",
+        "Full reporting and analysis capability"
+      ],
+      "serviceManagementModel": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Direct service management"
+        ]
+      },
+      "serviceName": "Contract Management",
+      "serviceOffboarding": true,
+      "serviceOnboarding": true,
+      "serviceSummary": "PROACTIS Contract Management is a platform for central, electronic management of all supplier contracts, integrated with purchasing systems providing clear visibility to buyers for purchasing, automatic capture of activity, monitoring and reminders for key dates and milestones, storage and monitoring of all contract documents and ongoing contract performance management tools.",
+      "serviceTypes": [
+        "Accounting and finance"
+      ],
+      "servicesManagementSeparation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "servicesSeparation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "sfiaRateDocument": "PROACTIS G-Cloud SFIA Document.pdf",
+      "sfiaRateDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/5687123785023488-sfia-rate-card.pdf",
+      "status": "published",
+      "supplierId": 92335,
+      "supplierName": "PROACTIS Group Ltd",
+      "supportAvailability": "9am to  5pm",
+      "supportForThirdParties": true,
+      "supportResponseTime": "Support will respond to calls depending upon their nature. Priority calls will receive immediate attention.",
+      "supportTypes": [
+        "Service desk",
+        "Email",
+        "Phone"
+      ],
+      "supportedBrowsers": [
+        "Internet Explorer 8",
+        "Internet Explorer 9",
+        "Internet Explorer 10+"
+      ],
+      "supportedDevices": [
+        "PC",
+        "Mac",
+        "Smartphone",
+        "Tablet"
+      ],
+      "termsAndConditionsDocument": "G Cloud PROACTIS Terms and Conditions.pdf",
+      "termsAndConditionsDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/5687123785023488-terms-and-conditions.pdf",
+      "thirdPartyComplianceMonitoring": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "thirdPartyDataSharingInformation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "thirdPartyRiskAssessment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "thirdPartySecurityRequirements": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "title": "Contract Management",
+      "trainingProvided": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "trialOption": false,
+      "updatedAt": "2015-06-29T14:59:33.115832Z",
+      "userAccessControlManagement": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "userAuthenticateManagement": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "userAuthenticateSupport": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vatIncluded": false,
+      "vendorCertifications": [
+        "Microsoft Partner"
+      ],
+      "vulnerabilityAssessment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityMitigationPrioritisation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityMonitoring": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityTimescales": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityTracking": {
+        "assurance": "Service provider assertion",
+        "value": true
+      }
+    },
+    {
+      "analyticsAvailable": true,
+      "apiAccess": true,
+      "apiType": "SOAP/ XML",
+      "auditInformationProvided": {
+        "assurance": "Service provider assertion",
+        "value": "Data made available"
+      },
+      "changeImpactAssessment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "cloudDeploymentModel": {
+        "assurance": "Contractual commitment",
+        "value": "Private cloud"
+      },
+      "codeLibraryLanguages": [
+        "Java"
+      ],
+      "createdAt": "2014-12-17T13:39:53.000000Z",
+      "dataAtRestProtections": {
+        "assurance": "Independent testing of implementation",
+        "value": [
+          "Secure containers, racks or cages"
+        ]
+      },
+      "dataBackupRecovery": true,
+      "dataExtractionRemoval": true,
+      "dataManagementLocations": {
+        "assurance": "Contractual commitment",
+        "value": [
+          "UK"
+        ]
+      },
+      "dataProtectionBetweenUserAndService": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "VPN using TLS, version 1.2 or later"
+        ]
+      },
+      "dataSecureDeletion": {
+        "assurance": "Service provider assertion",
+        "value": "Other erasure process"
+      },
+      "datacentreLocations": {
+        "assurance": "Contractual commitment",
+        "value": [
+          "UK"
+        ]
+      },
+      "datacentreProtectionDisclosure": {
+        "assurance": "Contractual commitment",
+        "value": true
+      },
+      "datacentreTier": "TIA-942 Tier 3",
+      "datacentresEUCode": true,
+      "datacentresSpecifyLocation": false,
+      "deprovisioningTime": "NA",
+      "deviceAccessMethod": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Corporate/enterprise devices"
+        ]
+      },
+      "educationPricing": false,
+      "elasticCloud": false,
+      "eventMonitoring": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "frameworkName": "G-Cloud 6",
+      "freeOption": false,
+      "governanceFramework": {
+        "assurance": "Independent validation of assertion",
+        "value": true
+      },
+      "guaranteedResources": false,
+      "id": "4821971141394432",
+      "identityAuthenticationControls": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Username and TLS client certificate",
+          "Username and password"
+        ]
+      },
+      "identityStandards": [
+        "SAML"
+      ],
+      "incidentDefinitionPublished": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "incidentEscalation": true,
+      "incidentManagementProcess": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "incidentManagementReporting": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "legalJurisdiction": {
+        "assurance": "Contractual commitment",
+        "value": "UK"
+      },
+      "links": {
+        "self": "http://localhost:5000/services/4821971141394432"
+      },
+      "lot": "SaaS",
+      "minimumContractPeriod": "Year",
+      "networksConnected": [
+        "Internet"
+      ],
+      "offlineWorking": false,
+      "openSource": true,
+      "openStandardsSupported": true,
+      "otherConsumers": {
+        "assurance": "Contractual commitment",
+        "value": "A specific consumer group, eg Police, Defence or Health"
+      },
+      "persistentStorage": true,
+      "personnelSecurityChecks": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Employment checks"
+        ]
+      },
+      "priceInterval": "Year",
+      "priceMin": 20000,
+      "priceString": "\u00a320000 per licence per year",
+      "priceUnit": "Licence",
+      "pricingDocument": "PROACTIS G Cloud 6 E-Invoicing Document.pdf",
+      "pricingDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/4821971141394432-pricing-document.pdf",
+      "provisioningTime": "NA",
+      "restrictAdministratorPermissions": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "secureConfigurationManagement": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "secureDesign": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "secureDevelopment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "selfServiceProvisioning": false,
+      "serviceAvailabilityPercentage": {
+        "assurance": "Contractual commitment",
+        "value": 99
+      },
+      "serviceBenefits": [
+        "Cost and time savings by reducing overall processing costs ",
+        "Invoice submission and processing is faster, easier and more accurate",
+        "Browser based, easy access to encourage supplier adoption",
+        "Portal where suppliers can view the status of their invoices",
+        "Pre-built interfaces to all major finance systems",
+        "Rapid deployment, ensures quick ROI"
+      ],
+      "serviceDefinitionDocument": "PROACTIS Lot SAAS E-invoicing.pdf",
+      "serviceDefinitionDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/4821971141394432-service-definition-document.pdf",
+      "serviceFeatures": [
+        "Receive invoices electronically, regardless of their original format",
+        "Invoice submission mechanisms allow eInvoicing from large and small suppliers",
+        "Automatic validation for invoices with a purchase order",
+        "Accurate processing, data is delivered straight into your finance/ERP system",
+        "Automated mapping of order to invoice accelerates supplier invoice processing",
+        "Intelligent exception handling, workflow-driven process for exceptions",
+        "Invoices electronically archived, compliant with HMRC, for minimum seven years",
+        "Secure, cloud-based solution, accessible anywhere via a web browser"
+      ],
+      "serviceManagementModel": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Direct service management"
+        ]
+      },
+      "serviceName": "E-Invoicing",
+      "serviceOffboarding": true,
+      "serviceOnboarding": true,
+      "serviceSummary": "Proactis eInvoicing enables organisations of any size to exchange invoices automatically and electronically regardless of their original format. By automating the process, eliminating inefficient and time consuming paper invoice handling and by capturing line level detail and PO mapping, organisations can see significant savings.",
+      "serviceTypes": [
+        "Accounting and finance"
+      ],
+      "servicesManagementSeparation": {
+        "assurance": "Service provider assertion",
+        "value": false
+      },
+      "servicesSeparation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "sfiaRateDocument": "PROACTIS G-Cloud SFIA Document.pdf",
+      "sfiaRateDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/4821971141394432-sfia-rate-card.pdf",
+      "status": "published",
+      "supplierId": 92335,
+      "supplierName": "PROACTIS Group Ltd",
+      "supportAvailability": "8.00am to 6.00pm",
+      "supportForThirdParties": true,
+      "supportResponseTime": "Support will respond to calls depending upon their nature. Priority calls will receive immediate attention.",
+      "supportTypes": [
+        "Service desk",
+        "Email",
+        "Phone"
+      ],
+      "supportedBrowsers": [
+        "Internet Explorer 9",
+        "Internet Explorer 10+",
+        "Firefox",
+        "Chrome",
+        "Safari",
+        "Opera"
+      ],
+      "supportedDevices": [
+        "PC",
+        "Mac",
+        "Smartphone",
+        "Tablet"
+      ],
+      "termsAndConditionsDocument": "Proactis GSA Subscriber Contract Dec14.pdf",
+      "termsAndConditionsDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/4821971141394432-terms-and-conditions.pdf",
+      "thirdPartyComplianceMonitoring": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "thirdPartyDataSharingInformation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "thirdPartyRiskAssessment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "thirdPartySecurityRequirements": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "title": "E-Invoicing",
+      "trainingProvided": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "trialOption": false,
+      "updatedAt": "2015-06-29T14:59:32.884466Z",
+      "userAccessControlManagement": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "userAuthenticateManagement": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "userAuthenticateSupport": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vatIncluded": false,
+      "vendorCertifications": [],
+      "vulnerabilityAssessment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityMitigationPrioritisation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityMonitoring": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityTimescales": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityTracking": {
+        "assurance": "Service provider assertion",
+        "value": true
+      }
+    },
+    {
+      "analyticsAvailable": true,
+      "apiAccess": true,
+      "apiType": "SOAP/ XML",
+      "auditInformationProvided": {
+        "assurance": "Service provider assertion",
+        "value": "Data made available"
+      },
+      "changeImpactAssessment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "cloudDeploymentModel": {
+        "assurance": "Contractual commitment",
+        "value": "Private cloud"
+      },
+      "codeLibraryLanguages": [
+        "Java"
+      ],
+      "createdAt": "2014-12-17T13:40:03.000000Z",
+      "dataAtRestProtections": {
+        "assurance": "Independent testing of implementation",
+        "value": [
+          "Secure containers, racks or cages"
+        ]
+      },
+      "dataBackupRecovery": true,
+      "dataExtractionRemoval": true,
+      "dataManagementLocations": {
+        "assurance": "Contractual commitment",
+        "value": [
+          "UK"
+        ]
+      },
+      "dataProtectionBetweenUserAndService": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "VPN using TLS, version 1.2 or later"
+        ]
+      },
+      "dataSecureDeletion": {
+        "assurance": "Service provider assertion",
+        "value": "Other erasure process"
+      },
+      "datacentreLocations": {
+        "assurance": "Contractual commitment",
+        "value": [
+          "UK"
+        ]
+      },
+      "datacentreProtectionDisclosure": {
+        "assurance": "Contractual commitment",
+        "value": true
+      },
+      "datacentreTier": "TIA-942 Tier 3",
+      "datacentresEUCode": true,
+      "datacentresSpecifyLocation": false,
+      "deprovisioningTime": "NA",
+      "deviceAccessMethod": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Corporate/enterprise devices"
+        ]
+      },
+      "educationPricing": false,
+      "elasticCloud": false,
+      "eventMonitoring": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "frameworkName": "G-Cloud 6",
+      "freeOption": false,
+      "governanceFramework": {
+        "assurance": "Independent validation of assertion",
+        "value": true
+      },
+      "guaranteedResources": false,
+      "id": "6637983776112640",
+      "identityAuthenticationControls": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Username and TLS client certificate",
+          "Username and password"
+        ]
+      },
+      "identityStandards": [
+        "SAML"
+      ],
+      "incidentDefinitionPublished": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "incidentEscalation": true,
+      "incidentManagementProcess": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "incidentManagementReporting": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "legalJurisdiction": {
+        "assurance": "Contractual commitment",
+        "value": "UK"
+      },
+      "links": {
+        "self": "http://localhost:5000/services/6637983776112640"
+      },
+      "lot": "SaaS",
+      "minimumContractPeriod": "Year",
+      "networksConnected": [
+        "Internet"
+      ],
+      "offlineWorking": false,
+      "openSource": true,
+      "openStandardsSupported": true,
+      "otherConsumers": {
+        "assurance": "Contractual commitment",
+        "value": "A specific consumer group, eg Police, Defence or Health"
+      },
+      "persistentStorage": true,
+      "personnelSecurityChecks": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Employment checks"
+        ]
+      },
+      "priceInterval": "Year",
+      "priceMax": 30000,
+      "priceMin": 10000,
+      "priceString": "\u00a310000 to \u00a330000 per licence per year",
+      "priceUnit": "Licence",
+      "pricingDocument": "PROACTIS G Cloud 6 Marketplace Document.pdf",
+      "pricingDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/6637983776112640-pricing-document.pdf",
+      "provisioningTime": "NA",
+      "restrictAdministratorPermissions": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "secureConfigurationManagement": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "secureDesign": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "secureDevelopment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "selfServiceProvisioning": false,
+      "serviceAvailabilityPercentage": {
+        "assurance": "Service provider assertion",
+        "value": 99
+      },
+      "serviceBenefits": [
+        "Greater buyer adoption of your organisation\u2019s purchasing process",
+        "Increased savings from greater on-contract buying",
+        "Reduced maverick buying of un-needed or un-authorised goods and services",
+        "Increased savings from better buyer purchase decisions",
+        "Better spend visibility by increasing spend made within your system",
+        "Reduced administrative cost within Procurement",
+        "Reduced non-value-added time spent by buyer"
+      ],
+      "serviceDefinitionDocument": "PROACTIS Lot SAAS Marketplace.pdf",
+      "serviceDefinitionDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/6637983776112640-service-definition-document.pdf",
+      "serviceFeatures": [
+        "Cloud-based solution with web browser access",
+        "Supplier website punch-out connects buyers to your major suppliers\u2019 websites",
+        "Online catalogues for goods and services without an appropriate website",
+        "Product comparisons give information needed to make best-value purchase decision",
+        "Transmission of orders from FMS through Marketplace to suppliers",
+        "RFQ capabilities streamline the process for buying non-standard products/services"
+      ],
+      "serviceManagementModel": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Direct service management"
+        ]
+      },
+      "serviceName": "E-Marketplace",
+      "serviceOffboarding": true,
+      "serviceOnboarding": true,
+      "serviceSummary": "PROACTIS eMarketplace connects employees to your major suppliers\u2019 websites and catalogues. Within a single shopping cart, employees can browse across multiple suppliers, compare and choose the product or service providing the best value.  Intended purchases are passed through your normal purchase authorisation process and, when approved, the order is placed.  ",
+      "serviceTypes": [
+        "Accounting and finance"
+      ],
+      "servicesManagementSeparation": {
+        "assurance": "Service provider assertion",
+        "value": false
+      },
+      "servicesSeparation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "sfiaRateDocument": "PROACTIS G-Cloud SFIA Document.pdf",
+      "sfiaRateDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/6637983776112640-sfia-rate-card.pdf",
+      "status": "published",
+      "supplierId": 92335,
+      "supplierName": "PROACTIS Group Ltd",
+      "supportAvailability": "8.00am to 6.00pm ",
+      "supportForThirdParties": true,
+      "supportResponseTime": "Support will respond to calls depending upon their nature.  Priority calls will receive immediate attention.",
+      "supportTypes": [
+        "Service desk",
+        "Email",
+        "Phone"
+      ],
+      "supportedBrowsers": [
+        "Internet Explorer 9",
+        "Internet Explorer 10+",
+        "Firefox",
+        "Chrome",
+        "Safari",
+        "Opera"
+      ],
+      "supportedDevices": [
+        "PC",
+        "Mac",
+        "Smartphone",
+        "Tablet"
+      ],
+      "termsAndConditionsDocument": "Proactis GSA Subscriber Contract Dec14.pdf",
+      "termsAndConditionsDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/6637983776112640-terms-and-conditions.pdf",
+      "thirdPartyComplianceMonitoring": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "thirdPartyDataSharingInformation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "thirdPartyRiskAssessment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "thirdPartySecurityRequirements": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "title": "E-Marketplace",
+      "trainingProvided": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "trialOption": false,
+      "updatedAt": "2015-06-29T14:59:33.185941Z",
+      "userAccessControlManagement": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "userAuthenticateManagement": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "userAuthenticateSupport": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vatIncluded": false,
+      "vendorCertifications": [],
+      "vulnerabilityAssessment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityMitigationPrioritisation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityMonitoring": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityTimescales": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityTracking": {
+        "assurance": "Service provider assertion",
+        "value": true
+      }
+    },
+    {
+      "analyticsAvailable": true,
+      "apiAccess": true,
+      "apiType": "SOAP",
+      "auditInformationProvided": {
+        "assurance": "Service provider assertion",
+        "value": "Data made available"
+      },
+      "changeImpactAssessment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "cloudDeploymentModel": {
+        "assurance": "Service provider assertion",
+        "value": "Public cloud"
+      },
+      "codeLibraryLanguages": [
+        "dot net"
+      ],
+      "createdAt": "2014-12-17T13:39:18.000000Z",
+      "dataAtRestProtections": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Other encryption"
+        ]
+      },
+      "dataBackupRecovery": true,
+      "dataExtractionRemoval": true,
+      "dataManagementLocations": {
+        "assurance": "Contractual commitment",
+        "value": [
+          "UK"
+        ]
+      },
+      "dataProtectionBetweenUserAndService": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "No encryption"
+        ]
+      },
+      "dataSecureDeletion": {
+        "assurance": "Service provider assertion",
+        "value": "Other secure erasure process"
+      },
+      "datacentreLocations": {
+        "assurance": "Contractual commitment",
+        "value": [
+          "UK"
+        ]
+      },
+      "datacentreProtectionDisclosure": {
+        "assurance": "Contractual commitment",
+        "value": true
+      },
+      "datacentreTier": "Uptime Institute Tier 3",
+      "datacentresEUCode": true,
+      "datacentresSpecifyLocation": false,
+      "deprovisioningTime": "N/A",
+      "deviceAccessMethod": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Corporate/enterprise devices"
+        ]
+      },
+      "educationPricing": false,
+      "elasticCloud": false,
+      "eventMonitoring": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "frameworkName": "G-Cloud 6",
+      "freeOption": false,
+      "governanceFramework": {
+        "assurance": "Independent validation of assertion",
+        "value": true
+      },
+      "guaranteedResources": true,
+      "id": "5686365387751424",
+      "identityAuthenticationControls": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Username and two-factor authentication",
+          "Limited access over dedicated link, enterprise or community network",
+          "Username and password"
+        ]
+      },
+      "identityStandards": [
+        "SAML"
+      ],
+      "incidentDefinitionPublished": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "incidentEscalation": true,
+      "incidentManagementProcess": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "incidentManagementReporting": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "legalJurisdiction": {
+        "assurance": "Contractual commitment",
+        "value": "UK"
+      },
+      "links": {
+        "self": "http://localhost:5000/services/5686365387751424"
+      },
+      "lot": "SaaS",
+      "minimumContractPeriod": "Year",
+      "networksConnected": [
+        "Internet",
+        "New NHS Network (N3)"
+      ],
+      "offlineWorking": true,
+      "openSource": false,
+      "openStandardsSupported": false,
+      "otherConsumers": {
+        "assurance": "Service provider assertion",
+        "value": "A specific consumer group, eg Police, Defence or Health"
+      },
+      "persistentStorage": true,
+      "personnelSecurityChecks": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Background checks in accordance with BS7858:2012",
+          "Employment checks"
+        ]
+      },
+      "priceInterval": "Year",
+      "priceMax": 50000,
+      "priceMin": 20000,
+      "priceString": "\u00a320000 to \u00a350000 per licence per year",
+      "priceUnit": "Licence",
+      "pricingDocument": "PROACTIS G Cloud Sourcing & SRM Document.pdf",
+      "pricingDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/5686365387751424-pricing-document.pdf",
+      "provisioningTime": "N/A",
+      "restrictAdministratorPermissions": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "secureConfigurationManagement": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "secureDesign": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "secureDevelopment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "selfServiceProvisioning": false,
+      "serviceAvailabilityPercentage": {
+        "assurance": "Service provider assertion",
+        "value": 99.97
+      },
+      "serviceBenefits": [
+        "Savings from running more and better sourcing projects",
+        "Efficient, consistent and repeatable workflow process",
+        "Reduced cost of supplier non-performance and non-compliance",
+        "Reduced administrative cost (per agreement)",
+        "Freed up time to perform more sourcing events",
+        "Improved process compliance and transparency with full audit history",
+        "Streamlined and dedicated communication channel to suppliers"
+      ],
+      "serviceDefinitionDocument": "PROACTIS Lot SAAS SRM & Sourcing.pdf",
+      "serviceDefinitionDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/5686365387751424-service-definition-document.pdf",
+      "serviceFeatures": [
+        "Sourcing Event Manager provides project management tools for Procurement",
+        "Template/wizard driven workflow",
+        "Visibility at every stage, to both buyer and supplier",
+        "Provides workflow from request creation, to evaluation and award",
+        "User access rights, roles and permissions controlled at every stage",
+        "Functionality to manage rapid request-for-quote from suppliers",
+        "eAuctions, allowing suppliers to electronically bid within a sourcing event",
+        "Public Postings allows integration with public boards e.g., OJEU",
+        "Full reporting and analysis capability"
+      ],
+      "serviceManagementModel": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Direct service management"
+        ]
+      },
+      "serviceName": "E-Sourcing (Including SRM)",
+      "serviceOffboarding": true,
+      "serviceOnboarding": true,
+      "serviceSummary": "PROACTIS Supplier Relationship Management (SRM) helps Procurement departments build and maintain a strong supplier base by structuring and streamlining the entire supplier life-cycle.  Sourcing solutions provide the tools to structure, standardise, streamline, and track the entire sourcing process, from requirements specification, to electronic document publishing, response scoring, and contract award.",
+      "serviceTypes": [
+        "Accounting and finance"
+      ],
+      "servicesManagementSeparation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "servicesSeparation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "sfiaRateDocument": "PROACTIS G-Cloud SFIA Document.pdf",
+      "sfiaRateDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/5686365387751424-sfia-rate-card.pdf",
+      "status": "published",
+      "supplierId": 92335,
+      "supplierName": "PROACTIS Group Ltd",
+      "supportAvailability": "9.00am to 5.00pm",
+      "supportForThirdParties": true,
+      "supportResponseTime": "Support will respond to calls depending upon their nature.  Priority calls will receive immediate attention",
+      "supportTypes": [
+        "Service desk",
+        "Email",
+        "Phone"
+      ],
+      "supportedBrowsers": [
+        "Internet Explorer 8",
+        "Internet Explorer 9",
+        "Internet Explorer 10+"
+      ],
+      "supportedDevices": [
+        "PC",
+        "Mac",
+        "Smartphone",
+        "Tablet"
+      ],
+      "termsAndConditionsDocument": "G Cloud PROACTIS Terms and Conditions.pdf",
+      "termsAndConditionsDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/5686365387751424-terms-and-conditions.pdf",
+      "thirdPartyComplianceMonitoring": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "thirdPartyDataSharingInformation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "thirdPartyRiskAssessment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "thirdPartySecurityRequirements": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "title": "E-Sourcing (Including SRM)",
+      "trainingProvided": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "trialOption": false,
+      "updatedAt": "2015-06-29T14:59:33.031364Z",
+      "userAccessControlManagement": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "userAuthenticateManagement": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "userAuthenticateSupport": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vatIncluded": false,
+      "vendorCertifications": [
+        "Microsoft Partner"
+      ],
+      "vulnerabilityAssessment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityMitigationPrioritisation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityMonitoring": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityTimescales": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityTracking": {
+        "assurance": "Service provider assertion",
+        "value": true
+      }
+    },
+    {
+      "analyticsAvailable": true,
+      "apiAccess": true,
+      "apiType": "SOAP",
+      "auditInformationProvided": {
+        "assurance": "Service provider assertion",
+        "value": "Data made available"
+      },
+      "changeImpactAssessment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "cloudDeploymentModel": {
+        "assurance": "Service provider assertion",
+        "value": "Public cloud"
+      },
+      "codeLibraryLanguages": [
+        "dot net"
+      ],
+      "createdAt": "2014-12-17T13:39:30.000000Z",
+      "dataAtRestProtections": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Other encryption"
+        ]
+      },
+      "dataBackupRecovery": true,
+      "dataExtractionRemoval": true,
+      "dataManagementLocations": {
+        "assurance": "Contractual commitment",
+        "value": [
+          "UK"
+        ]
+      },
+      "dataProtectionBetweenUserAndService": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "No encryption"
+        ]
+      },
+      "dataSecureDeletion": {
+        "assurance": "Service provider assertion",
+        "value": "Other secure erasure process"
+      },
+      "datacentreLocations": {
+        "assurance": "Contractual commitment",
+        "value": [
+          "UK"
+        ]
+      },
+      "datacentreProtectionDisclosure": {
+        "assurance": "Contractual commitment",
+        "value": true
+      },
+      "datacentreTier": "Uptime Institute Tier 3",
+      "datacentresEUCode": true,
+      "datacentresSpecifyLocation": false,
+      "deprovisioningTime": "N/A",
+      "deviceAccessMethod": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Corporate/enterprise devices"
+        ]
+      },
+      "educationPricing": false,
+      "elasticCloud": false,
+      "eventMonitoring": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "frameworkName": "G-Cloud 6",
+      "freeOption": false,
+      "governanceFramework": {
+        "assurance": "Independent validation of assertion",
+        "value": true
+      },
+      "guaranteedResources": true,
+      "id": "5605519842607104",
+      "identityAuthenticationControls": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Username and two-factor authentication",
+          "Limited access over dedicated link, enterprise or community network",
+          "Username and password"
+        ]
+      },
+      "identityStandards": [
+        "SAML"
+      ],
+      "incidentDefinitionPublished": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "incidentEscalation": true,
+      "incidentManagementProcess": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "incidentManagementReporting": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "legalJurisdiction": {
+        "assurance": "Contractual commitment",
+        "value": "UK"
+      },
+      "links": {
+        "self": "http://localhost:5000/services/5605519842607104"
+      },
+      "lot": "SaaS",
+      "minimumContractPeriod": "Year",
+      "networksConnected": [
+        "Internet",
+        "New NHS Network (N3)"
+      ],
+      "offlineWorking": true,
+      "openSource": false,
+      "openStandardsSupported": false,
+      "otherConsumers": {
+        "assurance": "Service provider assertion",
+        "value": "A specific consumer group, eg Police, Defence or Health"
+      },
+      "persistentStorage": true,
+      "personnelSecurityChecks": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Background checks in accordance with BS7858:2012",
+          "Employment checks"
+        ]
+      },
+      "priceInterval": "Year",
+      "priceMin": 30000,
+      "priceString": "\u00a330000 per licence per year",
+      "priceUnit": "Licence",
+      "pricingDocument": "PROACTIS G Cloud P2P Document.pdf",
+      "pricingDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/5605519842607104-pricing-document.pdf",
+      "provisioningTime": "N/A",
+      "restrictAdministratorPermissions": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "secureConfigurationManagement": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "secureDesign": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "secureDevelopment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "selfServiceProvisioning": false,
+      "serviceAvailabilityPercentage": {
+        "assurance": "Service provider assertion",
+        "value": 99.97
+      },
+      "serviceBenefits": [
+        "Avoidance of unnecessary purchases",
+        "Use of negotiated supplier agreements and contracts",
+        "User-friendly interface to ensure maximum employee uptake",
+        "Reduced cost of purchase order handling",
+        "Reduced administration and cost of AP",
+        "Increased financial control and visibility of spend",
+        "Reduced risk of supplier non-performance and non-compliance",
+        "Reporting capability on all data",
+        "Full audit history "
+      ],
+      "serviceDefinitionDocument": "PROACTIS Lot SAAS P2P.pdf",
+      "serviceDefinitionDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/5605519842607104-service-definition-document.pdf",
+      "serviceFeatures": [
+        "Purchasing directs appropriate items as per corporate controls",
+        "Multi-source requisition; including \u2018punch-out\u2019 to supplier websites and eMarketplace",
+        "Purchase authorisation engine and workflow, including Approver mobile \u2018app\u2019",
+        "Electronic invoice receipt; eliminate labour intensive manual registration of invoices",
+        "OCR capture to turn paper, fax etc., into electronic records",
+        "3-way matching -invoices automatically matched against the relevant purchase orders",
+        "Payment authorisation allows rapid handover to appropriate budget owner ",
+        "Employee expenses management"
+      ],
+      "serviceManagementModel": {
+        "assurance": "Service provider assertion",
+        "value": [
+          "Direct service management"
+        ]
+      },
+      "serviceName": "Purchase to Pay (P2P)",
+      "serviceOffboarding": true,
+      "serviceOnboarding": true,
+      "serviceSummary": "PROACTIS Purchase-to-Pay automates and streamlines the entire buying process; from request, to authorisation, ordering, invoices processing, and payment. Buyers buy what they need, while ensuring compliance with corporate policies. It replaces paper with electronic documents, incorporates controls, and provides visibility of purchasing whilst reducing the workload for AP.",
+      "serviceTypes": [
+        "Accounting and finance"
+      ],
+      "servicesManagementSeparation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "servicesSeparation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "sfiaRateDocument": "PROACTIS G-Cloud SFIA Document.pdf",
+      "sfiaRateDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/5605519842607104-sfia-rate-card.pdf",
+      "status": "published",
+      "supplierId": 92335,
+      "supplierName": "PROACTIS Group Ltd",
+      "supportAvailability": "9.00am to 5.00pm",
+      "supportForThirdParties": true,
+      "supportResponseTime": "Support will respond to calls depending upon their nature.  Priority calls will receive immediate attention.",
+      "supportTypes": [
+        "Service desk",
+        "Email",
+        "Phone"
+      ],
+      "supportedBrowsers": [
+        "Internet Explorer 8",
+        "Internet Explorer 9",
+        "Internet Explorer 10+"
+      ],
+      "supportedDevices": [
+        "PC",
+        "Mac",
+        "Smartphone",
+        "Tablet"
+      ],
+      "termsAndConditionsDocument": "G Cloud PROACTIS Terms and Conditions.pdf",
+      "termsAndConditionsDocumentURL": "https://assets.digitalmarketplace.service.gov.uk/documents/92335/5605519842607104-terms-and-conditions.pdf",
+      "thirdPartyComplianceMonitoring": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "thirdPartyDataSharingInformation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "thirdPartyRiskAssessment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "thirdPartySecurityRequirements": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "title": "Purchase to Pay (P2P)",
+      "trainingProvided": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "trialOption": false,
+      "updatedAt": "2015-06-29T14:59:32.959101Z",
+      "userAccessControlManagement": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "userAuthenticateManagement": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "userAuthenticateSupport": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vatIncluded": false,
+      "vendorCertifications": [
+        "Microsoft Partner"
+      ],
+      "vulnerabilityAssessment": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityMitigationPrioritisation": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityMonitoring": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityTimescales": {
+        "assurance": "Service provider assertion",
+        "value": true
+      },
+      "vulnerabilityTracking": {
+        "assurance": "Service provider assertion",
+        "value": true
+      }
+    },
+    {
+      "apiAccess": false,
+      "createdAt": "2015-06-29T12:48:00.208485Z",
+      "dataBackupRecovery": true,
+      "dataExtractionRemoval": true,
+      "datacentreTier": "Uptime Institute Tier 3",
+      "datacentresEUCode": true,
+      "educationPricing": true,
+      "frameworkName": "G-Cloud 5",
+      "freeOption": false,
+      "id": "5-G5-0313-004",
+      "links": {
+        "self": "http://localhost:5000/services/5-G5-0313-004"
+      },
+      "lot": "SaaS",
+      "minimumContractPeriod": "year",
+      "networksConnected": [
+        "Internet"
+      ],
+      "openSource": true,
+      "openStandardsSupported": true,
+      "priceMin": 20000.0,
+      "priceString": "\u00a320,000.00 per Annum",
+      "priceUnit": "Per Annum",
+      "pricingDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G5.0313.004/QD4/Proactis%20GCloud%20Einvoicing%20Pricing%20Document.xlsx",
+      "selfServiceProvisioning": false,
+      "serviceDefinitionDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G5.0313.004/QD1/PROACTIS%20e-Invoicing.pdf",
+      "serviceName": "E-Invoicing",
+      "serviceOffboarding": true,
+      "serviceOnboarding": true,
+      "serviceSummary": "E-Invoicing is the exchange of the invoice document between a supplier and a buyer in an integrated, secure, electronic format. E-invoicing enables large and small organisations to exchange invoices regardless of the originating formats, removing the need for manual intervention. It is significantly more efficient that using traditional methods and costs substantially less. Our solution is proven and widely used and has been developed to capture line level detail and PO mapping for those that want to automate the entire process.",
+      "serviceTypes": [
+        "Operations management"
+      ],
+      "sfiaRateDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G5.0313.004/QD3/PROACTIS%20G-Cloud%20SFIA%20Te....docx",
+      "status": "published",
+      "supplierId": 92335,
+      "supplierName": "PROACTIS Group Ltd",
+      "supportForThirdParties": false,
+      "terminationCost": true,
+      "termsAndConditionsDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G5.0313.004/QD2/G%20Cloud%20PROACTIS%20Terms%20and%20Conditions.pdf",
+      "title": "E-Invoicing",
+      "trialOption": false,
+      "updatedAt": "2015-06-29T12:48:00.208485Z"
+    },
+    {
+      "apiAccess": false,
+      "createdAt": "2015-06-29T12:48:00.412330Z",
+      "dataBackupRecovery": true,
+      "dataExtractionRemoval": true,
+      "datacentreTier": "TIA-942 Tier 3",
+      "datacentresEUCode": true,
+      "educationPricing": true,
+      "frameworkName": "G-Cloud 5",
+      "freeOption": false,
+      "id": "5-G5-0313-003",
+      "links": {
+        "self": "http://localhost:5000/services/5-G5-0313-003"
+      },
+      "lot": "SaaS",
+      "minimumContractPeriod": "year",
+      "networksConnected": [
+        "Internet"
+      ],
+      "openSource": true,
+      "openStandardsSupported": true,
+      "priceMin": 15000.0,
+      "priceString": "\u00a315,000.00 per Annual",
+      "priceUnit": "Annual",
+      "pricingDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G5.0313.003/QD4/Proactis%20GCloud%20Marketplace%20Pricing%20Document.xlsx",
+      "selfServiceProvisioning": false,
+      "serviceDefinitionDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G5.0313.003/QD1/PROACTIS%20Marketplace.pdf",
+      "serviceName": "Marketplace",
+      "serviceOffboarding": true,
+      "serviceOnboarding": true,
+      "serviceSummary": "E-Marketplace will enable you to transform your corporate purchasing getting best value for goods and services, while reducing your transaction costs significantly.E-Marketplace provides you with your own online E-Marketplace with all your approved suppliers in one place. This enable all your authorised users to buy quickly and easily from the suppliers you want them to use - ensuring you get the best from negotiated contracts and drive through your e-procurement strategy",
+      "serviceTypes": [
+        "Marketing",
+        "Software development tools",
+        "Operations management",
+        "IT management"
+      ],
+      "sfiaRateDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G5.0313.003/QD3/PROACTIS%20G-Cloud%20SFIA%20Te....docx",
+      "status": "published",
+      "supplierId": 92335,
+      "supplierName": "PROACTIS Group Ltd",
+      "supportForThirdParties": false,
+      "terminationCost": false,
+      "termsAndConditionsDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G5.0313.003/QD2/G%20Cloud%20PROACTIS%20Terms%20and%20Conditions.pdf",
+      "title": "Marketplace",
+      "trialOption": false,
+      "updatedAt": "2015-06-29T12:48:00.412330Z"
+    },
+    {
+      "apiAccess": true,
+      "createdAt": "2015-06-29T12:48:00.346741Z",
+      "dataBackupRecovery": true,
+      "dataExtractionRemoval": true,
+      "datacentreTier": "Uptime Institute Tier 2",
+      "datacentresEUCode": true,
+      "educationPricing": true,
+      "frameworkName": "G-Cloud 5",
+      "freeOption": false,
+      "id": "5-G2-0313-001",
+      "links": {
+        "self": "http://localhost:5000/services/5-G2-0313-001"
+      },
+      "lot": "SaaS",
+      "minimumContractPeriod": "year",
+      "networksConnected": [
+        "Internet",
+        "New NHS Network (N3)"
+      ],
+      "openSource": false,
+      "openStandardsSupported": false,
+      "priceMin": 45000.0,
+      "priceString": "\u00a345,000.00 per Users/Annum",
+      "priceUnit": "Users/Annum",
+      "pricingDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G2.0313.001/QD4/P2P%20Pricing%20Document.xlsx",
+      "selfServiceProvisioning": false,
+      "serviceDefinitionDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G2.0313.001/QD1/Service%201%20PROACTIS%20Service%20Definition.pdf",
+      "serviceName": "Purchase to Pay Software",
+      "serviceOffboarding": true,
+      "serviceOnboarding": true,
+      "serviceSummary": "Proactis provides Purchase to Pay - P2P - Software helping organisations control spend incorporating Purchase Ordering, Authorisation Workflow, Receipting, Electronic Invoice Techniques",
+      "serviceTypes": [
+        "Operations management"
+      ],
+      "sfiaRateDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G2.0313.001/QD3/PROACTIS%20G-Cloud%20SFIA%20Te....docx",
+      "status": "published",
+      "supplierId": 92335,
+      "supplierName": "PROACTIS Group Ltd",
+      "supportForThirdParties": false,
+      "terminationCost": false,
+      "termsAndConditionsDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G2.0313.001/QD2/G%20Cloud%20PROACTIS%20Terms%20and%20Conditions.pdf",
+      "title": "Purchase to Pay Software",
+      "trialOption": false,
+      "updatedAt": "2015-06-29T12:48:00.346741Z"
+    },
+    {
+      "apiAccess": true,
+      "createdAt": "2015-06-29T12:48:00.276031Z",
+      "dataBackupRecovery": true,
+      "dataExtractionRemoval": true,
+      "datacentreTier": "Uptime Institute Tier 2",
+      "datacentresEUCode": true,
+      "educationPricing": true,
+      "frameworkName": "G-Cloud 5",
+      "freeOption": false,
+      "id": "5-G2-0313-002",
+      "links": {
+        "self": "http://localhost:5000/services/5-G2-0313-002"
+      },
+      "lot": "SaaS",
+      "minimumContractPeriod": "year",
+      "networksConnected": [
+        "Internet",
+        "New NHS Network (N3)"
+      ],
+      "openSource": false,
+      "openStandardsSupported": false,
+      "priceMin": 25000.0,
+      "priceString": "\u00a325,000.00 per Users/Annum",
+      "priceUnit": "Users/Annum",
+      "pricingDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G2.0313.002/QD4/S2C%20Pricing%20Document.xlsx",
+      "selfServiceProvisioning": false,
+      "serviceDefinitionDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G2.0313.002/QD1/Service%202%20PROACTIS%20Service%20Definition.pdf",
+      "serviceName": "Source to Contract Software",
+      "serviceOffboarding": true,
+      "serviceOnboarding": true,
+      "serviceSummary": "Proactis provides a Strategic Procurement suite of software including Supplier Portal, Supplier Relationship Management, Electronic Sourcing - esourcing, etendering, eauction, Contract Management, Catalogue Management, PO Flip",
+      "serviceTypes": [
+        "Operations management"
+      ],
+      "sfiaRateDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G2.0313.002/QD3/PROACTIS%20G-Cloud%20SFIA%20Te....docx",
+      "status": "published",
+      "supplierId": 92335,
+      "supplierName": "PROACTIS Group Ltd",
+      "supportForThirdParties": false,
+      "terminationCost": false,
+      "termsAndConditionsDocumentURL": "http://assets-production.govstore.service.gov.uk/G5/0313/5.G2.0313.002/QD2/G%20Cloud%20PROACTIS%20Terms%20and%20Conditions.pdf",
+      "title": "Source to Contract Software",
+      "trialOption": false,
+      "updatedAt": "2015-06-29T12:48:00.276031Z"
+    }
+  ]
+}
