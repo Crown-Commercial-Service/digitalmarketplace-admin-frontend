@@ -5,7 +5,8 @@ from . import main
 @main.app_errorhandler(400)
 def page_not_found(e):
     return render_template("errors/500.html",
-                           **main.config['BASE_TEMPLATE_DATA']), 404
+                           **main.config['BASE_TEMPLATE_DATA']), 400
+
 
 @main.app_errorhandler(404)
 def page_not_found(e):

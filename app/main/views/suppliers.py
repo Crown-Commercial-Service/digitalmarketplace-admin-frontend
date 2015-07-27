@@ -57,7 +57,9 @@ def find_supplier_services():
         **get_template_data()
     )
 
+
 def get_supplier():
+
     if "supplier_id" not in request.args or len(request.args.get("supplier_id")) <= 0:
         abort(404, "Supplier not found")
 

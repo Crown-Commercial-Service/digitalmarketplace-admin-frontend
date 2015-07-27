@@ -188,7 +188,7 @@ class TestSupplierView(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_404_if_supplier_does_not_exist_on_services(self, data_api_client):
-        data_api_client.get_supplier.side_effect =  HTTPError(Response(404))
+        data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers/services?supplier_id=999')
         self.assertEquals(404, response.status_code)
 
