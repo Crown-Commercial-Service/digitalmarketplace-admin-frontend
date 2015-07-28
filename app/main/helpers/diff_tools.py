@@ -26,21 +26,23 @@ def get_diffs_from_service_data(
 
     for section in sections:
         for question in section['questions']:
-            revisions_are_valid = True
-            question_revision_1 = revision_1[question['id']]
-            question_revision_2 = revision_2[question['id']]
+            question_revision_1, question_revision_2 = None, None
 
-            if all_are_lists(question_revision_1, question_revision_2):
-                pass
+            if all_are_lists(
+                    revision_1.get(question['id'], []),
+                    revision_2.get(question['id'], [])
+            ):
+                question_revision_1 = revision_1.get(question['id'], [])
+                question_revision_2 = revision_2.get(question['id'], [])
 
-            elif all_are_strings(question_revision_1, question_revision_2):
-                question_revision_1 = question_revision_1.splitlines()
-                question_revision_2 = question_revision_2.splitlines()
+            elif all_are_strings(
+                    revision_1.get(question['id'], ''),
+                    revision_2.get(question['id'], '')
+            ):
+                question_revision_1 = revision_1.get(question['id'], '').splitlines()
+                question_revision_2 = revision_2.get(question['id'], '').splitlines()
 
-            else:
-                revisions_are_valid = False
-
-            if revisions_are_valid:
+            if question_revision_1 is not None and question_revision_2 is not None:
                 question_diff = render_lines(
                     question_revision_1,
                     question_revision_2,
