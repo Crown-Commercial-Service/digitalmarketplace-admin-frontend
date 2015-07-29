@@ -254,8 +254,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         self.assertEquals(200, response.status_code)
 
         self.assertIn(
-            self._replace_whitespace(
-                'No activity for this search'),  # noqa
+            self._replace_whitespace('Noauditeventsfound'),
             self._replace_whitespace(response.get_data(as_text=True))
         )
         data_api_client.find_audit_events.assert_called_with(
@@ -269,8 +268,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         self.assertEquals(400, response.status_code)
 
         self.assertIn(
-            self._replace_whitespace(
-                'No activity for this search'),  # noqa
+            self._replace_whitespace('Noauditeventsfound'),
             self._replace_whitespace(response.get_data(as_text=True))
         )
         data_api_client.find_audit_events.assert_not_called()
@@ -304,17 +302,17 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         self.assertIn(
             self._replace_whitespace(
-               '<td class="summary-item-field-name">Clouded Networks</td>'),  # noqa
+               '<td class="summary-item-field-first"><span>Clouded Networks</span></td>'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
         self.assertIn(
             self._replace_whitespace(
-               '<td class="summary-item-field-name">08:49:22<br/>17/06/2015</td>'),  # noqa
+               '<td class="summary-item-field"><span>08:49:22<br/>17/06/2015</span></td>'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
         self.assertIn(
             self._replace_whitespace(
-               '<td class="summary-item-field-name"><a href="/admin/services/compare/...">View changes</a></td>'),  # noqa
+               '<td class="summary-item-field-with-action"><span><a href="/admin/services/compare/...">View changes</a></span></td>'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
         self.assertIn(
