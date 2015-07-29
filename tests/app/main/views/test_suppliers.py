@@ -218,7 +218,7 @@ class TestSupplierView(LoggedInApplicationTest):
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
-            "This supplier has no services on the digital marketplace",
+            "This supplier has no services on the Digital Marketplace",
             response.get_data(as_text=True)
         )
 
