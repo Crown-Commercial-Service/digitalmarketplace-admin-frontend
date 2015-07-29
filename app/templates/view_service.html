@@ -14,11 +14,16 @@
       {
         "link": url_for('.index'),
         "label": "Admin home"
+      },
+      {
+        "link": url_for(".find_supplier_services", supplier_id=service_data['supplierId']),
+        "label": service_data['supplierName']
       }
     ]
   %}
     {% include "toolkit/breadcrumb.html" %}
   {% endwith %}
+
   <div class="page-container">
 
 {% with messages = get_flashed_messages(with_categories=true) %}
