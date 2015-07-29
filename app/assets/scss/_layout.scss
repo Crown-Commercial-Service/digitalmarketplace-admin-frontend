@@ -22,3 +22,7 @@
 .two-third-column {
   @include grid-column(2/3);
 }
+
+.page-section {
+  margin-bottom: $gutter;
+}

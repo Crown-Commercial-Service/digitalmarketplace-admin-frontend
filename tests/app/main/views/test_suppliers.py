@@ -57,7 +57,7 @@ class TestSupplierView(LoggedInApplicationTest):
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
-            "This supplier has no users on the digital marketplace",
+            "This supplier has no users on the Digital Marketplace",
             response.get_data(as_text=True)
         )
 
@@ -104,7 +104,7 @@ class TestSupplierView(LoggedInApplicationTest):
         )
 
         self.assertIn(
-            '<form action="/admin/suppliers/users/999/deactivate" method="post" class="question">',
+            '<form action="/admin/suppliers/users/999/deactivate" method="post">',
             response.get_data(as_text=True)
         )
 
@@ -120,7 +120,7 @@ class TestSupplierView(LoggedInApplicationTest):
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
-            '<form action="/admin/suppliers/users/999/unlock" method="post" class="question">',
+            '<form action="/admin/suppliers/users/999/unlock" method="post">',
             response.get_data(as_text=True)
         )
         self.assertIn(
@@ -140,7 +140,7 @@ class TestSupplierView(LoggedInApplicationTest):
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
-            '<form action="/admin/suppliers/users/999/activate" method="post" class="question">',
+            '<form action="/admin/suppliers/users/999/activate" method="post">',
             response.get_data(as_text=True)
         )
         self.assertIn(
