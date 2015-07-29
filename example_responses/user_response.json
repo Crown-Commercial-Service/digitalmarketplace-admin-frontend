@@ -1,0 +1,20 @@
+{
+  "links": {},
+  "users": {
+    "active": true,
+    "createdAt": "2015-06-29T12:46:01.857597Z",
+    "emailAddress": "test.user@sme.com",
+    "failedLoginCount": 0,
+    "id": 999,
+    "locked": false,
+    "loggedInAt": "2015-07-23T09:33:53.506825Z",
+    "name": "Test User",
+    "passwordChangedAt": "2015-06-29T12:46:01.857597Z",
+    "role": "supplier",
+    "supplier": {
+      "name": "SME Corp UK Limited",
+      "supplierId": 1000
+    },
+    "updatedAt": "2015-07-23T09:33:53.507659Z"
+  }
+}

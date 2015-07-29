@@ -1,3 +1,4 @@
+{% import "toolkit/summary-table.html" as summary %}
 {% from 'macros/page_heading.html' import page_heading %}
 
 {% extends "_base_page.html" %}
@@ -8,7 +9,19 @@ Digital Marketplace admin
 {% set csrf = csrf_token() %}
 
 {% block content %}
-
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      },
+      {
+        "label": "Audits",
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
 <div class="page-container">
     <div class="grid-row">
         <div class="service-title">
@@ -76,58 +89,56 @@ Digital Marketplace admin
             </form>
         </div>
 
-
-        {% if audit_events and audit_events|length > 0 %}
         <div class="grid-column two-third-column">
-            <table class="summary-item-body">
-                <thead class="summary-item-field-headings">
-                <tr>
-                    <th>Supplier</th>
-                    <th>Date</th>
-                    <th>Diff</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody class="summary-item-body">
-                {% for audit_event in audit_events %}
-                <tr class="summary-item-row">
-                    <td class="summary-item-field-name">
-                        {{ audit_event.data.supplierName }}
-                    </td>
-                    <td class="summary-item-field-name">
-                        {{ audit_event.createdAt|timeformat }}
-                        <br/>
-                        {{ audit_event.createdAt|dateformat }}
-                    </td>
-                    <td class="summary-item-field-name">
-                        <a href="{{ url_for(
-                        '.compare',
-                        old_archived_service_id=audit_event.data.oldArchivedServiceId,
-                        new_archived_service_id=audit_event.data.newArchivedServiceId
-                        ) }}">View changes</a>
-                    </td>
-                    <td class="summary-item-field-name">
-                        {% if not audit_event.acknowledged %}
-                        <form action="{{ url_for('.submit_service_update_acknowledgment', audit_id=audit_event.id) }}" method="post">
-                            <div style="display:none;">
-                                <input name="csrf_token" type="hidden" value="{{ csrf }}">
-                                <input name="acknowledged" type="hidden" value="{{ acknowledged }}">
-                                <input name="audit_date" type="hidden" value="{% if form.audit_date.data %}{{ form.audit_date.data }}{% endif %}">
-                            </div>
-                            <button class="button-secondary">Acknowledge</button>
-                        </form>
-                        {% else %}
-                            {{ audit_event.acknowledgedBy }}
-                            <br/>
-                            {{ audit_event.createdAt|timeformat }}
-                            <br/>
-                            {{ audit_event.createdAt|dateformat }}
-                            {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+            {% call(item) summary.list_table(
+              audit_events,
+              caption="Audit events",
+              empty_message="No audit events found",
+              field_headings=[
+                'Supplier',
+                'Date',
+                summary.hidden_field_heading("Changes"),
+                summary.hidden_field_heading("Action")
+              ],
+              field_headings_visible=True
+            ) %}
+              {% call summary.row() %}
+                {{ summary.field_name(item.data.supplierName) }}
+                {% call summary.field() %}
+                  {{ item.createdAt|timeformat }}
+                  <br/>
+                  {{ item.createdAt|dateformat }}
+                {% endcall %}
+                {{ summary.edit_link(
+                  "View changes",
+                  url_for(
+                    '.compare',
+                    old_archived_service_id=item.data.oldArchivedServiceId,
+                    new_archived_service_id=item.data.newArchivedServiceId
+                  )
+                ) }}
+                {% call summary.field(action=True) %}
+
+                  {% if not item.acknowledged %}
+                    <form action="{{ url_for('.submit_service_update_acknowledgment', audit_id=item.id) }}" method="post">
+                        <div style="display:none;">
+                            <input name="csrf_token" type="hidden" value="{{ csrf }}">
+                            <input name="acknowledged" type="hidden" value="{{ acknowledged }}">
+                            <input name="audit_date" type="hidden" value="{% if form.audit_date.data %}{{ form.audit_date.data }}{% endif %}">
+                        </div>
+                        <button class="button-secondary">Acknowledge</button>
+                    </form>
+                  {% else %}
+                    {{ item.acknowledgedBy }}
+                    <br/>
+                    {{ item.createdAt|timeformat }}
+                    <br/>
+                    {{ item.createdAt|dateformat }}
+                  {% endif %}
+                {% endcall %}
+              {% endcall %}
+            {% endcall %}
+
             <!--
             <nav role="navigation">
                 <ul class="previous-next-navigation">
@@ -148,9 +159,6 @@ Digital Marketplace admin
                 </ul>
             </nav>
             -->
-            {% else %}
-            No activity for this search
-            {% endif %}
         </div>
     </div>
 </div>

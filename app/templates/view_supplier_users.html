@@ -1,0 +1,133 @@
+{% import "toolkit/summary-table.html" as summary %}
+{% from 'macros/breadcrumb.html' import breadcrumb as breadcrumb %}
+{% from 'macros/page_heading.html' import page_heading %}
+
+{% extends "_base_page.html" %}
+
+{% block page_title %}
+  {{ supplier.name }} – Digital Marketplace admin
+{% endblock %}
+
+{% block content %}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      },
+      {
+        "label": supplier.name
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+  <div class="page-container">
+    {% with heading = "Users" %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
+    <div class='page-section'>
+      {% call(item) summary.list_table(
+        users,
+        caption="Users",
+        empty_message="This supplier has no users on the Digital Marketplace",
+        field_headings=[
+          'Name',
+          'Email address',
+          'Last login',
+          'Last password change',
+          'Locked',
+          summary.hidden_field_heading("Change status")
+        ],
+        field_headings_visible=True
+      ) %}
+        {% call summary.row() %}
+
+          {{ summary.field_name(item.name) }}
+
+          {{ summary.text(item.emailAddress) }}
+
+          {% call summary.field() %}
+            {% if item.loggedInAt %}
+              {{ item.loggedInAt|timeformat }}<br/>
+              {{ item.loggedInAt|dateformat }}
+            {% else %}
+              Never
+            {% endif %}
+          {% endcall %}
+
+          {% call summary.field() %}
+            {% if item.passwordChangedAt %}
+              {{ item.passwordChangedAt|timeformat }}<br/>
+              {{ item.passwordChangedAt|dateformat }}
+            {% else %}
+              Never
+            {% endif %}
+          {% endcall %}
+
+          {% call summary.field() %}
+            {% if item.locked %}
+              <form action="{{ url_for('.unlock_user', user_id=item.id) }}" method="post">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  {%
+                    with
+                    type = "secondary",
+                    label = "Unlock"
+                  %}
+                    {% include "toolkit/button.html" %}
+                  {% endwith %}
+              </form>
+            {% else %}
+              No
+            {% endif %}
+          {% endcall %}
+
+          {% call summary.field() %}
+            {% if item.active %}
+              <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                {%
+                  with
+                  type = "destructive",
+                  label = "Deactivate"
+                %}
+                  {% include "toolkit/button.html" %}
+                {% endwith %}
+              </form>
+            {% else %}
+              <form action="{{ url_for('.activate_user', user_id=item.id) }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                {%
+                  with
+                  type = "secondary",
+                  label = "Activate"
+                %}
+                  {% include "toolkit/button.html" %}
+                {% endwith %}
+              </form>
+            {% endif %}
+          {% endcall %}
+
+        {% endcall %}
+      {% endcall %}
+    </div>
+    <div class='page-section'>
+      <form>
+          {%
+            with
+            question = "Invite new user",
+            name = "invite-user"
+          %}
+            {% include "toolkit/forms/textbox.html" %}
+          {% endwith %}
+          {%
+            with
+            type = "save",
+            label = "Send invitation"
+          %}
+            {% include "toolkit/button.html" %}
+          {% endwith %}
+      </form>
+    </div>
+  </div>
+{% endblock %}

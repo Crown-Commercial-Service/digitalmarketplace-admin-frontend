@@ -1,7 +1,9 @@
 import mock
 import re
+import os
 
 from dmutils.user import User
+from flask import json
 
 from app import create_app
 from app import login_manager
@@ -37,10 +39,29 @@ class BaseApplicationTest(TestCase):
         self._default_suffix_patch.stop()
         login_manager.user_loader(self._user_callback)
 
+    def load_example_listing(self, name):
+        file_path = os.path.join("example_responses", "{}.json".format(name))
+        with open(file_path) as f:
+            return json.load(f)
+
     @staticmethod
     def strip_all_whitespace(content):
         pattern = re.compile(r'\s+')
         return re.sub(pattern, '', content)
+
+
+class Response:
+    def __init__(self, status_code=503, message=None):
+        self._status_code = status_code
+        self._message = message
+
+    @property
+    def message(self):
+        return self._message
+
+    @property
+    def status_code(self):
+        return self._status_code
 
 
 class LoggedInApplicationTest(BaseApplicationTest):
@@ -53,8 +74,8 @@ class LoggedInApplicationTest(BaseApplicationTest):
                     'emailAddress': 'test@example.com',
                     'role': 'admin',
                     'locked': False,
-                    'active': True,
-                    'passwordChangedAt': '2015-01-01T00:00:00Z'
+                    'passwordChangedAt': '2015-01-01T00:00:00Z',
+                    'active': True
                 }
             }
         }

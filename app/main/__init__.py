@@ -4,7 +4,7 @@ from flask import Blueprint
 main = Blueprint('main', __name__)
 
 from . import errors
-from .views import login, service_updates, services
+from .views import login, service_updates, services, suppliers
 
 
 @main.after_request

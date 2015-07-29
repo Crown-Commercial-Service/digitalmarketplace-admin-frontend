@@ -1,0 +1,34 @@
+{
+  "suppliers": {
+    "clients": [],
+    "contactInformation": [
+      {
+        "id": 2,
+        "website": "supplier.dmdev",
+        "email": "supplier@user.dmdev",
+        "contactName": "Supplier Person",
+        "phoneNumber": "0800123123",
+        "address1": "1 Street",
+        "address2": "2 Building",
+        "city": "Supplierville",
+        "country": "Supplierland",
+        "postcode": "11 AB",
+        "links": {
+          "self": "http://localhost:5000/suppliers/1234/contact-information/1234"
+        }
+      }
+    ],
+    "description": "Supplier Description",
+    "dunsNumber": "1234",
+    "eSourcingId": "1234",
+    "id": 1234,
+    "links": {
+      "self": "http://localhost:5000/suppliers/1234"
+    },
+    "name": "Supplier Name",
+    "service_counts": {
+      "G-Cloud 5": 4,
+      "G-Cloud 6": 5
+    }
+  }
+}

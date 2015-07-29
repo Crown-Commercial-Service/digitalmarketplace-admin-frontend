@@ -1,8 +1,8 @@
 @import "grid_layout";
 @import "colours";
 
-#global-header-bar .header-bar {
-  background: $error-colour;
+#global-header-bar {
+  background: $red;
 }
 
 .page-container {
@@ -21,4 +21,8 @@
 
 .two-third-column {
   @include grid-column(2/3);
+}
+
+.page-section {
+  margin-bottom: $gutter;
 }

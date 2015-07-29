@@ -1,3 +1,4 @@
+{% import "toolkit/summary-table.html" as summary %}
 {% import 'macros/answers.html' as answers %}
 {% from 'macros/breadcrumb.html' import breadcrumb as breadcrumb %}
 {% from 'macros/page_heading.html' import page_heading %}
@@ -13,11 +14,16 @@
       {
         "link": url_for('.index'),
         "label": "Admin home"
+      },
+      {
+        "link": url_for(".find_supplier_services", supplier_id=service_data['supplierId']),
+        "label": service_data['supplierName']
       }
     ]
   %}
     {% include "toolkit/breadcrumb.html" %}
   {% endwith %}
+
   <div class="page-container">
 
 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -60,31 +66,27 @@
       </div>
 
       {% for section in sections %}
-        <h2 class="summary-item-heading">
-          {{section.name}}
-        </h2>
+        {{ summary.heading(section.name) }}
         {% if section.editable %}
-          <p class="summary-item-top-level-action">
-            <a href="{{ url_for('.edit', service_id=service_id, section=section.id) }}">Edit</a>
-          </p>
+          {{ summary.top_link("Edit", url_for('.edit', service_id=service_id, section=section.id)) }}
         {% endif %}
-        <table class="summary-item-body">
-          <thead class="summary-item-field-headings">
-            <tr>
-              <th>Service attribute name</th><th>Service attribute</th>
-            </tr>
-          </thead>
-          <tbody class="summary-item-body">
-            {% for question in section.questions %}
-              <tr class="summary-item-row">
-                <td class="summary-item-field-name">{{ question.question }}</td>
-                <td class="summary-item-field-content">
-                  {{ answers[question.type](service_data[question.id]) }}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        {% call(item) summary.list_table(
+          section.questions,
+          caption="Services",
+          empty_message="This supplier has no services on the Digital Marketplace",
+          field_headings=[
+            'Service attribute name',
+            'Service attribute'
+          ],
+          field_headings_visible=False
+        ) %}
+          {% call summary.row() %}
+            {{ summary.field_name(item.question) }}
+            {% call summary.field() %}
+              {{ answers[item.type](service_data[item.id]) }}
+            {% endcall %}
+          {% endcall %}
+        {% endcall %}
       {% endfor %}
 
       <form action="{{ url_for('.update_service_status', service_id=service_id ) }}" method="post">
