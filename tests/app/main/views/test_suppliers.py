@@ -6,6 +6,7 @@ except ImportError:
     from io import BytesIO as StringIO
 import mock
 from dmutils.apiclient.errors import HTTPError
+from dmutils.email import MandrillException
 from ...helpers import LoggedInApplicationTest, Response
 
 
@@ -29,7 +30,7 @@ class TestSupplierView(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_apis_with_supplier_id(self, data_api_client):
-        data_api_client.get_supplier.return_value = {'suppliers': {}}
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
 
         self.assertEquals(200, response.status_code)
@@ -315,3 +316,195 @@ class TestSupplierView(LoggedInApplicationTest):
             "Edit",
             response.get_data(as_text=True)
         )
+
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_not_acccept_bad_email_on_invite_user(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_users.return_value = self.load_example_listing("users_response")
+
+        response = self.client.post(
+            "/admin/suppliers/1234/invite-user",
+            data={'email_address': 'notatallvalid'},
+            follow_redirects=True
+        )
+
+        self.assertEquals(400, response.status_code)
+        self.assertTrue("Please enter a valid email address" in response.get_data())
+
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_not_allow_missing_email_on_invite_user(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_users.return_value = self.load_example_listing("users_response")
+
+        response = self.client.post(
+            "/admin/suppliers/1234/invite-user",
+            data={},
+            follow_redirects=True
+        )
+
+        self.assertEquals(400, response.status_code)
+        self.assertTrue("Email can not be empty" in response.get_data())
+
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_be_a_404_if_non_int_supplier_id(self, data_api_client):
+
+        response = self.client.post(
+            "/admin/suppliers/bad/invite-user",
+            data={},
+            follow_redirects=True
+        )
+
+        self.assertEquals(404, response.status_code)
+        self.assertFalse(data_api_client.called)
+
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_be_a_404_if_supplier_id_not_found(self, data_api_client):
+
+        data_api_client.get_supplier.side_effect = HTTPError(Response(404))
+
+        response = self.client.post(
+            "/admin/suppliers/1234/invite-user",
+            data={},
+            follow_redirects=True
+        )
+
+        data_api_client.get_supplier.assert_called_with(1234)
+        self.assertFalse(data_api_client.find_users.called)
+        self.assertEquals(404, response.status_code)
+
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_be_a_404_if_supplier_users_not_found(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_users.side_effect = HTTPError(Response(404))
+
+        response = self.client.post(
+            "/admin/suppliers/1234/invite-user",
+            data={},
+            follow_redirects=True
+        )
+
+        data_api_client.get_supplier.assert_called_with(1234)
+        data_api_client.find_users.assert_called_with(1234)
+        self.assertEquals(404, response.status_code)
+
+    @mock.patch('app.main.views.suppliers.generate_token')
+    @mock.patch('app.main.views.suppliers.send_email')
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_call_generate_token_with_correct_params(self, data_api_client, send_email, generate_token):
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_users.return_value = self.load_example_listing("users_response")
+        send_email.return_value = True
+
+        res = self.client.post(
+            "/admin/suppliers/1234/invite-user",
+            data={
+                'email_address': 'this@isvalid.com',
+            })
+
+        generate_token.assert_called_once_with(
+            {
+                "supplier_id": 1234,
+                "supplier_name": "Supplier Name",
+                "email_address": "this@isvalid.com"
+            },
+            'KEY',
+            'SALT'
+        )
+
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_id=1234')
+
+    @mock.patch('app.main.views.suppliers.generate_token')
+    @mock.patch('app.main.views.suppliers.send_email')
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_not_send_email_if_bad_supplier_id(self, data_api_client, send_email, generate_token):
+        data_api_client.get_supplier.side_effect = HTTPError(Response(404))
+        data_api_client.find_users.side_effect = HTTPError(Response(404))
+
+        res = self.client.post(
+            "/admin/suppliers/1234/invite-user",
+            data={
+                'email_address': 'this@isvalid.com',
+            })
+
+        self.assertFalse(data_api_client.find_users.called)
+        self.assertFalse(send_email.called)
+        self.assertFalse(generate_token.called)
+        self.assertEqual(res.status_code, 404)
+
+    @mock.patch('app.main.views.suppliers.send_email')
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_call_send_email_with_correct_params(self, data_api_client, send_email):
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_users.return_value = self.load_example_listing("users_response")
+
+        res = self.client.post(
+            "/admin/suppliers/1234/invite-user",
+            data={
+                'email_address': 'this@isvalid.com',
+            }
+        )
+
+        send_email.assert_called_once_with(
+            'this@isvalid.com',
+            mock.ANY,
+            'MANDRILL',
+            'Your Digital Marketplace invitation',
+            'enquiries@digitalmarketplace.service.gov.uk',
+            'Digital Marketplace Admin',
+            ["user-invite"]
+        )
+
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_id=1234')
+
+    @mock.patch('app.main.views.suppliers.generate_token')
+    @mock.patch('app.main.views.suppliers.render_template')
+    @mock.patch('app.main.views.suppliers.send_email')
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_call_render_template_with_correct_params(self, data_api_client,
+                                                             send_email, render_template, generate_token):
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_users.return_value = self.load_example_listing("users_response")
+        send_email.return_value = True
+        generate_token.return_value = "token"
+
+        res = self.client.post(
+            "/admin/suppliers/1234/invite-user",
+            data={
+                'email_address': 'this@isvalid.com',
+            }
+        )
+
+        render_template.assert_called_once_with(
+            "emails/invite_user_email.html",
+            url="http://localhost/suppliers/create-user/token",
+            supplier="Supplier Name"
+        )
+
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_id=1234')
+
+    @mock.patch('app.main.views.suppliers.send_email')
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_be_a_503_if_email_fails(self, data_api_client, send_email):
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_users.return_value = self.load_example_listing("users_response")
+        send_email.side_effect = MandrillException("Arrrgh")
+        res = self.client.post(
+            "/admin/suppliers/1234/invite-user",
+            data={
+                'email_address': 'this@isvalid.com',
+            })
+
+        send_email.assert_called_once_with(
+            'this@isvalid.com',
+            mock.ANY,
+            'MANDRILL',
+            'Your Digital Marketplace invitation',
+            'enquiries@digitalmarketplace.service.gov.uk',
+            'Digital Marketplace Admin',
+            ["user-invite"]
+        )
+
+        self.assertEqual(res.status_code, 503)

@@ -46,3 +46,10 @@ class LoginForm(Form):
     password = PasswordField('Password', validators=[
         DataRequired(message='Please enter your password')
     ])
+
+
+class EmailAddressForm(Form):
+    email_address = StringField('Email address', validators=[
+        DataRequired(message="Email can not be empty"),
+        Email(message="Please enter a valid email address")
+    ])
