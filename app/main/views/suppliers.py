@@ -86,7 +86,7 @@ def invite_user(supplier_id):
                 "email_address": form.email_address.data
             },
             current_app.config['SECRET_KEY'],
-            current_app.config['SALT']
+            current_app.config['INVITE_EMAIL_SALT']
         )
 
         url = "{}{}/{}".format(

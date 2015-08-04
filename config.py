@@ -41,7 +41,7 @@ class Config(object):
     RAISE_ERROR_ON_MISSING_FEATURES = True
 
     SECRET_KEY = os.getenv('DM_PASSWORD_SECRET_KEY')
-    SALT = 'ResetPasswordSalt'
+    INVITE_EMAIL_SALT = 'InviteEmailSalt'
 
     DM_MANDRILL_API_KEY = None
     INVITE_EMAIL_NAME = 'Digital Marketplace Admin'
@@ -68,7 +68,7 @@ class Test(Config):
 
     DM_LOG_LEVEL = 'CRITICAL'
     SECRET_KEY = 'KEY'
-    SALT = 'SALT'
+    INVITE_EMAIL_SALT = 'SALT'
     DM_MANDRILL_API_KEY = "MANDRILL"
 
 
