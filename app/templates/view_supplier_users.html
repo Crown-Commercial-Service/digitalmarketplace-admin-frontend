@@ -24,9 +24,34 @@ with items = [
 {% endwith %}
 
 <div class="page-container">
+
     {% with heading = "Users" %}
     {% include "toolkit/page-heading.html" %}
     {% endwith %}
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    {% if category == 'error' %}
+      <div class="banner-destructive-without-action">
+    {% elif category == 'success' %}
+      <div class="banner-success-without-action">
+    {% endif %}
+    {% if message == 'user_invited' %}
+    <p class="banner-message">
+        User invited
+    </p>
+    {% elif message == 'user_not_invited' %}
+    <p class="banner-message">
+        Not Invited
+    </p>
+    {% endif %}
+          </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
     <div class='page-section'>
         {% call(item) summary.list_table(
         users,
@@ -112,6 +137,8 @@ with items = [
         {% endcall %}
         {% endcall %}
     </div>
+
+
 
     <div class='page-section'>
         <form action="{{ url_for('.invite_user', supplier_id=supplier.id) }}" method="post">
