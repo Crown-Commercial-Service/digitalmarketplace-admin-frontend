@@ -97,6 +97,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,
+            'frameworkSlug': 'g-cloud-7',
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
             'serviceDefinitionDocumentURL': "http://assets/documents/1/2-service-definition.pdf",  # noqa
             'termsAndConditionsDocumentURL': "http://assets/documents/1/2-terms-and-conditions.pdf",  # noqa
@@ -114,8 +115,8 @@ class TestServiceEdit(LoggedInApplicationTest):
 
         data_api_client.get_service.assert_called_with('1')
         data_api_client.update_service.assert_called_with(1, {
-            'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
-            'sfiaRateDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-sfia-rate-card-2015-01-01-1200.pdf',  # noqa
+            'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
+            'sfiaRateDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/2/1-sfia-rate-card-2015-01-01-1200.pdf',  # noqa
         }, 'test@example.com', 'admin app')
 
         self.assertEquals(302, response.status_code)
@@ -126,6 +127,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,
+            'frameworkSlug': 'g-cloud-7',
             'lot': 'SCS',
             'serviceDefinitionDocumentURL': "http://assets/documents/1/2-service-definition.pdf",  # noqa
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
@@ -143,7 +145,7 @@ class TestServiceEdit(LoggedInApplicationTest):
 
         data_api_client.get_service.assert_called_with('1')
         data_api_client.update_service.assert_called_with(1, {
-            'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/documents/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
+            'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
         }, 'test@example.com', 'admin app')
 
         self.assertIn(b'Your document is not in an open format', response.data)
@@ -206,6 +208,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,
+            'frameworkSlug': 'g-cloud-7',
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
             'sfiaRateDocumentURL': None
         }}
