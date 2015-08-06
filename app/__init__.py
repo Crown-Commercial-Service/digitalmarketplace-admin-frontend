@@ -75,4 +75,4 @@ def create_app(config_name):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.load_user(user_id)
+    return User.load_user(data_api_client, user_id)
