@@ -40,7 +40,7 @@ class Config(object):
     # Feature Flags
     RAISE_ERROR_ON_MISSING_FEATURES = True
 
-    SECRET_KEY = os.getenv('DM_PASSWORD_SECRET_KEY')
+    SHARED_EMAIL_KEY = os.getenv('DM_SHARED_EMAIL_KEY')
     INVITE_EMAIL_SALT = 'InviteEmailSalt'
 
     DM_MANDRILL_API_KEY = None
@@ -67,7 +67,7 @@ class Test(Config):
     SECRET_KEY = "test_secret"
 
     DM_LOG_LEVEL = 'CRITICAL'
-    SECRET_KEY = 'KEY'
+    SHARED_EMAIL_KEY = 'KEY'
     INVITE_EMAIL_SALT = 'SALT'
     DM_MANDRILL_API_KEY = "MANDRILL"
 

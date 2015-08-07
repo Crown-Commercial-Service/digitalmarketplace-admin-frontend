@@ -85,7 +85,7 @@ def invite_user(supplier_id):
                 "supplier_name": suppliers['suppliers']['name'],
                 "email_address": form.email_address.data
             },
-            current_app.config['SECRET_KEY'],
+            current_app.config['SHARED_EMAIL_KEY'],
             current_app.config['INVITE_EMAIL_SALT']
         )
 

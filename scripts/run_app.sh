@@ -12,7 +12,7 @@ export DM_DATA_API_AUTH_TOKEN=${DM_DATA_API_AUTH_TOKEN:=myToken}
 export DM_ADMIN_FRONTEND_COOKIE_SECRET=${DM_ADMIN_FRONTEND_COOKIE_SECRET:=secret}
 export DM_S3_DOCUMENT_BUCKET=${DM_S3_DOCUMENT_BUCKET:=admin-frontend-dev-documents}
 export DM_MANDRILL_API_KEY=${DM_MANDRILL_API_KEY:=not_a_real_key}
-export DM_PASSWORD_SECRET_KEY=${DM_PASSWORD_SECRET_KEY:=verySecretKey}
+export DM_SHARED_EMAIL_KEY=${DM_SHARED_EMAIL_KEY:=verySecretKey}
 
 echo "Environment variables in use:"
 env | grep DM_

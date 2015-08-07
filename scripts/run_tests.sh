@@ -8,6 +8,7 @@
 # Use default environment vars for localhost if not already set
 export DM_DATA_API_URL=${DM_DATA_API_URL:=http://localhost:5000}
 export DM_DATA_API_AUTH_TOKEN=${DM_DATA_API_AUTH_TOKEN:=myToken}
+export DM_SHARED_EMAIL_KEY=${DM_SHARED_EMAIL_KEY:=notVerySecretKey}
 export DM_ENVIRONMENT="test"
 
 echo "Environment variables in use:"
