@@ -329,7 +329,7 @@ class TestSupplierView(LoggedInApplicationTest):
         )
 
         self.assertEquals(400, response.status_code)
-        self.assertTrue("Please enter a valid email address" in response.get_data())
+        self.assertTrue("Please enter a valid email address" in response.get_data(as_text=True))
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_not_allow_missing_email_on_invite_user(self, data_api_client):
@@ -343,7 +343,7 @@ class TestSupplierView(LoggedInApplicationTest):
         )
 
         self.assertEquals(400, response.status_code)
-        self.assertTrue("Email can not be empty" in response.get_data())
+        self.assertTrue("Email can not be empty" in response.get_data(as_text=True))
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_be_a_404_if_non_int_supplier_id(self, data_api_client):
