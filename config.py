@@ -21,7 +21,7 @@ class Config(object):
     DOCUMENTS_URL = 'https://assets.dev.digitalmarketplace.service.gov.uk'
     DM_DATA_API_URL = os.getenv('DM_DATA_API_URL')
     DM_DATA_API_AUTH_TOKEN = os.getenv('DM_DATA_API_AUTH_TOKEN')
-    SECRET_KEY = os.getenv('DM_PASSWORD_SECRET_KEY')
+    SECRET_KEY = os.getenv('DM_ADMIN_FRONTEND_COOKIE_SECRET')
 
     STATIC_URL_PATH = '/admin/static'
     ASSET_PATH = STATIC_URL_PATH + '/'
