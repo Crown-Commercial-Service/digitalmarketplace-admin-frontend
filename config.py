@@ -81,6 +81,7 @@ class Development(Config):
 class Live(Config):
     DEBUG = False
     AUTHENTICATION = True
+    DM_HTTP_PROTO = 'https'
     DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
 
 
