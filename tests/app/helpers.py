@@ -29,7 +29,7 @@ class BaseApplicationTest(TestCase):
         def user_loader(user_id):
             if user_id:
                 return User(
-                    user_id, 'test@example.com', None, None, False, True
+                    user_id, 'test@example.com', None, None, False, True, 'tester'
                 )
 
         login_manager.user_loader(user_loader)
@@ -75,7 +75,8 @@ class LoggedInApplicationTest(BaseApplicationTest):
                     'role': 'admin',
                     'locked': False,
                     'passwordChangedAt': '2015-01-01T00:00:00Z',
-                    'active': True
+                    'active': True,
+                    'name': 'tester'
                 }
             }
         }
@@ -84,7 +85,7 @@ class LoggedInApplicationTest(BaseApplicationTest):
             **patch_config
         )
         self._data_api_client.start()
-        self.client.post('/admin/login', data={
+        res = self.client.post('/admin/login', data={
             'email_address': 'test@example.com',
             'password': '1234567890'
         })

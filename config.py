@@ -40,6 +40,15 @@ class Config(object):
     # Feature Flags
     RAISE_ERROR_ON_MISSING_FEATURES = True
 
+    SHARED_EMAIL_KEY = os.getenv('DM_SHARED_EMAIL_KEY')
+    INVITE_EMAIL_SALT = 'InviteEmailSalt'
+
+    DM_MANDRILL_API_KEY = None
+    INVITE_EMAIL_NAME = 'Digital Marketplace Admin'
+    INVITE_EMAIL_FROM = 'enquiries@digitalmarketplace.service.gov.uk'
+    INVITE_EMAIL_SUBJECT = 'Your Digital Marketplace invitation'
+    CREATE_USER_PATH = 'suppliers/create-user'
+
     @staticmethod
     def init_app(app):
         repo_root = os.path.abspath(os.path.dirname(__file__))
@@ -58,6 +67,9 @@ class Test(Config):
     SECRET_KEY = "test_secret"
 
     DM_LOG_LEVEL = 'CRITICAL'
+    SHARED_EMAIL_KEY = 'KEY'
+    INVITE_EMAIL_SALT = 'SALT'
+    DM_MANDRILL_API_KEY = "MANDRILL"
 
 
 class Development(Config):
