@@ -6,6 +6,7 @@ from . import get_template_data
 from ... import data_api_client
 from ..forms import EmailAddressForm
 from dmutils.apiclient.errors import HTTPError
+from dmutils.audit import AuditTypes
 from dmutils.email import send_email, \
     generate_token, MandrillException
 
@@ -119,6 +120,13 @@ def invite_user(supplier_id):
                     current_user.supplier_id)
             )
             abort(503, "Failed to send user invite reset")
+
+        data_api_client.create_audit_event(
+            audit_type=AuditTypes.invite_user,
+            user=current_user.email_address,
+            object_type='suppliers',
+            object_id=supplier_id,
+            data={'invitedEmail': form.email_address.data})
 
         flash('user_invited', 'success')
         return redirect(url_for('.find_supplier_users', supplier_id=supplier_id))

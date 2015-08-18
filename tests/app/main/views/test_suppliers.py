@@ -7,6 +7,7 @@ except ImportError:
 import mock
 from dmutils.apiclient.errors import HTTPError
 from dmutils.email import MandrillException
+from dmutils.audit import AuditTypes
 from ...helpers import LoggedInApplicationTest, Response
 
 
@@ -410,6 +411,29 @@ class TestSupplierView(LoggedInApplicationTest):
             'KEY',
             'SALT'
         )
+
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_id=1234')
+
+    @mock.patch('app.main.views.suppliers.generate_token')
+    @mock.patch('app.main.views.suppliers.send_email')
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_create_audit_event(self, data_api_client, send_email, generate_token):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.find_users.return_value = self.load_example_listing('users_response')
+
+        res = self.client.post(
+            '/admin/suppliers/1234/invite-user',
+            data={
+                'email_address': 'email@example.com'
+            })
+
+        data_api_client.create_audit_event.assert_called_once_with(
+            audit_type=AuditTypes.invite_user,
+            user='test@example.com',
+            object_type='suppliers',
+            object_id=1234,
+            data={'invitedEmail': 'email@example.com'})
 
         self.assertEqual(res.status_code, 302)
         self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_id=1234')
