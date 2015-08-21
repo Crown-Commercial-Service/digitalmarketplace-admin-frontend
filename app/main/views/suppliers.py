@@ -5,6 +5,7 @@ from .. import main
 from . import get_template_data
 from ... import data_api_client
 from ..forms import EmailAddressForm
+from ..auth import role_required
 from dmutils.apiclient.errors import HTTPError
 from dmutils.audit import AuditTypes
 from dmutils.email import send_email, \
@@ -30,6 +31,7 @@ def find_supplier_users():
 
 @main.route('/suppliers/users/<int:user_id>/unlock', methods=['POST'])
 @login_required
+@role_required('admin')
 def unlock_user(user_id):
     user = data_api_client.update_user(user_id, locked=False)
     return redirect(url_for('.find_supplier_users', supplier_id=user['users']['supplier']['supplierId']))
@@ -37,6 +39,7 @@ def unlock_user(user_id):
 
 @main.route('/suppliers/users/<int:user_id>/activate', methods=['POST'])
 @login_required
+@role_required('admin')
 def activate_user(user_id):
     user = data_api_client.update_user(user_id, active=True)
     return redirect(url_for('.find_supplier_users', supplier_id=user['users']['supplier']['supplierId']))
@@ -44,6 +47,7 @@ def activate_user(user_id):
 
 @main.route('/suppliers/users/<int:user_id>/deactivate', methods=['POST'])
 @login_required
+@role_required('admin')
 def deactivate_user(user_id):
     user = data_api_client.update_user(user_id, active=False)
     return redirect(url_for('.find_supplier_users', supplier_id=user['users']['supplier']['supplierId']))
@@ -66,6 +70,7 @@ def find_supplier_services():
 
 @main.route('/suppliers/<int:supplier_id>/invite-user', methods=['POST'])
 @login_required
+@role_required('admin')
 def invite_user(supplier_id):
     form = EmailAddressForm()
 
