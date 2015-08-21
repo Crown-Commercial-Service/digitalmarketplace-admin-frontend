@@ -77,6 +77,7 @@
       {% endfor %}
       </div><!-- end of .diff -->
 
+      {% if current_user.has_role('admin') %}
       <form action="{{ url_for('.update_service_status', service_id=service_data.id ) }}" method="post">
           <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
           <fieldset class="question">
@@ -100,6 +101,7 @@
           </fieldset>
           <button type="submit" class="button-save">Update status</button>
       </form>
+      {% endif %}
 
     {% else %}
     <h1>Error</h1>

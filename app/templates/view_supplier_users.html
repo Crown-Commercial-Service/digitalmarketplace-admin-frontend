@@ -92,7 +92,7 @@
         {% endcall %}
 
         {% call summary.field() %}
-        {% if item.locked %}
+        {% if item.locked and current_user.has_role('admin') %}
         <form action="{{ url_for('.unlock_user', user_id=item.id) }}" method="post">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             {%
@@ -103,6 +103,8 @@
             {% include "toolkit/button.html" %}
             {% endwith %}
         </form>
+        {% elif item.locked %}
+            Yes
         {% else %}
             No
         {% endif %}
@@ -110,27 +112,35 @@
 
         {% call summary.field() %}
         {% if item.active %}
-        <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            {%
-                with
-                type = "destructive",
-                label = "Deactivate"
-            %}
-            {% include "toolkit/button.html" %}
-            {% endwith %}
-        </form>
+          {% if current_user.has_role('admin') %}
+            <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                {%
+                    with
+                    type = "destructive",
+                    label = "Deactivate"
+                %}
+                {% include "toolkit/button.html" %}
+                {% endwith %}
+            </form>
+          {% else %}
+            Active
+          {% endif %}
         {% else %}
-        <form action="{{ url_for('.activate_user', user_id=item.id) }}" method="post">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            {%
-                with
-                type = "secondary",
-                label = "Activate"
-            %}
-            {% include "toolkit/button.html" %}
-            {% endwith %}
-        </form>
+          {% if current_user.has_role('admin') %}
+            <form action="{{ url_for('.activate_user', user_id=item.id) }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                {%
+                    with
+                    type = "secondary",
+                    label = "Activate"
+                %}
+                {% include "toolkit/button.html" %}
+                {% endwith %}
+            </form>
+          {% else %}
+            Deactivated
+          {% endif %}
         {% endif %}
         {% endcall %}
 
@@ -139,7 +149,7 @@
     </div>
 
 
-
+    {% if current_user.has_role('admin') %}
     <div class='page-section'>
         <form action="{{ url_for('.invite_user', supplier_id=supplier.id) }}" method="post">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -164,5 +174,6 @@
            <button class="button-save">Send invitation</button>
         </form>
     </div>
+    {% endif %}
 </div>
 {% endblock %}
