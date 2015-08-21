@@ -14,6 +14,12 @@ def page_not_found(e):
                            **main.config['BASE_TEMPLATE_DATA']), 404
 
 
+@main.app_errorhandler(403)
+def page_not_found(e):
+    return render_template("errors/403.html",
+                           **main.config['BASE_TEMPLATE_DATA']), 403
+
+
 @main.app_errorhandler(500)
 def exception(e):
     return render_template("errors/500.html",

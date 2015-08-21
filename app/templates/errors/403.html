@@ -1,0 +1,14 @@
+{% extends "_base_page.html" %}
+
+{% block page_title %}Access denied - 403 – Digital Marketplace{% endblock %}
+
+{% block content %}
+  <div class="page-container">
+    {% with heading = "You don’t have permission to perform this action" %}
+      {% include 'toolkit/page-heading.html' %}
+    {% endwith %}
+    <p>
+      Email <a href="mailto:enquiries@digitalmarketplace.service.gov.uk?subject=Digital%20Marketplace%20feedback" title="Please send feedback to enquiries@digitalmarketplace.service.gov.uk">enquiries@digitalmarketplace.service.gov.uk</a> if you need to access this content.
+    </p>
+  </div>
+{% endblock %}
