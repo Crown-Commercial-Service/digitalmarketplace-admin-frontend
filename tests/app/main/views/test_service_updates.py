@@ -2,6 +2,7 @@ import mock
 
 from datetime import datetime
 from app import DISPLAY_DATE_FORMAT
+from dmutils.audit import AuditTypes
 
 from ...helpers import LoggedInApplicationTest
 
@@ -126,7 +127,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         )
         data_api_client.find_audit_events.assert_called_with(
             audit_date='2006-01-01',
-            audit_type='update_service',
+            audit_type=AuditTypes.update_service,
             acknowledged='false')
 
     @mock.patch('app.main.views.service_updates.data_api_client')
@@ -147,7 +148,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         )
         data_api_client.find_audit_events.assert_called_with(
             audit_date=None,
-            audit_type='update_service',
+            audit_type=AuditTypes.update_service,
             acknowledged='false')
 
     @mock.patch('app.main.views.service_updates.data_api_client')
@@ -158,7 +159,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         self.assertEquals(200, response.status_code)
 
         data_api_client.find_audit_events.assert_called_with(
-            audit_type='update_service',
+            audit_type=AuditTypes.update_service,
             audit_date='2006-01-01',
             acknowledged='all')
 
@@ -170,7 +171,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         self.assertEquals(200, response.status_code)
 
         data_api_client.find_audit_events.assert_called_with(
-            audit_type='update_service',
+            audit_type=AuditTypes.update_service,
             audit_date=None,
             acknowledged='all')
 
@@ -259,7 +260,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         )
         data_api_client.find_audit_events.assert_called_with(
             audit_date='2006-01-01',
-            audit_type='update_service',
+            audit_type=AuditTypes.update_service,
             acknowledged='false')
 
     @mock.patch('app.main.views.service_updates.data_api_client')
@@ -326,7 +327,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             self._replace_whitespace(response.get_data(as_text=True))
         )
         data_api_client.find_audit_events.assert_called_with(
-            audit_type='update_service',
+            audit_type=AuditTypes.update_service,
             acknowledged='false',
             audit_date='2010-01-01')
 

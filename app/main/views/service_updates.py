@@ -18,7 +18,7 @@ def service_update_audits():
 
     if form.validate():
         audit_events = data_api_client.find_audit_events(
-            audit_type=AuditTypes.update_service.value,
+            audit_type=AuditTypes.update_service,
             acknowledged=form.default_acknowledged(),
             audit_date=form.format_date()
         )
