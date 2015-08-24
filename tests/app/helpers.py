@@ -29,7 +29,7 @@ class BaseApplicationTest(TestCase):
         def user_loader(user_id):
             if user_id:
                 return User(
-                    user_id, 'test@example.com', None, None, False, True, 'tester'
+                    user_id, 'test@example.com', None, None, False, True, 'tester', 'admin'
                 )
 
         login_manager.user_loader(user_loader)
