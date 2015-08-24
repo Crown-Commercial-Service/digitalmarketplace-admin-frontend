@@ -1,0 +1,119 @@
+{% import "toolkit/summary-table.html" as summary %}
+{% from 'macros/breadcrumb.html' import breadcrumb as breadcrumb %}
+
+{% extends "_base_page.html" %}
+{% block page_title %}
+  G-Cloud 7 Statistics – Digital Marketplace admin
+{% endblock %}
+
+{% block content %}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+
+  <div class="page-container">
+    {%
+      with
+      context = "G-Cloud 7",
+      heading = "Statistics"
+    %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
+
+    {{ summary.heading("Services by status") }}
+    {% call(item) summary.list_table(
+      services_by_status,
+      empty_message="Data not available",
+      caption="Services by status",
+      field_headings=[
+        "Draft",
+        "Complete",
+        "Submitted",
+      ],
+      field_headings_visible=True
+    ) %}
+      {% call summary.row() %}
+        {% call summary.field(first=True) %}
+          {{ item.draft }}
+        {% endcall %}
+        {{ summary.text(item.complete) }}
+        {{ summary.text(item.submitted) }}
+      {% endcall %}
+    {% endcall %}
+
+    {{ summary.heading("Services by lot") }}
+    {% call(item) summary.list_table(
+      services_by_lot,
+      empty_message="Data not available",
+      caption="Services by lot",
+      field_headings=[
+        "Infrastructure as a Service",
+        "Software as a Service",
+        "Platform as a Service",
+        "Specialist cloud services"
+      ],
+      field_headings_visible=True
+    ) %}
+      {% call summary.row() %}
+        {% call summary.field(first=True) %}
+          {{ item.IaaS }}
+        {% endcall %}
+        {{ summary.text(item.PaaS) }}
+        {{ summary.text(item.SaaS) }}
+        {{ summary.text(item.SCS) }}
+      {% endcall %}
+    {% endcall %}
+
+    {{ summary.heading("Suppliers") }}
+    {% call(item) summary.list_table(
+      interested_suppliers,
+      empty_message="Data not available",
+      caption="Suppliers",
+      field_headings=[
+        "Interested",
+        "Have made declaration only",
+        "Have completed services only",
+        "Have a valid submission",
+      ],
+      field_headings_visible=True
+    ) %}
+      {% call summary.row() %}
+        {% call summary.field(first=True) %}
+          {{ item.interested_only }}
+        {% endcall %}
+        {{ summary.text(item.declaration_only) }}
+        {{ summary.text(item.completed_services_only) }}
+        {{ summary.text(item.valid_submission) }}
+      {% endcall %}
+    {% endcall %}
+
+    {{ summary.heading("Users") }}
+    {% call(item) summary.list_table(
+      users,
+      empty_message="Data not available",
+      caption="Users",
+      field_headings=[
+        "Never logged in",
+        "Logged in not recently",
+        "Logged in recently",
+      ],
+      field_headings_visible=True
+    ) %}
+      {% call summary.row() %}
+        {% call summary.field(first=True) %}
+          {{ item.never_logged_in }}
+        {% endcall %}
+        {{ summary.text(item.not_logged_in_recently) }}
+        {{ summary.text(item.logged_in_recently) }}
+      {% endcall %}
+    {% endcall %}
+
+  </div>
+{% endblock %}
