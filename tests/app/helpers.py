@@ -25,14 +25,13 @@ class BaseApplicationTest(TestCase):
         self._default_suffix_patch.start()
 
         self._user_callback = login_manager.user_callback
+        login_manager.user_loader(self.user_loader)
 
-        def user_loader(user_id):
-            if user_id:
-                return User(
-                    user_id, 'test@example.com', None, None, False, True, 'tester', 'admin'
-                )
-
-        login_manager.user_loader(user_loader)
+    def user_loader(self, user_id):
+        if user_id:
+            return User(
+                user_id, 'test@example.com', None, None, False, True, 'tester', 'admin'
+            )
 
     def tearDown(self):
         self._s3_patch.stop()

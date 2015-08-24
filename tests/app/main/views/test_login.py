@@ -7,7 +7,9 @@ try:
 except ImportError:
     from urllib.parse import urlsplit
 
-from ...helpers import BaseApplicationTest
+from dmutils.user import User
+
+from ...helpers import BaseApplicationTest, LoggedInApplicationTest
 
 
 def user_data(role='admin'):
@@ -184,3 +186,47 @@ class TestLoginFormsNotAutofillable(BaseApplicationTest):
             "/admin/login",
             "Administrator login"
         )
+
+
+class TestRoleRequired(LoggedInApplicationTest):
+    def user_loader(self, user_id):
+        if user_id:
+            return User(
+                user_id, 'test@example.com', None, None, False, True, 'tester', 'admin-ccs'
+            )
+
+    def test_admin_ccs_can_view_admin_dashboard(self):
+        response = self.client.get('/admin')
+        assert_equal(200, response.status_code)
+
+    def test_admin_role_required_service_section_view(self):
+        response = self.client.get('/admin/services/1/edit/documents')
+        assert_equal(403, response.status_code)
+
+    def test_admin_role_required_service_section_edit(self):
+        response = self.client.post('/admin/services/1/edit/documents')
+        assert_equal(403, response.status_code)
+
+    def test_admin_role_required_service_status_edit(self):
+        response = self.client.post('/admin/services/status/1')
+        assert_equal(403, response.status_code)
+
+    def test_admin_role_required_audit_acknowledge(self):
+        response = self.client.post('/admin/service-updates/1/acknowledge')
+        assert_equal(403, response.status_code)
+
+    def test_admin_role_required_unlock_user(self):
+        response = self.client.post('/admin/suppliers/users/1/unlock')
+        assert_equal(403, response.status_code)
+
+    def test_admin_role_required_activate_user(self):
+        response = self.client.post('/admin/suppliers/users/1/activate')
+        assert_equal(403, response.status_code)
+
+    def test_admin_role_required_deactivate_user(self):
+        response = self.client.post('/admin/suppliers/users/1/deactivate')
+        assert_equal(403, response.status_code)
+
+    def test_admin_role_required_invite_user(self):
+        response = self.client.post('/admin/suppliers/1/invite-user')
+        assert_equal(403, response.status_code)
