@@ -11,9 +11,7 @@ from dmutils.audit import AuditTypes
 from ...helpers import LoggedInApplicationTest, Response
 
 
-class TestSupplierView(LoggedInApplicationTest):
-
-    # Supplier Users
+class TestSupplierUsersView(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_404_if_no_supplier_does_not_exist(self, data_api_client):
@@ -186,7 +184,8 @@ class TestSupplierView(LoggedInApplicationTest):
         self.assertEquals(302, response.status_code)
         self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
 
-    # Supplier Services
+
+class TestSupplierServicesView(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_404_if_supplier_does_not_exist_on_services(self, data_api_client):
@@ -317,6 +316,9 @@ class TestSupplierView(LoggedInApplicationTest):
             "Edit",
             response.get_data(as_text=True)
         )
+
+
+class TestSupplierInviteUserView(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_not_acccept_bad_email_on_invite_user(self, data_api_client):
