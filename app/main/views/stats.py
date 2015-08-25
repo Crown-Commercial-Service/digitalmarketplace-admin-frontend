@@ -1,4 +1,4 @@
-from flask import render_template, abort
+from flask import render_template, abort, request
 from flask_login import login_required, current_user, flash
 
 from dmutils.apiclient import HTTPError
@@ -20,6 +20,7 @@ def view_statistics(framework_slug):
 
     return render_template(
         "view_statistics.html",
+        big_screen_mode=(request.args.get('big_screen_mode') == 'yes'),
         services_by_status=label_and_count(stats['services'], {
             'draft': {
                 'status': 'not-submitted'
