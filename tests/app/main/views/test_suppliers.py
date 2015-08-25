@@ -5,10 +5,40 @@ except ImportError:
     from urllib.parse import urlsplit
     from io import BytesIO as StringIO
 import mock
+from lxml import html
+from nose.tools import assert_equals
 from dmutils.apiclient.errors import HTTPError
 from dmutils.email import MandrillException
 from dmutils.audit import AuditTypes
 from ...helpers import LoggedInApplicationTest, Response
+
+
+@mock.patch('app.main.views.suppliers.data_api_client')
+class TestSuppliersListView(LoggedInApplicationTest):
+
+    def test_should_raise_http_error_from_api(self, data_api_client):
+        data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
+        response = self.client.get('/admin/suppliers')
+        assert_equals(response.status_code, 404)
+
+    def test_should_list_suppliers(self, data_api_client):
+        data_api_client.find_suppliers.return_value = {
+            "suppliers": [
+                {"id": 1234, "name": "Supplier 1"},
+                {"id": 1235, "name": "Supplier 2"},
+            ]
+        }
+        response = self.client.get("/admin/suppliers")
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert_equals(response.status_code, 200)
+        assert_equals(len(document.cssselect('.summary-item-row')), 2)
+
+    def test_should_search_by_prefix(self, data_api_client):
+        data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
+        response = self.client.get("/admin/suppliers?supplier_name_prefix=foo")
+
+        data_api_client.find_suppliers.assert_called_once_with(prefix="foo")
 
 
 class TestSupplierUsersView(LoggedInApplicationTest):
