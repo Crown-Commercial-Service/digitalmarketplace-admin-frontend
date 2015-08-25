@@ -12,6 +12,18 @@ from dmutils.email import send_email, \
     generate_token, MandrillException
 
 
+@main.route('/suppliers', methods=['GET'])
+@login_required
+def find_suppliers():
+    suppliers = data_api_client.find_suppliers(prefix=request.args.get("supplier_name_prefix"))
+
+    return render_template(
+        "view_suppliers.html",
+        suppliers=suppliers['suppliers'],
+        **get_template_data()
+    )
+
+
 @main.route('/suppliers/users', methods=['GET'])
 @login_required
 def find_supplier_users():

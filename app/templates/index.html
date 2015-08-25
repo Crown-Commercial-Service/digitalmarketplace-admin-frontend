@@ -57,5 +57,14 @@
       <input type="text" name="supplier_id" id="supplier_id_for_users" class="text-box">
       <input type="submit" value="Search" class="button-save">
   </form>
+
+  <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+    <label class="question-heading" for="supplier_name_prefix">Find suppliers by name prefix</label>
+    <p class="hint">
+      eg searching for c would give all suppliers starting with c
+    </p>
+    <input type="text" name="supplier_name_prefix" id="supplier_name_prefix" class="text-box">
+    <input type="submit" value="Search" class="button-save">
+  </form>
 </div>
 {% endblock %}

@@ -1,0 +1,49 @@
+{% import "toolkit/summary-table.html" as summary %}
+{% from 'macros/breadcrumb.html' import breadcrumb as breadcrumb %}
+{% from 'macros/page_heading.html' import page_heading %}
+
+{% extends "_base_page.html" %}
+
+{% block content %}
+{%
+    with items = [
+        {
+            "link": url_for('.index'),
+            "label": "Admin home"
+        }
+    ]
+%}
+{% include "toolkit/breadcrumb.html" %}
+{% endwith %}
+
+<div class="page-container">
+
+    {% with heading = "Suppliers" %}
+    {% include "toolkit/page-heading.html" %}
+    {% endwith %}
+
+    <div class="page-section">
+      {% call(item) summary.list_table(
+        suppliers,
+        caption="Suppliers",
+        empty_message="No suppliers were found",
+        field_headings=[
+          "Name",
+          summary.hidden_field_heading("Users"),
+          summary.hidden_field_heading("Services"),
+        ],
+        field_headings_visible=True)
+      %}
+      {% call summary.row() %}
+
+      {{ summary.field_name(item.name) }}
+
+      {{ summary.service_link("Users", url_for(".find_supplier_users", supplier_id=item.id)) }}
+      {{ summary.service_link("Services", url_for(".find_supplier_services", supplier_id=item.id)) }}
+
+      {% endcall %}
+      {% endcall %}
+    </div>
+</div>
+
+{% endblock %}
