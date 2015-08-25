@@ -25,7 +25,7 @@ def process_login():
             form.password.data,
             supplier=False)
 
-        if not user_has_role(user_json, 'admin'):
+        if not any(user_has_role(user_json, role) for role in ['admin', 'admin-ccs']):
             message = "login.fail: Failed to log in: %s"
             current_app.logger.info(message, form.email_address.data)
             flash('no_account', 'error')

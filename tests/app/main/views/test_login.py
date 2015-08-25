@@ -7,26 +7,22 @@ try:
 except ImportError:
     from urllib.parse import urlsplit
 
-from ...helpers import BaseApplicationTest
+from dmutils.user import User
+
+from ...helpers import BaseApplicationTest, LoggedInApplicationTest
 
 
-def authenticate_user(func):
-    @wraps(func)
-    def wrapped(*args, **kwargs):
-        with mock.patch('app.main.views.login.data_api_client') as p:
-            p.authenticate_user.return_value = {
-                'users': {
-                    'id': 12345,
-                    'emailAddress': 'valid@example.com',
-                    'role': 'admin',
-                    'locked': False,
-                    'active': True,
-                    'name': "tester"
-                }
-            }
-            return func(*args, **kwargs)
-
-    return wrapped
+def user_data(role='admin'):
+    return {
+        'users': {
+            'id': 12345,
+            'emailAddress': 'valid@example.com',
+            'role': role,
+            'locked': False,
+            'active': True,
+            'name': "tester"
+        }
+    }
 
 
 class TestLogin(BaseApplicationTest):
@@ -40,8 +36,9 @@ class TestLogin(BaseApplicationTest):
         assert_equal(res.status_code, 200)
         assert_in("Administrator login", res.get_data(as_text=True))
 
-    @authenticate_user
-    def test_valid_login(self):
+    @mock.patch('app.main.views.login.data_api_client')
+    def test_valid_login(self, apiclient):
+        apiclient.authenticate_user.return_value = user_data()
         res = self.client.post('/admin/login', data={
             'email_address': 'valid@email.com',
             'password': '1234567890'
@@ -51,8 +48,9 @@ class TestLogin(BaseApplicationTest):
         res = self.client.get('/admin')
         assert_equal(res.status_code, 200)
 
-    @authenticate_user
-    def test_ok_next_url_redirects_on_login(self):
+    @mock.patch('app.main.views.login.data_api_client')
+    def test_ok_next_url_redirects_on_login(self, apiclient):
+        apiclient.authenticate_user.return_value = user_data()
         res = self.client.post('/admin/login?next=/admin/safe', data={
             'email_address': 'valid@example.com',
             'password': '1234567890',
@@ -60,8 +58,9 @@ class TestLogin(BaseApplicationTest):
         assert_equal(res.status_code, 302)
         assert_equal(urlsplit(res.location).path, '/admin/safe')
 
-    @authenticate_user
-    def test_bad_next_url_takes_user_to_dashboard(self):
+    @mock.patch('app.main.views.login.data_api_client')
+    def test_bad_next_url_takes_user_to_dashboard(self, apiclient):
+        apiclient.authenticate_user.return_value = user_data()
         res = self.client.post('/admin/login?next=http://badness.com', data={
             'email_address': 'valid@example.com',
             'password': '1234567890',
@@ -69,8 +68,9 @@ class TestLogin(BaseApplicationTest):
         assert_equal(res.status_code, 302)
         assert_equal(urlsplit(res.location).path, '/admin')
 
-    @authenticate_user
-    def test_should_have_cookie_on_redirect(self):
+    @mock.patch('app.main.views.login.data_api_client')
+    def test_should_have_cookie_on_redirect(self, apiclient):
+        apiclient.authenticate_user.return_value = user_data()
         with self.app.app_context():
             self.app.config['SESSION_COOKIE_DOMAIN'] = '127.0.0.1'
             self.app.config['SESSION_COOKIE_SECURE'] = True
@@ -83,8 +83,9 @@ class TestLogin(BaseApplicationTest):
             assert_in('HttpOnly', cookie_parts)
             assert_in('Path=/admin', cookie_parts)
 
-    @authenticate_user
-    def test_should_redirect_to_login_on_logout(self):
+    @mock.patch('app.main.views.login.data_api_client')
+    def test_should_redirect_to_login_on_logout(self, apiclient):
+        apiclient.authenticate_user.return_value = user_data()
         self.client.post('/admin/login', data={
             'email_address': 'valid@example.com',
             'password': '1234567890',
@@ -93,8 +94,9 @@ class TestLogin(BaseApplicationTest):
         assert_equal(res.status_code, 302)
         assert_equal(urlsplit(res.location).path, '/admin/login')
 
-    @authenticate_user
-    def test_logout_should_log_user_out(self):
+    @mock.patch('app.main.views.login.data_api_client')
+    def test_logout_should_log_user_out(self, apiclient):
+        apiclient.authenticate_user.return_value = user_data()
         self.client.post('/admin/login', data={
             'email_address': 'valid@example.com',
             'password': '1234567890',
@@ -117,13 +119,7 @@ class TestLogin(BaseApplicationTest):
 
     @mock.patch('app.main.views.login.data_api_client')
     def test_should_return_a_403_if_invalid_role(self, data_api_client):
-        data_api_client.authenticate_user.return_value = {
-            'users': {
-                'id': 12345,
-                'email_address': 'valid@example.com',
-                'role': 'supplier',
-            }
-        }
+        data_api_client.authenticate_user.return_value = user_data(role='supplier')
 
         res = self.client.post('/admin/login', data={
             'email_address': 'valid@example.com',
@@ -131,6 +127,17 @@ class TestLogin(BaseApplicationTest):
         })
 
         assert_equal(res.status_code, 403)
+
+    @mock.patch('app.main.views.login.data_api_client')
+    def test_can_login_with_admin_ccs_role(self, data_api_client):
+        data_api_client.authenticate_user.return_value = user_data(role='admin-ccs')
+
+        res = self.client.post('/admin/login', data={
+            'email_address': 'valid@example.com',
+            'password': '1234567890',
+        })
+
+        assert_equal(res.status_code, 302)
 
     def test_should_be_validation_error_if_no_email_or_password(self):
         res = self.client.post('/admin/login', data={})
@@ -179,3 +186,47 @@ class TestLoginFormsNotAutofillable(BaseApplicationTest):
             "/admin/login",
             "Administrator login"
         )
+
+
+class TestRoleRequired(LoggedInApplicationTest):
+    def user_loader(self, user_id):
+        if user_id:
+            return User(
+                user_id, 'test@example.com', None, None, False, True, 'tester', 'admin-ccs'
+            )
+
+    def test_admin_ccs_can_view_admin_dashboard(self):
+        response = self.client.get('/admin')
+        assert_equal(200, response.status_code)
+
+    def test_admin_role_required_service_section_view(self):
+        response = self.client.get('/admin/services/1/edit/documents')
+        assert_equal(403, response.status_code)
+
+    def test_admin_role_required_service_section_edit(self):
+        response = self.client.post('/admin/services/1/edit/documents')
+        assert_equal(403, response.status_code)
+
+    def test_admin_role_required_service_status_edit(self):
+        response = self.client.post('/admin/services/status/1')
+        assert_equal(403, response.status_code)
+
+    def test_admin_role_required_audit_acknowledge(self):
+        response = self.client.post('/admin/service-updates/1/acknowledge')
+        assert_equal(403, response.status_code)
+
+    def test_admin_role_required_unlock_user(self):
+        response = self.client.post('/admin/suppliers/users/1/unlock')
+        assert_equal(403, response.status_code)
+
+    def test_admin_role_required_activate_user(self):
+        response = self.client.post('/admin/suppliers/users/1/activate')
+        assert_equal(403, response.status_code)
+
+    def test_admin_role_required_deactivate_user(self):
+        response = self.client.post('/admin/suppliers/users/1/deactivate')
+        assert_equal(403, response.status_code)
+
+    def test_admin_role_required_invite_user(self):
+        response = self.client.post('/admin/suppliers/1/invite-user')
+        assert_equal(403, response.status_code)

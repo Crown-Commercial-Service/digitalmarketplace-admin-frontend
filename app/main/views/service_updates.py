@@ -7,6 +7,7 @@ from dmutils.audit import AuditTypes
 
 from ... import data_api_client
 from .. import main
+from ..auth import role_required
 from ..forms import ServiceUpdateAuditEventsForm
 from . import get_template_data
 
@@ -42,6 +43,7 @@ def service_update_audits():
 
 @main.route('/service-updates/<audit_id>/acknowledge', methods=['POST'])
 @login_required
+@role_required('admin')
 def submit_service_update_acknowledgment(audit_id):
     form = ServiceUpdateAuditEventsForm(request.form)
     if form.validate():

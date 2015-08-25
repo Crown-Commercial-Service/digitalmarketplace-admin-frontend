@@ -14,6 +14,7 @@ from ... import service_content
 from .. import main
 from . import get_template_data
 
+from ..auth import role_required
 from ..helpers.diff_tools import get_diffs_from_service_data, get_revision_dates
 
 presenters = Presenters()
@@ -59,6 +60,7 @@ def view(service_id):
 
 @main.route('/services/status/<string:service_id>', methods=['POST'])
 @login_required
+@role_required('admin')
 def update_service_status(service_id):
     frontend_status = request.form['service_status']
 
@@ -94,6 +96,7 @@ def update_service_status(service_id):
 
 @main.route('/services/<service_id>/edit/<section>', methods=['GET'])
 @login_required
+@role_required('admin')
 def edit(service_id, section):
     service_data = data_api_client.get_service(service_id)['services']
 
@@ -175,6 +178,7 @@ def compare(old_archived_service_id, new_archived_service_id):
 
 @main.route('/services/<service_id>/edit/<section>', methods=['POST'])
 @login_required
+@role_required('admin')
 def update(service_id, section):
     s3_uploader = S3(
         bucket_name=main.config['S3_DOCUMENT_BUCKET'],

@@ -67,7 +67,7 @@
 
       {% for section in sections %}
         {{ summary.heading(section.name) }}
-        {% if section.editable %}
+        {% if section.editable and current_user.has_role('admin') %}
           {{ summary.top_link("Edit", url_for('.edit', service_id=service_id, section=section.id)) }}
         {% endif %}
         {% call(item) summary.list_table(
@@ -89,6 +89,7 @@
         {% endcall %}
       {% endfor %}
 
+      {% if current_user.has_role('admin') %}
       <form action="{{ url_for('.update_service_status', service_id=service_id ) }}" method="post">
           <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
           <fieldset class="question">
@@ -112,6 +113,7 @@
           </fieldset>
           <button type="submit" class="button-save">Update status</button>
       </form>
+      {% endif %}
 
     {% else %}
     <h1>Error</h1>
