@@ -18,14 +18,29 @@
     {% include "toolkit/breadcrumb.html" %}
   {% endwith %}
 
-  <div class="page-container">
-    {%
-      with
-      context = "G-Cloud 7",
-      heading = "Statistics"
-    %}
-      {% include "toolkit/page-heading.html" %}
-    {% endwith %}
+  <div class="page-container" {% if big_screen_mode %}id="framework-statistics-big-screen"{% endif %}>
+    <div class="grid-row">
+      <div class="two-third-column">
+        {%
+          with
+          context = "G-Cloud 7",
+          heading = "Statistics"
+        %}
+          {% include "toolkit/page-heading.html" %}
+        {% endwith %}
+      </div>
+      <div class="third-column">
+        {% if not big_screen_mode %}
+          {%
+            with
+            url = '?big_screen_mode=yes',
+            label = "Big screen view"
+          %}
+            {% include "toolkit/link-button.html" %}
+          {% endwith %}
+        {% endif %}
+      </div>
+    </div>
 
     {{ summary.heading("Services by status") }}
     {% call(item) summary.list_table(

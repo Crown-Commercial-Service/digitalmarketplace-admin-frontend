@@ -1,0 +1,36 @@
+#framework-statistics-big-screen {
+
+  position: relative;
+  background: $govuk-blue;
+  color: $white;
+  box-shadow: 0 0 0 100em $govuk-blue;
+  padding-bottom: 100em;
+  z-index: 1000;
+
+  .summary-item-body {
+    margin-bottom: 100%;
+  }
+
+  .summary-item-field,
+  .summary-item-field-first {
+    @include bold-80;
+  }
+
+  .summary-item-field-first {
+    width: auto;
+  }
+
+  .summary-item-field-heading,
+  .summary-item-field-heading-first {
+    @include core-24;
+  }
+
+  .summary-item-row {
+    border-top: none;
+  }
+
+  table.summary-item-body tbody td {
+    padding-top: 0;
+  }
+
+}

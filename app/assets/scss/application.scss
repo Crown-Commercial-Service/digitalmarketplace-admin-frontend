@@ -19,6 +19,7 @@ $path: "/admin/static/images/";
 @import "toolkit/forms/validation";
 @import "toolkit/buttons";
 @import "toolkit/notification-banners";
+@import "toolkit/link-button";
 @import "_pagination.scss";
 @import "forms/_option-select.scss";
 
@@ -31,3 +32,4 @@ $path: "/admin/static/images/";
 @import "views/edit_section";
 @import "views/view_audits";
 @import "_diff.scss";
+@import "views/statistics";

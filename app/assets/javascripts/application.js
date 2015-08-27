@@ -11,6 +11,7 @@
 //= include ../../../bower_components/digitalmarketplace-frontend-toolkit/toolkit/javascripts/word-counter.js
 //= include ../../../node_modules/govuk_frontend_toolkit/javascripts/govuk/selection-buttons.js
 //= include _selection-buttons.js
+//= include _scroll-through-statistics.js
 (function(GOVUK, GDM) {
 
   "use strict";
