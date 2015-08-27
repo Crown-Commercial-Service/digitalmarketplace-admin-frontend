@@ -37,7 +37,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         self.assertEquals(200, response.status_code)
 
         self.assertIn(
-            '<input class="filter-field-text" id="audit_date" name="audit_date" type="text" value="">',  # noqa
+            '<input class="filter-field-text" id="audit_date" name="audit_date" placeholder="eg, 2015-07-23" type="text" value="">',  # noqa
             response.get_data(as_text=True)
         )
 
@@ -58,7 +58,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             response.get_data(as_text=True)
         )
         self.assertIn(
-            '<input class="filter-field-text" id="audit_date" name="audit_date" type="text" value="invalid">',  # noqa
+            '<input class="filter-field-text" id="audit_date" name="audit_date" placeholder="eg, 2015-07-23" type="text" value="invalid">',  # noqa
             response.get_data(as_text=True)
         )
 
@@ -98,7 +98,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         response = self.client.get('/admin/service-updates?audit_date=2006-01-01&acknowledged=all')  # noqa
         self.assertEquals(200, response.status_code)
         self.assertIn(
-            '<input class="filter-field-text" id="audit_date" name="audit_date" type="text" value="2006-01-01">',  # noqa
+            '<input class="filter-field-text" id="audit_date" name="audit_date" placeholder="eg, 2015-07-23" type="text" value="2006-01-01">',  # noqa
             response.get_data(as_text=True)
         )
 
@@ -116,7 +116,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         response = self.client.get('/admin/service-updates?audit_date=2006-01-01')  # noqa
         self.assertEquals(200, response.status_code)
         self.assertIn(
-            '<input class="filter-field-text" id="audit_date" name="audit_date" type="text" value="2006-01-01">',  # noqa
+            '<input class="filter-field-text" id="audit_date" name="audit_date" placeholder="eg, 2015-07-23" type="text" value="2006-01-01">',  # noqa
             response.get_data(as_text=True)
         )
 
@@ -137,7 +137,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         response = self.client.get('/admin/service-updates?acknowledged=false')  # noqa
         self.assertEquals(200, response.status_code)
         self.assertIn(
-            '<input class="filter-field-text" id="audit_date" name="audit_date" type="text" value="">',  # noqa
+            '<input class="filter-field-text" id="audit_date" name="audit_date" placeholder="eg, 2015-07-23" type="text" value="">',  # noqa
             response.get_data(as_text=True)
         )
 
@@ -243,7 +243,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             self._replace_whitespace(response.get_data(as_text=True))
         )
         self.assertIn(
-            '<input class="filter-field-text" id="audit_date" name="audit_date" type="text" value="invalid">',  # noqa
+            '<input class="filter-field-text" id="audit_date" name="audit_date" placeholder="eg, 2015-07-23" type="text" value="invalid">',  # noqa
             response.get_data(as_text=True)
         )
 

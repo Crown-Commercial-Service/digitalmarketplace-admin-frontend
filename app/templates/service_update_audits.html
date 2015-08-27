@@ -54,7 +54,7 @@ Digital Marketplace admin
                     {% for error in form.audit_date.errors %}{{ error }}{% endfor %}
                 </p>
                 {% endif %}
-                {{ form.audit_date(class="filter-field-text") }}
+                {{ form.audit_date(class="filter-field-text", placeholder="eg, 2015-07-23") }}
             </div>
 
             <div class="govuk-option-select">
