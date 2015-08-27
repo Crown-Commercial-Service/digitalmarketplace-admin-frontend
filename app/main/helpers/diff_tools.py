@@ -6,8 +6,7 @@ except ImportError:
 from datetime import datetime
 from flask import Markup, escape
 from flask._compat import string_types
-from dmutils.formats import DATETIME_FORMAT
-from ... import DISPLAY_DATETIME_FORMAT
+from dmutils.formats import DATETIME_FORMAT, DISPLAY_DATETIME_FORMAT
 
 
 def get_diffs_from_service_data(

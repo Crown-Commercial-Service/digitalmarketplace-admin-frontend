@@ -108,19 +108,19 @@ class TestSupplierUsersView(LoggedInApplicationTest):
             response.get_data(as_text=True)
         )
         self.assertIn(
-            "09:33:53",
+            "10:33:53",
             response.get_data(as_text=True)
         )
         self.assertIn(
-            "23/07/2015",
+            "Thursday 23 July 2015",
             response.get_data(as_text=True)
         )
         self.assertIn(
-            "12:46:01",
+            "13:46:01",
             response.get_data(as_text=True)
         )
         self.assertIn(
-            "29/06/2015",
+            "Monday 29 June 2015",
             response.get_data(as_text=True)
         )
         self.assertIn(

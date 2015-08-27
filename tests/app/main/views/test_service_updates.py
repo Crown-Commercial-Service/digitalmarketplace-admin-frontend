@@ -1,7 +1,7 @@
 import mock
 
 from datetime import datetime
-from app import DISPLAY_DATE_FORMAT
+from dmutils.formats import DISPLAY_DATE_FORMAT
 from dmutils.audit import AuditTypes
 
 from ...helpers import LoggedInApplicationTest
@@ -188,7 +188,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             Activity for
         </p>
         <h1>
-        01/01/2010
+        Friday 01 January 2010
         </h1>
         """
 
@@ -308,7 +308,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         )
         self.assertIn(
             self._replace_whitespace(
-               '<td class="summary-item-field"><span>08:49:22<br/>17/06/2015</span></td>'),  # noqa
+               '<td class="summary-item-field"><span>09:49:22<br/>17 June</span></td>'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
         self.assertIn(

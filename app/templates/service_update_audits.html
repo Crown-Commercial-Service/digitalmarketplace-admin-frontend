@@ -25,7 +25,7 @@ Digital Marketplace admin
 <div class="page-container">
     <div class="grid-row">
         <div class="service-title">
-            {{ page_heading(today|displaydateformat, "Activity for", "page-heading-smaller") }}
+            {{ page_heading(today|dateformat, "Activity for", "page-heading-smaller") }}
         </div>
     </div>
     <div class="grid-row">
@@ -107,7 +107,7 @@ Digital Marketplace admin
                 {% call summary.field() %}
                   {{ item.createdAt|timeformat }}
                   <br/>
-                  {{ item.createdAt|dateformat }}
+                  {{ item.createdAt|shortdateformat }}
                 {% endcall %}
                 {{ summary.edit_link(
                   "View changes",
@@ -124,7 +124,7 @@ Digital Marketplace admin
                     <br/>
                     {{ item.createdAt|timeformat }}
                     <br/>
-                    {{ item.createdAt|dateformat }}
+                    {{ item.createdAt|shortdateformat }}
                   {% elif current_user.has_role('admin') %}
                     <form action="{{ url_for('.submit_service_update_acknowledgment', audit_id=item.id) }}" method="post">
                         <div style="display:none;">
