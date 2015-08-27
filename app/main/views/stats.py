@@ -41,19 +41,19 @@ def view_statistics(framework_slug):
         }),
         interested_suppliers=label_and_count(stats['interested_suppliers'], {
             'interested_only': {
-                'has_made_declaration': False,
+                'declaration_status': None,
                 'has_completed_services': False
             },
             'declaration_only': {
-                'has_made_declaration': True,
+                'declaration_status': 'complete',
                 'has_completed_services': False
             },
             'completed_services_only': {
-                'has_made_declaration': False,
+                'declaration_status': [None, 'started'],
                 'has_completed_services': True
             },
             'valid_submission': {
-                'has_made_declaration': True,
+                'declaration_status': 'complete',
                 'has_completed_services': True
             }
         }),

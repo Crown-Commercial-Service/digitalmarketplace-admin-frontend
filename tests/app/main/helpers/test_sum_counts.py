@@ -63,6 +63,19 @@ class TestSumCounts(TestCase):
             2
         )
 
+    def test_summing_filtering_on_various_acceptable_attributes(self):
+        assert_equal(
+            _sum_counts([
+                {'count': 1, 'colour': 'cyan'},
+                {'count': 2, 'colour': 'yellow'},
+                {'count': 3, 'colour': 'magenta'},
+                {'count': 4, 'colour': 'black'}
+            ], {
+                'colour': ['cyan', 'yellow', 'magenta']
+            }),
+            6
+        )
+
     def test_summing_by_different_column(self):
         assert_equal(
             _sum_counts([
