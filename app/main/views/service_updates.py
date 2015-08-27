@@ -4,6 +4,7 @@ from flask import request, render_template, redirect, url_for
 from flask_login import login_required, current_user
 
 from dmutils.audit import AuditTypes
+from dmutils.formats import DATETIME_FORMAT
 
 from ... import data_api_client
 from .. import main
@@ -26,7 +27,7 @@ def service_update_audits():
 
         return render_template(
             "service_update_audits.html",
-            today=form.format_date_for_display(),
+            today=form.format_date_for_display().strftime(DATETIME_FORMAT),
             acknowledged=form.default_acknowledged(),
             audit_events=audit_events['auditEvents'],
             form=form,
@@ -34,7 +35,7 @@ def service_update_audits():
     else:
         return render_template(
             "service_update_audits.html",
-            today=datetime.utcnow(),
+            today=datetime.utcnow().strftime(DATETIME_FORMAT),
             acknowledged=form.default_acknowledged(),
             audit_events=[],
             form=form,
@@ -58,7 +59,7 @@ def submit_service_update_acknowledgment(audit_id):
     else:
         return render_template(
             "service_update_audits.html",
-            today=datetime.utcnow(),
+            today=datetime.utcnow().strftime(DATETIME_FORMAT),
             audit_events=None,
             acknowledged=form.default_acknowledged(),
             form=form,

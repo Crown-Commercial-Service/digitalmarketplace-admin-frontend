@@ -462,35 +462,35 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
         response = self._get_archived_services_response('10', '20')
 
         # check title is there
-        self.assertTrue(
-            self.strip_all_whitespace('<h1>&lt;h1&gt;Cloudy&lt;/h1&gt; Cloud Service</h1>')  # noqa
-            in self.strip_all_whitespace(response.get_data(as_text=True))
+        self.assertIn(
+            self.strip_all_whitespace('<h1>&lt;h1&gt;Cloudy&lt;/h1&gt; Cloud Service</h1>'),
+            self.strip_all_whitespace(response.get_data(as_text=True))
         )
 
         # check dates are right
-        self.assertTrue(
-            self.strip_all_whitespace('Monday, 01 December 2014 at 10:55')
-            in self.strip_all_whitespace(response.get_data(as_text=True))
+        self.assertIn(
+            self.strip_all_whitespace('Monday 01 December 2014 at 10:55'),
+            self.strip_all_whitespace(response.get_data(as_text=True))
         )
-        self.assertTrue(
-            self.strip_all_whitespace('Tuesday, 02 December 2014 at 10:55')
-            in self.strip_all_whitespace(response.get_data(as_text=True))
+        self.assertIn(
+            self.strip_all_whitespace('Tuesday 02 December 2014 at 10:55'),
+            self.strip_all_whitespace(response.get_data(as_text=True))
         )
 
         # check lines are there
-        self.assertTrue(
-            self.strip_all_whitespace('<td class=\'line-content unchanged\'>Cloud Service</td>')  # noqa
-            in self.strip_all_whitespace(response.get_data(as_text=True))
+        self.assertIn(
+            self.strip_all_whitespace('<td class=\'line-content unchanged\'>Cloud Service</td>'),
+            self.strip_all_whitespace(response.get_data(as_text=True))
         )
-        self.assertTrue(
-                self.strip_all_whitespace('<td class=\'line-content addition\'><strong>&lt;h1&gt;Cloudy&lt;/h1&gt;</strong> Cloud Service</td>')  # noqa
-            in self.strip_all_whitespace(response.get_data(as_text=True))
+        self.assertIn(
+            self.strip_all_whitespace('<td class=\'line-content addition\'><strong>&lt;h1&gt;Cloudy&lt;/h1&gt;</strong> Cloud Service</td>'),  # noqa
+            self.strip_all_whitespace(response.get_data(as_text=True))
         )
 
         # check status is right
-        self.assertTrue(self.strip_all_whitespace(
-            '<input type="radio" name="service_status" id="service_status_published" value="public" checked="checked" />')  # noqa
-            in self.strip_all_whitespace(response.get_data(as_text=True))
+        self.assertIn(self.strip_all_whitespace(
+            '<input type="radio" name="service_status" id="service_status_published" value="public" checked="checked" />'),  # noqa
+            self.strip_all_whitespace(response.get_data(as_text=True))
         )
 
     @mock.patch('app.main.views.services.service_content')
