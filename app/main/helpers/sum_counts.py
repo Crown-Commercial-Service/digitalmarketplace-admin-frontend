@@ -1,15 +1,16 @@
 from datetime import datetime
 
-def process_snapshots(snapshots, category, groupings):
+
+def format_snapshots(snapshots, category, groupings):
     return [
-        label_and_count(
+        _label_and_count(
             snapshot['data'][category], groupings, snapshot['createdAt']
         )
         for snapshot in snapshots
     ]
 
 
-def label_and_count(stats, groupings, created_at):
+def _label_and_count(stats, groupings, created_at):
     data = {
         label: _sum_counts(stats, filters)
         for label, filters in groupings.items()

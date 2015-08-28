@@ -57,7 +57,7 @@
     ) %}
       {% call summary.row() %}
         {% call summary.field(first=True) %}
-          {{ item.created_at[:16] }}
+          {{ item.created_at[:19]|replace('T', ' ')|replace('-', '/') }}
         {% endcall %}
         {{ summary.text(item.draft) }}
         {{ summary.text(item.complete) }}
@@ -81,7 +81,7 @@
     ) %}
       {% call summary.row() %}
         {% call summary.field(first=True) %}
-          {{ item.created_at[:16] }}
+          {{ item.created_at[:19]|replace('T', ' ')|replace('-', '/') }}
         {% endcall %}
         {{ summary.text(item.IaaS) }}
         {{ summary.text(item.PaaS) }}
@@ -98,15 +98,15 @@
       field_headings=[
         summary.hidden_field_heading("Date and time"),
         "Interested",
-        "Have made declaration only",
-        "Have completed services only",
-        "Have a valid submission",
+        "Only made declaration",
+        "Only completed services",
+        "Eligible",
       ],
       field_headings_visible=True
     ) %}
       {% call summary.row() %}
         {% call summary.field(first=True) %}
-          {{ item.created_at[:16] }}
+          {{ item.created_at[:19]|replace('T', ' ')|replace('-', '/') }}
         {% endcall %}
         {{ summary.text(item.interested_only) }}
         {{ summary.text(item.declaration_only) }}
@@ -123,14 +123,14 @@
       field_headings=[
         summary.hidden_field_heading("Date and time"),
         "Never logged in",
-        "Logged in not recently",
-        "Logged in recently",
+        "Not logged in this week",
+        "Logged in this week",
       ],
       field_headings_visible=True
     ) %}
       {% call summary.row() %}
         {% call summary.field(first=True) %}
-          {{ item.created_at[:16] }}
+          {{ item.created_at[:19]|replace('T', ' ')|replace('-', '/') }}
         {% endcall %}
         {{ summary.text(item.never_logged_in) }}
         {{ summary.text(item.not_logged_in_recently) }}

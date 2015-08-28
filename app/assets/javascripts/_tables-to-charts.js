@@ -2,16 +2,29 @@
 
   GOVUK.GDM.tablesToCharts = function() {
 
+    var isBigScreen = $("#framework-statistics-big-screen").length;
+
     $(".framework-statistics table")
       .each(function(tableIndex) {
 
-        var columns = [];
+        var columns = [], groups = [], types = {}, typesIndex = 0, typesList = [
+          "area", "line", "area", "area"
+        ];
 
         $("thead th", this).each(function(colIndex) {
-          console.log($.trim($(this).text()));
-          columns.push([
-            $.trim($(this).text())
-          ]);
+
+          var columnHeading = $.trim($(this).text()),
+              chartType = typesList[tableIndex];
+
+          columns.push([columnHeading]);
+
+          if (colIndex) {
+            if ("area" == chartType) {
+              groups.push(columnHeading);
+            }
+            types[columnHeading] = chartType;
+          }
+
         });
 
         $("tbody tr", this).each(function(rowIndex) {
@@ -26,22 +39,24 @@
 
         });
 
-        $(this).before($("<div id='chart-" + tableIndex + "'/>"));
-
-        console.log(columns);
+        $(this).before($("<div class='statistics-chart' id='chart-" + tableIndex + "'/>"));
 
         var chart = c3.generate({
             bindto: '#chart-' + tableIndex,
             data: {
               x: "Date and time",
-              xFormat: "%Y-%m-%dT%H:%M",
-              columns: columns
+              xFormat: "%Y/%m/%d %H:%M:%S",
+              columns: columns,
+              order: null,
+              types: types,
+              groups: [groups],
             },
             axis: {
               x: {
                 type: 'timeseries',
                 tick: {
-                  format: '%Y-%m-%d'
+                  format: '%Y-%m-%d %H:%M:%S',
+                  fit: false
                 },
                 show: false
               },
@@ -51,6 +66,18 @@
             },
             legend: {
               show: false
+            },
+            color: {
+              pattern: isBigScreen ?
+                ['#55ffee', '#ffee55', '#ff55ee', '#90ff00']
+                :
+                ['#D53880', '#2B8CC4', '#6F72AF', '#F47738']
+            },
+            size: {
+              height: isBigScreen ? 320 : 480
+            },
+            tooltip: {
+              show: !isBigScreen
             }
         });
 

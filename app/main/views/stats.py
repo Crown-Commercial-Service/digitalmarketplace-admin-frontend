@@ -4,14 +4,14 @@ from flask_login import login_required, current_user, flash
 from dmutils.apiclient import HTTPError
 from dmutils.audit import AuditTypes
 
-from ..helpers.sum_counts import label_and_count, process_snapshots
+from ..helpers.sum_counts import format_snapshots
 from .. import main
 from . import get_template_data
 from ... import data_api_client
 
 
 @main.route('/statistics/<string:framework_slug>', methods=['GET'])
-#@login_required
+@login_required
 def view_statistics(framework_slug):
 
     try:

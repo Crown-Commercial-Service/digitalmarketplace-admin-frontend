@@ -1,11 +1,15 @@
 #framework-statistics-big-screen {
 
   position: relative;
-  background: $govuk-blue;
-  color: $white;
-  box-shadow: 0 0 0 100em $govuk-blue;
+  background: $link-colour;
+  box-shadow: 0 0 0 100em $link-colour;
   padding-bottom: 100em;
   z-index: 1000;
+
+  .summary-item-body,
+  .summary-item-heading {
+    color: $white;
+  }
 
   .summary-item-body {
     margin-bottom: 100%;
@@ -13,6 +17,10 @@
 
   .summary-item-field {
     @include bold-80;
+  }
+
+  .summary-item-field-headings-visible {
+    border-top: 3px solid $link-colour;
   }
 
   .summary-item-field-first,
@@ -26,6 +34,10 @@
 
   .summary-item-row {
     border-top: none;
+  }
+
+  table.summary-item-body {
+    border-bottom: 3px solid $grey-3;
   }
 
   table.summary-item-body tbody td {
@@ -56,8 +68,8 @@
 
   }
 
-  .c3 {
-    border-left: 1px solid $grey-2;
-  }
+}
 
+.statistics-chart {
+  margin: 0 -10px -8px -12px;
 }

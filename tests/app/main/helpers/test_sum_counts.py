@@ -2,13 +2,13 @@
 from unittest import TestCase
 from nose.tools import assert_equal, assert_true, assert_false
 
-from app.main.helpers.sum_counts import label_and_count, _sum_counts, _find
+from app.main.helpers.sum_counts import _label_and_count, _sum_counts, _find
 
 
 class TestLabelAndCount(TestCase):
     def test_formatting(self):
         assert_equal(
-            label_and_count({}, {
+            _label_and_count({}, {
                 'one': {
                     'filter_one': None
                 },
