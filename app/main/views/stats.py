@@ -2,8 +2,9 @@ from flask import render_template, abort, request
 from flask_login import login_required, current_user, flash
 
 from dmutils.apiclient import HTTPError
+from dmutils.audit import AuditTypes
 
-from ..helpers.sum_counts import label_and_count
+from ..helpers.sum_counts import label_and_count, process_snapshots
 from .. import main
 from . import get_template_data
 from ... import data_api_client
@@ -14,14 +15,16 @@ from ... import data_api_client
 def view_statistics(framework_slug):
 
     try:
-        stats = data_api_client.get_framework_stats(framework_slug)
+        snapshots = data_api_client.find_audit_events(
+            audit_type=AuditTypes.snapshot_framework_stats
+        )['auditEvents']
     except HTTPError as error:
         abort(error.status_code)
 
     return render_template(
         "view_statistics.html",
         big_screen_mode=(request.args.get('big_screen_mode') == 'yes'),
-        services_by_status=label_and_count(stats['services'], {
+        services_by_status=format_snapshots(snapshots, 'services', {
             'draft': {
                 'status': 'not-submitted'
             },
@@ -34,13 +37,13 @@ def view_statistics(framework_slug):
                 'declaration_made': True
             }
         }),
-        services_by_lot=label_and_count(stats['services'], {
+        services_by_lot=format_snapshots(snapshots, 'services', {
             'IaaS': {'lot': 'IaaS'},
             'PaaS': {'lot': 'PaaS'},
             'SaaS': {'lot': 'SaaS'},
             'SCS':  {'lot': 'SCS'},
         }),
-        interested_suppliers=label_and_count(stats['interested_suppliers'], {
+        interested_suppliers=format_snapshots(snapshots, 'interested_suppliers', {
             'interested_only': {
                 'declaration_status': None,
                 'has_completed_services': False
@@ -58,7 +61,7 @@ def view_statistics(framework_slug):
                 'has_completed_services': True
             }
         }),
-        users=label_and_count(stats['supplier_users'], {
+        users=format_snapshots(snapshots, 'supplier_users', {
             'never_logged_in': {
                 'recent_login': None
             },
@@ -69,6 +72,5 @@ def view_statistics(framework_slug):
                 'recent_login': True
             }
         }),
-        stats=stats,
         **get_template_data()
     )

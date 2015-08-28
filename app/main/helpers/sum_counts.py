@@ -1,8 +1,19 @@
-def label_and_count(stats, groupings):
-    return [{
+def process_snapshots(snapshots, category, groupings):
+    return [
+        label_and_count(
+            snapshot['data'][category], groupings, snapshot['createdAt']
+        )
+        for snapshot in snapshots
+    ]
+
+
+def label_and_count(stats, groupings, created_at):
+    data = {
         label: _sum_counts(stats, filters)
         for label, filters in groupings.items()
-    }]
+    }
+    data['created_at'] = created_at
+    return data
 
 
 def _sum_counts(stats, filter_by=None, sum_by='count'):

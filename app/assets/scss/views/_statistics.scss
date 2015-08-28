@@ -11,17 +11,16 @@
     margin-bottom: 100%;
   }
 
-  .summary-item-field,
-  .summary-item-field-first {
+  .summary-item-field {
     @include bold-80;
   }
 
-  .summary-item-field-first {
-    width: auto;
+  .summary-item-field-first,
+  .summary-item-field-heading-first {
+    display: none;
   }
 
-  .summary-item-field-heading,
-  .summary-item-field-heading-first {
+  .summary-item-field-heading {
     @include core-24;
   }
 
@@ -31,6 +30,30 @@
 
   table.summary-item-body tbody td {
     padding-top: 0;
+  }
+
+  .summary-item-row {
+
+    display: none;
+
+    &:first-child {
+      display: table-row;
+    }
+
+    td {
+      position: relative;
+      left: -25px;
+    }
+
+  }
+
+  .summary-item-field-headings-visible {
+
+    th {
+      position: relative;
+      left: -25px;
+    }
+
   }
 
 }

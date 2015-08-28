@@ -48,6 +48,7 @@
       empty_message="Data not available",
       caption="Services by status",
       field_headings=[
+        summary.hidden_field_heading("Date and time"),
         "Draft",
         "Complete",
         "Submitted",
@@ -56,8 +57,9 @@
     ) %}
       {% call summary.row() %}
         {% call summary.field(first=True) %}
-          {{ item.draft }}
+          {{ item.created_at|shortdateformat }}, {{ item.created_at|timeformat }}
         {% endcall %}
+        {{ summary.text(item.draft) }}
         {{ summary.text(item.complete) }}
         {{ summary.text(item.submitted) }}
       {% endcall %}
@@ -69,6 +71,7 @@
       empty_message="Data not available",
       caption="Services by lot",
       field_headings=[
+        summary.hidden_field_heading("Date and time"),
         "Infrastructure as a Service",
         "Software as a Service",
         "Platform as a Service",
@@ -78,8 +81,9 @@
     ) %}
       {% call summary.row() %}
         {% call summary.field(first=True) %}
-          {{ item.IaaS }}
+          {{ item.created_at|shortdateformat }}, {{ item.created_at|timeformat }}
         {% endcall %}
+        {{ summary.text(item.IaaS) }}
         {{ summary.text(item.PaaS) }}
         {{ summary.text(item.SaaS) }}
         {{ summary.text(item.SCS) }}
@@ -92,6 +96,7 @@
       empty_message="Data not available",
       caption="Suppliers",
       field_headings=[
+        summary.hidden_field_heading("Date and time"),
         "Interested",
         "Have made declaration only",
         "Have completed services only",
@@ -101,8 +106,9 @@
     ) %}
       {% call summary.row() %}
         {% call summary.field(first=True) %}
-          {{ item.interested_only }}
+          {{ item.created_at|shortdateformat }}, {{ item.created_at|timeformat }}
         {% endcall %}
+        {{ summary.text(item.interested_only) }}
         {{ summary.text(item.declaration_only) }}
         {{ summary.text(item.completed_services_only) }}
         {{ summary.text(item.valid_submission) }}
@@ -115,6 +121,7 @@
       empty_message="Data not available",
       caption="Users",
       field_headings=[
+        summary.hidden_field_heading("Date and time"),
         "Never logged in",
         "Logged in not recently",
         "Logged in recently",
@@ -123,8 +130,9 @@
     ) %}
       {% call summary.row() %}
         {% call summary.field(first=True) %}
-          {{ item.never_logged_in }}
+          {{ item.created_at|shortdateformat }}, {{ item.created_at|timeformat }}
         {% endcall %}
+        {{ summary.text(item.never_logged_in) }}
         {{ summary.text(item.not_logged_in_recently) }}
         {{ summary.text(item.logged_in_recently) }}
       {% endcall %}

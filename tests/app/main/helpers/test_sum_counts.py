@@ -19,8 +19,8 @@ class TestLabelAndCount(TestCase):
                 'three': {
                     'filter_two': True
                 }
-            }),
-            [{'one': 0, 'two': 0, 'three': 0}]
+            }, created_at='today'),
+            {'created_at': 'today', 'one': 0, 'two': 0, 'three': 0}
         )
 
 
