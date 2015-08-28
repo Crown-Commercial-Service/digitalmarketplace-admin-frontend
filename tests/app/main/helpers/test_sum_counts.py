@@ -1,8 +1,8 @@
 # coding=utf-8
 from unittest import TestCase
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_true, assert_false
 
-from app.main.helpers.sum_counts import label_and_count, _sum_counts
+from app.main.helpers.sum_counts import label_and_count, _sum_counts, _find
 
 
 class TestLabelAndCount(TestCase):
@@ -85,4 +85,51 @@ class TestSumCounts(TestCase):
                 {'count': 4, 'new_count': 40}
             ], sum_by='new_count'),
             100
+        )
+
+
+class TestFind(TestCase):
+    def test_find_string(self):
+        assert_true(
+            _find('word', 'word'),
+        )
+        assert_false(
+            _find('drow', 'word')
+        )
+
+    def test_doesnt_match_substring(self):
+        assert_false(
+            _find('word', 'word1234')
+        )
+
+    def test_find_number(self):
+        assert_true(
+            _find(99, 99)
+        )
+        assert_false(
+            _find(99, 99.99)
+        )
+
+    def test_find_none(self):
+        assert_true(
+            _find(None, None),
+        )
+        assert_false(
+            _find(None, 'None')
+        )
+
+    def test_find_boolean(self):
+        assert_true(
+            _find(True, True),
+        )
+        assert_false(
+            _find(False, True)
+        )
+
+    def test_find_in_list(self):
+        assert_true(
+            _find('yes', [True, 0, 'yes']),
+        )
+        assert_false(
+            _find('no', [True, 0, 'yes']),
         )
