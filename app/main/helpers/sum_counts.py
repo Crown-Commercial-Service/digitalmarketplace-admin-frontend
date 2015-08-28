@@ -1,3 +1,5 @@
+from datetime import datetime
+
 def process_snapshots(snapshots, category, groupings):
     return [
         label_and_count(

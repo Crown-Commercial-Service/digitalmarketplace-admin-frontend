@@ -33,3 +33,6 @@ $path: "/admin/static/images/";
 @import "views/view_audits";
 @import "_diff.scss";
 @import "views/statistics";
+
+// Graphs
+@import "../../bower_components/c3/c3.css";

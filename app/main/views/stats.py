@@ -11,7 +11,7 @@ from ... import data_api_client
 
 
 @main.route('/statistics/<string:framework_slug>', methods=['GET'])
-@login_required
+#@login_required
 def view_statistics(framework_slug):
 
     try:

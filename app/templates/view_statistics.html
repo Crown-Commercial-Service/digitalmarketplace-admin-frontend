@@ -18,7 +18,7 @@
     {% include "toolkit/breadcrumb.html" %}
   {% endwith %}
 
-  <div class="page-container" {% if big_screen_mode %}id="framework-statistics-big-screen"{% endif %}>
+  <div class="page-container framework-statistics" {% if big_screen_mode %}id="framework-statistics-big-screen"{% endif %}>
     <div class="grid-row">
       <div class="two-third-column">
         {%
@@ -57,7 +57,7 @@
     ) %}
       {% call summary.row() %}
         {% call summary.field(first=True) %}
-          {{ item.created_at|shortdateformat }}, {{ item.created_at|timeformat }}
+          {{ item.created_at[:16] }}
         {% endcall %}
         {{ summary.text(item.draft) }}
         {{ summary.text(item.complete) }}
@@ -81,7 +81,7 @@
     ) %}
       {% call summary.row() %}
         {% call summary.field(first=True) %}
-          {{ item.created_at|shortdateformat }}, {{ item.created_at|timeformat }}
+          {{ item.created_at[:16] }}
         {% endcall %}
         {{ summary.text(item.IaaS) }}
         {{ summary.text(item.PaaS) }}
@@ -106,7 +106,7 @@
     ) %}
       {% call summary.row() %}
         {% call summary.field(first=True) %}
-          {{ item.created_at|shortdateformat }}, {{ item.created_at|timeformat }}
+          {{ item.created_at[:16] }}
         {% endcall %}
         {{ summary.text(item.interested_only) }}
         {{ summary.text(item.declaration_only) }}
@@ -130,7 +130,7 @@
     ) %}
       {% call summary.row() %}
         {% call summary.field(first=True) %}
-          {{ item.created_at|shortdateformat }}, {{ item.created_at|timeformat }}
+          {{ item.created_at[:16] }}
         {% endcall %}
         {{ summary.text(item.never_logged_in) }}
         {{ summary.text(item.not_logged_in_recently) }}
