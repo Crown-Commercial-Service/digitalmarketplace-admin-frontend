@@ -1,27 +1,34 @@
 #framework-statistics-big-screen {
 
   position: relative;
-  background: $govuk-blue;
-  color: $white;
-  box-shadow: 0 0 0 100em $govuk-blue;
+  background: $link-colour;
+  box-shadow: 0 0 0 100em $link-colour;
   padding-bottom: 100em;
   z-index: 1000;
+
+  .summary-item-body,
+  .summary-item-heading {
+    color: $white;
+  }
 
   .summary-item-body {
     margin-bottom: 100%;
   }
 
-  .summary-item-field,
-  .summary-item-field-first {
+  .summary-item-field {
     @include bold-80;
   }
 
-  .summary-item-field-first {
-    width: auto;
+  .summary-item-field-headings-visible {
+    border-top: 3px solid $link-colour;
   }
 
-  .summary-item-field-heading,
+  .summary-item-field-first,
   .summary-item-field-heading-first {
+    display: none;
+  }
+
+  .summary-item-field-heading {
     @include core-24;
   }
 
@@ -29,8 +36,40 @@
     border-top: none;
   }
 
+  table.summary-item-body {
+    border-bottom: 3px solid $grey-3;
+  }
+
   table.summary-item-body tbody td {
     padding-top: 0;
   }
 
+  .summary-item-row {
+
+    display: none;
+
+    &:last-child {
+      display: table-row;
+    }
+
+    td {
+      position: relative;
+      left: -25px;
+    }
+
+  }
+
+  .summary-item-field-headings-visible {
+
+    th {
+      position: relative;
+      left: -25px;
+    }
+
+  }
+
+}
+
+.statistics-chart {
+  margin: 0 -10px -8px -12px;
 }
