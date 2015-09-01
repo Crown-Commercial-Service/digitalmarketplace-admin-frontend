@@ -1,7 +1,7 @@
 (function(GOVUK, GDM) {
 
   var $page = $("html, body"),
-      delayInSeconds = 8,
+      delayInSeconds = 16,
       generateScrollTo = function($sections, index) {
 
         return function() {
