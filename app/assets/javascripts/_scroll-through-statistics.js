@@ -32,7 +32,7 @@
 
     setTimeout(function() {
       location.reload();
-    }, 60 * 60 * 1000); // 1 hour
+    }, 5 * 60 * 1000); // 5 minutes
 
     generateScrollTo(
       $("#framework-statistics-big-screen .summary-item-heading"), 0
