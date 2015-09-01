@@ -10,7 +10,7 @@ class TestStats(LoggedInApplicationTest):
 
     def test_get_stats_page(self, data_api_client):
         data_api_client.find_audit_events.return_value = {
-            'auditEvents': {}
+            'auditEvents': []
         }
         response = self.client.get('/admin/statistics/g-cloud-7')
 
