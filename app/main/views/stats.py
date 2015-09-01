@@ -1,8 +1,11 @@
+from datetime import datetime
+
 from flask import render_template, abort, request
 from flask_login import login_required, current_user, flash
 
 from dmutils.apiclient import HTTPError
 from dmutils.audit import AuditTypes
+from dmutils.formats import DATETIME_FORMAT
 
 from ..helpers.sum_counts import format_snapshots
 from .. import main
@@ -18,6 +21,13 @@ def view_statistics(framework_slug):
         snapshots = data_api_client.find_audit_events(
             audit_type=AuditTypes.snapshot_framework_stats
         )['auditEvents']
+        latest = data_api_client.get_framework_stats(framework_slug)
+        snapshots.append(
+            {
+                'data': latest,
+                'createdAt': datetime.now().strftime(DATETIME_FORMAT)
+            }
+        )
     except HTTPError as error:
         abort(error.status_code)
 
