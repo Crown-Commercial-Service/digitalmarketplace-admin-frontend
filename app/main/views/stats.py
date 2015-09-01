@@ -25,7 +25,7 @@ def view_statistics(framework_slug):
         snapshots.append(
             {
                 'data': latest,
-                'createdAt': datetime.now().strftime(DATETIME_FORMAT)
+                'createdAt': datetime.utcnow().strftime(DATETIME_FORMAT)
             }
         )
     except HTTPError as error:
