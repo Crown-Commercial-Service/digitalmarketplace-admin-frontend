@@ -2,19 +2,30 @@
 
   GOVUK.GDM.tablesToCharts = function() {
 
-    var isBigScreen = $("#framework-statistics-big-screen").length;
+    var isBigScreen = $("#framework-statistics-big-screen").length,
+        colourSequence = isBigScreen ?
+          ['#55ffee', '#ffee55', '#ff55ee', '#90ff00']
+          :
+          ['#D53880', '#2B8CC4', '#6F72AF', '#F47738'],
+        typeSequence = [
+          "area", "line", "area", "area"
+        ];
 
     $(".framework-statistics table")
       .each(function(tableIndex) {
 
-        var columns = [], groups = [], types = {}, typesIndex = 0, typesList = [
-          "area", "line", "area", "area"
-        ];
+        var columns = [], groups = [], types = {};
 
         $("thead th", this).each(function(colIndex) {
 
           var columnHeading = $.trim($(this).text()),
-              chartType = typesList[tableIndex];
+              chartType = typeSequence[tableIndex];
+
+          $(this).append("<span class='key' />");
+
+          $(".key", this).css(
+            "background", colourSequence[colIndex - 1]
+          );
 
           columns.push([columnHeading]);
 
@@ -68,10 +79,7 @@
               show: false
             },
             color: {
-              pattern: isBigScreen ?
-                ['#55ffee', '#ffee55', '#ff55ee', '#90ff00']
-                :
-                ['#D53880', '#2B8CC4', '#6F72AF', '#F47738']
+              pattern: colourSequence
             },
             size: {
               height: isBigScreen ? 320 : 480
