@@ -72,9 +72,9 @@
       caption="Services by lot",
       field_headings=[
         summary.hidden_field_heading("Date and time"),
-        "Infrastructure as a Service",
         "Software as a Service",
         "Platform as a Service",
+        "Infrastructure as a Service",
         "Specialist cloud services"
       ],
       field_headings_visible=True
@@ -83,9 +83,9 @@
         {% call summary.field(first=True) %}
           {{ item.created_at[:19]|replace('T', ' ')|replace('-', '/') }}
         {% endcall %}
-        {{ summary.text(item.IaaS) }}
-        {{ summary.text(item.PaaS) }}
         {{ summary.text(item.SaaS) }}
+        {{ summary.text(item.PaaS) }}
+        {{ summary.text(item.IaaS) }}
         {{ summary.text(item.SCS) }}
       {% endcall %}
     {% endcall %}
