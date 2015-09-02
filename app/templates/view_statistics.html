@@ -115,16 +115,16 @@
       {% endcall %}
     {% endcall %}
 
-    {{ summary.heading("Users") }}
+    {{ summary.heading("Users by last login time") }}
     {% call(item) summary.list_table(
       users,
       empty_message="Data not available",
       caption="Users",
       field_headings=[
         summary.hidden_field_heading("Date and time"),
-        "Never logged in",
-        "Not logged in this week",
-        "Logged in this week",
+        "Before Python",
+        "Over a week ago",
+        "In the last week",
       ],
       field_headings_visible=True
     ) %}
