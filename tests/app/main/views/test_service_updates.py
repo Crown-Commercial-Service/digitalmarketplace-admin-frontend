@@ -91,11 +91,9 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_allow_valid_submission_all(self, data_api_client):
-        data_api_client.find_audit_events.return_value = {
-            'auditEvents': []
-        }
+        data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
-        response = self.client.get('/admin/service-updates?audit_date=2006-01-01&acknowledged=all')  # noqa
+        response = self.client.get('/admin/service-updates?audit_date=2006-01-01&acknowledged=all')
         self.assertEquals(200, response.status_code)
         self.assertIn(
             '<input class="filter-field-text" id="audit_date" name="audit_date" placeholder="eg, 2015-07-23" type="text" value="2006-01-01">',  # noqa
@@ -111,7 +109,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_allow_valid_submission_date_fields(self, data_api_client):
-        data_api_client.find_audit_events.return_value = {'auditEvents': []}
+        data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
         response = self.client.get('/admin/service-updates?audit_date=2006-01-01')  # noqa
         self.assertEquals(200, response.status_code)
@@ -128,11 +126,12 @@ class TestServiceUpdates(LoggedInApplicationTest):
         data_api_client.find_audit_events.assert_called_with(
             audit_date='2006-01-01',
             audit_type=AuditTypes.update_service,
-            acknowledged='false')
+            acknowledged='false',
+            page=1)
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_allow_acknowledged_fields(self, data_api_client):
-        data_api_client.find_audit_events.return_value = {'auditEvents': []}
+        data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
         response = self.client.get('/admin/service-updates?acknowledged=false')  # noqa
         self.assertEquals(200, response.status_code)
@@ -149,11 +148,12 @@ class TestServiceUpdates(LoggedInApplicationTest):
         data_api_client.find_audit_events.assert_called_with(
             audit_date=None,
             audit_type=AuditTypes.update_service,
-            acknowledged='false')
+            acknowledged='false',
+            page=1)
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_call_api_with_correct_params(self, data_api_client):
-        data_api_client.find_audit_events.return_value = {'auditEvents': []}
+        data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
         response = self.client.get('/admin/service-updates?audit_date=2006-01-01&acknowledged=all')  # noqa
         self.assertEquals(200, response.status_code)
@@ -161,11 +161,12 @@ class TestServiceUpdates(LoggedInApplicationTest):
         data_api_client.find_audit_events.assert_called_with(
             audit_type=AuditTypes.update_service,
             audit_date='2006-01-01',
-            acknowledged='all')
+            acknowledged='all',
+            page=1)
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_call_api_with_none_date(self, data_api_client):
-        data_api_client.find_audit_events.return_value = {'auditEvents': []}
+        data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
         response = self.client.get('/admin/service-updates?acknowledged=all')  # noqa
         self.assertEquals(200, response.status_code)
@@ -173,7 +174,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
         data_api_client.find_audit_events.assert_called_with(
             audit_type=AuditTypes.update_service,
             audit_date=None,
-            acknowledged='all')
+            acknowledged='all',
+            page=1)
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_render_activity_page_with_form_date(self, data_api_client):
@@ -249,7 +251,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_show_no_updates_if_none_returned(self, data_api_client):
-        data_api_client.find_audit_events.return_value = {'auditEvents': []}
+        data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
         response = self.client.get('/admin/service-updates?audit_date=2006-01-01')  # noqa
         self.assertEquals(200, response.status_code)
@@ -259,6 +261,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             self._replace_whitespace(response.get_data(as_text=True))
         )
         data_api_client.find_audit_events.assert_called_with(
+            page=1,
             audit_date='2006-01-01',
             audit_type=AuditTypes.update_service,
             acknowledged='false')
@@ -327,6 +330,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             self._replace_whitespace(response.get_data(as_text=True))
         )
         data_api_client.find_audit_events.assert_called_with(
+            page=1,
             audit_type=AuditTypes.update_service,
             acknowledged='false',
             audit_date='2010-01-01')
@@ -339,3 +343,22 @@ class TestServiceUpdates(LoggedInApplicationTest):
         data_api_client.acknowledge_audit_event.assert_called_with(
             '123', 'test@example.com'
         )
+
+    @mock.patch('app.main.views.service_updates.data_api_client')
+    def test_should_pass_valid_page_argument_to_api(self, data_api_client):
+        response = self.client.get('/admin/service-updates?page=5')
+        self.assertEquals(200, response.status_code)
+
+        data_api_client.find_audit_events.assert_called_with(
+            page=5,
+            audit_type=AuditTypes.update_service,
+            acknowledged='false',
+            audit_date=None
+            )
+
+    @mock.patch('app.main.views.service_updates.data_api_client')
+    def test_should_not_pass_valid_page_argument_to_api(self, data_api_client):
+        response = self.client.get('/admin/service-updates?page=invalid')
+        self.assertEquals(400, response.status_code)
+
+        data_api_client.find_audit_events.assert_not_called()

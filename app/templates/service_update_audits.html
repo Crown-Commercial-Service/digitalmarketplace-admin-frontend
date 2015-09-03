@@ -139,26 +139,19 @@ Digital Marketplace admin
               {% endcall %}
             {% endcall %}
 
-            <!--
-            <nav role="navigation">
-                <ul class="previous-next-navigation">
-
-                    <li class="previous">
-                        <a href="">
-                            Previous <span class="visuallyhidden">page</span>
-                            <span class="page-numbers">1 of 3</span>
-                        </a>
-                    </li>
-
-                    <li class="next">
-                        <a href="">
-                            Next <span class="visuallyhidden">page</span>
-                            <span class="page-numbers">2 of 3</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-            -->
+            {%
+              with
+              previous_page = {
+                "url": url_for(".service_update_audits", page=current_page-1, acknowledged=acknowledged),
+                "title": "Previous page"
+              } if prev_page_exists or False,
+              next_page = {
+                "url": url_for(".service_update_audits", page=current_page+1, acknowledged=acknowledged),
+                "title": "Next page"
+              } if next_page_exists or False
+            %}
+              {% include "toolkit/previous-next-navigation.html" %}
+            {% endwith %}
         </div>
     </div>
 </div>
