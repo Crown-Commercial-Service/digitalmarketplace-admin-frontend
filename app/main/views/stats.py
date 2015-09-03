@@ -19,7 +19,8 @@ def view_statistics(framework_slug):
 
     try:
         snapshots = data_api_client.find_audit_events(
-            audit_type=AuditTypes.snapshot_framework_stats
+            audit_type=AuditTypes.snapshot_framework_stats,
+            per_page=1260
         )['auditEvents']
         latest = data_api_client.get_framework_stats(framework_slug)
         snapshots.append(

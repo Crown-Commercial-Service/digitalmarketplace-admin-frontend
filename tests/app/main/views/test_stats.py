@@ -15,7 +15,8 @@ class TestStats(LoggedInApplicationTest):
         response = self.client.get('/admin/statistics/g-cloud-7')
 
         data_api_client.find_audit_events.assert_called_with(
-            audit_type=AuditTypes.snapshot_framework_stats
+            audit_type=AuditTypes.snapshot_framework_stats,
+            per_page=1260
         )
 
         self.assertEquals(200, response.status_code)
