@@ -31,40 +31,55 @@
   %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
-  <form action="{{ url_for('.find') }}" method="get" class="question">
-      <label class="question-heading" for="service_id">Find a service by service ID</label>
-      <p class='hint'>
-        eg 1234567890123456
-      </p>
-      <input type="text" name="service_id" id="service_id" class="text-box">
-      <input type="submit" value="Search" class="button-save">
-  </form>
 
-  <form action="{{ url_for('.find_supplier_services') }}" method="get" class="question">
-      <label class="question-heading" for="supplier_id_for_services">Find services by supplier ID</label>
-      <p class='hint'>
-        eg 54321
-      </p>
-      <input type="text" name="supplier_id" id="supplier_id_for_services" class="text-box">
-      <input type="submit" value="Search" class="button-save">
-  </form>
+  {% if current_user.has_role('admin') or current_user.has_role('admin-ccs-category') %}
+      <form action="{{ url_for('.find') }}" method="get" class="question">
+          <label class="question-heading" for="service_id">Find a service by service ID</label>
+          <p class='hint'>
+            eg 1234567890123456
+          </p>
+          <input type="text" name="service_id" id="service_id" class="text-box">
+          <input type="submit" value="Search" class="button-save">
+      </form>
+    
+      <form action="{{ url_for('.find_supplier_services') }}" method="get" class="question">
+          <label class="question-heading" for="supplier_id_for_services">Find services by supplier ID</label>
+          <p class='hint'>
+            eg 54321
+          </p>
+          <input type="text" name="supplier_id" id="supplier_id_for_services" class="text-box">
+          <input type="submit" value="Search" class="button-save">
+      </form>
+    
+      <form action="{{ url_for('.find_supplier_users') }}" method="get" class="question">
+          <label class="question-heading" for="supplier_id_for_users">Find users by supplier ID</label>
+          <p class='hint'>
+            eg 54321
+          </p>
+          <input type="text" name="supplier_id" id="supplier_id_for_users" class="text-box">
+          <input type="submit" value="Search" class="button-save">
+      </form>
+    
+      <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+        <label class="question-heading" for="supplier_name_prefix">Find suppliers by name prefix</label>
+        <p class="hint">
+          eg searching for c would give all suppliers starting with c
+        </p>
+        <input type="text" name="supplier_name_prefix" id="supplier_name_prefix" class="text-box">
+        <input type="submit" value="Search" class="button-save">
+      </form>
+  {% endif %}
 
-  <form action="{{ url_for('.find_supplier_users') }}" method="get" class="question">
-      <label class="question-heading" for="supplier_id_for_users">Find users by supplier ID</label>
-      <p class='hint'>
-        eg 54321
-      </p>
-      <input type="text" name="supplier_id" id="supplier_id_for_users" class="text-box">
-      <input type="submit" value="Search" class="button-save">
-  </form>
+{% with items = [
+    {
+        "body": "View G-Cloud 7 Statistics",
+        "link": "/admin/statistics/g-cloud-7",
+        "title": "G-Cloud 7 Statistics"
+    }
+]
+%}
+{% include "toolkit/browse-list.html" %}
+{% endwith %}
 
-  <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
-    <label class="question-heading" for="supplier_name_prefix">Find suppliers by name prefix</label>
-    <p class="hint">
-      eg searching for c would give all suppliers starting with c
-    </p>
-    <input type="text" name="supplier_name_prefix" id="supplier_name_prefix" class="text-box">
-    <input type="submit" value="Search" class="button-save">
-  </form>
 </div>
 {% endblock %}
