@@ -129,7 +129,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         )
 
         self.assertIn(
-            '<button class="button-destructive">Deactivate</button>',
+            '<input type="submit" class="button-destructive"  value="Deactivate" />',
             response.get_data(as_text=True)
         )
 
@@ -154,7 +154,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
             response.get_data(as_text=True)
         )
         self.assertIn(
-            '<button class="button-secondary">Unlock</button>',
+            '<input type="submit" class="button-secondary"  value="Unlock" />',
             response.get_data(as_text=True)
         )
 
@@ -174,7 +174,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
             response.get_data(as_text=True)
         )
         self.assertIn(
-            '<button class="button-secondary">Activate</button>',
+            '<input type="submit" class="button-secondary"  value="Activate" />',
             response.get_data(as_text=True)
         )
 
