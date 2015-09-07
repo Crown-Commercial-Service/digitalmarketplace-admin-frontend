@@ -357,7 +357,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             )
 
     @mock.patch('app.main.views.service_updates.data_api_client')
-    def test_should_not_pass_valid_page_argument_to_api(self, data_api_client):
+    def test_should_not_pass_invalid_page_argument_to_api(self, data_api_client):
         response = self.client.get('/admin/service-updates?page=invalid')
         self.assertEquals(400, response.status_code)
 
