@@ -36,6 +36,7 @@ def process_login():
 
         user = User.from_json(user_json)
         login_user(user)
+        current_app.logger.info('login.success')
 
         if next_url and next_url.startswith('/admin'):
             return redirect(next_url)
