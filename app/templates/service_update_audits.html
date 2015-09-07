@@ -143,11 +143,13 @@ Digital Marketplace admin
               with
               previous_page = {
                 "url": url_for(".service_update_audits", page=current_page-1, acknowledged=acknowledged),
-                "title": "Previous page"
+                "title": "Previous page",
+                "label": "Page " + ((current_page-1)|string)
               } if prev_page_exists or False,
               next_page = {
                 "url": url_for(".service_update_audits", page=current_page+1, acknowledged=acknowledged),
-                "title": "Next page"
+                "title": "Next page",
+                "label": "Page " + ((current_page+1)|string)
               } if next_page_exists or False
             %}
               {% include "toolkit/previous-next-navigation.html" %}
