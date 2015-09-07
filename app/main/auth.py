@@ -12,7 +12,7 @@ def role_required(*roles):
     Should be applied before the `@login_required` decorator:
 
         @login_required
-        @role_required('admin', 'admin-ccs')
+        @role_required('admin', 'admin-ccs-category')
         def view():
             ...
 

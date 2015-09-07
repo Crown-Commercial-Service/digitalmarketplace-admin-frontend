@@ -130,7 +130,7 @@ class TestLogin(BaseApplicationTest):
 
     @mock.patch('app.main.views.login.data_api_client')
     def test_can_login_with_admin_ccs_role(self, data_api_client):
-        data_api_client.authenticate_user.return_value = user_data(role='admin-ccs')
+        data_api_client.authenticate_user.return_value = user_data(role='admin-ccs-category')
 
         res = self.client.post('/admin/login', data={
             'email_address': 'valid@example.com',
@@ -192,7 +192,7 @@ class TestRoleRequired(LoggedInApplicationTest):
     def user_loader(self, user_id):
         if user_id:
             return User(
-                user_id, 'test@example.com', None, None, False, True, 'tester', 'admin-ccs'
+                user_id, 'test@example.com', None, None, False, True, 'tester', 'admin-ccs-category'
             )
 
     def test_admin_ccs_can_view_admin_dashboard(self):

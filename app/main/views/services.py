@@ -28,6 +28,7 @@ def index():
 
 @main.route('/services', methods=['GET'])
 @login_required
+@role_required('admin', 'admin-ccs-category')
 def find():
     if request.args.get("service_id") is None:
         return render_template("index.html", **get_template_data()), 404
@@ -37,6 +38,7 @@ def find():
 
 @main.route('/services/<service_id>', methods=['GET'])
 @login_required
+@role_required('admin', 'admin-ccs-category')
 def view(service_id):
     try:
         service = data_api_client.get_service(service_id)
@@ -113,6 +115,8 @@ def edit(service_id, section):
     '/services/compare/<old_archived_service_id>...<new_archived_service_id>',
     methods=['GET']
 )
+@login_required
+@role_required('admin', 'admin-ccs-category')
 def compare(old_archived_service_id, new_archived_service_id):
 
     def validate_archived_services(old_archived_service, new_archived_service):
