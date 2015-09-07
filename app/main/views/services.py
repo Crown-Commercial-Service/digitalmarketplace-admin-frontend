@@ -22,6 +22,7 @@ presenters = Presenters()
 
 @main.route('', methods=['GET'])
 @login_required
+@role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
 def index():
     return render_template("index.html", **get_template_data())
 

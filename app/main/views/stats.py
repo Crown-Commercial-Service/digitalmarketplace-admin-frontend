@@ -11,10 +11,12 @@ from ..helpers.sum_counts import format_snapshots
 from .. import main
 from . import get_template_data
 from ... import data_api_client
+from ..auth import role_required
 
 
 @main.route('/statistics/<string:framework_slug>', methods=['GET'])
 @login_required
+@role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
 def view_statistics(framework_slug):
 
     try:
