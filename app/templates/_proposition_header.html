@@ -8,9 +8,11 @@
     </nav>
     {% if current_user.email_address %}
       <ul id="proposition-links">
+        {% if current_user.has_role('admin') or current_user.has_role('admin-ccs-category') %}
         <li>
             <a href="{{ url_for('main.service_update_audits') }}">Service Updates</a>
         </li>
+        {% endif %}
         <li>
             <a href="{{ url_for('main.logout') }}">Log out</a>
         </li>

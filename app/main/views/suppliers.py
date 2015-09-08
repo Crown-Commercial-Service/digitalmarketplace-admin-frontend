@@ -14,6 +14,7 @@ from dmutils.email import send_email, \
 
 @main.route('/suppliers', methods=['GET'])
 @login_required
+@role_required('admin', 'admin-ccs-category')
 def find_suppliers():
     suppliers = data_api_client.find_suppliers(prefix=request.args.get("supplier_name_prefix"))
 
@@ -26,6 +27,7 @@ def find_suppliers():
 
 @main.route('/suppliers/users', methods=['GET'])
 @login_required
+@role_required('admin', 'admin-ccs-category')
 def find_supplier_users():
     form = EmailAddressForm()
 
@@ -67,6 +69,7 @@ def deactivate_user(user_id):
 
 @main.route('/suppliers/services', methods=['GET'])
 @login_required
+@role_required('admin', 'admin-ccs-category')
 def find_supplier_services():
 
     supplier = get_supplier()

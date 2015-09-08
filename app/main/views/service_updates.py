@@ -15,6 +15,7 @@ from . import get_template_data
 
 @main.route('/service-updates', methods=['GET'])
 @login_required
+@role_required('admin', 'admin-ccs-category')
 def service_update_audits():
     form = ServiceUpdateAuditEventsForm(request.args, csrf_enabled=False)
 
