@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import request, render_template, redirect, url_for
+from flask import request, render_template, redirect, url_for, abort
 from flask_login import login_required, current_user
 
 from dmutils.audit import AuditTypes
@@ -19,21 +19,7 @@ from . import get_template_data
 def service_update_audits():
     form = ServiceUpdateAuditEventsForm(request.args, csrf_enabled=False)
 
-    if form.validate():
-        audit_events = data_api_client.find_audit_events(
-            audit_type=AuditTypes.update_service,
-            acknowledged=form.default_acknowledged(),
-            audit_date=form.format_date()
-        )
-
-        return render_template(
-            "service_update_audits.html",
-            today=form.format_date_for_display().strftime(DATETIME_FORMAT),
-            acknowledged=form.default_acknowledged(),
-            audit_events=audit_events['auditEvents'],
-            form=form,
-            **get_template_data())
-    else:
+    if not form.validate():
         return render_template(
             "service_update_audits.html",
             today=datetime.utcnow().strftime(DATETIME_FORMAT),
@@ -41,6 +27,24 @@ def service_update_audits():
             audit_events=[],
             form=form,
             **get_template_data()), 400
+
+    audit_events = data_api_client.find_audit_events(
+        audit_type=AuditTypes.update_service,
+        acknowledged=form.default_acknowledged(),
+        audit_date=form.format_date(),
+        page=form.page.data
+    )
+
+    return render_template(
+        "service_update_audits.html",
+        today=form.format_date_for_display().strftime(DATETIME_FORMAT),
+        acknowledged=form.default_acknowledged(),
+        audit_events=audit_events['auditEvents'],
+        current_page=form.page.data,
+        prev_page_exists=bool(audit_events['links'].get('prev')),
+        next_page_exists=bool(audit_events['links'].get('next')),
+        form=form,
+        **get_template_data())
 
 
 @main.route('/service-updates/<audit_id>/acknowledge', methods=['POST'])

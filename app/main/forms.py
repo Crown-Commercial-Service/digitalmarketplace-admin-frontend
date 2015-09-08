@@ -1,5 +1,5 @@
 from flask_wtf import Form
-from wtforms import StringField, DateField, PasswordField
+from wtforms import StringField, DateField, PasswordField, IntegerField
 from wtforms.validators import Optional, AnyOf, DataRequired, \
     Email
 from datetime import datetime
@@ -17,6 +17,12 @@ class ServiceUpdateAuditEventsForm(Form):
         validators=[
             AnyOf(['all', 'true', 'false']),
             Optional()]
+    )
+    page = IntegerField(
+        default=1,
+        validators=[
+            Optional()
+        ]
     )
 
     def default_acknowledged(self):
