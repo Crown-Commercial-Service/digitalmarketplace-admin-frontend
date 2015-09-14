@@ -31,4 +31,3 @@ def find_user_by_email_address():
             users=list(),
             email_address=None,
             **get_template_data()), 404
-
