@@ -27,7 +27,7 @@ def find_suppliers():
 
 @main.route('/suppliers/<string:supplier_id>/edit/name', methods=['GET'])
 @login_required
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin')
 def edit_supplier_name(supplier_id):
 
     supplier = get_supplier(supplier_id)
@@ -40,6 +40,8 @@ def edit_supplier_name(supplier_id):
 
 
 @main.route('/suppliers/<string:supplier_id>/edit/name', methods=['POST'])
+@login_required
+@role_required('admin')
 def update_supplier_name(supplier_id):
 
     supplier = get_supplier(supplier_id)
