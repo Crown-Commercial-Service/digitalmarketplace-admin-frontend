@@ -32,12 +32,18 @@
           summary.hidden_field_heading("Edit name"),
           summary.hidden_field_heading("Users"),
           summary.hidden_field_heading("Services"),
+        ] if current_user.has_role('admin') else [
+          "Name",
+          summary.hidden_field_heading("Users"),
+          summary.hidden_field_heading("Services"),
         ],
         field_headings_visible=True)
       %}
         {% call summary.row() %}
           {{ summary.field_name(item.name) }}
-          {{ summary.edit_link("Change name", url_for(".edit_supplier_name", supplier_id=item.id)) }}
+          {% if current_user.has_role('admin') %}
+            {{ summary.edit_link("Change name", url_for(".edit_supplier_name", supplier_id=item.id)) }}
+          {% endif %}
           {{ summary.edit_link("Users", url_for(".find_supplier_users", supplier_id=item.id)) }}
           {{ summary.edit_link("Services", url_for(".find_supplier_services", supplier_id=item.id)) }}
         {% endcall %}
