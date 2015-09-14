@@ -138,6 +138,16 @@ class TestSupplierUsersView(LoggedInApplicationTest):
             response.get_data(as_text=True)
         )
 
+        self.assertIn(
+            '<input type="submit" class="button-secondary"  value="Remove from supplier" />',
+            response.get_data(as_text=True)
+        )
+
+        self.assertIn(
+            '<form action="/admin/suppliers/users/999/remove-from-supplier" method="post">',
+            response.get_data(as_text=True)
+        )
+
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_unlock_button_if_user_locked(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
@@ -207,9 +217,27 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.update_user.return_value = self.load_example_listing("user_response")
 
-        response = self.client.post('/admin/suppliers/users/999/deactivate')
+        response = self.client.post(
+            '/admin/suppliers/users/999/deactivate',
+            data={'supplier_id': 1000}
+        )
 
         data_api_client.update_user.assert_called_with(999, active=False)
+
+        self.assertEquals(302, response.status_code)
+        self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
+
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_call_api_to_remove_user_from_supplier(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.update_user.return_value = self.load_example_listing("user_response")
+
+        response = self.client.post(
+            '/admin/suppliers/users/999/remove-from-supplier',
+            data={'supplier_id': 1000}
+        )
+
+        data_api_client.update_user.assert_called_with(999, role='buyer')
 
         self.assertEquals(302, response.status_code)
         self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)

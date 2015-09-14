@@ -67,6 +67,14 @@ def deactivate_user(user_id):
     return redirect(url_for('.find_supplier_users', supplier_id=user['users']['supplier']['supplierId']))
 
 
+@main.route('/suppliers/users/<int:user_id>/remove-from-supplier', methods=['POST'])
+@login_required
+@role_required('admin')
+def remove_from_supplier(user_id):
+    data_api_client.update_user(user_id, role='buyer')
+    return redirect(url_for('.find_supplier_users', supplier_id=request.form['supplier_id']))
+
+
 @main.route('/suppliers/services', methods=['GET'])
 @login_required
 @role_required('admin', 'admin-ccs-category')

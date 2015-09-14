@@ -25,7 +25,7 @@
 
 <div class="page-container">
 
-    {% with heading = "Users" %}
+    {% with heading = supplier.name %}
     {% include "toolkit/page-heading.html" %}
     {% endwith %}
 
@@ -141,6 +141,22 @@
           {% else %}
             Deactivated
           {% endif %}
+        {% endif %}
+        {% endcall %}
+
+        {% call summary.field() %}
+        {% if current_user.has_role('admin') %}
+        <form action="{{ url_for('.remove_from_supplier', user_id=item.id) }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="hidden" name="supplier_id" value="{{ item.supplier.supplierId }}"/>
+            {%
+                with
+                type = "secondary",
+                label = "Remove from supplier"
+            %}
+            {% include "toolkit/button.html" %}
+            {% endwith %}
+        </form>
         {% endif %}
         {% endcall %}
 
