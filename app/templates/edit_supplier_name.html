@@ -1,0 +1,45 @@
+{% from 'macros/page_heading.html' import page_heading %}
+
+{% extends "_base_page.html" %}
+{% block page_title %}
+  Change name – {{ supplier.name }} – Digital Marketplace admin
+{% endblock %}
+
+{% block content %}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      },
+      {
+        "label": supplier.name
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+  <div class="page-container">
+    {% with heading = "Change supplier name" %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
+    <form method="post">
+      <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+      {%
+        with
+        question = "New name",
+        name = "new_supplier_name",
+        value = supplier.name
+      %}
+        {% include "toolkit/forms/textbox.html" %}
+      {% endwith %}
+      {%
+        with
+        type = "save",
+        label = "Save"
+      %}
+        {% include "toolkit/button.html" %}
+      {% endwith %}
+    </form>
+  </div>
+{% endblock %}

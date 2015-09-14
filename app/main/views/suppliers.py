@@ -25,6 +25,35 @@ def find_suppliers():
     )
 
 
+@main.route('/suppliers/<string:supplier_id>/edit/name', methods=['GET'])
+@login_required
+@role_required('admin')
+def edit_supplier_name(supplier_id):
+
+    supplier = get_supplier(supplier_id)
+
+    return render_template(
+        "edit_supplier_name.html",
+        supplier=supplier["suppliers"],
+        **get_template_data()
+    )
+
+
+@main.route('/suppliers/<string:supplier_id>/edit/name', methods=['POST'])
+@login_required
+@role_required('admin')
+def update_supplier_name(supplier_id):
+
+    supplier = get_supplier(supplier_id)
+    new_supplier_name = request.form.get('new_supplier_name', '')
+
+    data_api_client.update_supplier(
+        supplier['suppliers']['id'], {'name': new_supplier_name}, current_user.email_address
+    )
+
+    return redirect(url_for('.find_suppliers', supplier_name_prefix=new_supplier_name[:1]))
+
+
 @main.route('/suppliers/users', methods=['GET'])
 @login_required
 @role_required('admin', 'admin-ccs-category')
@@ -168,18 +197,20 @@ def invite_user(supplier_id):
         ), 400
 
 
-def get_supplier():
+def get_supplier(supplier_id=None):
 
-    if "supplier_id" not in request.args or len(request.args.get("supplier_id")) <= 0:
-        abort(404, "Supplier not found")
+    if supplier_id is None:
+        if "supplier_id" not in request.args or len(request.args.get("supplier_id")) <= 0:
+            abort(404, "Supplier not found")
+        supplier_id = request.args.get("supplier_id")
 
     try:
-        int(request.args.get("supplier_id"))
+        int(supplier_id)
     except ValueError:
-        abort(400, "invalid supplier id {}".format(request.args.get("supplier_id")))
+        abort(400, "invalid supplier id {}".format(supplier_id))
 
     try:
-        return data_api_client.get_supplier(request.args.get("supplier_id"))
+        return data_api_client.get_supplier(supplier_id)
     except HTTPError as e:
         if e.status_code != 404:
             raise
