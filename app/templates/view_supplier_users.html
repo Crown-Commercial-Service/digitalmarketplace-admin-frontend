@@ -25,7 +25,7 @@
 
 <div class="page-container">
 
-    {% with heading = "Users" %}
+    {% with heading = supplier.name %}
     {% include "toolkit/page-heading.html" %}
     {% endwith %}
 
@@ -62,8 +62,7 @@
                 'Email address',
                 'Last login',
                 'Last password change',
-                'Locked',
-                summary.hidden_field_heading("Change status")
+                'Locked'
             ],
             field_headings_visible=True)
         %}
