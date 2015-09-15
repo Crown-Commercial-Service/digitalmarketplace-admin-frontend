@@ -63,7 +63,7 @@
 
         {{ summary.field_name(item.name) }}
 
-        {{ summary.field_name(item.role) }}
+        {{ summary.text(item.role) }}
 
         {% call summary.field() %}
             {% if item.role == 'supplier' %}
