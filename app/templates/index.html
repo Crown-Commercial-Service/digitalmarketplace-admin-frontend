@@ -50,7 +50,7 @@
           <input type="text" name="supplier_id" id="supplier_id_for_services" class="text-box">
           <input type="submit" value="Search" class="button-save">
       </form>
-    
+
       <form action="{{ url_for('.find_supplier_users') }}" method="get" class="question">
           <label class="question-heading" for="supplier_id_for_users">Find users by supplier ID</label>
           <p class='hint'>
@@ -67,6 +67,15 @@
         </p>
         <input type="text" name="supplier_name_prefix" id="supplier_name_prefix" class="text-box">
         <input type="submit" value="Search" class="button-save">
+      </form>
+
+      <form action="{{ url_for('.find_user_by_email_address') }}" method="get" class="question">
+          <label class="question-heading" for="email_address">Find users by email address</label>
+          <p class='hint'>
+            eg john@smokeyjoes.com
+          </p>
+          <input type="text" name="email_address" id="email_address" class="text-box">
+          <input type="submit" value="Search" class="button-save">
       </form>
   {% endif %}
 

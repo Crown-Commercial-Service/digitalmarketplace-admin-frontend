@@ -77,6 +77,8 @@ def find_supplier_users():
 @role_required('admin')
 def unlock_user(user_id):
     user = data_api_client.update_user(user_id, locked=False)
+    if "source" in request.form:
+        return redirect(request.form["source"])
     return redirect(url_for('.find_supplier_users', supplier_id=user['users']['supplier']['supplierId']))
 
 
@@ -85,6 +87,8 @@ def unlock_user(user_id):
 @role_required('admin')
 def activate_user(user_id):
     user = data_api_client.update_user(user_id, active=True)
+    if "source" in request.form:
+        return redirect(request.form["source"])
     return redirect(url_for('.find_supplier_users', supplier_id=user['users']['supplier']['supplierId']))
 
 
@@ -93,6 +97,8 @@ def activate_user(user_id):
 @role_required('admin')
 def deactivate_user(user_id):
     user = data_api_client.update_user(user_id, active=False)
+    if "source" in request.form:
+        return redirect(request.form["source"])
     return redirect(url_for('.find_supplier_users', supplier_id=user['users']['supplier']['supplierId']))
 
 
