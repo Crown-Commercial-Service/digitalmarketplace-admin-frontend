@@ -48,7 +48,9 @@ Digital Marketplace admin
         <div class="column-one-third">
             <form action="{{ url_for('.service_update_audits') }}" method="get" class="question">
                 <div class="govuk-option-select">
-                    {{ form.audit_date.label(class="option-select-label") }}
+                    <div class="container-head">
+                        {{ form.audit_date.label(class="option-select-label") }}
+                    </div>
                     {% if form.audit_date.errors %}
                     <p class="validation-message" id="error-email-address-textbox">
                         {% for error in form.audit_date.errors %}{{ error }}{% endfor %}
