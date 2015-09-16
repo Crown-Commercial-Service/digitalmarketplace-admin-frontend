@@ -167,26 +167,30 @@
     {% if current_user.has_role('admin') %}
     <div class='page-section'>
         <form action="{{ url_for('.invite_user', supplier_id=supplier.id) }}" method="post">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            {% if form.email_address.errors %}
-            <div class="validation-wrapper">
-                {% endif %}
-                <div class="question">
-                    {{ form.email_address.label(class="question-heading-with-hint") }}
-                    <p class="hint">
-                        Enter the email address you of the user you wish to add
-                    </p>
+            <div class="grid-row">
+                <div class="column-two-thirds">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     {% if form.email_address.errors %}
-                    <p class="validation-message" id="error-email-address-textbox">
-                        {% for error in form.email_address.errors %}{{ error }}{% endfor %}
-                    </p>
+                    <div class="validation-wrapper">
+                        {% endif %}
+                        <div class="question">
+                            {{ form.email_address.label(class="question-heading-with-hint") }}
+                            <p class="hint">
+                                Enter the email address you of the user you wish to add
+                            </p>
+                            {% if form.email_address.errors %}
+                            <p class="validation-message" id="error-email-address-textbox">
+                                {% for error in form.email_address.errors %}{{ error }}{% endfor %}
+                            </p>
+                            {% endif %}
+                            {{ form.email_address(class="text-box", autocomplete="off") }}
+                        </div>
+                        {% if form.email_address.errors %}
+                    </div>
                     {% endif %}
-                    {{ form.email_address(class="text-box", autocomplete="off") }}
+                   <button class="button-save">Send invitation</button>
                 </div>
-                {% if form.email_address.errors %}
             </div>
-            {% endif %}
-           <button class="button-save">Send invitation</button>
         </form>
     </div>
     {% endif %}

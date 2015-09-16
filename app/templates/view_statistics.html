@@ -20,7 +20,7 @@
 
   <div class="page-container framework-statistics" {% if big_screen_mode %}id="framework-statistics-big-screen"{% endif %}>
     <div class="grid-row">
-      <div class="two-third-column">
+      <div class="column-two-thirds">
         {%
           with
           context = "G-Cloud 7",
@@ -29,7 +29,7 @@
           {% include "toolkit/page-heading.html" %}
         {% endwith %}
       </div>
-      <div class="third-column">
+      <div class="column-two-thirds">
         {% if not big_screen_mode %}
           {%
             with
