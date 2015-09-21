@@ -149,7 +149,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         }, 'test@example.com')
 
         self.assertIn(b'Your document is not in an open format', response.data)
-        self.assertIn(b'This question requires an answer', response.data)
+        self.assertIn(b'You need to answer this question', response.data)
         self.assertEquals(200, response.status_code)
 
     @mock.patch('app.main.views.services.data_api_client')
@@ -170,10 +170,10 @@ class TestServiceEdit(LoggedInApplicationTest):
         )
         self.assertEquals(200, response.status_code)
         self.assertIn(
-            b'id="serviceFeatures-item-1" class="text-box" value="foo"',
+            b'id="input-serviceFeatures-0" class="text-box" value="foo"',
             response.data)
         self.assertIn(
-            b'id="serviceFeatures-item-2" class="text-box" value=""',
+            b'id="input-serviceFeatures-1" class="text-box" value=""',
             response.data)
         response = self.client.post(
             '/admin/services/1/edit/features_and_benefits',
@@ -182,7 +182,7 @@ class TestServiceEdit(LoggedInApplicationTest):
                 'serviceBenefits': 'foo',
             }
         )
-        data_api_client.update_service.assert_called_with(1, {
+        data_api_client.update_service.assert_called_with('1', {
             'serviceFeatures': ['foo'],
             'serviceBenefits': ['foo'],
         }, 'test@example.com')
@@ -200,7 +200,7 @@ class TestServiceEdit(LoggedInApplicationTest):
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
-            b'id="serviceFeatures-item-1" class="text-box" value=""',
+            b'id="input-serviceFeatures-0" class="text-box" value=""',
             response.data)
 
     @mock.patch('app.main.views.services.data_api_client')
