@@ -82,9 +82,7 @@ def update_service_status(service_id):
     try:
         data_api_client.update_service_status(
             service_id, backend_status,
-            current_user.email_address,
-            "Status changed to '{0}'".format(
-                backend_status))
+            current_user.email_address)
 
     except HTTPError as e:
         flash({'status_error': e.message}, 'error')
@@ -221,8 +219,7 @@ def update(service_id, section):
             data_api_client.update_service(
                 service_data['id'],
                 update_data,
-                current_user.email_address,
-                "admin app")
+                current_user.email_address)
         except HTTPError as e:
             return e.message
 
