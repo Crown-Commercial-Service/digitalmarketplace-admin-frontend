@@ -195,7 +195,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.post('/admin/suppliers/users/999/unlock')
 
-        data_api_client.update_user.assert_called_with(999, locked=False)
+        data_api_client.update_user.assert_called_with(999, locked=False, updater="test@example.com")
 
         self.assertEquals(302, response.status_code)
         self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
@@ -207,7 +207,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.post('/admin/suppliers/users/999/activate')
 
-        data_api_client.update_user.assert_called_with(999, active=True)
+        data_api_client.update_user.assert_called_with(999, active=True, updater="test@example.com")
 
         self.assertEquals(302, response.status_code)
         self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
@@ -222,7 +222,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
             data={'supplier_id': 1000}
         )
 
-        data_api_client.update_user.assert_called_with(999, active=False)
+        data_api_client.update_user.assert_called_with(999, active=False, updater="test@example.com")
 
         self.assertEquals(302, response.status_code)
         self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
@@ -237,7 +237,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
             data={'supplier_id': 1000}
         )
 
-        data_api_client.update_user.assert_called_with(999, role='buyer')
+        data_api_client.update_user.assert_called_with(999, role='buyer', updater="test@example.com")
 
         self.assertEquals(302, response.status_code)
         self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
