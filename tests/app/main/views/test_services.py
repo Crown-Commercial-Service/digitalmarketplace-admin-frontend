@@ -117,7 +117,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.update_service.assert_called_with(1, {
             'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
             'sfiaRateDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/2/1-sfia-rate-card-2015-01-01-1200.pdf',  # noqa
-        }, 'test@example.com', 'admin app')
+        }, 'test@example.com')
 
         self.assertEquals(302, response.status_code)
 
@@ -146,7 +146,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.get_service.assert_called_with('1')
         data_api_client.update_service.assert_called_with(1, {
             'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
-        }, 'test@example.com', 'admin app')
+        }, 'test@example.com')
 
         self.assertIn(b'Your document is not in an open format', response.data)
         self.assertIn(b'This question requires an answer', response.data)
@@ -185,7 +185,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.update_service.assert_called_with(1, {
             'serviceFeatures': ['foo'],
             'serviceBenefits': ['foo'],
-        }, 'test@example.com', 'admin app')
+        }, 'test@example.com')
         self.assertEquals(response.status_code, 302)
 
     @mock.patch('app.main.views.services.data_api_client')
@@ -267,8 +267,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'removed'})
         data_api_client.update_service_status.assert_called_with(
-            '1', 'disabled', 'test@example.com',
-            "Status changed to 'disabled'")
+            '1', 'disabled', 'test@example.com')
         self.assertEquals(302, response1.status_code)
         self.assertEquals(response1.location,
                           'http://localhost/admin/services/1')
@@ -281,8 +280,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'private'})
         data_api_client.update_service_status.assert_called_with(
-            '1', 'enabled', 'test@example.com',
-            "Status changed to 'enabled'")
+            '1', 'enabled', 'test@example.com')
         self.assertEquals(302, response1.status_code)
         self.assertEquals(response1.location,
                           'http://localhost/admin/services/1')
@@ -295,8 +293,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'public'})
         data_api_client.update_service_status.assert_called_with(
-            '1', 'published', 'test@example.com',
-            "Status changed to 'published'")
+            '1', 'published', 'test@example.com')
         self.assertEquals(302, response1.status_code)
         self.assertEquals(response1.location,
                           'http://localhost/admin/services/1')
