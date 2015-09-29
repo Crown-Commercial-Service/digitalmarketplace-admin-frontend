@@ -25,6 +25,7 @@ $path: "/admin/static/images/";
 @import "toolkit/page-headings";
 @import "toolkit/previous-next-navigation";
 @import "forms/_option-select.scss";
+@import "forms/_keyword-search.scss";
 
 // Patterns specific to this app
 @import "patterns/service-id";
@@ -36,7 +37,6 @@ $path: "/admin/static/images/";
 @import "views/view_audits";
 @import "_diff.scss";
 @import "views/statistics";
-@import "views/_service_updates";
 
 // Graphs
 @import "_c3";
