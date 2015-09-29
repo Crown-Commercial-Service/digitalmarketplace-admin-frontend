@@ -4,8 +4,6 @@ from flask_login import login_required, current_user
 from datetime import datetime
 
 from dmutils.apiclient import HTTPError
-from dmutils.presenters import Presenters
-from dmutils.s3 import S3
 from dmutils.validation import Validate
 from dmutils.formats import DATETIME_FORMAT
 
@@ -15,9 +13,8 @@ from .. import main
 from . import get_template_data
 
 from ..auth import role_required
-from ..helpers.service import get_section_error_messages
-
-presenters = Presenters()
+from ..helpers.service import get_section_error_messages, upload_documents, has_changes_to_save
+from ..helpers.diff_tools import get_diffs_from_service_data, get_revision_dates
 
 
 @main.route('', methods=['GET'])
@@ -55,7 +52,7 @@ def view(service_id):
 
     template_data = get_template_data(
         sections=content,
-        service_data=presenters.present_all(service_data, service_content),
+        service_data=service_data,
         service_id=service_id
     )
     return render_template("view_service.html", **template_data)
@@ -193,15 +190,27 @@ def update(service_id, section_id):
     if section is None or not section.editable:
         abort(404)
 
+    errors = None
     posted_data = section.get_data(request.form)
+    uploaded_documents, document_errors = upload_documents(service, request.files, section,
+                                                           current_app.config['DM_S3_DOCUMENT_BUCKET'],
+                                                           current_app.config['DM_DOCUMENTS_URL'])
 
-    try:
-        data_api_client.update_service(
-            service_id,
-            posted_data,
-            current_user.email_address)
-    except HTTPError as e:
-        errors_map = get_section_error_messages(content, e.message, service['lot'])
+    if document_errors:
+        errors = get_section_error_messages(service_content, document_errors, service['lot'])
+    else:
+        posted_data.update(uploaded_documents)
+
+    if not errors and has_changes_to_save(section, service, posted_data):
+        try:
+            data_api_client.update_service(
+                service_id,
+                posted_data,
+                current_user.email_address)
+        except HTTPError as e:
+            errors = get_section_error_messages(content, e.message, service['lot'])
+
+    if errors:
         if not posted_data.get('serviceName', None):
             posted_data['serviceName'] = service.get('serviceName', '')
         return render_template(
@@ -210,7 +219,8 @@ def update(service_id, section_id):
                 section=section,
                 service_data=posted_data,
                 service_id=service_id,
-                errors=errors_map
+                errors=errors
             )
-        )
+        ), 400
+
     return redirect(url_for(".view", service_id=service_id))
