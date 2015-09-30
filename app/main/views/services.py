@@ -5,7 +5,7 @@ from datetime import datetime
 
 from dmutils.apiclient import HTTPError
 from dmutils.validation import Validate
-from dmutils.formats import DATETIME_FORMAT
+from dmutils.formats import DATETIME_FORMAT, format_service_price
 
 from ... import data_api_client
 from ... import service_content
@@ -48,6 +48,7 @@ def view(service_id):
         flash({'api_error': service_id}, 'error')
         return redirect(url_for('.index'))
 
+    service_data['priceString'] = format_service_price(service_data)
     content = service_content.get_builder().filter(service_data)
 
     template_data = get_template_data(
