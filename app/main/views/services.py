@@ -13,7 +13,7 @@ from .. import main
 from . import get_template_data
 
 from ..auth import role_required
-from ..helpers.service import get_section_error_messages, upload_documents, has_changes_to_save
+from ..helpers.service import upload_documents
 from ..helpers.diff_tools import get_diffs_from_service_data, get_revision_dates
 
 
@@ -197,18 +197,18 @@ def update(service_id, section_id):
                                                            current_app.config['DM_DOCUMENTS_URL'])
 
     if document_errors:
-        errors = get_section_error_messages(service_content, document_errors, service['lot'])
+        errors = section.get_error_messages(document_errors, service['lot'])
     else:
         posted_data.update(uploaded_documents)
 
-    if not errors and has_changes_to_save(section, service, posted_data):
+    if not errors and section.has_changes_to_save(service, posted_data):
         try:
             data_api_client.update_service(
                 service_id,
                 posted_data,
                 current_user.email_address)
         except HTTPError as e:
-            errors = get_section_error_messages(content, e.message, service['lot'])
+            errors = section.get_error_messages(e.message, service['lot'])
 
     if errors:
         if not posted_data.get('serviceName', None):
