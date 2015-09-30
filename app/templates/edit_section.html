@@ -47,32 +47,36 @@
       </div>
     {% endif %}
     <form action="{{ url_for('.update', service_id=service_data.id, section=section.id) }}" method="post" enctype="multipart/form-data">
-      <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
-      {% for question in section.questions %}
+      <div class="grid-row">
+        <div class="column-two-thirds">
+          <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
+          {% for question in section.questions %}
 
-        {% if question.id in errors %}
-          {{ forms.validation_wrapper_open() }}
-        {% endif %}
+            {% if question.id in errors %}
+              {{ forms.validation_wrapper_open() }}
+            {% endif %}
 
-        {{ forms.question_wrapper_open(question) }}
+            {{ forms.question_wrapper_open(question) }}
 
-          {% if question.id in errors %}
-            {{ forms.validation_message(errors[question.id ], question.id) }}
-          {% endif %}
+              {% if question.id in errors %}
+                {{ forms.validation_message(errors[question.id ], question.id) }}
+              {% endif %}
 
-          {{ forms[question.type](question, service_data[question.id], service_data) }}
+              {{ forms[question.type](question, service_data[question.id], service_data) }}
 
-        {{ forms.question_wrapper_close(question) }}
+            {{ forms.question_wrapper_close(question) }}
 
-        {% if question.id in errors %}
-          {{ forms.validation_wrapper_close() }}
-        {% endif %}
+            {% if question.id in errors %}
+              {{ forms.validation_wrapper_close() }}
+            {% endif %}
 
-      {% endfor %}
-      <button class="button-save" type="submit">Save and return to summary</button>
-      <p>
-        <a href="{{ url_for('.view', service_id=service_data.id) }}">Return without saving</a>
-      </p>
+          {% endfor %}
+          <button class="button-save" type="submit">Save and return to summary</button>
+          <p>
+            <a href="{{ url_for('.view', service_id=service_data.id) }}">Return without saving</a>
+          </p>
+        </div>
+      </div>
     </form>
   </div>
 {% endblock %}

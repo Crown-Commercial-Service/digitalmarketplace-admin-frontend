@@ -24,22 +24,26 @@
       {% include "toolkit/page-heading.html" %}
     {% endwith %}
     <form method="post">
-      <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
-      {%
-        with
-        question = "New name",
-        name = "new_supplier_name",
-        value = supplier.name
-      %}
-        {% include "toolkit/forms/textbox.html" %}
-      {% endwith %}
-      {%
-        with
-        type = "save",
-        label = "Save"
-      %}
-        {% include "toolkit/button.html" %}
-      {% endwith %}
+      <div class="grid-row">
+        <div class="column-two-thirds">
+          <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+          {%
+            with
+            question = "New name",
+            name = "new_supplier_name",
+            value = supplier.name
+          %}
+            {% include "toolkit/forms/textbox.html" %}
+          {% endwith %}
+          {%
+            with
+            type = "save",
+            label = "Save"
+          %}
+            {% include "toolkit/button.html" %}
+          {% endwith %}
+        </div>
+      </div>
     </form>
   </div>
 {% endblock %}

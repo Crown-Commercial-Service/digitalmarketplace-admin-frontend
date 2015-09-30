@@ -45,51 +45,53 @@ Digital Marketplace admin
 
 
 
-        <div class="grid-column third-column">
-        <form action="{{ url_for('.service_update_audits') }}" method="get" class="question">
-            <div class="govuk-option-select">
-                {{ form.audit_date.label(class="option-select-label") }}
-                {% if form.audit_date.errors %}
-                <p class="validation-message" id="error-email-address-textbox">
-                    {% for error in form.audit_date.errors %}{{ error }}{% endfor %}
-                </p>
-                {% endif %}
-                {{ form.audit_date(class="filter-field-text", placeholder="eg, 2015-07-23") }}
-            </div>
-
-            <div class="govuk-option-select">
-                <div class="container-head js-container-head">
-                    <div class="option-select-label">Show</div>
+        <div class="column-one-third">
+            <form action="{{ url_for('.service_update_audits') }}" method="get" class="question">
+                <div class="govuk-option-select">
+                    <div class="container-head">
+                        {{ form.audit_date.label(class="option-select-label") }}
+                    </div>
+                    {% if form.audit_date.errors %}
+                    <p class="validation-message" id="error-email-address-textbox">
+                        {% for error in form.audit_date.errors %}{{ error }}{% endfor %}
+                    </p>
+                    {% endif %}
+                    {{ form.audit_date(class="filter-field-text", placeholder="eg, 2015-07-23") }}
                 </div>
-                <div class="options-container">
-                    <div class="js-auto-height-inner">
-                        <label for="acknowledged-1">
-                            <input name="acknowledged" value="all" id="acknowledged-1" type="radio"
-                                   aria-controls=""
-                                   {% if acknowledged=="all" %} checked {% endif %}>
-                            All
-                        </label>
-                        <label for="acknowledged-2">
-                            <input name="acknowledged" value="true" id="acknowledged-2" type="radio"
-                                   aria-controls=""
-                                   {% if acknowledged=="true" %} checked {% endif %}>
-                            Acknowledged
-                        </label>
-                        <label for="acknowledged-3">
-                            <input name="acknowledged" value="false" id="acknowledged-3" type="radio"
-                                   aria-controls=""
-                                   {% if acknowledged=="false" %} checked {% endif %}>
-                            Not acknowledged
-                        </label>
 
+                <div class="govuk-option-select">
+                    <div class="container-head js-container-head">
+                        <div class="option-select-label">Show</div>
+                    </div>
+                    <div class="options-container">
+                        <div class="js-auto-height-inner">
+                            <label for="acknowledged-1">
+                                <input name="acknowledged" value="all" id="acknowledged-1" type="radio"
+                                       aria-controls=""
+                                       {% if acknowledged=="all" %} checked {% endif %}>
+                                All
+                            </label>
+                            <label for="acknowledged-2">
+                                <input name="acknowledged" value="true" id="acknowledged-2" type="radio"
+                                       aria-controls=""
+                                       {% if acknowledged=="true" %} checked {% endif %}>
+                                Acknowledged
+                            </label>
+                            <label for="acknowledged-3">
+                                <input name="acknowledged" value="false" id="acknowledged-3" type="radio"
+                                       aria-controls=""
+                                       {% if acknowledged=="false" %} checked {% endif %}>
+                                Not acknowledged
+                            </label>
+
+                        </div>
                     </div>
                 </div>
-            </div>
-            <button class="button-save" type="submit">Filter</button>
-            </form>
+                <button class="button-save" type="submit">Filter</button>
+                </form>
         </div>
 
-        <div class="grid-column two-third-column">
+        <div class="column-two-thirds">
             {% call(item) summary.list_table(
               audit_events,
               caption="Audit events",
