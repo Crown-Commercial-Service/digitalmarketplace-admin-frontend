@@ -4,10 +4,11 @@ from flask_login import login_required, current_user
 from datetime import datetime
 
 from dmutils.apiclient import HTTPError
-from dmutils.presenters import Presenters
-from dmutils.s3 import S3
 from dmutils.validation import Validate
-from dmutils.formats import DATETIME_FORMAT
+from dmutils.formats import DATETIME_FORMAT, format_service_price
+from dmutils.documents import upload_service_documents
+from dmutils.s3 import S3
+
 
 from ... import data_api_client
 from ... import service_content
@@ -16,8 +17,6 @@ from . import get_template_data
 
 from ..auth import role_required
 from ..helpers.diff_tools import get_diffs_from_service_data, get_revision_dates
-
-presenters = Presenters()
 
 
 @main.route('', methods=['GET'])
@@ -51,11 +50,12 @@ def view(service_id):
         flash({'api_error': service_id}, 'error')
         return redirect(url_for('.index'))
 
+    service_data['priceString'] = format_service_price(service_data)
     content = service_content.get_builder().filter(service_data)
 
     template_data = get_template_data(
         sections=content,
-        service_data=presenters.present_all(service_data, service_content),
+        service_data=service_data,
         service_id=service_id
     )
     return render_template("view_service.html", **template_data)
@@ -179,57 +179,53 @@ def compare(old_archived_service_id, new_archived_service_id):
     return render_template("compare_revisions.html", **template_data)
 
 
-@main.route('/services/<service_id>/edit/<section>', methods=['POST'])
+@main.route('/services/<service_id>/edit/<section_id>', methods=['POST'])
 @login_required
 @role_required('admin')
-def update(service_id, section):
-    s3_uploader = S3(
-        bucket_name=main.config['S3_DOCUMENT_BUCKET'],
-    )
+def update(service_id, section_id):
+    service = data_api_client.get_service(service_id)
+    if service is None:
+        abort(404)
+    service = service['services']
 
-    service_data = data_api_client.get_service(service_id)['services']
-    posted_data = dict(
-        list(request.form.items()) + list(request.files.items())
-    )
+    content = service_content.get_builder().filter(service)
+    section = content.get_section(section_id)
+    if section is None or not section.editable:
+        abort(404)
 
-    content = service_content.get_builder().filter(service_data)
+    errors = None
+    posted_data = section.get_data(request.form)
 
-    # Turn responses which have multiple parts into lists
-    for key in request.form:
-        item_as_list = request.form.getlist(key)
-        list_types = ['list', 'checkboxes', 'pricing']
-        if (
-            key != 'csrf_token' and
-            service_content.get_question(key)['type'] in list_types
-        ):
-            posted_data[key] = item_as_list
+    uploaded_documents, document_errors = upload_service_documents(
+        S3(current_app.config['DM_S3_DOCUMENT_BUCKET']),
+        current_app.config['DM_DOCUMENTS_URL'],
+        service, request.files, section)
 
-    posted_data.pop('csrf_token', None)
-    form = Validate(service_content, service_data, posted_data,
-                    main.config['DOCUMENTS_URL'], s3_uploader)
-    form.validate()
+    if document_errors:
+        errors = section.get_error_messages(document_errors, service['lot'])
+    else:
+        posted_data.update(uploaded_documents)
 
-    update_data = {}
-    for question_id in form.clean_data:
-        if question_id not in form.errors:
-            update_data[question_id] = form.clean_data[question_id]
-
-    if update_data:
+    if not errors and section.has_changes_to_save(service, posted_data):
         try:
             data_api_client.update_service(
-                service_data['id'],
-                update_data,
+                service_id,
+                posted_data,
                 current_user.email_address)
         except HTTPError as e:
-            return e.message
+            errors = section.get_error_messages(e.message, service['lot'])
 
-    if form.errors:
-        service_data.update(form.dirty_data)
-        return render_template("edit_section.html", **get_template_data(
-            section=content.get_section(section),
-            service_data=service_data,
-            service_id=service_id,
-            errors=form.errors
-        ))
-    else:
-        return redirect(url_for(".view", service_id=service_id))
+    if errors:
+        if not posted_data.get('serviceName', None):
+            posted_data['serviceName'] = service.get('serviceName', '')
+        return render_template(
+            "edit_section.html",
+            **get_template_data(
+                section=section,
+                service_data=posted_data,
+                service_id=service_id,
+                errors=errors
+            )
+        ), 400
+
+    return redirect(url_for(".view", service_id=service_id))

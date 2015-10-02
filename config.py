@@ -17,10 +17,10 @@ class Config(object):
     SESSION_COOKIE_PATH = '/admin'
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = True
-    S3_DOCUMENT_BUCKET = os.getenv('DM_S3_DOCUMENT_BUCKET')
-    DOCUMENTS_URL = 'https://assets.dev.digitalmarketplace.service.gov.uk'
-    DM_DATA_API_URL = os.getenv('DM_DATA_API_URL')
-    DM_DATA_API_AUTH_TOKEN = os.getenv('DM_DATA_API_AUTH_TOKEN')
+    DM_S3_DOCUMENT_BUCKET = None
+    DM_DOCUMENTS_URL = 'https://assets.dev.digitalmarketplace.service.gov.uk'
+    DM_DATA_API_URL = None
+    DM_DATA_API_AUTH_TOKEN = None
     SECRET_KEY = os.getenv('DM_ADMIN_FRONTEND_COOKIE_SECRET')
 
     STATIC_URL_PATH = '/admin/static'
@@ -63,7 +63,7 @@ class Test(Config):
     DEBUG = True
     AUTHENTICATION = True
     WTF_CSRF_ENABLED = False
-    DOCUMENTS_URL = 'https://assets.test.digitalmarketplace.service.gov.uk'
+    DM_DOCUMENTS_URL = 'https://assets.test.digitalmarketplace.service.gov.uk'
     SECRET_KEY = "test_secret"
 
     DM_LOG_LEVEL = 'CRITICAL'
@@ -82,14 +82,14 @@ class Live(Config):
     DEBUG = False
     AUTHENTICATION = True
     DM_HTTP_PROTO = 'https'
-    DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
+    DM_DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
 
 
 class Staging(Config):
     DEBUG = False
     AUTHENTICATION = True
     WTF_CSRF_ENABLED = False
-    DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
+    DM_DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
 
 
 configs = {

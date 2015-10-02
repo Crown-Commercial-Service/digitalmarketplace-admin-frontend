@@ -1,0 +1,144 @@
+{% macro text(question_content, service_data, errors, question_number=None) -%}
+  {%
+    with
+    question=question_content.question|markdown,
+    hint=(question_content.hint or '')|markdown,
+    name=question_content.id,
+    value=service_data[question_content.id],
+    error=errors.get(question_content.id)['message']
+  %}
+    {% include "toolkit/forms/textbox.html" %}
+  {% endwith %}
+{%- endmacro %}
+
+{% macro textbox_large(question_content, service_data, errors, question_number=None) -%}
+  {%
+    with
+    question=question_content.question|markdown,
+    hint=(question_content.hint or '')|markdown,
+    name=question_content.id,
+    value=service_data[question_content.id],
+    large=True,
+    max_length_in_words=question_content["maxLengthInWords"],
+    error=errors.get(question_content.id)['message']
+  %}
+    {% include "toolkit/forms/textbox.html" %}
+  {% endwith %}
+{%- endmacro %}
+
+{% macro list(question_content, service_data, errors, question_number=None) -%}
+  {%
+    with
+    name=question_content.id,
+    number_of_items=10,
+    question=question_content.question|markdown,
+    hint=(question_content.hint or '')|markdown,
+    values=service_data[question_content.id],
+    id=question_content.id,
+    error=errors.get(question_content.id)['message']
+  %}
+    {% include "toolkit/forms/list-entry.html" %}
+  {% endwith %}
+{%- endmacro %}
+
+{% macro checkboxes(question_content, service_data, errors, question_number=None) -%}
+  {%
+    with
+    name=question_content.id,
+    question=question_content.question|markdown,
+    hint=(question_content.hint or '')|markdown,
+    value=service_data[question_content.id],
+    id=question_content.id,
+    options=question_content.options,
+    type='checkbox',
+    error=errors.get(question_content.id)['message'],
+    question_number=question_number
+  %}
+    {% include "toolkit/forms/selection-buttons.html" %}
+  {% endwith %}
+{%- endmacro %}
+
+{% macro radios(question_content, service_data, errors, question_number=None) -%}
+  {%
+    with
+    name=question_content.id,
+    question=question_content.question|markdown,
+    hint=(question_content.hint or '')|markdown,
+    hint_underneath=(question_content.hint_underneath or False),
+    value=service_data[question_content.id],
+    id=question_content.id,
+    options=question_content.options,
+    type='radio',
+    error=errors.get(question_content.id)['message'],
+    question_number=question_number
+  %}
+    {% include "toolkit/forms/selection-buttons.html" %}
+  {% endwith %}
+{%- endmacro %}
+
+{% macro boolean(question_content, service_data, errors, question_number=None) -%}
+  {%
+    with
+    name=question_content.id,
+    question=question_content.question|markdown,
+    hint=(question_content.hint or '')|markdown,
+    value=service_data[question_content.id],
+    id=question_content.id,
+    type='boolean',
+    error=errors.get(question_content.id)['message'],
+    question_number=question_number
+  %}
+    {% include "toolkit/forms/selection-buttons.html" %}
+  {% endwith %}
+{%- endmacro %}
+
+{% macro upload(question_content, service_data, errors, question_number=None) -%}
+  {%
+    with
+    question=question_content.question|markdown,
+    hint=(question_content.hint or '')|markdown,
+    name=question_content.id,
+    value="Document uploaded {}".format(
+      service_data[question_content.id]
+    ) if service_data[question_content.id] else service_data[question_content.id],
+    error=errors.get(question_content.id)['message'],
+    question_number=question_number
+  %}
+    {% include "toolkit/forms/upload.html" %}
+  {% endwith %}
+{%- endmacro %}
+
+{% macro pricing(question_content, service_data, errors, question_number=None) -%}
+  {%
+    with
+    name=question_content.id,
+    priceMin=service_data.priceMin,
+    priceMax=service_data.priceMax,
+    priceUnit=service_data.priceUnit,
+    priceInterval=service_data.priceInterval,
+    value=service_data[question_content.id],
+    hint=(question_content.hint or '')|markdown,
+    id=question_content.id,
+    error=errors.get(question_content.id)['message'],
+    question_number=question_number
+  %}
+    {% include "toolkit/forms/pricing.html" %}
+  {% endwith %}
+{%- endmacro %}
+
+{% macro percentage(question_content, service_data, errors, question_number=None) -%}
+  {%
+    with
+    unit_in_full="percent",
+    unit_position="after",
+    unit="%",
+    question=question_content.question|markdown,
+    hint=(question_content.hint or '')|markdown,
+    name=question_content.id,
+    value=service_data[question_content.id],
+    error=errors.get(question_content.id)['message'],
+    question_number=question_number
+  %}
+    {% include "toolkit/forms/textbox.html" %}
+  {% endwith %}
+{%- endmacro %}
