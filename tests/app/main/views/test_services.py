@@ -208,8 +208,8 @@ class TestServiceEdit(LoggedInApplicationTest):
             response.data)
 
     @mock.patch('app.main.views.services.data_api_client')
-    @mock.patch('app.main.views.services.upload_documents')
-    def test_service_edit_when_API_returns_error(self, upload_documents, data_api_client):
+    @mock.patch('app.main.views.services.upload_service_documents')
+    def test_service_edit_when_API_returns_error(self, upload_service_documents, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,
@@ -218,7 +218,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
             'sfiaRateDocumentURL': None
         }}
-        upload_documents.return_value = ({}, {})
+        upload_service_documents.return_value = ({}, {})
         data_api_client.update_service.side_effect = HTTPError(None, {'sfiaRateDocumentURL': 'required'})
 
         response = self.client.post(

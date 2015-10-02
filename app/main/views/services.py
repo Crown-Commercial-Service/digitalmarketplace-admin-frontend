@@ -6,6 +6,9 @@ from datetime import datetime
 from dmutils.apiclient import HTTPError
 from dmutils.validation import Validate
 from dmutils.formats import DATETIME_FORMAT, format_service_price
+from dmutils.documents import upload_service_documents
+from dmutils.s3 import S3
+
 
 from ... import data_api_client
 from ... import service_content
@@ -13,7 +16,6 @@ from .. import main
 from . import get_template_data
 
 from ..auth import role_required
-from ..helpers.service import upload_documents
 from ..helpers.diff_tools import get_diffs_from_service_data, get_revision_dates
 
 
@@ -193,9 +195,11 @@ def update(service_id, section_id):
 
     errors = None
     posted_data = section.get_data(request.form)
-    uploaded_documents, document_errors = upload_documents(service, request.files, section,
-                                                           current_app.config['DM_S3_DOCUMENT_BUCKET'],
-                                                           current_app.config['DM_DOCUMENTS_URL'])
+
+    uploaded_documents, document_errors = upload_service_documents(
+        S3(current_app.config['DM_S3_DOCUMENT_BUCKET']),
+        current_app.config['DM_DOCUMENTS_URL'],
+        service, request.files, section)
 
     if document_errors:
         errors = section.get_error_messages(document_errors, service['lot'])
