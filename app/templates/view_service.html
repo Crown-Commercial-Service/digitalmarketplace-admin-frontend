@@ -82,9 +82,7 @@
         ) %}
           {% call summary.row() %}
             {{ summary.field_name(item.question) }}
-            {% call summary.field() %}
-              {{ summary[item.type](service_data[item.id]) }}
-            {% endcall %}
+            {{ summary[item.type](service_data[item.id]) }}
           {% endcall %}
         {% endcall %}
       {% endfor %}
