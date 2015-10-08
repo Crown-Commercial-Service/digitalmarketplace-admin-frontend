@@ -49,6 +49,24 @@ class TestLogin(BaseApplicationTest):
         assert_equal(res.status_code, 200)
 
     @mock.patch('app.main.views.login.data_api_client')
+    def test_should_strip_whitespace_surrounding_login_email_address_field(self, apiclient):
+        apiclient.authenticate_user.return_value = user_data()
+        self.client.post("/admin/login", data={
+            'email_address': '  valid@email.com  ',
+            'password': '1234567890'
+        })
+        apiclient.authenticate_user.assert_called_with('valid@email.com', '1234567890', supplier=False)
+
+    @mock.patch('app.main.views.login.data_api_client')
+    def test_should_not_strip_whitespace_surrounding_login_password_field(self, apiclient):
+        apiclient.authenticate_user.return_value = user_data()
+        self.client.post("/admin/login", data={
+            'email_address': 'valid@email.com',
+            'password': '  1234567890  '
+        })
+        apiclient.authenticate_user.assert_called_with('valid@email.com', '  1234567890  ', supplier=False)
+
+    @mock.patch('app.main.views.login.data_api_client')
     def test_ok_next_url_redirects_on_login(self, apiclient):
         apiclient.authenticate_user.return_value = user_data()
         res = self.client.post('/admin/login?next=/admin/safe', data={

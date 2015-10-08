@@ -4,6 +4,7 @@ from wtforms.validators import Optional, AnyOf, DataRequired, \
     Email
 from datetime import datetime
 from dmutils.formats import DATE_FORMAT
+from dmutils.forms import StripWhitespaceStringField
 
 
 class ServiceUpdateAuditEventsForm(Form):
@@ -45,7 +46,7 @@ class ServiceUpdateAuditEventsForm(Form):
 
 
 class LoginForm(Form):
-    email_address = StringField('Email address', validators=[
+    email_address = StripWhitespaceStringField('Email address', validators=[
         DataRequired(message='Email cannot be empty'),
         Email(message='Please enter a valid email address')
     ])
@@ -55,7 +56,7 @@ class LoginForm(Form):
 
 
 class EmailAddressForm(Form):
-    email_address = StringField('Email address', validators=[
+    email_address = StripWhitespaceStringField('Email address', validators=[
         DataRequired(message="Email can not be empty"),
         Email(message="Please enter a valid email address")
     ])

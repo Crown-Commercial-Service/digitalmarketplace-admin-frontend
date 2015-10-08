@@ -542,6 +542,29 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         self.assertEqual(res.status_code, 302)
         self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_id=1234')
 
+    @mock.patch('app.main.views.suppliers.send_email')
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_strip_whitespace_surrounding_invite_user_email_address_field(self, data_api_client, send_email):
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_users.return_value = self.load_example_listing("users_response")
+
+        self.client.post(
+            "/admin/suppliers/1234/invite-user",
+            data={
+                'email_address': '  this@isvalid.com  ',
+            }
+        )
+
+        send_email.assert_called_once_with(
+            'this@isvalid.com',
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+            mock.ANY,
+            mock.ANY
+        )
+
     @mock.patch('app.main.views.suppliers.generate_token')
     @mock.patch('app.main.views.suppliers.render_template')
     @mock.patch('app.main.views.suppliers.send_email')
