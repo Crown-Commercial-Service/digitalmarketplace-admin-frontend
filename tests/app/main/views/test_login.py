@@ -37,8 +37,8 @@ class TestLogin(BaseApplicationTest):
         assert_in("Administrator login", res.get_data(as_text=True))
 
     @mock.patch('app.main.views.login.data_api_client')
-    def test_valid_login(self, apiclient):
-        apiclient.authenticate_user.return_value = user_data()
+    def test_valid_login(self, data_api_client):
+        data_api_client.authenticate_user.return_value = user_data()
         res = self.client.post('/admin/login', data={
             'email_address': 'valid@email.com',
             'password': '1234567890'
@@ -49,8 +49,26 @@ class TestLogin(BaseApplicationTest):
         assert_equal(res.status_code, 200)
 
     @mock.patch('app.main.views.login.data_api_client')
-    def test_ok_next_url_redirects_on_login(self, apiclient):
-        apiclient.authenticate_user.return_value = user_data()
+    def test_should_strip_whitespace_surrounding_login_email_address_field(self, data_api_client):
+        data_api_client.authenticate_user.return_value = user_data()
+        self.client.post("/admin/login", data={
+            'email_address': '  valid@email.com  ',
+            'password': '1234567890'
+        })
+        data_api_client.authenticate_user.assert_called_with('valid@email.com', '1234567890', supplier=False)
+
+    @mock.patch('app.main.views.login.data_api_client')
+    def test_should_not_strip_whitespace_surrounding_login_password_field(self, data_api_client):
+        data_api_client.authenticate_user.return_value = user_data()
+        self.client.post("/admin/login", data={
+            'email_address': 'valid@email.com',
+            'password': '  1234567890  '
+        })
+        data_api_client.authenticate_user.assert_called_with('valid@email.com', '  1234567890  ', supplier=False)
+
+    @mock.patch('app.main.views.login.data_api_client')
+    def test_ok_next_url_redirects_on_login(self, data_api_client):
+        data_api_client.authenticate_user.return_value = user_data()
         res = self.client.post('/admin/login?next=/admin/safe', data={
             'email_address': 'valid@example.com',
             'password': '1234567890',
@@ -59,8 +77,8 @@ class TestLogin(BaseApplicationTest):
         assert_equal(urlsplit(res.location).path, '/admin/safe')
 
     @mock.patch('app.main.views.login.data_api_client')
-    def test_bad_next_url_takes_user_to_dashboard(self, apiclient):
-        apiclient.authenticate_user.return_value = user_data()
+    def test_bad_next_url_takes_user_to_dashboard(self, data_api_client):
+        data_api_client.authenticate_user.return_value = user_data()
         res = self.client.post('/admin/login?next=http://badness.com', data={
             'email_address': 'valid@example.com',
             'password': '1234567890',
@@ -69,8 +87,8 @@ class TestLogin(BaseApplicationTest):
         assert_equal(urlsplit(res.location).path, '/admin')
 
     @mock.patch('app.main.views.login.data_api_client')
-    def test_should_have_cookie_on_redirect(self, apiclient):
-        apiclient.authenticate_user.return_value = user_data()
+    def test_should_have_cookie_on_redirect(self, data_api_client):
+        data_api_client.authenticate_user.return_value = user_data()
         with self.app.app_context():
             self.app.config['SESSION_COOKIE_DOMAIN'] = '127.0.0.1'
             self.app.config['SESSION_COOKIE_SECURE'] = True
@@ -84,8 +102,8 @@ class TestLogin(BaseApplicationTest):
             assert_in('Path=/admin', cookie_parts)
 
     @mock.patch('app.main.views.login.data_api_client')
-    def test_should_redirect_to_login_on_logout(self, apiclient):
-        apiclient.authenticate_user.return_value = user_data()
+    def test_should_redirect_to_login_on_logout(self, data_api_client):
+        data_api_client.authenticate_user.return_value = user_data()
         self.client.post('/admin/login', data={
             'email_address': 'valid@example.com',
             'password': '1234567890',
@@ -95,8 +113,8 @@ class TestLogin(BaseApplicationTest):
         assert_equal(urlsplit(res.location).path, '/admin/login')
 
     @mock.patch('app.main.views.login.data_api_client')
-    def test_logout_should_log_user_out(self, apiclient):
-        apiclient.authenticate_user.return_value = user_data()
+    def test_logout_should_log_user_out(self, data_api_client):
+        data_api_client.authenticate_user.return_value = user_data()
         self.client.post('/admin/login', data={
             'email_address': 'valid@example.com',
             'password': '1234567890',
