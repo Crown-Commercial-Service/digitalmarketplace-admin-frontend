@@ -3,18 +3,17 @@ from flask_login import login_required, current_user, flash
 
 from .. import main
 from . import get_template_data
-from ... import data_api_client
+from ... import data_api_client, content_loader
 from ..forms import EmailAddressForm
 from ..auth import role_required
-from dmutils.apiclient.errors import HTTPError
+from dmutils.apiclient.errors import HTTPError, APIError
 from dmutils.audit import AuditTypes
-from dmutils.email import send_email, \
-    generate_token, MandrillException
+from dmutils.email import send_email, generate_token, MandrillException
 
 
 @main.route('/suppliers', methods=['GET'])
 @login_required
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
 def find_suppliers():
     suppliers = data_api_client.find_suppliers(prefix=request.args.get("supplier_name_prefix"))
 
@@ -37,6 +36,69 @@ def edit_supplier_name(supplier_id):
         supplier=supplier["suppliers"],
         **get_template_data()
     )
+
+
+@main.route('/suppliers/<string:supplier_id>/edit/declarations/<string:framework_slug>', methods=['GET'])
+@login_required
+@role_required('admin-ccs-sourcing')
+def view_supplier_declaration(supplier_id, framework_slug):
+    supplier = data_api_client.get_supplier(supplier_id)['suppliers']
+    framework = data_api_client.get_framework(framework_slug)['frameworks']
+    declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
+
+    content = content_loader.get_builder(framework_slug, 'declaration').filter(declaration)
+
+    return render_template(
+        "suppliers/view_declaration.html",
+        supplier=supplier,
+        framework=framework,
+        declaration=declaration,
+        content=content,
+        **get_template_data())
+
+
+@main.route(
+    '/suppliers/<string:supplier_id>/edit/declarations/<string:framework_slug>/<string:section_id>',
+    methods=['GET'])
+@login_required
+@role_required('admin-ccs-sourcing')
+def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
+    supplier = data_api_client.get_supplier(supplier_id)['suppliers']
+    framework = data_api_client.get_framework(framework_slug)['frameworks']
+    declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
+
+    content = content_loader.get_builder(framework_slug, 'declaration').filter(declaration)
+
+    return render_template(
+        "suppliers/edit_declaration.html",
+        supplier=supplier,
+        framework=framework,
+        declaration=declaration,
+        section=content.get_section(section_id),
+        **get_template_data())
+
+
+@main.route(
+    '/suppliers/<string:supplier_id>/edit/declarations/<string:framework_slug>/<string:section_id>',
+    methods=['POST'])
+def update_supplier_declaration_section(supplier_id, framework_slug, section_id):
+    supplier = data_api_client.get_supplier(supplier_id)['suppliers']
+    framework = data_api_client.get_framework(framework_slug)['frameworks']
+    declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
+
+    content = content_loader.get_builder(framework_slug, 'declaration').filter(declaration)
+    section = content.get_section(section_id)
+
+    posted_data = section.get_data(request.form)
+
+    if section.has_changes_to_save(declaration, posted_data):
+        declaration.update(posted_data)
+        data_api_client.set_supplier_declaration(
+            supplier_id, framework_slug, declaration,
+            current_user.email_address)
+
+    return redirect(url_for('.view_supplier_declaration',
+                            supplier_id=supplier_id, framework_slug=framework_slug))
 
 
 @main.route('/suppliers/<string:supplier_id>/edit/name', methods=['POST'])

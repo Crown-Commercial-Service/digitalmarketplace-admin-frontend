@@ -20,6 +20,7 @@ login_manager = LoginManager()
 
 content_loader = ContentLoader('app/content')
 content_loader.load_manifest('g-cloud-6', 'edit_service_as_admin', 'services')
+content_loader.load_manifest('g-cloud-7', 'declaration', 'declaration')
 
 
 from app.main.helpers.service import parse_document_upload_time

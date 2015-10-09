@@ -1,0 +1,44 @@
+{% import "toolkit/summary-table.html" as summary %}
+
+{% extends "_base_page.html" %}
+
+{% block page_title %}
+  Change {{ framework.name }} declaration
+{% endblock %}
+
+{% block content %}
+  <div class="page-container my-special-page">
+      <div class="grid-row">
+        <div class="service-title">
+          {%
+            with
+            context = supplier.name,
+            heading = framework.name + " declaration",
+            smaller = True
+          %}
+            {% include "toolkit/page-heading.html" %}
+          {% endwith %}
+        </div>
+      </div>
+
+      {% for section in content %}
+        {{ summary.heading(section.name) }}
+        {{ summary.top_link("Edit", url_for('.edit_supplier_declaration_section', supplier_id=supplier.id, framework_slug=framework.slug, section_id=section.id)) }}
+        {% call(item) summary.list_table(
+          section.questions,
+          caption="Declaration",
+          empty_message="This supplier not made a declaration",
+          field_headings=[
+            'Declaration question',
+            'Declaration answer'
+          ]
+        ) %}
+          {% call summary.row() %}
+            {{ summary.field_name(item.question) }}
+            {{ summary[item.type](declaration[item.id]) }}
+          {% endcall %}
+        {% endcall %}
+      {% endfor %}
+  </div>
+
+{% endblock %}
