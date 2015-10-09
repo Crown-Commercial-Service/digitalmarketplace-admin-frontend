@@ -18,10 +18,8 @@ data_api_client = apiclient.DataAPIClient()
 feature_flags = flask_featureflags.FeatureFlag()
 login_manager = LoginManager()
 
-service_content = ContentLoader(
-    "app/content/frameworks/g-cloud-6/manifests/edit_service_as_admin.yml",
-    "app/content/frameworks/g-cloud-6/questions/services/"
-)
+content_loader = ContentLoader('app/content')
+content_loader.load_manifest('g-cloud-6', 'edit_service_as_admin', 'services')
 
 
 from app.main.helpers.service import parse_document_upload_time

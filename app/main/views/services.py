@@ -11,7 +11,7 @@ from dmutils.s3 import S3
 
 
 from ... import data_api_client
-from ... import service_content
+from ... import content_loader
 from .. import main
 from . import get_template_data
 
@@ -51,7 +51,7 @@ def view(service_id):
         return redirect(url_for('.index'))
 
     service_data['priceString'] = format_service_price(service_data)
-    content = service_content.get_builder().filter(service_data)
+    content = content_loader.get_builder('g-cloud-6', 'edit_service_as_admin')
 
     template_data = get_template_data(
         sections=content,
@@ -101,7 +101,7 @@ def update_service_status(service_id):
 def edit(service_id, section):
     service_data = data_api_client.get_service(service_id)['services']
 
-    content = service_content.get_builder().filter(service_data)
+    content = content_loader.get_builder('g-cloud-6', 'edit_service_as_admin').filter(service_data)
 
     template_data = get_template_data(
         section=content.get_section(section),
@@ -153,7 +153,7 @@ def compare(old_archived_service_id, new_archived_service_id):
     except (HTTPError, KeyError, ValueError):
         return abort(404)
 
-    content = service_content.get_builder().filter(service_data)
+    content = content_loader.get_builder('g-cloud-6', 'edit_service_as_admin').filter(service_data)
 
     # It's possible to have an empty array if none of the lines were changed.
     # TODO This possibility isn't actually handled.
@@ -188,7 +188,7 @@ def update(service_id, section_id):
         abort(404)
     service = service['services']
 
-    content = service_content.get_builder().filter(service)
+    content = content_loader.get_builder('g-cloud-6', 'edit_service_as_admin').filter(service)
     section = content.get_section(section_id)
     if section is None or not section.editable:
         abort(404)
