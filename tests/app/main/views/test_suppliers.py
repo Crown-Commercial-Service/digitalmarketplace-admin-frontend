@@ -6,8 +6,9 @@ except ImportError:
     from io import BytesIO as StringIO
 import mock
 from lxml import html
+from nose.tools import eq_
 from nose.tools import assert_equals
-from dmutils.apiclient.errors import HTTPError
+from dmutils.apiclient.errors import HTTPError, APIError
 from dmutils.email import MandrillException
 from dmutils.audit import AuditTypes
 from ...helpers import LoggedInApplicationTest, Response
@@ -615,3 +616,137 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         )
 
         self.assertEqual(res.status_code, 503)
+
+
+@mock.patch('app.main.views.suppliers.data_api_client')
+class TestViewingASupplierDeclaration(LoggedInApplicationTest):
+    user_role = 'admin-ccs-sourcing'
+
+    def test_should_not_be_visible_to_admin_users(self, data_api_client):
+        self.user_role = 'admin'
+
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
+
+        eq_(response.status_code, 403)
+
+    def test_should_404_if_supplier_does_not_exist(self, data_api_client):
+        data_api_client.get_supplier.side_effect = APIError(Response(404))
+
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
+
+        eq_(response.status_code, 404)
+        data_api_client.get_supplier.assert_called_with('1234')
+        assert not data_api_client.get_framework.called
+
+    def test_should_404_if_framework_does_not_exist(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.side_effect = APIError(Response(404))
+
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
+
+        eq_(response.status_code, 404)
+        data_api_client.get_supplier.assert_called_with('1234')
+        data_api_client.get_framework.assert_called_with('g-cloud-7')
+
+    def test_should_not_404_if_declaration_does_not_exist(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        data_api_client.get_supplier_declaration.side_effect = APIError(Response(404))
+
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
+
+        eq_(response.status_code, 200)
+        data_api_client.get_supplier.assert_called_with('1234')
+        data_api_client.get_framework.assert_called_with('g-cloud-7')
+        data_api_client.get_supplier_declaration.assert_called_with('1234', 'g-cloud-7')
+
+    def test_should_show_declaration(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        data_api_client.get_supplier_declaration.return_value = self.load_example_listing('declaration_response')
+
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
+        document = html.fromstring(response.get_data(as_text=True))
+
+        eq_(response.status_code, 200)
+        data = document.cssselect('.summary-item-row td.summary-item-field')
+        eq_(data[0].text_content().strip(), "Yes")
+
+
+@mock.patch('app.main.views.suppliers.data_api_client')
+class TestEditingASupplierDeclaration(LoggedInApplicationTest):
+    user_role = 'admin-ccs-sourcing'
+
+    def test_should_not_be_visible_to_admin_users(self, data_api_client):
+        self.user_role = 'admin'
+
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/section')
+
+        eq_(response.status_code, 403)
+
+    def test_should_404_if_supplier_does_not_exist(self, data_api_client):
+        data_api_client.get_supplier.side_effect = APIError(Response(404))
+
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g_cloud_7_essentials')
+
+        eq_(response.status_code, 404)
+        data_api_client.get_supplier.assert_called_with('1234')
+        assert not data_api_client.get_framework.called
+
+    def test_should_404_if_framework_does_not_exist(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.side_effect = APIError(Response(404))
+
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g_cloud_7_essentials')
+
+        eq_(response.status_code, 404)
+        data_api_client.get_supplier.assert_called_with('1234')
+        data_api_client.get_framework.assert_called_with('g-cloud-7')
+
+    def test_should_404_if_section_does_not_exist(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        data_api_client.get_supplier_declaration.side_effect = APIError(Response(404))
+
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/not_a_section')
+
+        eq_(response.status_code, 404)
+
+    def test_should_not_404_if_declaration_does_not_exist(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        data_api_client.get_supplier_declaration.side_effect = APIError(Response(404))
+
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g_cloud_7_essentials')
+
+        eq_(response.status_code, 200)
+        data_api_client.get_supplier.assert_called_with('1234')
+        data_api_client.get_framework.assert_called_with('g-cloud-7')
+        data_api_client.get_supplier_declaration.assert_called_with('1234', 'g-cloud-7')
+
+    def test_should_prefill_form_with_declaration(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        data_api_client.get_supplier_declaration.return_value = self.load_example_listing('declaration_response')
+
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g_cloud_7_essentials')
+        document = html.fromstring(response.get_data(as_text=True))
+
+        eq_(response.status_code, 200)
+        assert document.cssselect('#input-PR1-yes')[0].checked
+        assert not document.cssselect('#input-PR1-no')[0].checked
+
+    def test_should_set_declaration(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        data_api_client.get_supplier_declaration.return_value = self.load_example_listing('declaration_response')
+
+        response = self.client.post(
+            '/admin/suppliers/1234/edit/declarations/g-cloud-7/g_cloud_7_essentials',
+            data={'PR1': 'false'})
+
+        declaration = self.load_example_listing('declaration_response')['declaration']
+        declaration['PR1'] = False
+
+        data_api_client.set_supplier_declaration.assert_called_with(
+            '1234', 'g-cloud-7', declaration, 'test@example.com')

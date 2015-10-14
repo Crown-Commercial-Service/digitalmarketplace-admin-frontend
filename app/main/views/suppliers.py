@@ -44,7 +44,12 @@ def edit_supplier_name(supplier_id):
 def view_supplier_declaration(supplier_id, framework_slug):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
-    declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
+    try:
+        declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
+    except APIError as e:
+        if e.status_code != 404:
+            raise
+        declaration = {}
 
     content = content_loader.get_builder(framework_slug, 'declaration').filter(declaration)
 
@@ -65,16 +70,24 @@ def view_supplier_declaration(supplier_id, framework_slug):
 def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
-    declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
+    try:
+        declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
+    except APIError as e:
+        if e.status_code != 404:
+            raise
+        declaration = {}
 
     content = content_loader.get_builder(framework_slug, 'declaration').filter(declaration)
+    section = content.get_section(section_id)
+    if section is None:
+        abort(404)
 
     return render_template(
         "suppliers/edit_declaration.html",
         supplier=supplier,
         framework=framework,
         declaration=declaration,
-        section=content.get_section(section_id),
+        section=section,
         **get_template_data())
 
 
@@ -84,10 +97,17 @@ def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
 def update_supplier_declaration_section(supplier_id, framework_slug, section_id):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
-    declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
+    try:
+        declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
+    except APIError as e:
+        if e.status_code != 404:
+            raise
+        declaration = {}
 
     content = content_loader.get_builder(framework_slug, 'declaration').filter(declaration)
     section = content.get_section(section_id)
+    if section is None:
+        abort(404)
 
     posted_data = section.get_data(request.form)
 

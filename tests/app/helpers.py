@@ -54,8 +54,11 @@ class Response:
 
 
 class LoggedInApplicationTest(BaseApplicationTest):
+    user_role = 'admin'
+
     def setUp(self):
         super(LoggedInApplicationTest, self).setUp()
+
         patch_config = {
             'authenticate_user.return_value': {
                 'users': {
@@ -85,7 +88,7 @@ class LoggedInApplicationTest(BaseApplicationTest):
     def user_loader(self, user_id):
         if user_id:
             return User(
-                user_id, 'test@example.com', None, None, False, True, 'tester', 'admin'
+                user_id, 'test@example.com', None, None, False, True, 'tester', self.user_role
             )
 
     def tearDown(self):
