@@ -454,15 +454,15 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
         response = self._get_archived_services_response('30', '40')
         self.assertEqual(404, response.status_code)
 
-    @mock.patch('app.main.views.services.service_content')
-    def test_can_get_archived_services_with_dates_and_diffs(self, service_content):
+    @mock.patch('app.main.views.services.content_loader')
+    def test_can_get_archived_services_with_dates_and_diffs(self, content_loader):
 
         class TestBuilder(object):
             @staticmethod
             def filter(*args):
                 return self.TestContent()
 
-        service_content.get_builder.return_value = TestBuilder()
+        content_loader.get_builder.return_value = TestBuilder()
         response = self._get_archived_services_response('10', '20')
 
         # check title is there
@@ -497,14 +497,14 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
             self.strip_all_whitespace(response.get_data(as_text=True))
         )
 
-    @mock.patch('app.main.views.services.service_content')
-    def test_can_get_archived_services_with_differing_keys(self, service_content):
+    @mock.patch('app.main.views.services.content_loader')
+    def test_can_get_archived_services_with_differing_keys(self, content_loader):
 
         class TestBuilder(object):
             @staticmethod
             def filter(*args):
                 return self.TestContent()
 
-        service_content.get_builder.return_value = TestBuilder()
+        content_loader.get_builder.return_value = TestBuilder()
         response = self._get_archived_services_response('10', '50')
         self.assertEqual(200, response.status_code)

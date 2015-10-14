@@ -51,7 +51,7 @@ def view(service_id):
         return redirect(url_for('.index'))
 
     service_data['priceString'] = format_service_price(service_data)
-    content = content_loader.get_builder('g-cloud-6', 'edit_service_as_admin')
+    content = content_loader.get_builder('g-cloud-6', 'edit_service_as_admin').filter(service_data)
 
     template_data = get_template_data(
         sections=content,
