@@ -23,20 +23,31 @@
     {% endwith %}
 
     <div class="page-section">
+      {% if current_user.has_role("admin") %}
+        {% set field_headings = [
+          "Name",
+          summary.hidden_field_heading("Change name"),
+          summary.hidden_field_heading("Users"),
+          summary.hidden_field_heading("Services"),
+        ] %}
+      {% elif current_user.has_role("admin-ccs-sourcing") %}
+        {% set field_headings = [
+          "Name",
+          summary.hidden_field_heading("Change declarations"),
+        ] %}
+      {% else %}
+        {% set field_headings = [
+          "Name",
+          summary.hidden_field_heading("Users"),
+          summary.hidden_field_heading("Services"),
+        ] %}
+      {% endif %}
+
       {% call(item) summary.list_table(
         suppliers,
         caption="Suppliers",
         empty_message="No suppliers were found",
-        field_headings=[
-          "Name",
-          summary.hidden_field_heading("Edit name"),
-          summary.hidden_field_heading("Users"),
-          summary.hidden_field_heading("Services"),
-        ] if current_user.has_role('admin') else [
-          "Name",
-          summary.hidden_field_heading("Users"),
-          summary.hidden_field_heading("Services"),
-        ],
+        field_headings=field_headings,
         field_headings_visible=True)
       %}
         {% call summary.row() %}
@@ -44,8 +55,13 @@
           {% if current_user.has_role('admin') %}
             {{ summary.edit_link("Change name", url_for(".edit_supplier_name", supplier_id=item.id)) }}
           {% endif %}
-          {{ summary.edit_link("Users", url_for(".find_supplier_users", supplier_id=item.id)) }}
-          {{ summary.edit_link("Services", url_for(".find_supplier_services", supplier_id=item.id)) }}
+          {% if current_user.has_role('admin-ccs-sourcing') %}
+            {{ summary.edit_link("G-Cloud 7 declaration", url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="g-cloud-7")) }}
+          {% endif %}
+          {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
+            {{ summary.edit_link("Users", url_for(".find_supplier_users", supplier_id=item.id)) }}
+            {{ summary.edit_link("Services", url_for(".find_supplier_services", supplier_id=item.id)) }}
+          {% endif %}
         {% endcall %}
       {% endcall %}
     </div>

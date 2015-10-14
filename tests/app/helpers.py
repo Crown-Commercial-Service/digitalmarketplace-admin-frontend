@@ -24,19 +24,9 @@ class BaseApplicationTest(TestCase):
         )
         self._default_suffix_patch.start()
 
-        self._user_callback = login_manager.user_callback
-        login_manager.user_loader(self.user_loader)
-
-    def user_loader(self, user_id):
-        if user_id:
-            return User(
-                user_id, 'test@example.com', None, None, False, True, 'tester', 'admin'
-            )
-
     def tearDown(self):
         self._s3_patch.stop()
         self._default_suffix_patch.stop()
-        login_manager.user_loader(self._user_callback)
 
     def load_example_listing(self, name):
         file_path = os.path.join("example_responses", "{}.json".format(name))
@@ -64,8 +54,11 @@ class Response:
 
 
 class LoggedInApplicationTest(BaseApplicationTest):
+    user_role = 'admin'
+
     def setUp(self):
         super(LoggedInApplicationTest, self).setUp()
+
         patch_config = {
             'authenticate_user.return_value': {
                 'users': {
@@ -89,8 +82,18 @@ class LoggedInApplicationTest(BaseApplicationTest):
             'password': '1234567890'
         })
 
+        self._user_callback = login_manager.user_callback
+        login_manager.user_loader(self.user_loader)
+
+    def user_loader(self, user_id):
+        if user_id:
+            return User(
+                user_id, 'test@example.com', None, None, False, True, 'tester', self.user_role
+            )
+
     def tearDown(self):
         self._data_api_client.stop()
+        login_manager.user_loader(self._user_callback)
 
     def _replace_whitespace(self, string, replacement_substring=""):
             # Replace all runs of whitespace with replacement_substring

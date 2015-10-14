@@ -1,0 +1,17 @@
+{
+  "declaration": {
+    "PR1": true,
+    "PR2": false,
+    "SQC2": true,
+    "PR5": false,
+    "PR3": true,
+    "PR4": false,
+    "SQ1-3": [],
+    "SQA2": false,
+    "SQA3": true,
+    "SQA4": false,
+    "SQA5": true,
+    "AQA3": false,
+    "SQC3": ["race", "sexual orientation"]
+  }
+}

@@ -36,9 +36,11 @@ class TestLogin(BaseApplicationTest):
         assert_equal(res.status_code, 200)
         assert_in("Administrator login", res.get_data(as_text=True))
 
+    @mock.patch('app.data_api_client')
     @mock.patch('app.main.views.login.data_api_client')
-    def test_valid_login(self, data_api_client):
-        data_api_client.authenticate_user.return_value = user_data()
+    def test_valid_login(self, login_data_api_client, init_data_api_client):
+        login_data_api_client.authenticate_user.return_value = user_data()
+        init_data_api_client.get_user.return_value = user_data()
         res = self.client.post('/admin/login', data={
             'email_address': 'valid@email.com',
             'password': '1234567890'
@@ -101,9 +103,11 @@ class TestLogin(BaseApplicationTest):
             assert_in('HttpOnly', cookie_parts)
             assert_in('Path=/admin', cookie_parts)
 
+    @mock.patch('app.data_api_client')
     @mock.patch('app.main.views.login.data_api_client')
-    def test_should_redirect_to_login_on_logout(self, data_api_client):
-        data_api_client.authenticate_user.return_value = user_data()
+    def test_should_redirect_to_login_on_logout(self, login_data_api_client, init_data_api_client):
+        login_data_api_client.authenticate_user.return_value = user_data()
+        init_data_api_client.get_user.return_value = user_data()
         self.client.post('/admin/login', data={
             'email_address': 'valid@example.com',
             'password': '1234567890',
@@ -112,9 +116,11 @@ class TestLogin(BaseApplicationTest):
         assert_equal(res.status_code, 302)
         assert_equal(urlsplit(res.location).path, '/admin/login')
 
+    @mock.patch('app.data_api_client')
     @mock.patch('app.main.views.login.data_api_client')
-    def test_logout_should_log_user_out(self, data_api_client):
-        data_api_client.authenticate_user.return_value = user_data()
+    def test_logout_should_log_user_out(self, login_data_api_client, init_data_api_client):
+        login_data_api_client.authenticate_user.return_value = user_data()
+        init_data_api_client.get_user.return_value = user_data()
         self.client.post('/admin/login', data={
             'email_address': 'valid@example.com',
             'password': '1234567890',
