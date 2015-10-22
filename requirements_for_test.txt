@@ -6,3 +6,4 @@ mock==1.0.1
 requests-mock==0.6.0
 lxml==3.4.4
 cssselect==0.9.1
+watchdog==0.8.3
