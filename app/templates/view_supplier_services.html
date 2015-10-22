@@ -44,7 +44,7 @@
         {{ summary.service_link(item.serviceName, '/service/' + item.id|string) }}
         {{ summary.text(item.id) }}
         {{ summary.text(item.frameworkName) }}
-        {{ summary.text(item.lot) }}
+        {{ summary.text(item.lotName) }}
         {% call summary.field() %}
           <span class="service-status-{{ item.status }}">
             {% if item.status == "published" %}

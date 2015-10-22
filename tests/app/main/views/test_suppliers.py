@@ -320,7 +320,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
             response.get_data(as_text=True)
         )
         self.assertIn(
-            "SaaS",
+            "Software as a Service",
             response.get_data(as_text=True)
         )
         self.assertIn(
