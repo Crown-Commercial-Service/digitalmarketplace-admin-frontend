@@ -83,10 +83,10 @@
         {% call summary.field(first=True) %}
           {{ item.created_at[:19]|replace('T', ' ')|replace('-', '/') }}
         {% endcall %}
-        {{ summary.text(item.SaaS) }}
-        {{ summary.text(item.PaaS) }}
-        {{ summary.text(item.IaaS) }}
-        {{ summary.text(item.SCS) }}
+        {{ summary.text(item.saas) }}
+        {{ summary.text(item.paas) }}
+        {{ summary.text(item.iaas) }}
+        {{ summary.text(item.scs) }}
       {% endcall %}
     {% endcall %}
 

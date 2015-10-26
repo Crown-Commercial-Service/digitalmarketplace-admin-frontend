@@ -110,7 +110,8 @@
       "links": {
         "self": "http://localhost:5000/services/5687123785023488"
       },
-      "lot": "SaaS",
+      "lot": "saas",
+      "lotName": "Software as a Service",
       "minimumContractPeriod": "Year",
       "networksConnected": [
         "Internet",
