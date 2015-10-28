@@ -81,7 +81,7 @@ More generally, the command to start the server is:
 python application.py runserver
 ```
 
-The admin frontend runs on port 5004. Use the app at [http://127.0.0.1:5004/](http://127.0.0.1:5004/)
+The admin frontend runs on port 5004. Use the app at [http://127.0.0.1:5004/admin/](http://127.0.0.1:5004/admin/)
 
 ### Using FeatureFlags
 
