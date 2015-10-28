@@ -7,7 +7,7 @@ from dmutils import init_manager
 application = create_app(
     os.getenv('DM_ENVIRONMENT') or 'development'
 )
-init_manager(application, 5004, ['./app/content/frameworks'])
+manager = init_manager(application, 5004, ['./app/content/frameworks'])
 
 if __name__ == '__main__':
     manager.run()
