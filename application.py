@@ -2,13 +2,12 @@
 
 import os
 from app import create_app
-from flask.ext.script import Manager, Server
+from dmutils import init_manager
 
 application = create_app(
     os.getenv('DM_ENVIRONMENT') or 'development'
 )
-manager = Manager(application)
-manager.add_command("runserver", Server(port=5004))
+manager = init_manager(application, 5004, ['./app/content/frameworks'])
 
 if __name__ == '__main__':
     manager.run()
