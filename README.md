@@ -45,6 +45,14 @@ npm install
 
 ### Compile the front-end code
 
+You need Node (minimum version of 0.10.0, maximum version 0.12.7) which will also get you [NPM](npmjs.org), Node's package management tool.
+
+To check the version you're running, type:
+
+```
+node --version
+```
+
 For development usage:
 
 ```
