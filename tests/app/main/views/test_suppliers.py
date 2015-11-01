@@ -54,10 +54,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/users')
         self.assertEquals(404, response.status_code)
 
-    def test_should_400_if_invalid_supplier_id(self):
-        response = self.client.get('/admin/suppliers/users?supplier_id=invalid')
-        self.assertEquals(400, response.status_code)
-
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_apis_with_supplier_id(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
@@ -255,10 +251,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
     def test_should_404_if_no_supplier_id_on_services(self):
         response = self.client.get('/admin/suppliers/users')
         self.assertEquals(404, response.status_code)
-
-    def test_should_400_if_invalid_supplier_id_on_services(self):
-        response = self.client.get('/admin/suppliers/services?supplier_id=invalid')
-        self.assertEquals(400, response.status_code)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_service_apis_with_supplier_id(self, data_api_client):

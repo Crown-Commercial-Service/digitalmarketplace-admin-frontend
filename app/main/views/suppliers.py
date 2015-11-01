@@ -28,8 +28,7 @@ def find_suppliers():
 @login_required
 @role_required('admin')
 def edit_supplier_name(supplier_id):
-
-    supplier = get_supplier(supplier_id)
+    supplier = data_api_client.get_supplier(supplier_id)
 
     return render_template(
         "edit_supplier_name.html",
@@ -125,8 +124,7 @@ def update_supplier_declaration_section(supplier_id, framework_slug, section_id)
 @login_required
 @role_required('admin')
 def update_supplier_name(supplier_id):
-
-    supplier = get_supplier(supplier_id)
+    supplier = data_api_client.get_supplier(supplier_id)
     new_supplier_name = request.form.get('new_supplier_name', '')
 
     data_api_client.update_supplier(
@@ -142,7 +140,10 @@ def update_supplier_name(supplier_id):
 def find_supplier_users():
     form = EmailAddressForm()
 
-    supplier = get_supplier()
+    if not request.args.get('supplier_id'):
+        abort(404)
+
+    supplier = data_api_client.get_supplier(request.args['supplier_id'])
     users = data_api_client.find_users(request.args.get("supplier_id"))
 
     return render_template(
@@ -197,7 +198,10 @@ def remove_from_supplier(user_id):
 @role_required('admin', 'admin-ccs-category')
 def find_supplier_services():
 
-    supplier = get_supplier()
+    if not request.args.get('supplier_id'):
+        abort(404)
+
+    supplier = data_api_client.get_supplier(request.args['supplier_id'])
     services = data_api_client.find_services(request.args.get("supplier_id"))
 
     return render_template(
@@ -283,24 +287,3 @@ def invite_user(supplier_id):
             supplier=suppliers["suppliers"],
             **get_template_data()
         ), 400
-
-
-def get_supplier(supplier_id=None):
-
-    if supplier_id is None:
-        if "supplier_id" not in request.args or len(request.args.get("supplier_id")) <= 0:
-            abort(404, "Supplier not found")
-        supplier_id = request.args.get("supplier_id")
-
-    try:
-        int(supplier_id)
-    except ValueError:
-        abort(400, "invalid supplier id {}".format(supplier_id))
-
-    try:
-        return data_api_client.get_supplier(supplier_id)
-    except HTTPError as e:
-        if e.status_code != 404:
-            raise
-        else:
-            abort(404, "Supplier not found")
