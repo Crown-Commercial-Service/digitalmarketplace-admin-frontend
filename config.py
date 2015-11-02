@@ -23,6 +23,9 @@ class Config(object):
     DM_DATA_API_AUTH_TOKEN = None
     SECRET_KEY = os.getenv('DM_ADMIN_FRONTEND_COOKIE_SECRET')
 
+    DM_AGREEMENTS_BUCKET = None
+    DM_ASSETS_URL = None
+
     STATIC_URL_PATH = '/admin/static'
     ASSET_PATH = STATIC_URL_PATH + '/'
     BASE_TEMPLATE_DATA = {

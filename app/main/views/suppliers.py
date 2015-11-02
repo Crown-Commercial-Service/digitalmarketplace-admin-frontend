@@ -9,6 +9,8 @@ from ..auth import role_required
 from dmutils.apiclient.errors import HTTPError, APIError
 from dmutils.audit import AuditTypes
 from dmutils.email import send_email, generate_token, MandrillException
+from dmutils.documents import get_signed_url, get_agreement_document_path
+from dmutils import s3
 
 
 @main.route('/suppliers', methods=['GET'])
@@ -59,6 +61,19 @@ def view_supplier_declaration(supplier_id, framework_slug):
         declaration=declaration,
         content=content,
         **get_template_data())
+
+
+@main.route('/suppliers/<supplier_id>/agreements/<framework_slug>/<document_name>', methods=['GET'])
+@login_required
+@role_required('admin-ccs-sourcing')
+def download_agreement_file(supplier_id, framework_slug, document_name):
+    agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
+    path = get_agreement_document_path(framework_slug, supplier_id, document_name)
+    url = get_signed_url(agreements_bucket, path, current_app.config['DM_ASSETS_URL'])
+    if not url:
+        abort(404)
+
+    return redirect(url)
 
 
 @main.route(

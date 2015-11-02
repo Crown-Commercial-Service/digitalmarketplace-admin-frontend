@@ -742,3 +742,32 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
 
         data_api_client.set_supplier_declaration.assert_called_with(
             '1234', 'g-cloud-7', declaration, 'test@example.com')
+
+
+@mock.patch('app.main.views.suppliers.s3')
+class TestDownloadAgreementFile(LoggedInApplicationTest):
+    user_role = 'admin-ccs-sourcing'
+
+    def test_admin_user_should_not_be_able_to_download(self, s3):
+        self.user_role = 'admin'
+
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
+
+        eq_(response.status_code, 403)
+
+    def test_should_404_if_document_does_not_exist(self, s3):
+        s3.S3.return_value.get_signed_url.return_value = None
+
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
+
+        eq_(response.status_code, 404)
+
+    def test_should_redirect(self, s3):
+        s3.S3.return_value.get_signed_url.return_value = 'http://foo/blah?extra'
+
+        self.app.config['DM_ASSETS_URL'] = 'https://example'
+
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
+
+        eq_(response.status_code, 302)
+        eq_(response.location, 'https://example/blah?extra')
