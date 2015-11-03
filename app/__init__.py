@@ -1,6 +1,6 @@
 from datetime import timedelta, datetime
 
-from flask import Flask, request, redirect, Markup
+from flask import Flask, request, redirect
 from flask.ext.bootstrap import Bootstrap
 from flask_login import LoginManager
 from flask_wtf.csrf import CsrfProtect
@@ -8,8 +8,6 @@ from dmutils import apiclient, init_app, flask_featureflags, formats
 from dmutils.user import User
 from dmutils.content_loader import ContentLoader
 from config import configs
-
-from markdown import markdown
 
 
 bootstrap = Bootstrap()
@@ -21,7 +19,6 @@ login_manager = LoginManager()
 content_loader = ContentLoader('app/content')
 content_loader.load_manifest('g-cloud-6', 'services', 'edit_service_as_admin')
 content_loader.load_manifest('g-cloud-7', 'declaration', 'declaration')
-
 
 from app.main.helpers.service import parse_document_upload_time
 
@@ -56,10 +53,6 @@ def create_app(config_name):
     def remove_trailing_slash():
         if request.path != '/' and request.path.endswith('/'):
             return redirect(request.path[:-1], code=301)
-
-    @application.template_filter('markdown')
-    def markdown_filter(data):
-        return Markup(markdown(data))
 
     application.add_template_filter(parse_document_upload_time)
 
