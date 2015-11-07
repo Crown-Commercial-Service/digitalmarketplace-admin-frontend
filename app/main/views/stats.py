@@ -25,7 +25,7 @@ def view_statistics(framework_slug):
             per_page=1260
         )['auditEvents']
         framework = data_api_client.get_framework(framework_slug)['frameworks']
-        if framework['status'] is 'open':
+        if framework['status'] == 'open':
             snapshots.append(
                 {
                     'data': data_api_client.get_framework_stats(framework_slug),
