@@ -67,9 +67,12 @@ def view_supplier_declaration(supplier_id, framework_slug):
 @login_required
 @role_required('admin', 'admin-ccs-sourcing')
 def download_agreement_file(supplier_id, framework_slug, document_name):
-    supplier = data_api_client.get_supplier(supplier_id)['suppliers']
+    supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
+    if not supplier_framework.get('declaration'):
+        abort(404)
+    legal_supplier_name = supplier_framework['declaration']['SQ1-1a']
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
-    path = get_agreement_document_path(framework_slug, supplier_id, supplier['name'], document_name)
+    path = get_agreement_document_path(framework_slug, supplier_id, legal_supplier_name, document_name)
     url = get_signed_url(agreements_bucket, path, current_app.config['DM_ASSETS_URL'])
     if not url:
         abort(404)
