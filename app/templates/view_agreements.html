@@ -1,0 +1,46 @@
+{% import "toolkit/summary-table.html" as summary %}
+{% from 'macros/breadcrumb.html' import breadcrumb as breadcrumb %}
+{% from 'macros/page_heading.html' import page_heading %}
+
+{% extends "_base_page.html" %}
+
+{% block content %}
+{%
+    with items = [
+        {
+            "link": url_for('.index'),
+            "label": "Admin home"
+        }
+    ]
+%}
+{% include "toolkit/breadcrumb.html" %}
+{% endwith %}
+
+<div class="page-container">
+    {% with heading = "Uploaded {} framework agreements".format(framework.name) %}
+    {% include "toolkit/page-heading.html" %}
+    {% endwith %}
+
+    <div class="page-section">
+      {% set field_headings = [
+        "Supplier name",
+        "Date uploaded",
+        summary.hidden_field_heading("Download supplier declaration"),
+      ] %}
+      {% call(supplier_framework) summary.list_table(
+        supplier_frameworks,
+        caption="Uploaded {} framework agreements".format(framework.name),
+        empty_message="No agreements have been uploaded",
+        field_headings=field_headings,
+        field_headings_visible=True)
+      %}
+        {% call summary.row() %}
+          {{ summary.field_name(supplier_framework.supplierName) }}
+          {{ summary.field_name(supplier_framework.agreementReturnedAt) }}
+          {{ summary.service_link("Download agreement", url_for('.download_agreement_file', supplier_id=supplier_framework.supplierId, framework_slug=framework.frameworkSlug, document_name="signed-framework-agreement.pdf")) }}
+        {% endcall %}
+      {% endcall %}
+    </div>
+</div>
+
+{% endblock %}

@@ -100,5 +100,18 @@
 {% include "toolkit/browse-list.html" %}
 {% endwith %}
 
+{% if current_user.has_any_role('admin-ccs-sourcing') %}
+  {% with items = [
+      {
+          "body": "G-Cloud 7 agreements",
+          "link": "/admin/agreements/g-cloud-7",
+          "title": "G-Cloud 7 agreements"
+      }
+  ]
+  %}
+  {% include "toolkit/browse-list.html" %}
+  {% endwith %}
+{% endif %}
+
 </div>
 {% endblock %}
