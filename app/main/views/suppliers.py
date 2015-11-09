@@ -65,7 +65,7 @@ def view_supplier_declaration(supplier_id, framework_slug):
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>/<document_name>', methods=['GET'])
 @login_required
-@role_required('admin-ccs-sourcing')
+@role_required('admin', 'admin-ccs-sourcing')
 def download_agreement_file(supplier_id, framework_slug, document_name):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])

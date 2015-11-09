@@ -750,7 +750,7 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
     def test_admin_user_should_not_be_able_to_download(self, s3, data_api_client):
-        self.user_role = 'admin'
+        self.user_role = 'admin-ccs-category'
 
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
 

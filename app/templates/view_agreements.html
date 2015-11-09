@@ -37,7 +37,9 @@
         {% call summary.row() %}
           {{ summary.field_name(supplier_framework.supplierName) }}
           {{ summary.field_name(supplier_framework.agreementReturnedAt) }}
-          {{ summary.service_link("Download agreement", url_for('.download_agreement_file', supplier_id=supplier_framework.supplierId, framework_slug=framework.frameworkSlug, document_name="signed-framework-agreement.pdf")) }}
+          {% call summary.field(wide=True) %}
+            <a href="{{ url_for('.download_agreement_file', supplier_id=supplier_framework.supplierId, framework_slug=framework.frameworkSlug, document_name="signed-framework-agreement.pdf") }}" download>Download agreement</a>
+          {% endcall %}
         {% endcall %}
       {% endcall %}
     </div>

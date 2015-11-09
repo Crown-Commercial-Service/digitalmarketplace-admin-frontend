@@ -9,7 +9,7 @@ from . import get_template_data
 
 @main.route('/agreements/<framework_slug>', methods=['GET'])
 @login_required
-@role_required('admin-ccs-sourcing')
+@role_required('admin', 'admin-ccs-sourcing')
 def list_agreements(framework_slug):
     framework = data_api_client.get_framework(framework_slug)['frameworks']
     supplier_frameworks = data_api_client.find_framework_suppliers(

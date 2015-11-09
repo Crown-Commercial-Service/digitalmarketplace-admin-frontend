@@ -36,7 +36,7 @@ class TestListAgreements(LoggedInApplicationTest):
         eq_(len(rows), 2)
 
     def test_unauthorised_roles_are_rejected_access(self, data_api_client):
-        self.user_role = 'admin'
+        self.user_role = 'admin-ccs-category'
 
         response = self.client.get('/admin/agreements/g-cloud-7')
 
