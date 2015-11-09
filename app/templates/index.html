@@ -100,7 +100,7 @@
 {% include "toolkit/browse-list.html" %}
 {% endwith %}
 
-{% if current_user.has_any_role('admin-ccs-sourcing') %}
+{% if current_user.has_any_role('admin', 'admin-ccs-sourcing') %}
   {% with items = [
       {
           "body": "G-Cloud 7 agreements",
