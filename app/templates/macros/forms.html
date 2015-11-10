@@ -35,9 +35,9 @@
 {%- endmacro %}
 
 {% macro textbox_large(field, value='', service_data=None) -%}
-  {% if field.maxLengthInWords %}
+  {% if field.max_length_in_words %}
     <div class="word-count">
-      <textarea class="text-box text-box-large" name="{{ field.id }}" id="{{ field.id }}-text-box" data-max-length-in-words="{{ field.maxLengthInWords }}">{{ value }}</textarea>
+      <textarea class="text-box text-box-large" name="{{ field.id }}" id="{{ field.id }}-text-box" data-max-length-in-words="{{ field.max_length.in_words }}">{{ value }}</textarea>
     </div>
   {% else %}
     <textarea class="text-box text-box-large" name="{{ field.id }}" id="{{ field.id }}-text-box">{{ value }}</textarea>
