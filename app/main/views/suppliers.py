@@ -9,6 +9,8 @@ from ..auth import role_required
 from dmutils.apiclient.errors import HTTPError, APIError
 from dmutils.audit import AuditTypes
 from dmutils.email import send_email, generate_token, MandrillException
+from dmutils.documents import get_signed_url, get_agreement_document_path
+from dmutils import s3
 
 
 @main.route('/suppliers', methods=['GET'])
@@ -28,8 +30,7 @@ def find_suppliers():
 @login_required
 @role_required('admin')
 def edit_supplier_name(supplier_id):
-
-    supplier = get_supplier(supplier_id)
+    supplier = data_api_client.get_supplier(supplier_id)
 
     return render_template(
         "edit_supplier_name.html",
@@ -60,6 +61,23 @@ def view_supplier_declaration(supplier_id, framework_slug):
         declaration=declaration,
         content=content,
         **get_template_data())
+
+
+@main.route('/suppliers/<supplier_id>/agreements/<framework_slug>/<document_name>', methods=['GET'])
+@login_required
+@role_required('admin', 'admin-ccs-sourcing')
+def download_agreement_file(supplier_id, framework_slug, document_name):
+    supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
+    if not supplier_framework.get('declaration'):
+        abort(404)
+    legal_supplier_name = supplier_framework['declaration']['SQ1-1a']
+    agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
+    path = get_agreement_document_path(framework_slug, supplier_id, legal_supplier_name, document_name)
+    url = get_signed_url(agreements_bucket, path, current_app.config['DM_ASSETS_URL'])
+    if not url:
+        abort(404)
+
+    return redirect(url)
 
 
 @main.route(
@@ -125,8 +143,7 @@ def update_supplier_declaration_section(supplier_id, framework_slug, section_id)
 @login_required
 @role_required('admin')
 def update_supplier_name(supplier_id):
-
-    supplier = get_supplier(supplier_id)
+    supplier = data_api_client.get_supplier(supplier_id)
     new_supplier_name = request.form.get('new_supplier_name', '')
 
     data_api_client.update_supplier(
@@ -142,7 +159,10 @@ def update_supplier_name(supplier_id):
 def find_supplier_users():
     form = EmailAddressForm()
 
-    supplier = get_supplier()
+    if not request.args.get('supplier_id'):
+        abort(404)
+
+    supplier = data_api_client.get_supplier(request.args['supplier_id'])
     users = data_api_client.find_users(request.args.get("supplier_id"))
 
     return render_template(
@@ -197,7 +217,10 @@ def remove_from_supplier(user_id):
 @role_required('admin', 'admin-ccs-category')
 def find_supplier_services():
 
-    supplier = get_supplier()
+    if not request.args.get('supplier_id'):
+        abort(404)
+
+    supplier = data_api_client.get_supplier(request.args['supplier_id'])
     services = data_api_client.find_services(request.args.get("supplier_id"))
 
     return render_template(
@@ -283,24 +306,3 @@ def invite_user(supplier_id):
             supplier=suppliers["suppliers"],
             **get_template_data()
         ), 400
-
-
-def get_supplier(supplier_id=None):
-
-    if supplier_id is None:
-        if "supplier_id" not in request.args or len(request.args.get("supplier_id")) <= 0:
-            abort(404, "Supplier not found")
-        supplier_id = request.args.get("supplier_id")
-
-    try:
-        int(supplier_id)
-    except ValueError:
-        abort(400, "invalid supplier id {}".format(supplier_id))
-
-    try:
-        return data_api_client.get_supplier(supplier_id)
-    except HTTPError as e:
-        if e.status_code != 404:
-            raise
-        else:
-            abort(404, "Supplier not found")
