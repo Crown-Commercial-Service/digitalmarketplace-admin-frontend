@@ -38,7 +38,7 @@
           {{ summary.field_name(supplier_framework.supplierName) }}
           {{ summary.field_name(supplier_framework.agreementReturnedAt) }}
           {% call summary.field(wide=True) %}
-            <a href="{{ url_for('.download_agreement_file', supplier_id=supplier_framework.supplierId, framework_slug=framework.slug, document_name="signed-framework-agreement.pdf") }}" download>Download agreement</a>
+            <a href="{{ url_for('.download_agreement_file', supplier_id=supplier_framework.supplierId, framework_slug=framework.slug, document_name="signed-framework-agreement") }}" download>Download agreement</a>
           {% endcall %}
         {% endcall %}
       {% endcall %}
