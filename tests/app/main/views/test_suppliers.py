@@ -756,27 +756,62 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
 
         eq_(response.status_code, 403)
 
+    def test_should_404_if_no_documents_listed(self, s3, data_api_client):
+        data_api_client.get_supplier_framework_info.return_value = {
+            'frameworkInterest': {'declaration': {'SQ1-1a': 'Supplier name'}}
+        }
+        s3.S3.return_value.list.return_value = []
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo')
+
+        assert not s3.S3.return_value.get_signed_url.called
+        eq_(response.status_code, 404)
+
     def test_should_404_if_document_does_not_exist(self, s3, data_api_client):
         data_api_client.get_supplier_framework_info.return_value = {
             'frameworkInterest': {'declaration': {'SQ1-1a': 'Supplier name'}}
         }
+        s3.S3.return_value.list.return_value = [
+            {'path': 'g-cloud-7/agreements/1234/Supplier_name-1234-foo.pdf'}
+        ]
         s3.S3.return_value.get_signed_url.return_value = None
 
-        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo')
 
+        s3.S3.return_value.list.assert_called_with(prefix='g-cloud-7/agreements/1234/Supplier_name-1234-foo')
         s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/Supplier_name-1234-foo.pdf')
         eq_(response.status_code, 404)
+
+    def test_should_select_most_recent_matching_file(self, s3, data_api_client):
+        data_api_client.get_supplier_framework_info.return_value = {
+            'frameworkInterest': {'declaration': {'SQ1-1a': 'Supplier name'}}
+        }
+        s3.S3.return_value.list.return_value = [
+            {'path': 'foo.jpg'},
+            {'path': 'g-cloud-7/agreements/1234/Supplier_name-1234-foo.pdf'}
+        ]
+        s3.S3.return_value.get_signed_url.return_value = 'http://foo/blah?extra'
+
+        self.app.config['DM_ASSETS_URL'] = 'https://example'
+
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo')
+
+        s3.S3.return_value.list.assert_called_with(prefix='g-cloud-7/agreements/1234/Supplier_name-1234-foo')
+        s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/Supplier_name-1234-foo.pdf')
 
     def test_should_redirect(self, s3, data_api_client):
         data_api_client.get_supplier_framework_info.return_value = {
             'frameworkInterest': {'declaration': {'SQ1-1a': 'Supplier name'}}
         }
+        s3.S3.return_value.list.return_value = [
+            {'path': 'g-cloud-7/agreements/1234/Supplier_name-1234-foo.pdf'}
+        ]
         s3.S3.return_value.get_signed_url.return_value = 'http://foo/blah?extra'
 
         self.app.config['DM_ASSETS_URL'] = 'https://example'
 
-        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo')
 
+        s3.S3.return_value.list.assert_called_with(prefix='g-cloud-7/agreements/1234/Supplier_name-1234-foo')
         s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/Supplier_name-1234-foo.pdf')
         eq_(response.status_code, 302)
         eq_(response.location, 'https://example/blah?extra')

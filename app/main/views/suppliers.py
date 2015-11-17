@@ -72,7 +72,11 @@ def download_agreement_file(supplier_id, framework_slug, document_name):
         abort(404)
     legal_supplier_name = supplier_framework['declaration']['SQ1-1a']
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
-    path = get_agreement_document_path(framework_slug, supplier_id, legal_supplier_name, document_name)
+    prefix = get_agreement_document_path(framework_slug, supplier_id, legal_supplier_name, document_name)
+    agreement_documents = agreements_bucket.list(prefix=prefix)
+    if not len(agreement_documents):
+        abort(404)
+    path = agreement_documents[-1]['path']
     url = get_signed_url(agreements_bucket, path, current_app.config['DM_ASSETS_URL'])
     if not url:
         abort(404)

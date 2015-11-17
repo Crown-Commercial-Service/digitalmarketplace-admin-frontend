@@ -58,7 +58,7 @@
           {% endif %}
           {% if current_user.has_role('admin-ccs-sourcing') %}
             {{ summary.edit_link("G-Cloud 7 declaration", url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="g-cloud-7")) }}
-            {{ summary.edit_link("Download G-Cloud 7 agreement", url_for(".download_agreement_file", supplier_id=item.id, framework_slug="g-cloud-7", document_name="signed-framework-agreement.pdf")) }}
+            {{ summary.edit_link("Download G-Cloud 7 agreement", url_for(".download_agreement_file", supplier_id=item.id, framework_slug="g-cloud-7", document_name="signed-framework-agreement")) }}
           {% endif %}
           {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
             {{ summary.edit_link("Users", url_for(".find_supplier_users", supplier_id=item.id)) }}
