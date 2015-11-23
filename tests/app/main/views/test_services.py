@@ -122,8 +122,8 @@ class TestServiceEdit(LoggedInApplicationTest):
 
         data_api_client.get_service.assert_called_with('1')
         data_api_client.update_service.assert_called_with('1', {
-            'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
-            'sfiaRateDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/2/1-sfia-rate-card-2015-01-01-1200.pdf',  # noqa
+            'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/documents/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
+            'sfiaRateDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/documents/2/1-sfia-rate-card-2015-01-01-1200.pdf',  # noqa
         }, 'test@example.com')
 
         self.assertEquals(302, response.status_code)

@@ -17,6 +17,9 @@ class BaseApplicationTest(TestCase):
 
         self._s3_patch = mock.patch('app.main.views.services.S3')
         self.s3 = self._s3_patch.start()
+        self.s3.return_value = mock.Mock(
+            bucket_name="digitalmarketplace-documents-testing-testing",
+            bucket_short_name="documents")
 
         self._default_suffix_patch = mock.patch(
             'dmutils.documents.default_file_suffix',
