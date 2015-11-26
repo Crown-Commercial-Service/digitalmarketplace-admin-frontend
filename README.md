@@ -1,4 +1,8 @@
-# digitalmarketplace-admin-frontend
+# Digital Marketplace admin frontend
+
+[![Coverage Status](https://coveralls.io/repos/alphagov/digitalmarketplace-admin-frontend/badge.svg?branch=master&service=github)](https://coveralls.io/github/alphagov/digitalmarketplace-admin-frontend?branch=master)
+[![Requirements Status](https://requires.io/github/alphagov/digitalmarketplace-admin-frontend/requirements.svg?branch=master)](https://requires.io/github/alphagov/digitalmarketplace-admin-frontend/requirements/?branch=master)
+
 
 Frontend administration application for the digital marketplace.
 

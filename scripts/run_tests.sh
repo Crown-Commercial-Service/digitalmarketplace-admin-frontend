@@ -35,5 +35,5 @@ display_result $? 1 "Build of front end static assets"
 pep8 .
 display_result $? 2 "Code style check"
 
-nosetests -v -s --with-doctest
+py.test $@
 display_result $? 3 "Unit tests"
