@@ -19,24 +19,22 @@ from ..auth import role_required
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
 def view_statistics(framework_slug):
 
-    try:
-        snapshots = data_api_client.find_audit_events(
-            audit_type=AuditTypes.snapshot_framework_stats,
-            per_page=1260
-        )['auditEvents']
-        framework = data_api_client.get_framework(framework_slug)['frameworks']
-        if framework['status'] == 'open':
-            snapshots.append(
-                {
-                    'data': data_api_client.get_framework_stats(framework_slug),
-                    'createdAt': datetime.utcnow().strftime(DATETIME_FORMAT)
-                }
-            )
-    except HTTPError as error:
-        abort(error.status_code)
+    snapshots = data_api_client.find_audit_events(
+        audit_type=AuditTypes.snapshot_framework_stats,
+        per_page=1260
+    )['auditEvents']
+    framework = data_api_client.get_framework(framework_slug)['frameworks']
+    if framework['status'] == 'open':
+        snapshots.append(
+            {
+                'data': data_api_client.get_framework_stats(framework_slug),
+                'createdAt': datetime.utcnow().strftime(DATETIME_FORMAT)
+            }
+        )
 
     return render_template(
         "view_statistics.html",
+        framework=framework,
         big_screen_mode=(request.args.get('big_screen_mode') == 'yes'),
         services_by_status=format_snapshots(snapshots, 'services', {
             'draft': {

@@ -3,7 +3,7 @@
 
 {% extends "_base_page.html" %}
 {% block page_title %}
-  G-Cloud 7 Statistics – Digital Marketplace admin
+  {{ framework.name }} Statistics – Digital Marketplace admin
 {% endblock %}
 
 {% block content %}
@@ -23,7 +23,7 @@
       <div class="column-two-thirds">
         {%
           with
-          context = "G-Cloud 7",
+          context = framework.name,
           heading = "Statistics"
         %}
           {% include "toolkit/page-heading.html" %}
