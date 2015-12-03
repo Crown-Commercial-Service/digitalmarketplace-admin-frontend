@@ -89,28 +89,40 @@
       </div>
   {% endif %}
 
+{% with
+    smaller = True,
+    heading = "Statistics"
+%}
+  {% include "toolkit/page-heading.html" %}
+{% endwith %}
 {% with items = [
-      {
-          "body": "View G-Cloud 7 statistics",
-          "link": "/admin/statistics/g-cloud-7",
-          "title": "G-Cloud 7 statistics"
-      },
-      {
-          "body": "View Digital Outcomes and Specialists statistics",
-          "link": "/admin/statistics/digital-outcomes-and-specialists",
-          "title": "Digital Outcomes and Specialists statistics"
-      }
-  ]
+    {
+        "body": "View G-Cloud 7 statistics",
+        "link": "/admin/statistics/g-cloud-7",
+        "title": "G-Cloud 7"
+    },
+    {
+        "body": "View Digital Outcomes and Specialists statistics",
+        "link": "/admin/statistics/digital-outcomes-and-specialists",
+        "title": "Digital Outcomes and Specialists"
+    }
+]
 %}
   {% include "toolkit/browse-list.html" %}
 {% endwith %}
 
 {% if current_user.has_any_role('admin', 'admin-ccs-sourcing') %}
+  {% with
+      smaller = True,
+      heading = "Agreements"
+  %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
   {% with items = [
       {
           "body": "G-Cloud 7 agreements",
           "link": "/admin/agreements/g-cloud-7",
-          "title": "G-Cloud 7 agreements"
+          "title": "G-Cloud 7"
       }
     ]
   %}
