@@ -16,6 +16,8 @@ class TestStats(LoggedInApplicationTest):
 
         data_api_client.find_audit_events.assert_called_with(
             audit_type=AuditTypes.snapshot_framework_stats,
+            object_type='frameworks',
+            object_id='g-cloud-7',
             per_page=1260
         )
 

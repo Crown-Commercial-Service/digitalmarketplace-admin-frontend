@@ -21,6 +21,8 @@ def view_statistics(framework_slug):
 
     snapshots = data_api_client.find_audit_events(
         audit_type=AuditTypes.snapshot_framework_stats,
+        object_type='frameworks',
+        object_id=framework_slug,
         per_page=1260
     )['auditEvents']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
