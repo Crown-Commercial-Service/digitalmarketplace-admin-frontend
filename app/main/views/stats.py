@@ -52,7 +52,10 @@ def view_statistics(framework_slug):
             }
         }),
         services_by_lot=format_snapshots(snapshots, 'services', {
-            lot['slug']: {'lot': lot['slug']} for lot in framework['lots']
+            lot['slug']: {
+                'lot': lot['slug'],
+                'status': 'submitted',
+            } for lot in framework['lots']
         }),
         lots=framework['lots'],
         lot_table_headings=["Date and time"] + [lot['name'] for lot in framework['lots']],
