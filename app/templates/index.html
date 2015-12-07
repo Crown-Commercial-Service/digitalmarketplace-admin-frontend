@@ -44,7 +44,7 @@
                   <input type="text" name="service_id" id="service_id" class="text-box">
                   <input type="submit" value="Search" class="button-save">
               </form>
-            
+
               <form action="{{ url_for('.find_supplier_services') }}" method="get" class="question">
                   <label class="question-heading" for="supplier_id_for_services">Find services by supplier ID</label>
                   <p class='hint'>
@@ -63,7 +63,7 @@
                   <input type="submit" value="Search" class="button-save">
               </form>
               {% endif %}
-            
+
               <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
                 <label class="question-heading" for="supplier_name_prefix">Find suppliers by name prefix</label>
                 <p class="hint">
@@ -90,19 +90,19 @@
   {% endif %}
 
 {% with items = [
-    {
-        "body": "View G-Cloud 7 statistics",
-        "link": "/admin/statistics/g-cloud-7",
-        "title": "G-Cloud 7 statistics"
-    },
-    {
-        "body": "View Digital Outcomes and Specialists statistics",
-        "link": "/admin/statistics/digital-outcomes-and-specialists",
-        "title": "Digital Outcomes and Specialists statistics"
-    }
-]
+      {
+          "body": "View G-Cloud 7 statistics",
+          "link": "/admin/statistics/g-cloud-7",
+          "title": "G-Cloud 7 statistics"
+      },
+      {
+          "body": "View Digital Outcomes and Specialists statistics",
+          "link": "/admin/statistics/digital-outcomes-and-specialists",
+          "title": "Digital Outcomes and Specialists statistics"
+      }
+  ]
 %}
-{% include "toolkit/browse-list.html" %}
+  {% include "toolkit/browse-list.html" %}
 {% endwith %}
 
 {% if current_user.has_any_role('admin', 'admin-ccs-sourcing') %}
@@ -112,9 +112,9 @@
           "link": "/admin/agreements/g-cloud-7",
           "title": "G-Cloud 7 agreements"
       }
-  ]
+    ]
   %}
-  {% include "toolkit/browse-list.html" %}
+    {% include "toolkit/browse-list.html" %}
   {% endwith %}
 {% endif %}
 

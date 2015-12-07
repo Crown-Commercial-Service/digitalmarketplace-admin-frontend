@@ -70,23 +70,16 @@
       services_by_lot,
       empty_message="Data not available",
       caption="Services by lot",
-      field_headings=[
-        summary.hidden_field_heading("Date and time"),
-        "Software as a Service",
-        "Platform as a Service",
-        "Infrastructure as a Service",
-        "Specialist cloud services"
-      ],
+      field_headings=lot_table_headings,
       field_headings_visible=True
     ) %}
       {% call summary.row() %}
         {% call summary.field(first=True) %}
           {{ item.created_at[:19]|replace('T', ' ')|replace('-', '/') }}
         {% endcall %}
-        {{ summary.text(item.saas) }}
-        {{ summary.text(item.paas) }}
-        {{ summary.text(item.iaas) }}
-        {{ summary.text(item.scs) }}
+        {% for lot in lots %}
+          {{ summary.text(item[lot.slug]) }}
+        {% endfor %}
       {% endcall %}
     {% endcall %}
 
