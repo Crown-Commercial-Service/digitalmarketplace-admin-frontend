@@ -52,11 +52,10 @@ def view_statistics(framework_slug):
             }
         }),
         services_by_lot=format_snapshots(snapshots, 'services', {
-            'iaas': {'lot': ['IaaS', 'iaas']},
-            'paas': {'lot': ['PaaS', 'paas']},
-            'saas': {'lot': ['SaaS', 'saas']},
-            'scs':  {'lot': ['SCS', 'scs']},
+            lot['slug']: {'lot': lot['slug']} for lot in framework['lots']
         }),
+        lots=framework['lots'],
+        lot_table_headings=["Date and time"] + [lot['name'] for lot in framework['lots']],
         interested_suppliers=format_snapshots(snapshots, 'interested_suppliers', {
             'interested_only': {
                 'declaration_status': None,
