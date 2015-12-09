@@ -61,7 +61,7 @@ def view_statistics(framework_slug):
         lot_table_headings=["Date and time"] + [lot['name'] for lot in framework['lots']],
         interested_suppliers=format_snapshots(snapshots, 'interested_suppliers', {
             'interested_only': {
-                'declaration_status': None,
+                'declaration_status': [None, 'started'],
                 'has_completed_services': False
             },
             'declaration_only': {
