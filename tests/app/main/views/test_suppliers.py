@@ -679,7 +679,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
     def test_should_404_if_supplier_does_not_exist(self, data_api_client):
         data_api_client.get_supplier.side_effect = APIError(Response(404))
 
-        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g_cloud_7_essentials')
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
 
         eq_(response.status_code, 404)
         data_api_client.get_supplier.assert_called_with('1234')
@@ -689,7 +689,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
         data_api_client.get_framework.side_effect = APIError(Response(404))
 
-        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g_cloud_7_essentials')
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
 
         eq_(response.status_code, 404)
         data_api_client.get_supplier.assert_called_with('1234')
@@ -709,7 +709,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
         data_api_client.get_supplier_declaration.side_effect = APIError(Response(404))
 
-        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g_cloud_7_essentials')
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
 
         eq_(response.status_code, 200)
         data_api_client.get_supplier.assert_called_with('1234')
@@ -721,7 +721,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
         data_api_client.get_supplier_declaration.return_value = self.load_example_listing('declaration_response')
 
-        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g_cloud_7_essentials')
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
         document = html.fromstring(response.get_data(as_text=True))
 
         eq_(response.status_code, 200)
@@ -734,11 +734,13 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         data_api_client.get_supplier_declaration.return_value = self.load_example_listing('declaration_response')
 
         response = self.client.post(
-            '/admin/suppliers/1234/edit/declarations/g-cloud-7/g_cloud_7_essentials',
+            '/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials',
             data={'PR1': 'false'})
 
         declaration = self.load_example_listing('declaration_response')['declaration']
         declaration['PR1'] = False
+        declaration['SQ1-3'] = None
+        declaration['SQC3'] = None
 
         data_api_client.set_supplier_declaration.assert_called_with(
             '1234', 'g-cloud-7', declaration, 'test@example.com')

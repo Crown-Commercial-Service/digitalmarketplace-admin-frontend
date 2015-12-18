@@ -78,7 +78,6 @@ def upload_communication(framework_slug):
             flash('itt_pack', 'upload_communication')
 
     if len(errors) > 0:
-        print errors
         for category, message in errors.items():
             flash(category, message)
     return redirect(url_for('.manage_communications', framework_slug=framework_slug))
