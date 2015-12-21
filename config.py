@@ -24,6 +24,7 @@ class Config(object):
     SECRET_KEY = os.getenv('DM_ADMIN_FRONTEND_COOKIE_SECRET')
 
     DM_AGREEMENTS_BUCKET = None
+    DM_COMMUNICATIONS_BUCKET = None
     DM_ASSETS_URL = None
 
     STATIC_URL_PATH = '/admin/static'
@@ -73,12 +74,14 @@ class Test(Config):
     SHARED_EMAIL_KEY = 'KEY'
     INVITE_EMAIL_SALT = 'SALT'
     DM_MANDRILL_API_KEY = "MANDRILL"
+    DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-communications-dev-dev'
 
 
 class Development(Config):
     DEBUG = True
     SESSION_COOKIE_SECURE = False
     AUTHENTICATION = True
+    DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-communications-dev-dev'
 
 
 class Live(Config):

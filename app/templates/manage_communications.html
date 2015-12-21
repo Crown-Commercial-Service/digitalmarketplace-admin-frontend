@@ -1,0 +1,106 @@
+{% import 'macros/toolkit_forms.html' as forms %}
+
+{% extends "_base_page.html" %}
+
+{% block content %}
+{%
+    with items = [
+        {
+            "link": url_for('.index'),
+            "label": "Admin home"
+        }
+    ]
+%}
+{% include "toolkit/breadcrumb.html" %}
+{% endwith %}
+
+<div class="page-container">
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+{% if category == 'upload_communication' %}
+  <div class="banner-success-without-action">
+    <p class="banner-message">
+    {% if message == 'itt_pack' %}
+      ITT pack was uploaded.
+    {% elif message == 'clarification' %}
+      New clarification was uploaded.
+    {% elif message == 'communication' %}
+      New communication was uploaded.
+    {% endif %}
+    </p>
+  </div>
+{% elif category == 'not_pdf' %}
+  <div class="banner-destructive-without-action">
+    <p class="banner-message">
+      {% if message == 'communication' %}
+      Communication file is not a PDF.
+      {% elif message == 'clarification' %}
+      Clarification file is not a PDF.
+      {% endif %}
+    </p>
+  </div>
+{% elif category == 'not_zip' and message == 'itt_pack' %}
+  <div class="banner-destructive-without-action">
+    <p class="banner-message">
+      ITT pack is not a zip file.
+    </p>
+  </div>
+{% endif %}
+
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+  {% with heading = "Upload {} communications".format(framework.name) %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+
+  <div class="page-section">
+    <form method="post" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      {% with
+         question="Communication",
+         hint="This must be PDF",
+         name="communication",
+         value="Last modified {}".format(communication.last_modified),
+         error=communication_error
+      %}
+        {% include "toolkit/forms/upload.html" %}
+      {% endwith %}
+
+      {% if framework.status in ['open'] %}
+      {% with
+         question="Clarification answers",
+         hint="This must be PDF",
+         name="clarification",
+         value="Last modified {}".format(clarification.last_modified),
+         error=clarification_error
+      %}
+        {% include "toolkit/forms/upload.html" %}
+      {% endwith %}
+      {% endif %}
+
+      {% if framework.status in ['open', 'closed'] %}
+      {% with
+         question="ITT pack",
+         hint="This must be ZIP",
+         name="itt_pack",
+         value="Last modified {}".format(itt_pack.last_modified),
+         error=itt_pack_error
+      %}
+        {% include "toolkit/forms/upload.html" %}
+      {% endwith %}
+      {% endif %}
+      {%
+        with
+        type = "save",
+        label = "Upload files"
+      %}
+        {% include "toolkit/button.html" %}
+      {% endwith %}
+    </form>
+  </div>
+</div>
+
+{% endblock %}

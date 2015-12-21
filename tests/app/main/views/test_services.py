@@ -170,7 +170,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             ],
         }}
         response = self.client.get(
-            '/admin/services/1/edit/features_and_benefits'
+            '/admin/services/1/edit/features-and-benefits'
         )
         self.assertEquals(200, response.status_code)
         self.assertIn(
@@ -180,7 +180,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             b'id="input-serviceFeatures-1" class="text-box" value=""',
             response.data)
         response = self.client.post(
-            '/admin/services/1/edit/features_and_benefits',
+            '/admin/services/1/edit/features-and-benefits',
             data={
                 'serviceFeatures': 'foo',
                 'serviceBenefits': 'foo',
@@ -198,7 +198,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             'lot': 'SaaS'
         }}
         response = self.client.get(
-            '/admin/services/1/edit/features_and_benefits')
+            '/admin/services/1/edit/features-and-benefits')
 
         data_api_client.get_service.assert_called_with('1')
 
