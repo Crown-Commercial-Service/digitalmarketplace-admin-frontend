@@ -1,17 +1,15 @@
 {% extends "_base_page.html" %}
 
-{% block content %}
-  <div class="page-container">
-    {% with heading = "Page could not be found" %}
-      {% include 'toolkit/page-heading.html' %}
-    {% endwith %}
-    <p>
-      Check you've entered the correct web address or start again on the
-      Digital Marketplace homepage.
-    </p>
-    <p>
-      If you can't find what you're looking for, contact us at
-      <a href="mailto:enquiries@digitalmarketplace.service.gov.uk?subject=Digital%20Marketplace%20feedback" title="Please send feedback to enquiries@digitalmarketplace.service.gov.uk">enquiries@digitalmarketplace.service.gov.uk</a>
-    </p>
-  </div>
+{% block main_content %}
+  {% with heading = "Page could not be found" %}
+    {% include 'toolkit/page-heading.html' %}
+  {% endwith %}
+  <p>
+    Check you've entered the correct web address or start again on the
+    Digital Marketplace homepage.
+  </p>
+  <p>
+    If you can't find what you're looking for, contact us at
+    <a href="mailto:enquiries@digitalmarketplace.service.gov.uk?subject=Digital%20Marketplace%20feedback" title="Please send feedback to enquiries@digitalmarketplace.service.gov.uk">enquiries@digitalmarketplace.service.gov.uk</a>
+  </p>
 {% endblock %}

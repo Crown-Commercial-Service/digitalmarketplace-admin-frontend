@@ -193,7 +193,7 @@ class TestLoginFormsNotAutofillable(BaseApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
 
         page_title = document.xpath(
-            '//div[@class="page-container"]//h1/text()')[0].strip()
+            '//h1/text()')[0].strip()
         self.assertEqual(expected_title, page_title)
 
         forms = document.xpath('//div[@class="page-container"]//form')

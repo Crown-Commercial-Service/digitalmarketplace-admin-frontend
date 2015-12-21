@@ -5,8 +5,7 @@
   Digital Marketplace admin
 {% endblock %}
 
-{% block content %}
-<div class="page-container">
+{% block main_content %}
 
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -89,65 +88,64 @@
       </div>
   {% endif %}
 
-{% with
-    smaller = True,
-    heading = "Statistics"
-%}
-  {% include "toolkit/page-heading.html" %}
-{% endwith %}
-{% with items = [
-    {
-        "body": "View G-Cloud 7 statistics",
-        "link": "/admin/statistics/g-cloud-7",
-        "title": "G-Cloud 7 statistics"
-    },
-    {
-        "body": "View Digital Outcomes and Specialists statistics",
-        "link": "/admin/statistics/digital-outcomes-and-specialists",
-        "title": "Digital Outcomes and Specialists statistics"
-    }
-]
-%}
-  {% include "toolkit/browse-list.html" %}
-{% endwith %}
-
-{% if current_user.has_any_role('admin', 'admin-ccs-sourcing') %}
   {% with
       smaller = True,
-      heading = "Agreements"
+      heading = "Statistics"
   %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
   {% with items = [
       {
-          "body": "G-Cloud 7 agreements",
-          "link": "/admin/agreements/g-cloud-7",
-          "title": "G-Cloud 7 agreements"
+          "body": "View G-Cloud 7 statistics",
+          "link": "/admin/statistics/g-cloud-7",
+          "title": "G-Cloud 7"
+      },
+      {
+          "body": "View Digital Outcomes and Specialists statistics",
+          "link": "/admin/statistics/digital-outcomes-and-specialists",
+          "title": "Digital Outcomes and Specialists"
       }
-    ]
+  ]
   %}
     {% include "toolkit/browse-list.html" %}
   {% endwith %}
-{% endif %}
 
-{% if current_user.has_any_role('admin') %}
-  {% with
-      smaller = True,
-      heading = "Communications"
-  %}
-    {% include "toolkit/page-heading.html" %}
-  {% endwith %}
-  {% with items = [
-    {
-        "body": "Manage Digital Outcomes and Specialists communications",
-        "link": "/admin/communications/digital-outcomes-and-specialists",
-        "title": "Digital Outcomes and Specialists communications"
-    }
-  ]
-  %}
-  {% include "toolkit/browse-list.html" %}
-  {% endwith %}
-{% endif %}
+  {% if current_user.has_any_role('admin', 'admin-ccs-sourcing') %}
+    {% with
+        smaller = True,
+        heading = "Agreements"
+    %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
+    {% with items = [
+        {
+            "body": "G-Cloud 7 agreements",
+            "link": "/admin/agreements/g-cloud-7",
+            "title": "G-Cloud 7"
+        }
+      ]
+    %}
+      {% include "toolkit/browse-list.html" %}
+    {% endwith %}
+  {% endif %}
 
-</div>
+  {% if current_user.has_any_role('admin') %}
+    {% with
+        smaller = True,
+        heading = "Communications"
+    %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
+    {% with items = [
+      {
+          "body": "Manage Digital Outcomes and Specialists communications",
+          "link": "/admin/communications/digital-outcomes-and-specialists",
+          "title": "Digital Outcomes and Specialists communications"
+      }
+    ]
+    %}
+      {% include "toolkit/browse-list.html" %}
+    {% endwith %}
+  {% endif %}
+
 {% endblock %}

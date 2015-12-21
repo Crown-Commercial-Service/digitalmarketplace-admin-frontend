@@ -8,7 +8,7 @@
   {{ service_data['serviceName'] }} – Digital Marketplace admin
 {% endblock %}
 
-{% block content %}
+{% block breadcrumb %}
   {%
     with items = [
       {
@@ -23,71 +23,72 @@
   %}
     {% include "toolkit/breadcrumb.html" %}
   {% endwith %}
+{% endblock %}
 
-  <div class="page-container">
+{% block main_content %}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
-    {% if category == 'error' %}
-        <div class="banner-destructive-without-action">
-    {% else %}
-        <div class="banner-success-without-action">
-    {% endif %}
-      <p class="banner-message">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        {% if category == 'error' %}
+            <div class="banner-destructive-without-action">
+        {% else %}
+            <div class="banner-success-without-action">
+        {% endif %}
+        <p class="banner-message">
           {% if message['bad_status'] %}
-          Not a valid status: '{{ message['bad_status'] }}'
+            Not a valid status: '{{ message['bad_status'] }}'
           {% elif message['status_error'] %}
-          Error trying to update status of service: {{ message['status_error'] }}
+            Error trying to update status of service: {{ message['status_error'] }}
           {% elif message['status_updated'] %}
-          Service status has been updated to: {{ message['status_updated']|title }}
+            Service status has been updated to: {{ message['status_updated']|title }}
           {% endif %}
-      </p>
+        </p>
       {% endfor %}
-  </div>
-  {% endif %}
+      </div>
+    {% endif %}
   {% endwith %}
 
-    {% if service_data %}
-      <div class="grid-row">
-        <div class="service-title">
-          {%
-            with
-            context = service_data['supplierName'],
-            heading = service_data['serviceName'],
-            smaller = True
-          %}
-            {% include "toolkit/page-heading.html" %}
-          {% endwith %}
-        </div>
-        <div class="service-view">
-          <a href="/g-cloud/services/{{ service_id }}">View service</a>
-        </div>
+  {% if service_data %}
+    <div class="grid-row">
+      <div class="service-title">
+        {%
+          with
+          context = service_data['supplierName'],
+          heading = service_data['serviceName'],
+          smaller = True
+        %}
+          {% include "toolkit/page-heading.html" %}
+        {% endwith %}
       </div>
+      <div class="service-view">
+        <a href="/g-cloud/services/{{ service_id }}">View service</a>
+      </div>
+    </div>
 
-      {% for section in sections %}
-        {{ summary.heading(section.name) }}
-        {% if section.editable and current_user.has_role('admin') %}
-          {{ summary.top_link("Edit", url_for('.edit', service_id=service_id, section=section.id)) }}
-        {% endif %}
-        {% call(item) summary.list_table(
-          section.questions,
-          caption="Services",
-          empty_message="This supplier has no services on the Digital Marketplace",
-          field_headings=[
-            'Service attribute name',
-            'Service attribute'
-          ],
-          field_headings_visible=False
-        ) %}
-          {% call summary.row() %}
-            {{ summary.field_name(item.question) }}
-            {{ summary[item.type](service_data[item.id]) }}
-          {% endcall %}
+    {% for section in sections %}
+      {{ summary.heading(section.name) }}
+      {% if section.editable and current_user.has_role('admin') %}
+        {{ summary.top_link("Edit", url_for('.edit', service_id=service_id, section=section.id)) }}
+      {% endif %}
+      {% call(item) summary.list_table(
+        section.questions,
+        caption="Services",
+        empty_message="This supplier has no services on the Digital Marketplace",
+        field_headings=[
+          'Service attribute name',
+          'Service attribute'
+        ],
+        field_headings_visible=False
+      ) %}
+        {% call summary.row() %}
+          {{ summary.field_name(item.question) }}
+          {{ summary[item.type](service_data[item.id]) }}
         {% endcall %}
-      {% endfor %}
+      {% endcall %}
+    {% endfor %}
 
-      {% if current_user.has_role('admin') %}
+    {% if current_user.has_role('admin') %}
       <form action="{{ url_for('.update_service_status', service_id=service_id ) }}" method="post">
           <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
           <fieldset class="question">
@@ -111,13 +112,12 @@
           </fieldset>
           <button type="submit" class="button-save">Update status</button>
       </form>
-      {% endif %}
+    {% endif %}
 
-    {% else %}
+  {% else %}
     <h1>Error</h1>
     <p>
       No service data
     </p>
-    {% endif %}
-  </div>
+  {% endif %}
 {% endblock %}
