@@ -6,7 +6,7 @@
   {{ framework.name }} Statistics – Digital Marketplace admin
 {% endblock %}
 
-{% block content %}
+{% block breadcrumb %}
   {%
     with items = [
       {
@@ -17,8 +17,10 @@
   %}
     {% include "toolkit/breadcrumb.html" %}
   {% endwith %}
+{% endblock %}
 
-  <div class="page-container framework-statistics" {% if big_screen_mode %}id="framework-statistics-big-screen"{% endif %}>
+{% block main_content %}
+  <div class="framework-statistics" {% if big_screen_mode %}id="framework-statistics-big-screen"{% endif %}>
     <div class="grid-row">
       <div class="column-two-thirds">
         {%
@@ -29,7 +31,7 @@
           {% include "toolkit/page-heading.html" %}
         {% endwith %}
       </div>
-      <div class="column-two-thirds">
+      <div class="column-one-third">
         {% if not big_screen_mode %}
           {%
             with

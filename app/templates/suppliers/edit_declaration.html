@@ -6,41 +6,39 @@
   Change {{ framework.name }} declaration
 {% endblock %}
 
-{% block content %}
-  <div class="page-container edit-section">
-      <div class="grid-row">
-        <div class="service-title">
-          {%
-            with
-            context = supplier.name,
-            heading = section.name,
-            smaller = True
-          %}
-            {% include "toolkit/page-heading.html" %}
-          {% endwith %}
+{% block main_content %}
+  <div class="grid-row">
+    <div class="service-title">
+      {%
+        with
+        context = supplier.name,
+        heading = section.name,
+        smaller = True
+      %}
+        {% include "toolkit/page-heading.html" %}
+      {% endwith %}
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data">
+    <div class="grid-row">
+      <div class="column-two-thirds">
+        <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
+        {% for question in section.questions %}
+          {{ forms[question.type](question, declaration, {}) }}
+        {% endfor %}
+        {%
+          with
+          type = "save",
+          label = "Save and return to summary"
+        %}
+          {% include "toolkit/button.html" %}
+        {% endwith %}
+        <p>
+          <a href="{{ url_for('.view_supplier_declaration', supplier_id=supplier.id, framework_slug=framework.slug) }}">Return without saving</a>
+        </p>
         </div>
       </div>
-
-      <form method="post" enctype="multipart/form-data">
-        <div class="grid-row">
-          <div class="column-two-thirds">
-            <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
-            {% for question in section.questions %}
-              {{ forms[question.type](question, declaration, {}) }}
-            {% endfor %}
-            {%
-              with
-              type = "save",
-              label = "Save and return to summary"
-            %}
-              {% include "toolkit/button.html" %}
-            {% endwith %}
-            <p>
-              <a href="{{ url_for('.view_supplier_declaration', supplier_id=supplier.id, framework_slug=framework.slug) }}">Return without saving</a>
-            </p>
-            </div>
-          </div>
-        </div>
-      </form>
-  </div>
+    </div>
+  </form>
 {% endblock %}

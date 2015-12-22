@@ -4,69 +4,68 @@
 
 {% extends "_base_page.html" %}
 
-{% block content %}
-{%
-    with items = [
-        {
-            "link": url_for('.index'),
-            "label": "Admin home"
-        }
-    ]
-%}
-{% include "toolkit/breadcrumb.html" %}
-{% endwith %}
+{% block breadcrumb %}
+  {%
+      with items = [
+          {
+              "link": url_for('.index'),
+              "label": "Admin home"
+          }
+      ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
 
-<div class="page-container">
+{% block main_content %}
 
-    {% with heading = "Suppliers" %}
+  {% with heading = "Suppliers" %}
     {% include "toolkit/page-heading.html" %}
-    {% endwith %}
+  {% endwith %}
 
-    <div class="page-section">
-      {% if current_user.has_role("admin") %}
-        {% set field_headings = [
-          "Name",
-          summary.hidden_field_heading("Change name"),
-          summary.hidden_field_heading("Users"),
-          summary.hidden_field_heading("Services"),
-        ] %}
-      {% elif current_user.has_role("admin-ccs-sourcing") %}
-        {% set field_headings = [
-          "Name",
-          summary.hidden_field_heading("Change declarations"),
-          summary.hidden_field_heading("Download signed agreements"),
-        ] %}
-      {% else %}
-        {% set field_headings = [
-          "Name",
-          summary.hidden_field_heading("Users"),
-          summary.hidden_field_heading("Services"),
-        ] %}
-      {% endif %}
+  <div class="page-section">
+    {% if current_user.has_role("admin") %}
+      {% set field_headings = [
+        "Name",
+        summary.hidden_field_heading("Change name"),
+        summary.hidden_field_heading("Users"),
+        summary.hidden_field_heading("Services"),
+      ] %}
+    {% elif current_user.has_role("admin-ccs-sourcing") %}
+      {% set field_headings = [
+        "Name",
+        summary.hidden_field_heading("Change declarations"),
+        summary.hidden_field_heading("Download signed agreements"),
+      ] %}
+    {% else %}
+      {% set field_headings = [
+        "Name",
+        summary.hidden_field_heading("Users"),
+        summary.hidden_field_heading("Services"),
+      ] %}
+    {% endif %}
 
-      {% call(item) summary.list_table(
-        suppliers,
-        caption="Suppliers",
-        empty_message="No suppliers were found",
-        field_headings=field_headings,
-        field_headings_visible=True)
-      %}
-        {% call summary.row() %}
-          {{ summary.field_name(item.name) }}
-          {% if current_user.has_role('admin') %}
-            {{ summary.edit_link("Change name", url_for(".edit_supplier_name", supplier_id=item.id)) }}
-          {% endif %}
-          {% if current_user.has_role('admin-ccs-sourcing') %}
-            {{ summary.edit_link("G-Cloud 7 declaration", url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="g-cloud-7")) }}
-            {{ summary.edit_link("Download G-Cloud 7 agreement", url_for(".download_agreement_file", supplier_id=item.id, framework_slug="g-cloud-7", document_name="signed-framework-agreement")) }}
-          {% endif %}
-          {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
-            {{ summary.edit_link("Users", url_for(".find_supplier_users", supplier_id=item.id)) }}
-            {{ summary.edit_link("Services", url_for(".find_supplier_services", supplier_id=item.id)) }}
-          {% endif %}
-        {% endcall %}
+    {% call(item) summary.list_table(
+      suppliers,
+      caption="Suppliers",
+      empty_message="No suppliers were found",
+      field_headings=field_headings,
+      field_headings_visible=True)
+    %}
+      {% call summary.row() %}
+        {{ summary.field_name(item.name) }}
+        {% if current_user.has_role('admin') %}
+          {{ summary.edit_link("Change name", url_for(".edit_supplier_name", supplier_id=item.id)) }}
+        {% endif %}
+        {% if current_user.has_role('admin-ccs-sourcing') %}
+          {{ summary.edit_link("G-Cloud 7 declaration", url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="g-cloud-7")) }}
+          {{ summary.edit_link("Download G-Cloud 7 agreement", url_for(".download_agreement_file", supplier_id=item.id, framework_slug="g-cloud-7", document_name="signed-framework-agreement")) }}
+        {% endif %}
+        {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
+          {{ summary.edit_link("Users", url_for(".find_supplier_users", supplier_id=item.id)) }}
+          {{ summary.edit_link("Services", url_for(".find_supplier_services", supplier_id=item.id)) }}
+        {% endif %}
       {% endcall %}
-    </div>
-</div>
-
+    {% endcall %}
+  </div>
 {% endblock %}

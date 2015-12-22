@@ -5,7 +5,7 @@
   background: $red;
 }
 
-.page-container {
+#wrapper {
   @extend %site-width-container;
   padding-bottom: $gutter * 2;
 }

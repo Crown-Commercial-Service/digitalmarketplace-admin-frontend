@@ -7,7 +7,7 @@
   {{ section.name }} – Digital Marketplace admin
 {% endblock %}
 
-{% block content %}
+{% block breadcrumb %}
   {%
     with items = [
       {
@@ -22,63 +22,64 @@
   %}
     {% include "toolkit/breadcrumb.html" %}
   {% endwith %}
-  <div class="page-container edit-section">
-    {%
-      with
-      heading = section.name,
-      smaller = True
-    %}
-      {% include "toolkit/page-heading.html" %}
-    {% endwith %}
-    {% if errors %}
-      <div class="validation-masthead">
-        <h2 class="validation-masthead-heading">
-          There were problems with your response to the following questions:
-        </h2>
-        <ul>
-          {% for question in section.questions %}
-            {% if question.id in errors %}
-              <li>
-                <a class="validation-masthead-link" href="#{{ question.id }}">{{ question.question }}</a>
-              </li>
-            {% endif %}
-          {% endfor %}
-        </ul>
+{% endblock %}
+
+{% block main_content %}
+  {%
+    with
+    heading = section.name,
+    smaller = True
+  %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+  {% if errors %}
+    <div class="validation-masthead">
+      <h2 class="validation-masthead-heading">
+        There were problems with your response to the following questions:
+      </h2>
+      <ul>
+        {% for question in section.questions %}
+          {% if question.id in errors %}
+            <li>
+              <a class="validation-masthead-link" href="#{{ question.id }}">{{ question.question }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+  <form method="post" enctype="multipart/form-data">
+    <div class="grid-row">
+      <div class="column-two-thirds">
+        <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
+        {% for question in section.questions %}
+          {% if errors and errors[question.id] %}
+            {{ forms[question.type](question, service_data, errors) }}
+          {% else %}
+            {{ forms[question.type](question, service_data, {}) }}
+          {% endif %}
+          {% if question.assuranceApproach %}
+            <div class='assurance-question'>
+              {{ assurance_question(
+                name=question.id,
+                service_data=service_data,
+                type=question.assuranceApproach,
+                errors=errors if errors else {}
+              ) }}
+            </div>
+          {% endif %}
+        {% endfor %}
+        {%
+          with
+          type = "save",
+          label = "Save and return to summary"
+        %}
+          {% include "toolkit/button.html" %}
+        {% endwith %}
+        <p>
+          <a href="{{ url_for('.view', service_id=service_data.id) }}">Return without saving</a>
+        </p>
       </div>
-    {% endif %}
-    <form method="post" enctype="multipart/form-data">
-      <div class="grid-row">
-        <div class="column-two-thirds">
-          <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
-          {% for question in section.questions %}
-            {% if errors and errors[question.id] %}
-              {{ forms[question.type](question, service_data, errors) }}
-            {% else %}
-              {{ forms[question.type](question, service_data, {}) }}
-            {% endif %}
-            {% if question.assuranceApproach %}
-              <div class='assurance-question'>
-                {{ assurance_question(
-                  name=question.id,
-                  service_data=service_data,
-                  type=question.assuranceApproach,
-                  errors=errors if errors else {}
-                ) }}
-              </div>
-            {% endif %}
-          {% endfor %}
-          {%
-            with
-            type = "save",
-            label = "Save and return to summary"
-          %}
-            {% include "toolkit/button.html" %}
-          {% endwith %}
-          <p>
-            <a href="{{ url_for('.view', service_id=service_data.id) }}">Return without saving</a>
-          </p>
-        </div>
-      </div>
-    </form>
-  </div>
+    </div>
+  </form>
 {% endblock %}

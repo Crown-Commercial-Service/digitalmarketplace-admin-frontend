@@ -5,7 +5,7 @@
   Change name – {{ supplier.name }} – Digital Marketplace admin
 {% endblock %}
 
-{% block content %}
+{% block breadcrumb %}
   {%
     with items = [
       {
@@ -19,31 +19,32 @@
   %}
     {% include "toolkit/breadcrumb.html" %}
   {% endwith %}
-  <div class="page-container">
-    {% with heading = "Change supplier name" %}
-      {% include "toolkit/page-heading.html" %}
-    {% endwith %}
-    <form method="post">
-      <div class="grid-row">
-        <div class="column-two-thirds">
-          <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
-          {%
-            with
-            question = "New name",
-            name = "new_supplier_name",
-            value = supplier.name
-          %}
-            {% include "toolkit/forms/textbox.html" %}
-          {% endwith %}
-          {%
-            with
-            type = "save",
-            label = "Save"
-          %}
-            {% include "toolkit/button.html" %}
-          {% endwith %}
-        </div>
+{% endblock %}
+
+{% block main_content %}
+  {% with heading = "Change supplier name" %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+  <form method="post">
+    <div class="grid-row">
+      <div class="column-two-thirds">
+        <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+        {%
+          with
+          question = "New name",
+          name = "new_supplier_name",
+          value = supplier.name
+        %}
+          {% include "toolkit/forms/textbox.html" %}
+        {% endwith %}
+        {%
+          with
+          type = "save",
+          label = "Save"
+        %}
+          {% include "toolkit/button.html" %}
+        {% endwith %}
       </div>
-    </form>
-  </div>
+    </div>
+  </form>
 {% endblock %}
