@@ -10,7 +10,7 @@ export DM_DATA_API_URL=${DM_DATA_API_URL:=http://localhost:5000}
 export DM_DATA_API_AUTH_TOKEN=${DM_DATA_API_AUTH_TOKEN:=myToken}
 # Default hash for user/pass combo: admin/admin
 export DM_ADMIN_FRONTEND_COOKIE_SECRET=${DM_ADMIN_FRONTEND_COOKIE_SECRET:=secret}
-export DM_S3_DOCUMENT_BUCKET=${DM_S3_DOCUMENT_BUCKET:=admin-frontend-dev-documents}
+export DM_S3_DOCUMENT_BUCKET=${DM_S3_DOCUMENT_BUCKET:=digitalmarketplace-documents-dev-dev}
 export DM_DOCUMENTS_URL=${DM_DOCUMENTS_URL:=https://${DM_S3_DOCUMENT_BUCKET}.s3-eu-west-1.amazonaws.com}
 export DM_MANDRILL_API_KEY=${DM_MANDRILL_API_KEY:=not_a_real_key}
 export DM_SHARED_EMAIL_KEY=${DM_SHARED_EMAIL_KEY:=verySecretKey}
