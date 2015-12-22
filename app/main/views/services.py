@@ -1,5 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, \
-    current_app, abort
+from flask import render_template, request, redirect, url_for, flash, current_app, abort
 from flask_login import login_required, current_user
 from datetime import datetime
 

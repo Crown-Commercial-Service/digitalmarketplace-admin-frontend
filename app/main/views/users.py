@@ -1,5 +1,5 @@
-from flask import render_template, request
-from flask_login import login_required, current_user, flash
+from flask import render_template, request, Response
+from flask_login import login_required, flash
 
 from .. import main
 from . import get_template_data
