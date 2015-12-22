@@ -1,0 +1,74 @@
+{% import "toolkit/summary-table.html" as summary %}
+{% from 'macros/page_heading.html' import page_heading %}
+
+{% extends "_base_page.html" %}
+{% block page_title %}
+  Digital Marketplace admin
+{% endblock %}
+
+{% set csrf = csrf_token() %}
+
+{% block breadcrumb %}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      },
+      {
+        "label": "Audits",
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+  {% with
+    heading="Service status changes",
+    smaller=True
+  %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+  {{summary.heading(day|dateformat)}}
+  {% call(item) summary.list_table(
+    audit_events,
+    caption=day|dateformat,
+    empty_message="No changes",
+    field_headings=[
+      'Supplier', 'User', 'Change', 'Service', 'At'
+    ],
+    field_headings_visible=True
+  ) %}
+    {% call summary.row() %}
+      {% call summary.field(first=True) %}
+        {{item.data.supplierName}}
+      {% endcall %}
+      {{ summary.text(item.user) }}
+      {{ summary.text(item.data.new_status) }}
+      {% call summary.field() %}
+        <a href="{{ '/services/g-cloud/{}'.format(item.data.serviceId) }}">{{ item.data.serviceId }}</a>
+      {% endcall %}
+      {{ summary.text(item.createdAt|timeformat) }}
+    {% endcall %}
+  {% endcall %}
+
+
+  {%
+    with
+    previous_page = {
+      "url": url_for(".service_status_update_audits", day=next_day[:10]),
+      "title": "Next day",
+      "label": next_day|dateformat
+    } if next_day else {},
+    next_page = {
+      "url": url_for(".service_status_update_audits", day=previous_day[:10]),
+      "title": "Previous day",
+      "label": previous_day|dateformat
+    } if previous_day else {}
+  %}
+    {% include "toolkit/previous-next-navigation.html" %}
+  {% endwith %}
+
+{% endblock %}

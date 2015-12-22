@@ -362,3 +362,94 @@ class TestServiceUpdates(LoggedInApplicationTest):
         self.assertEquals(400, response.status_code)
 
         data_api_client.find_audit_events.assert_not_called()
+
+
+@mock.patch('app.main.views.service_updates.data_api_client')
+class TestServiceStatusUpdates(LoggedInApplicationTest):
+    def test_should_show_updates_for_a_day_with_updates(self, data_api_client):
+        data_api_client.find_audit_events.return_value = {
+            'auditEvents': [
+                {
+                    'data': {
+                        'supplierId': 93518,
+                        'serviceId': 1234567890,
+                        'supplierName': 'Clouded Networks',
+                        'new_status': 'enabled'
+                    },
+                    'user': 'joeblogs',
+                    'type': 'update_status',
+                    'createdAt': '2015-12-23T08:49:22.999Z'
+                }
+            ]
+        }
+
+        response = self.client.get(
+            '/admin/service-status-updates/2015-12-23'
+        )
+
+        data_api_client.find_audit_events.assert_called()
+
+        self.assertEquals(200, response.status_code)
+
+        page_contents = self._replace_whitespace(response.get_data(as_text=True))
+
+        self.assertIn('Wednesday23December2015', page_contents)
+        self.assertIn('1234567890', page_contents)
+        self.assertNotIn('class="next-page"', page_contents)
+        self.assertNotIn('class="previous-page"', page_contents)
+
+    def test_should_link_to_previous_and_next_days(self, data_api_client):
+        data_api_client.find_audit_events.return_value = {
+            'auditEvents': [
+                {
+                    'data': {
+                        'supplierId': 93518,
+                        'serviceId': -1,
+                        'supplierName': 'Clouded Networks',
+                        'new_status': 'enabled'
+                    },
+                    'user': 'joeblogs',
+                    'type': 'update_status',
+                    'createdAt': '2015-12-20T08:49:22.999Z'
+                },
+                {
+                    'data': {
+                        'supplierId': 93518,
+                        'serviceId': 1234567890,
+                        'supplierName': 'Clouded Networks',
+                        'new_status': 'enabled'
+                    },
+                    'user': 'joeblogs',
+                    'type': 'update_status',
+                    'createdAt': '2015-12-23T08:49:22.999Z'
+                },
+                {
+                    'data': {
+                        'supplierId': 93518,
+                        'serviceId': -1,
+                        'supplierName': 'Clouded Networks',
+                        'new_status': 'enabled'
+                    },
+                    'user': 'joeblogs',
+                    'type': 'update_status',
+                    'createdAt': '2015-12-25T08:49:22.999Z'
+                }
+            ]
+        }
+
+        response = self.client.get(
+            '/admin/service-status-updates/2015-12-23'
+        )
+
+        page_contents = self._replace_whitespace(response.get_data(as_text=True))
+
+        self.assertIn('Wednesday23December2015', page_contents)
+        self.assertIn('1234567890', page_contents)
+
+        self.assertIn('class="next-page"', page_contents)
+        self.assertIn('Sunday20December2015', page_contents)
+        self.assertIn('/service-status-updates/2015-12-20', page_contents)
+
+        self.assertIn('class="previous-page"', page_contents)
+        self.assertIn('Friday25December2015', page_contents)
+        self.assertIn('/service-status-updates/2015-12-25', page_contents)
