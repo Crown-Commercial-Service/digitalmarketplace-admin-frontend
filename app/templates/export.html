@@ -1,0 +1,46 @@
+{% from 'macros/page_heading.html' import page_heading %}
+
+{% extends "_base_page.html" %}
+{% block page_title %}
+  Digital Marketplace admin
+{% endblock %}
+
+{% block main_content %}
+  {%
+    with heading = "Export users"
+  %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+
+  {% if errors %}
+    {%
+      with
+      errors = errors,
+      lede = "Not answering isn't very helpful",
+      description = "Please do it right this time"
+    %}
+      {% include "toolkit/forms/validation.html" %}
+    {% endwith %}
+  {% endif %}
+
+  <form method="post" class="question">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    {%
+      with
+      question = "Please select a framework",
+      type = "radio",
+      name = "framework_slug",
+      options = framework_options
+    %}
+      {% include "toolkit/forms/selection-buttons.html" %}
+    {% endwith %}
+    {%
+      with
+      type = "save",
+      label = "Run me off a CSV"
+    %}
+      {% include "toolkit/button.html" %}
+    {% endwith %}
+  </form>
+
+{% endblock %}
