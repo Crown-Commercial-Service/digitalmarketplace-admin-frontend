@@ -24,15 +24,14 @@
 
   {% if not framework_options %}
     <p>No valid frameworks were found.</p>
-    <p>A framework must be open, pending or live in order to export its users.</p>
+    <p>A framework must be open, pending or live to export its users.</p>
   {% else %}
 
     {% if errors %}
       {%
         with
         errors = errors,
-        lede = "Not answering isn't very helpful",
-        description = "Please do it right this time"
+        lede = "A list of users can't be generated unless you select a valid framework"
       %}
         {% include "toolkit/forms/validation.html" %}
       {% endwith %}
@@ -52,7 +51,7 @@
       {%
         with
         type = "save",
-        label = "Run me off a CSV"
+        label = "Download users"
       %}
         {% include "toolkit/button.html" %}
       {% endwith %}
