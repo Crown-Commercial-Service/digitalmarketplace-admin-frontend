@@ -169,3 +169,159 @@ class TestUsersView(LoggedInApplicationTest):
         self.assertEquals('/admin/suppliers/users/999/deactivate', deactivate_link.attrib['action'])
         self.assertEquals('Deactivate', deactivate_button)
         self.assertEquals('/admin/users?email_address=test.user%40sme.com', return_link.attrib['value'])
+
+
+@mock.patch('app.main.views.users.data_api_client')
+class TestUsersExport(LoggedInApplicationTest):
+    _bad_statuses = ['coming', 'expired']
+
+    _valid_framework = {
+        'name': 'G-Cloud 7',
+        'slug': 'g-cloud-7',
+        'status': 'live'
+    }
+
+    _invalid_framework = {
+        'name': 'G-Cloud 8',
+        'slug': 'g-cloud-8',
+        'status': 'coming'
+    }
+
+    def _return_get_user_export_response(self, data_api_client, frameworks):
+        data_api_client.find_frameworks.return_value = {"frameworks": frameworks}
+        return self.client.get('/admin/users/export')
+
+    def _assert_things_about_frameworks(self, response, frameworks):
+
+        def _assert_things_about_valid_frameworks(options, frameworks):
+            valid_frameworks = [
+                framework for framework in frameworks if framework['status'] not in self._bad_statuses]
+
+            assert len(options) == len(valid_frameworks)
+            for framework in valid_frameworks:
+                assert framework['slug'] in [option.xpath('input')[0].attrib['value'] for option in options]
+                assert framework['name'] in ["".join(option.xpath('text()')).strip() for option in options]
+
+        def _assert_things_about_invalid_frameworks(options, frameworks):
+            invalid_frameworks = [
+                framework for framework in frameworks if framework['status'] in self._bad_statuses]
+
+            for framework in invalid_frameworks:
+                assert framework['slug'] not in [option.xpath('input')[0].attrib['value'] for option in options]
+                assert framework['name'] not in ["".join(option.xpath('text()')).strip() for option in options]
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        options = document.xpath(
+            '//fieldset[@id="framework_slug"]/label')
+
+        assert response.status_code == 200
+        _assert_things_about_valid_frameworks(options, frameworks)
+        _assert_things_about_invalid_frameworks(options, frameworks)
+
+    def _return_post_user_export_response(self, data_api_client, frameworks, users, framework_slug=None):
+        # collection of users is modified in the route
+        data_api_client.export_users.return_value = {"users": users.copy()}
+        data_api_client.find_frameworks.return_value = {"frameworks": frameworks}
+
+        if framework_slug is None:
+            framework_slug = frameworks[0]['slug']
+
+        return self.client.post(
+            '/admin/users/export',
+            data={'framework_slug': framework_slug}
+        )
+
+    def _assert_things_about_user_export(self, response, users):
+
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+
+        assert len(rows) == len(users) + 1
+
+        if users:
+            common_header_values = set(users[0].keys()) & set(rows[0])
+            assert len(common_header_values) == len(list(users[0].keys())) == len(rows[0])
+
+            for index, user in enumerate(users):
+                common_user_values = set(map(str, user.values())) & set(rows[index+1])
+                assert len(common_user_values) == len(list(user.values())) == len(rows[index+1])
+
+    ##########################################################################
+
+    def test_get_form_with_valid_framework(self, data_api_client):
+        frameworks = [self._valid_framework]
+        response = self._return_get_user_export_response(data_api_client, frameworks)
+        self._assert_things_about_frameworks(response, frameworks)
+
+    def test_get_form_with_invalid_framework(self, data_api_client):
+        frameworks = [self._invalid_framework]
+        response = self._return_get_user_export_response(data_api_client, frameworks)
+        assert self.strip_all_whitespace("No valid frameworks were found.") in \
+            self.strip_all_whitespace(response.get_data(as_text=True))
+        self._assert_things_about_frameworks(response, frameworks)
+
+    def test_get_form_with_valid_and_framework(self, data_api_client):
+        frameworks = [self._valid_framework, self._invalid_framework]
+        response = self._return_get_user_export_response(data_api_client, frameworks)
+        self._assert_things_about_frameworks(response, frameworks)
+
+    def test_post_user_export_with_no_users(self, data_api_client):
+        frameworks = [self._valid_framework]
+        users = []
+
+        response = self._return_post_user_export_response(data_api_client, frameworks, users)
+        self._assert_things_about_user_export(response, users)
+
+    def test_post_user_export_with_one_user(self, data_api_client):
+        frameworks = [self._valid_framework]
+        users = [{
+            "application_result": "fail",
+            "application_status": "no_application",
+            "declaration_status": "unstarted",
+            "framework_agreement": False,
+            "supplier_id": 1,
+            "user_email": "test.user@sme.com",
+            "user_name": "Tess User"
+        }]
+
+        response = self._return_post_user_export_response(data_api_client, frameworks, users)
+        self._assert_things_about_user_export(response, users)
+
+    def test_post_user_export_with_two_users(self, data_api_client):
+        frameworks = [self._valid_framework]
+        users = [{
+            "application_result": "fail",
+            "application_status": "no_application",
+            "declaration_status": "unstarted",
+            "framework_agreement": False,
+            "supplier_id": 1,
+            "user_email": "test.user@sme.com",
+            "user_name": "Tess User"
+        }, {
+            "application_result": "pass",
+            "application_status": "application",
+            "declaration_status": "complete",
+            "framework_agreement": True,
+            "supplier_id": 2,
+            "user_email": "paul@paul.paul",
+            "user_name": "Paul"
+        }]
+
+        response = self._return_post_user_export_response(data_api_client, frameworks, users)
+        self._assert_things_about_user_export(response, users)
+
+    def test_cannot_post_user_export_with_no_framework(self, data_api_client):
+        frameworks = [self._valid_framework]
+        framework_slug = ''
+        users = []
+        response = self._return_post_user_export_response(data_api_client, frameworks, users, framework_slug)
+        assert self.strip_all_whitespace("A list of users cannot be generated unless you select a valid framework") in \
+            self.strip_all_whitespace(response.get_data(as_text=True))
+
+    def test_cannot_post_user_export_with_bad_framework_slug(self, data_api_client):
+        frameworks = [self._valid_framework]
+        framework_slug = 'all-the-frameworks-in-the-uk'
+        users = []
+        response = self._return_post_user_export_response(data_api_client, frameworks, users, framework_slug)
+        assert self.strip_all_whitespace("A list of users cannot be generated unless you select a valid framework") in \
+            self.strip_all_whitespace(response.get_data(as_text=True))
