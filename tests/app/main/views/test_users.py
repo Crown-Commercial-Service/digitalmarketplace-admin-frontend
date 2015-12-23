@@ -251,6 +251,7 @@ class TestUsersExport(LoggedInApplicationTest):
     def test_get_form_with_valid_framework(self, data_api_client):
         frameworks = [self._valid_framework]
         response = self._return_get_user_export_response(data_api_client, frameworks)
+        assert response.status_code == 200
         self._assert_things_about_frameworks(response, frameworks)
 
     def test_get_form_with_invalid_framework(self, data_api_client):
@@ -258,11 +259,13 @@ class TestUsersExport(LoggedInApplicationTest):
         response = self._return_get_user_export_response(data_api_client, frameworks)
         assert self.strip_all_whitespace("No valid frameworks were found.") in \
             self.strip_all_whitespace(response.get_data(as_text=True))
+        assert response.status_code == 200
         self._assert_things_about_frameworks(response, frameworks)
 
     def test_get_form_with_valid_and_framework(self, data_api_client):
         frameworks = [self._valid_framework, self._invalid_framework]
         response = self._return_get_user_export_response(data_api_client, frameworks)
+        assert response.status_code == 200
         self._assert_things_about_frameworks(response, frameworks)
 
     def test_post_user_export_with_no_users(self, data_api_client):
@@ -270,6 +273,7 @@ class TestUsersExport(LoggedInApplicationTest):
         users = []
 
         response = self._return_post_user_export_response(data_api_client, frameworks, users)
+        assert response.status_code == 200
         self._assert_things_about_user_export(response, users)
 
     def test_post_user_export_with_one_user(self, data_api_client):
@@ -285,6 +289,7 @@ class TestUsersExport(LoggedInApplicationTest):
         }]
 
         response = self._return_post_user_export_response(data_api_client, frameworks, users)
+        assert response.status_code == 200
         self._assert_things_about_user_export(response, users)
 
     def test_post_user_export_with_two_users(self, data_api_client):
@@ -308,6 +313,7 @@ class TestUsersExport(LoggedInApplicationTest):
         }]
 
         response = self._return_post_user_export_response(data_api_client, frameworks, users)
+        assert response.status_code == 200
         self._assert_things_about_user_export(response, users)
 
     def test_cannot_post_user_export_with_no_framework(self, data_api_client):
@@ -315,6 +321,7 @@ class TestUsersExport(LoggedInApplicationTest):
         framework_slug = ''
         users = []
         response = self._return_post_user_export_response(data_api_client, frameworks, users, framework_slug)
+        assert response.status_code == 400
         assert self.strip_all_whitespace("A list of users cannot be generated unless you select a valid framework") in \
             self.strip_all_whitespace(response.get_data(as_text=True))
 
@@ -323,5 +330,6 @@ class TestUsersExport(LoggedInApplicationTest):
         framework_slug = 'all-the-frameworks-in-the-uk'
         users = []
         response = self._return_post_user_export_response(data_api_client, frameworks, users, framework_slug)
+        assert response.status_code == 400
         assert self.strip_all_whitespace("A list of users cannot be generated unless you select a valid framework") in \
             self.strip_all_whitespace(response.get_data(as_text=True))
