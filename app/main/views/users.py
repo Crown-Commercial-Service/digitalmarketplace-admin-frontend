@@ -39,13 +39,13 @@ def find_user_by_email_address():
 def export_users():
     bad_statuses = ['coming', 'expired']
     frameworks = [f for f in data_api_client.find_frameworks()['frameworks'] if f['status'] not in bad_statuses]
+    # if frameworks is empty, framework options will be empty
     framework_options = [{'value': f['slug'], 'label': f['name']} for f in sorted(frameworks, key=lambda f: f['name'])]
     errors = []
 
-    if request.method == 'POST':
+    if framework_options and request.method == 'POST':
 
         framework_slug = request.form.get('framework_slug')
-
         if not framework_slug or framework_slug not in [f['slug'] for f in frameworks]:
             errors = [{
                 "input_name": "framework_slug",
