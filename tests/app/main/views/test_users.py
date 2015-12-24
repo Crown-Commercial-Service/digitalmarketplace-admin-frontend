@@ -5,6 +5,7 @@ except ImportError:
     from urllib.parse import urlsplit
     from io import BytesIO as StringIO
 import mock
+import copy
 from lxml import html
 from ...helpers import LoggedInApplicationTest
 
@@ -221,7 +222,7 @@ class TestUsersExport(LoggedInApplicationTest):
 
     def _return_post_user_export_response(self, data_api_client, frameworks, users, framework_slug=None):
         # collection of users is modified in the route
-        data_api_client.export_users.return_value = {"users": users.copy()}
+        data_api_client.export_users.return_value = {"users": copy.copy(users)}
         data_api_client.find_frameworks.return_value = {"frameworks": frameworks}
 
         if framework_slug is None:
