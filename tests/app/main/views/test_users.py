@@ -323,7 +323,7 @@ class TestUsersExport(LoggedInApplicationTest):
         users = []
         response = self._return_post_user_export_response(data_api_client, frameworks, users, framework_slug)
         assert response.status_code == 400
-        assert self.strip_all_whitespace("A list of users cannot be generated unless you select a valid framework") in \
+        assert self.strip_all_whitespace("A list of users can&#39;t be generated unless you select a valid framework") in \
             self.strip_all_whitespace(response.get_data(as_text=True))
 
     def test_cannot_post_user_export_with_bad_framework_slug(self, data_api_client):
@@ -332,5 +332,5 @@ class TestUsersExport(LoggedInApplicationTest):
         users = []
         response = self._return_post_user_export_response(data_api_client, frameworks, users, framework_slug)
         assert response.status_code == 400
-        assert self.strip_all_whitespace("A list of users cannot be generated unless you select a valid framework") in \
+        assert self.strip_all_whitespace("A list of users can&#39;t be generated unless you select a valid framework") in \
             self.strip_all_whitespace(response.get_data(as_text=True))
