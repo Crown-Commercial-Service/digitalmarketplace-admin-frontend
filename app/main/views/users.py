@@ -35,65 +35,77 @@ def find_user_by_email_address():
             **get_template_data()), 404
 
 
-@main.route('/users/export', methods=['GET', 'POST'])
+@main.route('/users/export', methods=['GET'])
+@login_required
+@role_required('admin')
+def export_users_form():
+    return _export_users()
+
+
+@main.route('/users/export', methods=['POST'])
 @login_required
 @role_required('admin')
 def export_users():
     bad_statuses = ['coming', 'expired']
+    framework = None
+
+    framework_slug = request.form.get('framework_slug')
+    if framework_slug:
+        framework = data_api_client.get_framework(framework_slug).get('frameworks')
+        if framework:
+            framework = framework if framework.get('status') not in bad_statuses else None
+
+    if not framework:
+        return _export_users(errors=[{
+            "input_name": "framework_slug",
+            "question": "Please select a framework"
+        }])
+
+    supplier_rows = data_api_client.export_users(framework_slug).get('users', [])
+    supplier_headers = [
+        "user_email",
+        "user_name",
+        "supplier_id",
+        "declaration_status",
+        "application_status",
+        "application_result",
+        "framework_agreement"
+    ]
+    # insert header column
+    supplier_rows.insert(0, {header: header for header in supplier_headers})
+
+    def iter_csv(rows):
+
+        class Line(object):
+            def __init__(self):
+                self._line = None
+
+            def write(self, line):
+                self._line = line
+
+            def read(self):
+                return self._line
+
+        line = Line()
+        writer = unicodecsv.writer(line)
+        for row in rows:
+            writer.writerow([row.get(header, '') for header in supplier_headers])
+            yield line.read()
+
+    return Response(
+        iter_csv(supplier_rows),
+        mimetype='text/csv',
+        headers={
+            "Content-Disposition": "attachment;filename=users-{}.csv".format(framework_slug),
+            "Content-Type": "text/csv; header=present"
+        }
+    )
+
+
+def _export_users(errors=None):
+    bad_statuses = ['coming', 'expired']
     frameworks = [f for f in data_api_client.find_frameworks()['frameworks'] if f['status'] not in bad_statuses]
-    # if frameworks is empty, framework options will be empty
     framework_options = [{'value': f['slug'], 'label': f['name']} for f in sorted(frameworks, key=lambda f: f['name'])]
-    errors = []
-
-    if framework_options and request.method == 'POST':
-
-        framework_slug = request.form.get('framework_slug')
-        if not framework_slug or framework_slug not in [f['slug'] for f in frameworks]:
-            errors = [{
-                "input_name": "framework_slug",
-                "question": "Please select a framework"
-            }]
-
-        else:
-            supplier_rows = data_api_client.export_users(framework_slug).get('users', [])
-            supplier_headers = [
-                "user_email",
-                "user_name",
-                "supplier_id",
-                "declaration_status",
-                "application_status",
-                "application_result",
-                "framework_agreement"
-            ]
-            # insert header column
-            supplier_rows.insert(0, {header: header for header in supplier_headers})
-
-            def iter_csv(rows):
-
-                class Line(object):
-                    def __init__(self):
-                        self._line = None
-
-                    def write(self, line):
-                        self._line = line
-
-                    def read(self):
-                        return self._line
-
-                line = Line()
-                writer = unicodecsv.writer(line)
-                for row in rows:
-                    writer.writerow([row.get(header, '') for header in supplier_headers])
-                    yield line.read()
-
-            return Response(
-                iter_csv(supplier_rows),
-                mimetype='text/csv',
-                headers={
-                    "Content-Disposition": "attachment;filename=users-{}.csv".format(framework_slug),
-                    "Content-Type": "text/csv; header=present"
-                }
-            )
 
     return render_template(
         "export.html",
