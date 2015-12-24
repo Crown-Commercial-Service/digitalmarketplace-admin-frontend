@@ -1,6 +1,8 @@
+from __future__ import unicode_literals
 from flask import render_template, request, Response
 from flask_login import login_required, flash
 
+import unicodecsv
 from .. import main
 from . import get_template_data
 from ... import data_api_client
@@ -66,13 +68,26 @@ def export_users():
             # insert header column
             supplier_rows.insert(0, {header: header for header in supplier_headers})
 
-            def generate():
-                for row in supplier_rows:
-                    row = ["{}".format(row.get(header, '')) for header in supplier_headers]
-                    yield '{}{}'.format(','.join(row), '\r\n')
+            def iter_csv(rows):
+
+                class Line(object):
+                    def __init__(self):
+                        self._line = None
+
+                    def write(self, line):
+                        self._line = line
+
+                    def read(self):
+                        return self._line
+
+                line = Line()
+                writer = unicodecsv.writer(line)
+                for row in rows:
+                    writer.writerow([row.get(header, '') for header in supplier_headers])
+                    yield line.read()
 
             return Response(
-                generate(),
+                iter_csv(supplier_rows),
                 mimetype='text/csv',
                 headers={
                     "Content-Disposition": "attachment;filename=users-{}.csv".format(framework_slug),
