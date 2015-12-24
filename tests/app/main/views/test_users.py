@@ -1,3 +1,6 @@
+# coding=utf-8
+from __future__ import unicode_literals
+
 try:
     from urlparse import urlsplit
     from StringIO import StringIO
@@ -6,6 +9,7 @@ except ImportError:
     from io import BytesIO as StringIO
 import mock
 import copy
+import six
 from lxml import html
 from ...helpers import LoggedInApplicationTest
 
@@ -240,12 +244,10 @@ class TestUsersExport(LoggedInApplicationTest):
         assert len(rows) == len(users) + 1
 
         if users:
-            common_header_values = set(users[0].keys()) & set(rows[0])
-            assert len(common_header_values) == len(list(users[0].keys())) == len(rows[0])
+            assert sorted(list(users[0].keys())) == sorted(rows[0])
 
             for index, user in enumerate(users):
-                common_user_values = set(map(str, user.values())) & set(rows[index+1])
-                assert len(common_user_values) == len(list(user.values())) == len(rows[index+1])
+                assert sorted([six.text_type(val) for val in user.values()]) == sorted(rows[index+1])
 
     ##########################################################################
 
@@ -296,21 +298,21 @@ class TestUsersExport(LoggedInApplicationTest):
     def test_post_user_export_with_two_users(self, data_api_client):
         frameworks = [self._valid_framework]
         users = [{
-            "application_result": "fail",
-            "application_status": "no_application",
-            "declaration_status": "unstarted",
+            "application_result": 'fail',
+            "application_status": '汉字$@!%^%&^*%&^	 	 	',
+            "declaration_status": 'chữ Nôm',
             "framework_agreement": False,
             "supplier_id": 1,
-            "user_email": "test.user@sme.com",
-            "user_name": "Tess User"
+            "user_email": 'test.user@sme.com',
+            "user_name": 'Tess User'
         }, {
-            "application_result": "pass",
-            "application_status": "application",
-            "declaration_status": "complete",
-            "framework_agreement": True,
+            "application_result": 'pass',
+            "application_status": 'application',
+            "declaration_status": 'complete',
+            "framework_agreement": False,
             "supplier_id": 2,
-            "user_email": "paul@paul.paul",
-            "user_name": "Paul"
+            "user_email": 'paul@paul.paul',
+            "user_name": 'Paul'
         }]
 
         response = self._return_post_user_export_response(data_api_client, frameworks, users)
