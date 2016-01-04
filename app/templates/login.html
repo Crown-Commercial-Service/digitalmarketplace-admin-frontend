@@ -74,13 +74,18 @@
                 </div>
             {% endif %}
 
-            <button class="button-save">Log in</button>
+            {% with type = "save", label = "Log in" %}
+              {% include "toolkit/button.html" %}
+            {% endwith %}
 
-            <header class="page-heading-smaller">
-                <p class="context">
-                    <a href="/suppliers/reset-password">Forgotten password</a>
-                </p>
-            </header>
+            {% with
+              url = "/suppliers/reset-password",
+              text = "Forgotten password",
+              bigger = True
+            %}
+              {% include "toolkit/secondary-action-link.html" %}
+            {% endwith %}
+
         </div>
     </div>
   </form>
