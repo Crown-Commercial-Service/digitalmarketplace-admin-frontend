@@ -31,10 +31,10 @@
   %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
-  {{summary.heading(day|dateformat)}}
+  {{summary.heading(day_as_datetime|dateformat)}}
   {% call(item) summary.list_table(
     audit_events,
-    caption=day|dateformat,
+    caption=day_as_datetime|dateformat,
     empty_message="No changes",
     field_headings=[
       'Supplier', 'User', 'Change', 'Service', 'At'
@@ -54,16 +54,23 @@
     {% endcall %}
   {% endcall %}
 
-
   {%
     with
     previous_page = {
-      "url": url_for(".service_status_update_audits", day=next_day[:10]),
+      "url": url_for(".service_status_update_audits", day=day, page=page-1),
+      "title": "Page {}".format(page - 1),
+      "label": "of {}".format(day_as_datetime|dateformat)
+    } if previous_page else {
+      "url": url_for(".service_status_update_audits", day=next_day.strftime('%Y-%m-%d')),
       "title": "Next day",
       "label": next_day|dateformat
     } if next_day else {},
     next_page = {
-      "url": url_for(".service_status_update_audits", day=previous_day[:10]),
+      "url": url_for(".service_status_update_audits", day=day, page=page+1),
+      "title": "Page {}".format(page + 1),
+      "label": "of {}".format(day_as_datetime|dateformat)
+    } if next_page else {
+      "url": url_for(".service_status_update_audits", day=previous_day.strftime('%Y-%m-%d')),
       "title": "Previous day",
       "label": previous_day|dateformat
     } if previous_day else {}

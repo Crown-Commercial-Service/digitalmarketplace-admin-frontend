@@ -1,6 +1,4 @@
-import re
-from datetime import datetime
-from ordered_set import OrderedSet
+from datetime import datetime, timedelta
 
 from flask import request, render_template, redirect, url_for, abort
 from flask_login import login_required, current_user
@@ -17,61 +15,38 @@ from . import get_template_data
 
 @main.route('/service-status-updates', methods=['GET'])
 @main.route('/service-status-updates/<day>', methods=['GET'])
+@main.route('/service-status-updates/<day>/page-<int:page>', methods=['GET'])
 @login_required
 @role_required('admin', 'admin-ccs-category')
-def service_status_update_audits(day=None):
-
-    all_audit_events = data_api_client.find_audit_events(
-        audit_type=AuditTypes.update_service_status,
-    )['auditEvents']
-
-    days_with_events = list(OrderedSet(
-        [event['createdAt'][:10] for event in all_audit_events]
-    ))[::-1]
+def service_status_update_audits(day=None, page=1):
 
     if day is None:
-        return redirect(url_for('.service_status_update_audits', day=days_with_events[0]))
+        return redirect(url_for(
+            '.service_status_update_audits',
+            day=datetime.today().strftime('%Y-%m-%d')
+        ))
 
     try:
-        datetime.strptime(day, '%Y-%m-%d')
+        day_as_datetime = datetime.strptime(day, '%Y-%m-%d')
     except ValueError as err:
         abort(404)
 
-    previous_day = None
-    next_day = None
-    if day not in days_with_events:
-        day_index = -1
-    else:
-        day_index = days_with_events.index(day)
-
-        if day_index < len(days_with_events):
-            try:
-                previous_day = days_with_events[day_index + 1]
-            except IndexError:
-                pass
-
-        if day_index > 0:
-            try:
-                next_day = days_with_events[day_index - 1]
-            except IndexError:
-                pass
-
-    days_audit_events = data_api_client.find_audit_events(
+    status_update_audit_events = data_api_client.find_audit_events(
         audit_type=AuditTypes.update_service_status,
-        audit_date=day
-    )['auditEvents']
-
-    def day_to_datetime(day):
-        if not day:
-            return None
-        return '{}T00:00:00.000001Z'.format(day)
+        audit_date=day,
+        page=page
+    )
 
     return render_template(
         "service_status_update_audits.html",
-        audit_events=days_audit_events,
-        day=day_to_datetime(day),
-        previous_day=day_to_datetime(previous_day),
-        next_day=day_to_datetime(next_day),
+        audit_events=status_update_audit_events['auditEvents'],
+        day=day,
+        day_as_datetime=day_as_datetime,
+        previous_day=day_as_datetime - timedelta(1),
+        next_day=day_as_datetime + timedelta(1) if day_as_datetime < datetime.today() else None,
+        previous_page=status_update_audit_events.get('links', {}).get('prev'),
+        next_page=status_update_audit_events.get('links', {}).get('next'),
+        page=page,
         **get_template_data())
 
 
