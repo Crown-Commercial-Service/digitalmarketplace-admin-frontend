@@ -34,7 +34,8 @@ def service_status_update_audits(day=None, page=1):
     status_update_audit_events = data_api_client.find_audit_events(
         audit_type=AuditTypes.update_service_status,
         audit_date=day,
-        page=page
+        page=page,
+        latest_first=True
     )
 
     return render_template(
