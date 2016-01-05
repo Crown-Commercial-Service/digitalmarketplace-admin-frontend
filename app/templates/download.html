@@ -1,0 +1,27 @@
+{% from 'macros/page_heading.html' import page_heading %}
+
+{% extends "_base_page.html" %}
+
+{% block breadcrumb %}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+  {%
+    with heading = framework.name
+  %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+  <a href="{{  url_for('.download', framework_slug=framework_slug) }}">Download Users<a>
+
+
+{% endblock %}

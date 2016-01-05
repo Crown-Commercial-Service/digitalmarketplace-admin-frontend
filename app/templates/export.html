@@ -37,25 +37,14 @@
       {% endwith %}
     {% endif %}
 
-    <form method="post" class="question">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-      {%
-        with
-        question = "Please select a framework",
-        type = "radio",
-        name = "framework_slug",
-        options = framework_options
-      %}
-        {% include "toolkit/forms/selection-buttons.html" %}
-      {% endwith %}
-      {%
-        with
-        type = "save",
-        label = "Download users"
-      %}
-        {% include "toolkit/button.html" %}
-      {% endwith %}
-    </form>
   {% endif %}{# /if not frameworks_options #}
+
+    <p class='question-heading'>Please select a framework</p>
+    <ol>
+    {% for framework in framework_options %}
+        <li><a href="{{  url_for('.download_users', framework_slug=framework.value) }}">{{ framework.label }}</a></li>
+    {% endfor %}
+    </ol>
+
 
 {% endblock %}
