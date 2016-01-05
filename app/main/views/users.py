@@ -35,31 +35,33 @@ def find_user_by_email_address():
             **get_template_data()), 404
 
 
-@main.route('/users/export', methods=['GET'])
+@main.route('/users/download', methods=['GET'])
 @login_required
 @role_required('admin')
-def export_users_form():
-    return _export_users()
+def list_frameworks_with_users(errors=None):
+    bad_statuses = ['coming', 'expired']
+    frameworks = [framework for framework in data_api_client.find_frameworks()['frameworks']
+                  if framework['status'] not in bad_statuses]
+    framework_options = [{'value': framework['slug'], 'label': framework['name']} for framework
+                         in sorted(frameworks, key=lambda framework: framework['name'])]
+
+    return render_template(
+        "download_users.html",
+        framework_options=framework_options,
+        errors=errors,
+        **get_template_data()
+    ), 200 if not errors else 400
 
 
-@main.route('/users/export', methods=['POST'])
+@main.route('/users/download/<framework_slug>', methods=['GET'])
 @login_required
 @role_required('admin')
-def export_users():
+def download_users(framework_slug):
+    framework = data_api_client.get_framework(framework_slug)['frameworks']
     bad_statuses = ['coming', 'expired']
     framework = None
 
-    framework_slug = request.form.get('framework_slug')
-    if framework_slug:
-        framework = data_api_client.get_framework(framework_slug).get('frameworks')
-        if framework:
-            framework = framework if framework.get('status') not in bad_statuses else None
-
-    if not framework:
-        return _export_users(errors=[{
-            "input_name": "framework_slug",
-            "question": "Please select a framework"
-        }])
+    framework = data_api_client.get_framework(framework_slug).get('frameworks')
 
     supplier_rows = data_api_client.export_users(framework_slug).get('users', [])
     supplier_headers = [
@@ -100,16 +102,3 @@ def export_users():
             "Content-Type": "text/csv; header=present"
         }
     )
-
-
-def _export_users(errors=None):
-    bad_statuses = ['coming', 'expired']
-    frameworks = [f for f in data_api_client.find_frameworks()['frameworks'] if f['status'] not in bad_statuses]
-    framework_options = [{'value': f['slug'], 'label': f['name']} for f in sorted(frameworks, key=lambda f: f['name'])]
-
-    return render_template(
-        "export.html",
-        framework_options=framework_options,
-        errors=errors,
-        **get_template_data()
-    ), 200 if not errors else 400

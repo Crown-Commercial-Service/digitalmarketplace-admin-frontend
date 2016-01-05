@@ -17,7 +17,7 @@
 
 {% block main_content %}
   {%
-    with heading = "Export user list"
+    with heading = "Download user list"
   %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
@@ -37,25 +37,22 @@
       {% endwith %}
     {% endif %}
 
-    <form method="post" class="question">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-      {%
-        with
-        question = "Please select a framework",
-        type = "radio",
-        name = "framework_slug",
-        options = framework_options
-      %}
-        {% include "toolkit/forms/selection-buttons.html" %}
-      {% endwith %}
-      {%
-        with
-        type = "save",
-        label = "Download users"
-      %}
-        {% include "toolkit/button.html" %}
-      {% endwith %}
-    </form>
   {% endif %}{# /if not frameworks_options #}
+
+    <p class='question-heading'>Please select a framework</p>
+    {% for framework in framework_options %}
+      {%
+        with
+        items = [
+          {
+              "title": framework.label,
+              "link": url_for('.download_users', framework_slug=framework.value)
+          }
+        ]
+      %}
+        {% include "toolkit/browse-list.html" %}
+      {% endwith %}
+    {% endfor %}
+
 
 {% endblock %}

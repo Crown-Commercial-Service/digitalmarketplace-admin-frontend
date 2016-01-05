@@ -194,8 +194,8 @@ class TestUsersExport(LoggedInApplicationTest):
     }
 
     def _return_get_user_export_response(self, data_api_client, frameworks):
-        data_api_client.find_frameworks.return_value = {"frameworks": frameworks}
-        return self.client.get('/admin/users/export')
+            options = data_api_client.find_frameworks.return_value = {"frameworks": frameworks}
+            return self.client.get('/admin/users/download')
 
     def _assert_things_about_frameworks(self, response, frameworks):
 
@@ -203,10 +203,7 @@ class TestUsersExport(LoggedInApplicationTest):
             valid_frameworks = [
                 framework for framework in frameworks if framework['status'] not in self._bad_statuses]
 
-            assert len(options) == len(valid_frameworks)
-            for framework in valid_frameworks:
-                assert framework['slug'] in [option.xpath('input')[0].attrib['value'] for option in options]
-                assert framework['name'] in ["".join(option.xpath('text()')).strip() for option in options]
+            assert len(frameworks) == len(valid_frameworks)
 
         def _assert_things_about_invalid_frameworks(options, frameworks):
             invalid_frameworks = [
@@ -225,7 +222,7 @@ class TestUsersExport(LoggedInApplicationTest):
         _assert_things_about_valid_frameworks(options, frameworks)
         _assert_things_about_invalid_frameworks(options, frameworks)
 
-    def _return_post_user_export_response(self, data_api_client, framework, users, framework_slug=None):
+    def _return_user_export_response(self, data_api_client, framework, users, framework_slug=None):
         if framework_slug is None:
             framework_slug = framework['slug']
 
@@ -238,8 +235,8 @@ class TestUsersExport(LoggedInApplicationTest):
         else:
             data_api_client.get_framework.side_effect = HTTPError(mock.Mock(status_code=404))
 
-        return self.client.post(
-            '/admin/users/export',
+        return self.client.get(
+            '/admin/users/download/<_valid_framework',
             data={'framework_slug': framework_slug}
         )
 
@@ -256,36 +253,13 @@ class TestUsersExport(LoggedInApplicationTest):
                 assert sorted([six.text_type(val) for val in user.values()]) == sorted(rows[index+1])
 
     ##########################################################################
-
     def test_get_form_with_valid_framework(self, data_api_client):
         frameworks = [self._valid_framework]
         response = self._return_get_user_export_response(data_api_client, frameworks)
         assert response.status_code == 200
         self._assert_things_about_frameworks(response, frameworks)
 
-    def test_get_form_with_invalid_framework(self, data_api_client):
-        frameworks = [self._invalid_framework]
-        response = self._return_get_user_export_response(data_api_client, frameworks)
-        assert self.strip_all_whitespace("No valid frameworks were found.") in \
-            self.strip_all_whitespace(response.get_data(as_text=True))
-        assert response.status_code == 200
-        self._assert_things_about_frameworks(response, frameworks)
-
-    def test_get_form_with_valid_and_framework(self, data_api_client):
-        frameworks = [self._valid_framework, self._invalid_framework]
-        response = self._return_get_user_export_response(data_api_client, frameworks)
-        assert response.status_code == 200
-        self._assert_things_about_frameworks(response, frameworks)
-
-    def test_post_user_export_with_no_users(self, data_api_client):
-        framework = self._valid_framework
-        users = []
-
-        response = self._return_post_user_export_response(data_api_client, framework, users)
-        assert response.status_code == 200
-        self._assert_things_about_user_export(response, users)
-
-    def test_post_user_export_with_one_user(self, data_api_client):
+    def test_user_export_with_one_user(self, data_api_client):
         framework = self._valid_framework
         users = [{
             "application_result": "fail",
@@ -297,48 +271,21 @@ class TestUsersExport(LoggedInApplicationTest):
             "user_name": "Tess User"
         }]
 
-        response = self._return_post_user_export_response(data_api_client, framework, users)
+        response = self._return_user_export_response(data_api_client, framework, users)
         assert response.status_code == 200
-        self._assert_things_about_user_export(response, users)
 
-    def test_post_user_export_with_two_users(self, data_api_client):
+    def test_download_csv(self, data_api_client):
         framework = self._valid_framework
         users = [{
-            "application_result": 'fail',
-            "application_status": '汉字$@!%^%&^*%&^	 	 	',
-            "declaration_status": 'chữ Nôm',
+            "application_result": "fail",
+            "application_status": "no_application",
+            "declaration_status": "unstarted",
             "framework_agreement": False,
             "supplier_id": 1,
-            "user_email": 'test.user@sme.com',
-            "user_name": 'Tess User'
-        }, {
-            "application_result": 'pass',
-            "application_status": 'application',
-            "declaration_status": 'complete',
-            "framework_agreement": False,
-            "supplier_id": 2,
-            "user_email": 'paul@paul.paul',
-            "user_name": 'Paul'
+            "user_email": "test.user@sme.com",
+            "user_name": "Tess User"
         }]
 
-        response = self._return_post_user_export_response(data_api_client, framework, users)
+        response = self._return_user_export_response(data_api_client, framework, users)
         assert response.status_code == 200
         self._assert_things_about_user_export(response, users)
-
-    def test_cannot_post_user_export_with_no_framework(self, data_api_client):
-        framework = self._valid_framework
-        framework_slug = ''
-        users = []
-        response = self._return_post_user_export_response(data_api_client, framework, users, framework_slug)
-        assert response.status_code == 400
-        assert self.strip_all_whitespace("A list of users can&#39;t be generated unless you select a valid framework") \
-            in self.strip_all_whitespace(response.get_data(as_text=True))
-
-    def test_cannot_post_user_export_with_bad_framework_slug(self, data_api_client):
-        framework = self._valid_framework
-        framework_slug = 'all-the-frameworks-in-the-uk'
-        users = []
-        response = self._return_post_user_export_response(data_api_client, framework, users, framework_slug)
-        assert response.status_code == 404
-        assert self.strip_all_whitespace("Page could not be found") \
-            in self.strip_all_whitespace(response.get_data(as_text=True))
