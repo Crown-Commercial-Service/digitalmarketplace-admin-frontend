@@ -2,7 +2,7 @@ from flask import render_template, request, redirect, url_for, flash, current_ap
 from flask_login import login_required, current_user
 from datetime import datetime
 
-from dmutils.apiclient import HTTPError
+from dmapiclient import HTTPError
 from dmutils.formats import DATETIME_FORMAT, format_service_price
 from dmutils.documents import upload_service_documents
 from dmutils.s3 import S3

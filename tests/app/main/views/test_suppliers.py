@@ -8,9 +8,9 @@ import mock
 from lxml import html
 from nose.tools import eq_
 from nose.tools import assert_equals
-from dmutils.apiclient.errors import HTTPError, APIError
+from dmapiclient import HTTPError, APIError
 from dmutils.email import MandrillException
-from dmutils.audit import AuditTypes
+from dmapiclient.audit import AuditTypes
 from ...helpers import LoggedInApplicationTest, Response
 
 
