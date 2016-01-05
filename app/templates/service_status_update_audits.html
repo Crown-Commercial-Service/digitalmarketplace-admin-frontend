@@ -46,7 +46,9 @@
         {{item.data.supplierName}}
       {% endcall %}
       {{ summary.text(item.user) }}
-      {{ summary.text(item.data.new_status) }}
+      {% call summary.field() %}
+        {{ 'Public' if item.data.new_status == 'published' else 'Unavailable' }}
+      {% endcall %}
       {% call summary.field() %}
         <a href="{{ '/services/g-cloud/{}'.format(item.data.serviceId) }}">{{ item.data.serviceId }}</a>
       {% endcall %}
