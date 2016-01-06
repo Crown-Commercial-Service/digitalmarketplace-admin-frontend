@@ -1,0 +1,58 @@
+{% from 'macros/page_heading.html' import page_heading %}
+
+{% extends "_base_page.html" %}
+
+{% block breadcrumb %}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+  {%
+    with heading = "Download user list"
+  %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+
+  {% if not framework_options %}
+    <p>No valid frameworks were found.</p>
+    <p>A framework must be open, pending or live to export its users.</p>
+  {% else %}
+
+    {% if errors %}
+      {%
+        with
+        errors = errors,
+        lede = "A list of users can't be generated unless you select a valid framework"
+      %}
+        {% include "toolkit/forms/validation.html" %}
+      {% endwith %}
+    {% endif %}
+
+  {% endif %}{# /if not frameworks_options #}
+
+    <p class='question-heading'>Please select a framework</p>
+    {% for framework in framework_options %}
+      {%
+        with
+        items = [
+          {
+              "title": framework.label,
+              "link": url_for('.download_users', framework_slug=framework.value)
+          }
+        ]
+      %}
+        {% include "toolkit/browse-list.html" %}
+      {% endwith %}
+    {% endfor %}
+
+
+{% endblock %}

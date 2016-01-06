@@ -1,3 +1,6 @@
+# coding=utf-8
+from __future__ import unicode_literals
+
 try:
     from urlparse import urlsplit
     from StringIO import StringIO
@@ -5,8 +8,11 @@ except ImportError:
     from urllib.parse import urlsplit
     from io import BytesIO as StringIO
 import mock
+import copy
+import six
 from lxml import html
 from ...helpers import LoggedInApplicationTest
+from dmutils.apiclient import HTTPError
 
 
 @mock.patch('app.main.views.users.data_api_client')
@@ -169,3 +175,117 @@ class TestUsersView(LoggedInApplicationTest):
         self.assertEquals('/admin/suppliers/users/999/deactivate', deactivate_link.attrib['action'])
         self.assertEquals('Deactivate', deactivate_button)
         self.assertEquals('/admin/users?email_address=test.user%40sme.com', return_link.attrib['value'])
+
+
+@mock.patch('app.main.views.users.data_api_client')
+class TestUsersExport(LoggedInApplicationTest):
+    _bad_statuses = ['coming', 'expired']
+
+    _valid_framework = {
+        'name': 'G-Cloud 7',
+        'slug': 'g-cloud-7',
+        'status': 'live'
+    }
+
+    _invalid_framework = {
+        'name': 'G-Cloud 8',
+        'slug': 'g-cloud-8',
+        'status': 'coming'
+    }
+
+    def _return_get_user_export_response(self, data_api_client, frameworks):
+            options = data_api_client.find_frameworks.return_value = {"frameworks": frameworks}
+            return self.client.get('/admin/users/download')
+
+    def _assert_things_about_frameworks(self, response, frameworks):
+
+        def _assert_things_about_valid_frameworks(options, frameworks):
+            valid_frameworks = [
+                framework for framework in frameworks if framework['status'] not in self._bad_statuses]
+
+            assert len(frameworks) == len(valid_frameworks)
+
+        def _assert_things_about_invalid_frameworks(options, frameworks):
+            invalid_frameworks = [
+                framework for framework in frameworks if framework['status'] in self._bad_statuses]
+
+            for framework in invalid_frameworks:
+                assert framework['slug'] not in [option.xpath('input')[0].attrib['value'] for option in options]
+                assert framework['name'] not in ["".join(option.xpath('text()')).strip() for option in options]
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        options = document.xpath(
+            '//fieldset[@id="framework_slug"]/label')
+
+        assert response.status_code == 200
+        _assert_things_about_valid_frameworks(options, frameworks)
+        _assert_things_about_invalid_frameworks(options, frameworks)
+
+    def _return_user_export_response(self, data_api_client, framework, users, framework_slug=None):
+        if framework_slug is None:
+            framework_slug = framework['slug']
+
+        # collection of users is modified in the route
+        data_api_client.export_users.return_value = {"users": copy.copy(users)}
+        data_api_client.find_frameworks.return_value = {"frameworks": [framework]}
+
+        if framework_slug == framework['slug']:
+            data_api_client.get_framework.return_value = {"frameworks": framework}
+        else:
+            data_api_client.get_framework.side_effect = HTTPError(mock.Mock(status_code=404))
+
+        return self.client.get(
+            '/admin/users/download/<_valid_framework',
+            data={'framework_slug': framework_slug}
+        )
+
+    def _assert_things_about_user_export(self, response, users):
+
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+
+        assert len(rows) == len(users) + 1
+
+        if users:
+            assert sorted(list(users[0].keys())) == sorted(rows[0])
+
+            for index, user in enumerate(users):
+                assert sorted([six.text_type(val) for val in user.values()]) == sorted(rows[index+1])
+
+    ##########################################################################
+    def test_get_form_with_valid_framework(self, data_api_client):
+        frameworks = [self._valid_framework]
+        response = self._return_get_user_export_response(data_api_client, frameworks)
+        assert response.status_code == 200
+        self._assert_things_about_frameworks(response, frameworks)
+
+    def test_user_export_with_one_user(self, data_api_client):
+        framework = self._valid_framework
+        users = [{
+            "application_result": "fail",
+            "application_status": "no_application",
+            "declaration_status": "unstarted",
+            "framework_agreement": False,
+            "supplier_id": 1,
+            "user_email": "test.user@sme.com",
+            "user_name": "Tess User"
+        }]
+
+        response = self._return_user_export_response(data_api_client, framework, users)
+        assert response.status_code == 200
+
+    def test_download_csv(self, data_api_client):
+        framework = self._valid_framework
+        users = [{
+            "application_result": "fail",
+            "application_status": "no_application",
+            "declaration_status": "unstarted",
+            "framework_agreement": False,
+            "supplier_id": 1,
+            "user_email": "test.user@sme.com",
+            "user_name": "Tess User"
+        }]
+
+        response = self._return_user_export_response(data_api_client, framework, users)
+        assert response.status_code == 200
+        self._assert_things_about_user_export(response, users)
