@@ -362,3 +362,112 @@ class TestServiceUpdates(LoggedInApplicationTest):
         self.assertEquals(400, response.status_code)
 
         data_api_client.find_audit_events.assert_not_called()
+
+
+@mock.patch('app.main.views.service_updates.data_api_client')
+class TestServiceStatusUpdates(LoggedInApplicationTest):
+
+    def test_redirects_to_current_day(self, data_api_client):
+        response = self.client.get(
+            '/admin/service-status-updates'
+        )
+
+        self.assertEquals(302, response.status_code)
+        self.assertIn('http://localhost/admin/service-status-updates/20', response.location)
+
+    def test_404s_invalid_date(self, data_api_client):
+        response = self.client.get(
+            '/admin/service-status-updates/invalid'
+        )
+
+        self.assertEquals(404, response.status_code)
+
+    def test_should_show_updates_for_a_day_with_updates(self, data_api_client):
+        data_api_client.find_audit_events.return_value = {
+            'auditEvents': [
+                {
+                    'data': {
+                        'supplierId': 93518,
+                        'serviceId': 1234567890,
+                        'supplierName': 'Clouded Networks',
+                        'new_status': 'enabled'
+                    },
+                    'user': 'joeblogs',
+                    'type': 'update_status',
+                    'createdAt': '2016-01-01T08:49:22.999Z'
+                }
+            ]
+        }
+
+        response = self.client.get(
+            '/admin/service-status-updates/2016-01-01'
+        )
+
+        self.assertEquals(200, response.status_code)
+
+        page_contents = self._replace_whitespace(response.get_data(as_text=True))
+
+        self.assertIn('Friday01January2016', page_contents)
+        self.assertIn('1234567890', page_contents)
+
+    def test_should_link_to_previous_and_next_days(self, data_api_client):
+        data_api_client.find_audit_events.return_value = {
+            'auditEvents': []
+        }
+
+        response = self.client.get(
+            '/admin/service-status-updates/2015-12-23'
+        )
+
+        page_contents = self._replace_whitespace(response.get_data(as_text=True))
+
+        self.assertIn('Wednesday23December2015', page_contents)
+
+        self.assertIn('class="next-page"', page_contents)
+        self.assertIn('Tuesday22December2015', page_contents)
+        self.assertIn('/service-status-updates/2015-12-22', page_contents)
+
+        self.assertIn('class="previous-page"', page_contents)
+        self.assertIn('Thursday24December2015', page_contents)
+        self.assertIn('/service-status-updates/2015-12-24', page_contents)
+
+    def test_should_link_to_next_page(self, data_api_client):
+        data_api_client.find_audit_events.return_value = {
+            'auditEvents': [],
+            'links': {
+                'next': '/'
+            }
+        }
+
+        response = self.client.get(
+            '/admin/service-status-updates/2015-12-23'
+        )
+
+        page_contents = self._replace_whitespace(response.get_data(as_text=True))
+
+        self.assertIn('class="next-page"', page_contents)
+        self.assertIn('Page2', page_contents)
+        self.assertIn('ofWednesday23December2015', page_contents)
+        self.assertIn('/service-status-updates/2015-12-23/page-2', page_contents)
+
+        self.assertIn('Nextday', page_contents)
+
+    def test_should_link_to_previous_page(self, data_api_client):
+        data_api_client.find_audit_events.return_value = {
+            'auditEvents': [],
+            'links': {
+                'next': '/',
+                'prev': '/'
+            }
+        }
+
+        response = self.client.get(
+            '/admin/service-status-updates/2015-12-23/page-2'
+        )
+
+        page_contents = self._replace_whitespace(response.get_data(as_text=True))
+
+        self.assertIn('class="previous-page"', page_contents)
+        self.assertIn('Page1', page_contents)
+        self.assertIn('ofWednesday23December2015', page_contents)
+        self.assertIn('/service-status-updates/2015-12-23/page-1', page_contents)

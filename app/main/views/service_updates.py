@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from flask import request, render_template, redirect, url_for
+from flask import request, render_template, redirect, url_for, abort
 from flask_login import login_required, current_user
 
 from dmapiclient.audit import AuditTypes
@@ -11,6 +11,44 @@ from .. import main
 from ..auth import role_required
 from ..forms import ServiceUpdateAuditEventsForm
 from . import get_template_data
+
+
+@main.route('/service-status-updates', methods=['GET'])
+@main.route('/service-status-updates/<day>', methods=['GET'])
+@main.route('/service-status-updates/<day>/page-<int:page>', methods=['GET'])
+@login_required
+@role_required('admin', 'admin-ccs-category')
+def service_status_update_audits(day=None, page=1):
+
+    if day is None:
+        return redirect(url_for(
+            '.service_status_update_audits',
+            day=datetime.today().strftime('%Y-%m-%d')
+        ))
+
+    try:
+        day_as_datetime = datetime.strptime(day, '%Y-%m-%d')
+    except ValueError as err:
+        abort(404)
+
+    status_update_audit_events = data_api_client.find_audit_events(
+        audit_type=AuditTypes.update_service_status,
+        audit_date=day,
+        page=page,
+        latest_first=True
+    )
+
+    return render_template(
+        "service_status_update_audits.html",
+        audit_events=status_update_audit_events['auditEvents'],
+        day=day,
+        day_as_datetime=day_as_datetime,
+        previous_day=day_as_datetime - timedelta(1),
+        next_day=day_as_datetime + timedelta(1) if day_as_datetime + timedelta(1) < datetime.today() else None,
+        previous_page=status_update_audit_events.get('links', {}).get('prev'),
+        next_page=status_update_audit_events.get('links', {}).get('next'),
+        page=page,
+        **get_template_data())
 
 
 @main.route('/service-updates', methods=['GET'])
