@@ -1,8 +1,8 @@
 from nose.tools import assert_in
 import mock
 
-from dmutils.apiclient import HTTPError
-from dmutils.audit import AuditTypes
+from dmapiclient import HTTPError
+from dmapiclient.audit import AuditTypes
 from ...helpers import LoggedInApplicationTest
 
 

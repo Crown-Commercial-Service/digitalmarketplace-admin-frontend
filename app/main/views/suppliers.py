@@ -6,8 +6,8 @@ from . import get_template_data
 from ... import data_api_client, content_loader
 from ..forms import EmailAddressForm
 from ..auth import role_required
-from dmutils.apiclient.errors import HTTPError, APIError
-from dmutils.audit import AuditTypes
+from dmapiclient import HTTPError, APIError
+from dmapiclient.audit import AuditTypes
 from dmutils.email import send_email, generate_token, MandrillException
 from dmutils.documents import get_signed_url, get_agreement_document_path
 from dmutils import s3

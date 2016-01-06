@@ -1,18 +1,12 @@
 # coding=utf-8
 from __future__ import unicode_literals
 
-try:
-    from urlparse import urlsplit
-    from StringIO import StringIO
-except ImportError:
-    from urllib.parse import urlsplit
-    from io import BytesIO as StringIO
 import mock
 import copy
 import six
 from lxml import html
 from ...helpers import LoggedInApplicationTest
-from dmutils.apiclient import HTTPError
+from dmapiclient import HTTPError
 
 
 @mock.patch('app.main.views.users.data_api_client')
@@ -194,7 +188,7 @@ class TestUsersExport(LoggedInApplicationTest):
     }
 
     def _return_get_user_export_response(self, data_api_client, frameworks):
-            options = data_api_client.find_frameworks.return_value = {"frameworks": frameworks}
+            data_api_client.find_frameworks.return_value = {"frameworks": frameworks}
             return self.client.get('/admin/users/download')
 
     def _assert_things_about_frameworks(self, response, frameworks):

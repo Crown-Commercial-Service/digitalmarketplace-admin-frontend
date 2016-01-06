@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import request, render_template, redirect, url_for
 from flask_login import login_required, current_user
 
-from dmutils.audit import AuditTypes
+from dmapiclient.audit import AuditTypes
 from dmutils.formats import DATETIME_FORMAT
 
 from ... import data_api_client

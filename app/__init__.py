@@ -4,15 +4,18 @@ from flask import Flask, request, redirect
 from flask.ext.bootstrap import Bootstrap
 from flask_login import LoginManager
 from flask_wtf.csrf import CsrfProtect
-from dmutils import apiclient, init_app, flask_featureflags, formats
+
+import dmapiclient
+from dmutils import init_app, flask_featureflags, formats
 from dmutils.user import User
 from dmutils.content_loader import ContentLoader
+
 from config import configs
 
 
 bootstrap = Bootstrap()
 csrf = CsrfProtect()
-data_api_client = apiclient.DataAPIClient()
+data_api_client = dmapiclient.DataAPIClient()
 feature_flags = flask_featureflags.FeatureFlag()
 login_manager = LoginManager()
 

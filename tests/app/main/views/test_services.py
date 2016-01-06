@@ -6,7 +6,7 @@ except ImportError:
     from io import BytesIO as StringIO
 import mock
 
-from dmutils.apiclient import HTTPError, REQUEST_ERROR_MESSAGE
+from dmapiclient import HTTPError, REQUEST_ERROR_MESSAGE
 from ...helpers import LoggedInApplicationTest
 
 

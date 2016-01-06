@@ -2,7 +2,7 @@ import mock
 
 from datetime import datetime
 from dmutils.formats import DISPLAY_DATE_FORMAT
-from dmutils.audit import AuditTypes
+from dmapiclient.audit import AuditTypes
 
 from ...helpers import LoggedInApplicationTest
 

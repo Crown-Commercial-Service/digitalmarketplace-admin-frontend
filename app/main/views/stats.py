@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import render_template, request
 from flask_login import login_required
 
-from dmutils.audit import AuditTypes
+from dmapiclient.audit import AuditTypes
 from dmutils.formats import DATETIME_FORMAT
 
 from ..helpers.sum_counts import format_snapshots
