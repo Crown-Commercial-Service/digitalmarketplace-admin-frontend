@@ -3,7 +3,7 @@
   "description": "Front end application for the Digital Marketplace admin",
   "version": "0.0.1",
   "private": true,
-  "engine": "node >= 0.10.0",
+  "engine": "node >= 4.2",
   "dependencies": {
     "bower": "1.7.1",
     "del": "1.1.1",
