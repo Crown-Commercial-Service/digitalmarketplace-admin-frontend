@@ -1,0 +1,113 @@
+{% import 'macros/toolkit_forms.html' as forms %}
+{% import "toolkit/summary-table.html" as summary %}
+
+{% extends "_base_page.html" %}
+
+{% block page_title %}
+  Upload {{ framework.name }} countersigned agreement
+{% endblock %}
+
+{% block breadcrumb %}
+  {%
+      with items = [
+          {
+              "link": url_for('.index'),
+              "label": "Admin home"
+          }
+      ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  {% for category, message in messages %}
+  {% if category == 'upload_countersigned_agreement' %}
+    {%
+      with
+      message = "Countersigned agreement file was uploaded",
+      type = "success"
+    %}
+      {% include "toolkit/notification-banner.html" %}
+    {% endwith %}
+  {% elif category == 'not_pdf' %}
+    {%
+      with
+      message = "Countersigned agreement file is not a PDF",
+      type = "destructive"
+    %}
+      {% include "toolkit/notification-banner.html" %}
+    {% endwith %}
+    {% elif category == 'remove_countersigned_agreement' %}
+    <form method="post" action='{{ url_for(".remove_countersigned_agreement_file", supplier_id=supplier.id, framework_slug=framework.slug, document_name="countersigned-framework-agreement") }}'>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <div class="banner-destructive-with-action">
+      <p class="banner-message">
+        Do you want to remove the countersigned agreement?
+      </p>
+      <button class="button-destructive banner-action" type="submit">Yes</button>
+    </div>
+  {% endif %}
+
+  {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  <div class="grid-row">
+    <div class="service-title">
+      {%
+        with
+        context = supplier.name,
+        heading = "Upload a " + framework.name + " countersigned agreement",
+        smaller = True
+      %}
+        {% include "toolkit/page-heading.html" %}
+      {% endwith %}
+    </div>
+  </div>
+
+  {% set field_headings = [
+    "Countersigned agreement",
+    "Date uploaded",
+    summary.hidden_field_heading("Download countersigned agreement"),
+    summary.hidden_field_heading("Remove countersigned agreement"),
+  ] %}
+  {% call(countersigned_agreement) summary.list_table(
+    countersigned_agreement,
+    caption="Uploaded {} framework agreements".format(framework.name),
+    empty_message="No agreements have been uploaded",
+    field_headings=field_headings,
+    field_headings_visible=True)
+  %}
+    {% call summary.row() %}
+      {{ summary.field_name("{} countersigned agreement".format(framework.name)) }}
+      {{ summary.text(countersigned_agreement.last_modified) }}
+      {% call summary.field(wide=True) %}
+        <a href="{{ url_for('.download_countersigned_agreement_file', supplier_id=supplier.id, framework_slug=framework.slug, document_name='countersigned-framework-agreement') }}" download>Download agreement</a>
+      {% endcall %}
+      {{ summary.remove_link("Remove", url_for('.remove_countersigned_agreement_file', supplier_id=supplier.id, framework_slug=framework.slug, document_name='countersigned-framework-agreement') ) }}
+    {% endcall %}
+  {% endcall %}
+
+  <form method="post" enctype="multipart/form-data">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  {%
+      with
+      question = "Please upload a countersigned agreement",
+      name = "countersigned_agreement",
+      hint = "This must be a pdf"
+    %}
+      {% include "toolkit/forms/upload.html" %}
+    {% endwith %}
+    {%
+      with
+      type = "save",
+      label = "Upload file"
+    %}
+      {% include "toolkit/button.html" %}
+    {% endwith %}
+  </form>
+
+{% endblock %}

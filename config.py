@@ -75,6 +75,7 @@ class Test(Config):
     INVITE_EMAIL_SALT = 'SALT'
     DM_MANDRILL_API_KEY = "MANDRILL"
     DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-communications-dev-dev'
+    DM_AGREEMENTS_BUCKET = 'digitalmarketplace-agreements-dev-dev'
 
 
 class Development(Config):
@@ -82,6 +83,7 @@ class Development(Config):
     SESSION_COOKIE_SECURE = False
     AUTHENTICATION = True
     DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-communications-dev-dev'
+    DM_AGREEMENTS_BUCKET = 'digitalmarketplace-agreements-dev-dev'
 
 
 class Live(Config):
