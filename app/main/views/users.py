@@ -57,12 +57,6 @@ def list_frameworks_with_users(errors=None):
 @login_required
 @role_required('admin')
 def download_users(framework_slug):
-    framework = data_api_client.get_framework(framework_slug)['frameworks']
-    bad_statuses = ['coming', 'expired']
-    framework = None
-
-    framework = data_api_client.get_framework(framework_slug).get('frameworks')
-
     supplier_rows = data_api_client.export_users(framework_slug).get('users', [])
     supplier_headers = [
         "user_email",
