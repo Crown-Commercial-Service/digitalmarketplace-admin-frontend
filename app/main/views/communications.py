@@ -16,7 +16,7 @@ def _get_path(framework_slug, path):
 
 
 def _get_itt_pack_path(framework_slug):
-    return '{0}/communications/{0}-itt-pack.zip'.format(framework_slug)
+    return '{0}/communications/{0}-supplier-pack.zip'.format(framework_slug)
 
 
 @main.route('/communications/<framework_slug>', methods=['GET'])
