@@ -50,7 +50,7 @@
         {{ 'Live' if item.data.new_status == 'published' else 'Removed' }}
       {% endcall %}
       {% call summary.field() %}
-        <a href="{{ '/services/g-cloud/{}'.format(item.data.serviceId) }}">{{ item.data.serviceId }}</a>
+        <a href="{{ '/g-cloud/services/{}'.format(item.data.serviceId) }}">{{ item.data.serviceId }}</a>
       {% endcall %}
       {{ summary.text(item.createdAt|timeformat) }}
     {% endcall %}
