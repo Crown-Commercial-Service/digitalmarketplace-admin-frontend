@@ -1,5 +1,6 @@
 {
   "declaration": {
+    "termsOfParticipation": true,
     "PR1": true,
     "PR2": false,
     "SQC2": true,
