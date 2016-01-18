@@ -664,6 +664,18 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         data = document.cssselect('.summary-item-row td.summary-item-field')
         eq_(data[0].text_content().strip(), "Yes")
 
+    def test_should_show_dos_declaration(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        data_api_client.get_supplier_declaration.return_value = self.load_example_listing('declaration_response')
+
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/digital-outcomes-and-specialists')
+        document = html.fromstring(response.get_data(as_text=True))
+
+        eq_(response.status_code, 200)
+        data = document.cssselect('.summary-item-row td.summary-item-field')
+        eq_(data[0].text_content().strip(), "Yes")
+
 
 @mock.patch('app.main.views.suppliers.data_api_client')
 class TestEditingASupplierDeclaration(LoggedInApplicationTest):

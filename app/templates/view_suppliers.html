@@ -58,7 +58,10 @@
           {{ summary.edit_link("Change name", url_for(".edit_supplier_name", supplier_id=item.id)) }}
         {% endif %}
         {% if current_user.has_role('admin-ccs-sourcing') %}
-          {{ summary.edit_link("G-Cloud 7 declaration", url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="g-cloud-7")) }}
+          {% call summary.field() %}
+            <div><a href="{{ url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="g-cloud-7") }}">G-Cloud 7 declaration</a></div>
+            <div><a href="{{ url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists") }}">Digital Outcomes and Specialists declaration</a></div>
+          {% endcall %}
           {{ summary.edit_link("Download G-Cloud 7 agreement", url_for(".download_agreement_file", supplier_id=item.id, framework_slug="g-cloud-7", document_name="signed-framework-agreement")) }}
         {% endif %}
         {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
