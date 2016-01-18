@@ -45,6 +45,8 @@ def edit_supplier_name(supplier_id):
 def view_supplier_declaration(supplier_id, framework_slug):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
+    if framework['status'] not in ['pending', 'standstill', 'live']:
+        abort(403)
     try:
         declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
     except APIError as e:
@@ -92,6 +94,8 @@ def download_agreement_file(supplier_id, framework_slug, document_name):
 def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
+    if framework['status'] not in ['pending', 'standstill', 'live']:
+        abort(403)
     try:
         declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
     except APIError as e:
@@ -119,6 +123,8 @@ def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
 def update_supplier_declaration_section(supplier_id, framework_slug, section_id):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
+    if framework['status'] not in ['pending', 'standstill', 'live']:
+        abort(403)
     try:
         declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
     except APIError as e:
