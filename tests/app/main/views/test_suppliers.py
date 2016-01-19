@@ -1,3 +1,4 @@
+import io
 try:
     from urlparse import urlsplit
     from StringIO import StringIO
@@ -838,3 +839,152 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
         s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/Supplier_name-1234-foo.pdf')
         eq_(response.status_code, 302)
         eq_(response.location, 'https://example/blah?extra')
+
+
+@mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.s3')
+class TestListCountersignedAgreementFile(LoggedInApplicationTest):
+    user_role = 'admin-ccs-sourcing'
+
+    def test_should_not_be_visible_to_admin_users(self, s3, data_api_client):
+        self.user_role = 'admin'
+
+        response = self.client.get('/admin/suppliers/1234/countersigned-agreements/g-cloud-7/'
+                                   'countersigned-framework-agreement')
+
+        eq_(response.status_code, 403)
+
+    def test_should_be_visible_to_admin_sourcing_users(self, s3, data_api_client):
+        s3.S3.return_value.list.return_value = [{
+            'size': '7050',
+            'path': u'g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf',
+            'ext': u'pdf',
+            'last_modified': u'2016-01-15T12:58:08.000000Z',
+            'filename': u'93495-countersigned-framework-agreement'
+        }]
+        response = self.client.get('/admin/suppliers/1234/countersigned-agreements/g-cloud-7/'
+                                   'countersigned-framework-agreement')
+        eq_(response.status_code, 200)
+
+    def test_should_display_no_documents_if_no_documents_listed(self, s3, data_api_client):
+        s3.S3.return_value.list.return_value = []
+        response = self.client.get('/admin/suppliers/1234/countersigned-agreements/g-cloud-7/'
+                                   'countersigned-framework-agreement')
+        self.assertIn(
+            'No agreements have been uploaded',
+            response.get_data(as_text=True)
+        )
+
+
+@mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.s3')
+class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
+    user_role = 'admin-ccs-sourcing'
+
+    def test_countersigned_agreement_displays_error_for_wrong_format(self, s3, data_api_client):
+        s3.S3.return_value.list.return_value = [{
+            'size': '7050',
+            'path': u'g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf',
+            'ext': u'pdf',
+            'last_modified': u'2016-01-15T12:58:08.000000Z',
+            'filename': u'93495-countersigned-framework-agreement'
+        }]
+        response = self.client.post('/admin/suppliers/1234/countersigned-agreements/g-cloud-7/'
+                                    'countersigned-framework-agreement',
+                                    data=dict(
+                                        countersigned_agreement=(io.BytesIO(b"this is a test"),
+                                                                 'test.odt'), ), follow_redirects=True)
+
+        self.assertIn(
+            'This must be a pdf',
+            response.get_data(as_text=True)
+        )
+        eq_(response.status_code, 200)
+
+    def test_should_create_audit_event(self, s3, data_api_client):
+        s3.S3.return_value.list.return_value = [{
+            'size': '7050',
+            'path': u'g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf',
+            'ext': u'pdf',
+            'last_modified': u'2016-01-15T12:58:08.000000Z',
+            'filename': u'1234-countersigned-framework-agreement'
+        }]
+
+        response = self.client.post('/admin/suppliers/1234/countersigned-agreements/g-cloud-7/'
+                                    'countersigned-framework-agreement',
+                                    data=dict(
+                                        countersigned_agreement=(io.BytesIO(b"this is a test"),
+                                                                 'countersigned_agreement.pdf'),
+                                    ), follow_redirects=True)
+
+        data_api_client.create_audit_event.assert_called_once_with(
+            audit_type=AuditTypes.upload_countersigned_agreement,
+            user='test@example.com',
+            object_type='suppliers',
+            object_id=u'1234',
+            data={'upload_countersigned_agreement': 'g-cloud-7/agreements/1234/1234-countersigned-'
+                  'framework-agreement.pdf'})
+
+        self.assertIn(
+            'Countersigned agreement file was uploaded',
+            response.get_data(as_text=True)
+        )
+        self.assertEqual(response.status_code, 200)
+
+
+@mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.s3')
+class TestDownloadCountersignedAgreementFile(LoggedInApplicationTest):
+    user_role = 'admin-ccs-sourcing'
+
+    def test_admin_user_should_not_be_able_to_download(self, s3, data_api_client):
+        self.user_role = 'admin'
+        s3.S3.return_value.list.return_value = [{
+            'size': '7050',
+            'path': u'g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf',
+            'ext': u'pdf',
+            'last_modified': u'2016-01-15T12:58:08.000000Z',
+            'filename': u'93495-countersigned-framework-agreement'
+        }]
+
+        response = self.client.get('/admin/suppliers/1234/countersigned-agreements/g-cloud-7/'
+                                   '93495-countersigned-framework-agreement.pdf')
+
+        eq_(response.status_code, 403)
+
+    def test_admin_user_should_be_able_to_download(self, s3, data_api_client):
+        s3.S3.return_value.list.return_value = [{
+            'size': '7050',
+            'path': u'g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf',
+            'ext': u'pdf',
+            'last_modified': u'2016-01-15T12:58:08.000000Z',
+            'filename': u'93495-countersigned-framework-agreement'
+        }]
+
+        response = self.client.get('/admin/suppliers/1234/countersigned-agreements/g-cloud-7/'
+                                   '93495-countersigned-framework-agreement.pdf')
+
+        eq_(response.status_code, 200)
+
+
+@mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.s3')
+class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
+    user_role = 'admin-ccs-sourcing'
+
+    def test_should_remove_countersigned_agreement(self, s3, data_api_client):
+        s3.S3.return_value.delete_key.return_value = {'Key': 'digitalmarketplace-agreements-dev-dev'
+                                                      ',g-cloud-7/agreements/93495/93495-'
+                                                      'countersigned-framework-agreement.pdf'}
+        response = self.client.post('/admin/suppliers/1234/countersigned-agreements_remove/g-cloud-7/'
+                                    '93495-countersigned-framework-agreement.pdf')
+        eq_(response.status_code, 302)
+
+    def test_admin_should_not_be_able_to_remove_countersigned_agreement(self, s3, data_api_client):
+        self.user_role = 'admin'
+        s3.S3.return_value.delete_key.return_value = {'Key': 'digitalmarketplace-agreements-dev-dev'
+                                                      ',g-cloud-7/agreements/93495/93495-'
+                                                      'countersigned-framework-agreement.pdf'}
+        response = self.client.post('/admin/suppliers/1234/countersigned-agreements_remove/g-cloud-7/'
+                                    '93495-countersigned-framework-agreement.pdf')
+        eq_(response.status_code, 403)
