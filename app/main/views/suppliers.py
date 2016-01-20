@@ -1,5 +1,6 @@
 from flask import render_template, request, redirect, url_for, abort, current_app
 from flask_login import login_required, current_user, flash
+from dateutil.parser import parse as parse_date
 
 from .. import main
 from . import get_template_data
@@ -9,8 +10,9 @@ from ..auth import role_required
 from dmapiclient import HTTPError, APIError
 from dmapiclient.audit import AuditTypes
 from dmutils.email import send_email, generate_token, MandrillException
-from dmutils.documents import get_signed_url, get_agreement_document_path
+from dmutils.documents import get_signed_url, get_agreement_document_path, file_is_pdf
 from dmutils import s3
+from dmutils.formats import datetimeformat
 
 
 @main.route('/suppliers', methods=['GET'])
@@ -84,6 +86,119 @@ def download_agreement_file(supplier_id, framework_slug, document_name):
         abort(404)
 
     return redirect(url)
+
+
+@main.route('/suppliers/<supplier_id>/countersigned-agreements/<framework_slug>/'
+            '<document_name>', methods=['GET'])
+@login_required
+@role_required('admin-ccs-sourcing')
+def list_countersigned_agreement_file(supplier_id, framework_slug, document_name):
+    supplier = data_api_client.get_supplier(supplier_id)['suppliers']
+    framework = data_api_client.get_framework(framework_slug)['frameworks']
+    agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
+    prefix = '{}/agreements/{}/{}-{}'.format(framework['slug'], supplier_id, supplier_id, document_name)
+    countersigned_agreement_document = agreements_bucket.list(prefix=prefix)
+    if countersigned_agreement_document:
+        countersigned_agreement = countersigned_agreement_document[-1]
+        countersigned_agreement['last_modified'] = datetimeformat(parse_date(
+            countersigned_agreement['last_modified']))
+        countersigned_agreement = [countersigned_agreement]
+    else:
+        countersigned_agreement = []
+
+    return render_template(
+        "suppliers/upload_countersigned_agreement.html",
+        supplier=supplier,
+        framework=framework,
+        countersigned_agreement=countersigned_agreement,
+        **get_template_data())
+
+
+@main.route('/suppliers/<supplier_id>/countersigned-agreements/<framework_slug>/'
+            '<document_name>', methods=['POST'])
+@login_required
+@role_required('admin-ccs-sourcing')
+def upload_countersigned_agreement_file(supplier_id, framework_slug, document_name):
+    agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
+    errors = {}
+
+    if request.files.get('countersigned_agreement'):
+        the_file = request.files['countersigned_agreement']
+        if not file_is_pdf(the_file):
+            errors['countersigned_agreement'] = 'not_pdf'
+
+        if 'countersigned_agreement' not in errors.keys():
+            filename = '{}/agreements/{}/{}-countersigned-framework-agreement.pdf'.format(
+                framework_slug, supplier_id, supplier_id)
+            agreements_bucket.save(filename, the_file)
+
+            data_api_client.create_audit_event(
+                audit_type=AuditTypes.upload_countersigned_agreement,
+                user=current_user.email_address,
+                object_type='suppliers',
+                object_id=supplier_id,
+                data={'upload_countersigned_agreement': filename})
+
+            flash('countersigned_agreement', 'upload_countersigned_agreement')
+
+    if len(errors) > 0:
+        for category, message in errors.items():
+            flash(category, message)
+
+    return redirect(url_for(
+        '.list_countersigned_agreement_file',
+        supplier_id=supplier_id,
+        framework_slug=framework_slug,
+        document_name=document_name)
+    )
+
+
+@main.route('/suppliers/<supplier_id>/countersigned-agreements_download/<framework_slug>/'
+            '<document_name>', methods=['GET'])
+@login_required
+@role_required('admin-ccs-sourcing')
+def download_countersigned_agreement_file(supplier_id, framework_slug, document_name):
+    agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
+    agreements_bucket.list('{}/agreements/{}'.format(
+        framework_slug, supplier_id))
+    prefix = '{}/agreements/{}/{}-{}'.format(framework_slug, supplier_id, supplier_id, document_name)
+    countersigned_agreement_document = agreements_bucket.list(prefix=prefix)
+    if not len(countersigned_agreement_document):
+        abort(404)
+    path = countersigned_agreement_document[-1]['path']
+    url = get_signed_url(agreements_bucket, path, current_app.config['DM_ASSETS_URL'])
+    if not url:
+        abort(404)
+    return redirect(url)
+
+
+@main.route('/suppliers/<supplier_id>/countersigned-agreements_remove/<framework_slug>/'
+            '<document_name>', methods=['GET', 'POST'])
+@login_required
+@role_required('admin-ccs-sourcing')
+def remove_countersigned_agreement_file(supplier_id, framework_slug, document_name):
+    agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
+    document = '{}/agreements/{}/{}-{}.pdf'.format(framework_slug, supplier_id, supplier_id, document_name)
+
+    if request.method == 'GET':
+        flash('countersigned_agreement', 'remove_countersigned_agreement')
+
+    if request.method == 'POST':
+        document_deleted = agreements_bucket.bucket.delete_key(key_name=document)
+
+        data_api_client.create_audit_event(
+            audit_type=AuditTypes.delete_countersigned_agreement,
+            user=current_user.email_address,
+            object_type='suppliers',
+            object_id=supplier_id,
+            data={'upload_countersigned_agreement': document_deleted._get_key()})
+
+    return redirect(url_for(
+        '.list_countersigned_agreement_file',
+        supplier_id=supplier_id,
+        framework_slug=framework_slug,
+        document_name=document_name)
+    )
 
 
 @main.route(
