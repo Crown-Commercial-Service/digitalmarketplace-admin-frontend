@@ -14,6 +14,8 @@ export DM_S3_DOCUMENT_BUCKET=${DM_S3_DOCUMENT_BUCKET:=digitalmarketplace-documen
 export DM_DOCUMENTS_URL=${DM_DOCUMENTS_URL:=https://${DM_S3_DOCUMENT_BUCKET}.s3-eu-west-1.amazonaws.com}
 export DM_MANDRILL_API_KEY=${DM_MANDRILL_API_KEY:=not_a_real_key}
 export DM_SHARED_EMAIL_KEY=${DM_SHARED_EMAIL_KEY:=verySecretKey}
+export DM_AGREEMENTS_BUCKET=${DM_AGREEMENTS_BUCKET:=digitalmarketplace-agreements-dev-dev}
+export DM_COMMUNICATIONS_BUCKET=${DM_COMMUNICATIONS_BUCKET:=digitalmarketplace-communications-dev-dev}
 
 echo "Environment variables in use:"
 env | grep DM_
