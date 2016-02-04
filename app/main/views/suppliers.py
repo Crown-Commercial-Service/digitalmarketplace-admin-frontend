@@ -10,8 +10,10 @@ from ..auth import role_required
 from dmapiclient import HTTPError, APIError
 from dmapiclient.audit import AuditTypes
 from dmutils.email import send_email, generate_token, MandrillException
-from dmutils.documents import get_signed_url, get_agreement_document_path, file_is_pdf, \
-    get_countersigned_agreement_document_path
+from dmutils.documents import (
+    get_signed_url, get_agreement_document_path, file_is_pdf,
+    COUNTERSIGNED_AGREEMENT_FILENAME
+)
 from dmutils import s3
 from dmutils.formats import datetimeformat
 
@@ -75,9 +77,8 @@ def download_agreement_file(supplier_id, framework_slug, document_name):
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
     if not supplier_framework.get('declaration'):
         abort(404)
-    legal_supplier_name = supplier_framework['declaration']['SQ1-1a']
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
-    prefix = get_agreement_document_path(framework_slug, supplier_id, legal_supplier_name, document_name)
+    prefix = get_agreement_document_path(framework_slug, supplier_id, document_name)
     agreement_documents = agreements_bucket.list(prefix=prefix)
     if not len(agreement_documents):
         abort(404)
@@ -97,7 +98,7 @@ def list_countersigned_agreement_file(supplier_id, framework_slug):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
-    path = get_countersigned_agreement_document_path(framework_slug, supplier_id)
+    path = get_agreement_document_path(framework_slug, supplier_id, COUNTERSIGNED_AGREEMENT_FILENAME)
     countersigned_agreement_document = agreements_bucket.get_key(path)
     if countersigned_agreement_document:
         countersigned_agreement = countersigned_agreement_document
@@ -112,6 +113,7 @@ def list_countersigned_agreement_file(supplier_id, framework_slug):
         supplier=supplier,
         framework=framework,
         countersigned_agreement=countersigned_agreement,
+        countersigned_agreement_filename=COUNTERSIGNED_AGREEMENT_FILENAME,
         **get_template_data())
 
 
@@ -128,7 +130,7 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
             errors['countersigned_agreement'] = 'not_pdf'
 
         if 'countersigned_agreement' not in errors.keys():
-            filename = get_countersigned_agreement_document_path(framework_slug, supplier_id)
+            filename = get_agreement_document_path(framework_slug, supplier_id, COUNTERSIGNED_AGREEMENT_FILENAME)
             agreements_bucket.save(filename, the_file)
 
             data_api_client.create_audit_event(
@@ -151,29 +153,13 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
     )
 
 
-@main.route('/suppliers/<supplier_id>/countersigned-agreements-download/<framework_slug>',
-            methods=['GET'])
-@login_required
-@role_required('admin-ccs-sourcing')
-def download_countersigned_agreement_file(supplier_id, framework_slug):
-    agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
-    path = get_countersigned_agreement_document_path(framework_slug, supplier_id)
-    countersigned_agreement_document = agreements_bucket.get_key(path)
-    if not len(countersigned_agreement_document):
-        abort(404)
-    url = get_signed_url(agreements_bucket, countersigned_agreement_document, current_app.config['DM_ASSETS_URL'])
-    if not url:
-        abort(404)
-    return redirect(url)
-
-
 @main.route('/suppliers/<supplier_id>/countersigned-agreements-remove/<framework_slug>',
             methods=['GET', 'POST'])
 @login_required
 @role_required('admin-ccs-sourcing')
 def remove_countersigned_agreement_file(supplier_id, framework_slug):
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
-    document = get_countersigned_agreement_document_path(framework_slug, supplier_id)
+    document = get_agreement_document_path(framework_slug, supplier_id, COUNTERSIGNED_AGREEMENT_FILENAME)
 
     if request.method == 'GET':
         flash('countersigned_agreement', 'remove_countersigned_agreement')
