@@ -3,6 +3,7 @@ from flask_login import login_required
 from dateutil.parser import parse as parse_date
 
 from dmutils.formats import datetimeformat
+from dmutils.documents import SIGNED_AGREEMENT_PREFIX
 
 from .. import main
 from ..auth import role_required
@@ -27,5 +28,6 @@ def list_agreements(framework_slug):
         'view_agreements.html',
         framework=framework,
         supplier_frameworks=supplier_frameworks,
+        signed_agreement_prefix=SIGNED_AGREEMENT_PREFIX,
         **get_template_data()
     )

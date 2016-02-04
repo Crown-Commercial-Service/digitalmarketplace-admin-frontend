@@ -12,7 +12,7 @@ from dmapiclient.audit import AuditTypes
 from dmutils.email import send_email, generate_token, MandrillException
 from dmutils.documents import (
     get_signed_url, get_agreement_document_path, file_is_pdf,
-    COUNTERSIGNED_AGREEMENT_FILENAME
+    SIGNED_AGREEMENT_PREFIX, COUNTERSIGNED_AGREEMENT_FILENAME,
 )
 from dmutils import s3
 from dmutils.formats import datetimeformat
@@ -27,6 +27,7 @@ def find_suppliers():
     return render_template(
         "view_suppliers.html",
         suppliers=suppliers['suppliers'],
+        signed_agreement_prefix=SIGNED_AGREEMENT_PREFIX,
         **get_template_data()
     )
 
