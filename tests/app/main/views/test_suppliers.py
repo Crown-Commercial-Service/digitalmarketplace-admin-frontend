@@ -301,7 +301,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
             response.get_data(as_text=True)
         )
         self.assertIn(
-            '<a href="/service/5687123785023488">',
+            '<a href="/g-cloud/services/5687123785023488">',
             response.get_data(as_text=True)
         )
         self.assertIn(

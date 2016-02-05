@@ -42,7 +42,7 @@
     field_headings_visible=True
   ) %}
     {% call summary.row() %}
-      {{ summary.service_link(item.serviceName, '/service/' + item.id|string) }}
+      {{ summary.service_link(item.serviceName, '/' + item.frameworkFramework + '/services/' + item.id|string) }}
       {{ summary.text(item.id) }}
       {{ summary.text(item.frameworkName) }}
       {{ summary.text(item.lotName) }}
