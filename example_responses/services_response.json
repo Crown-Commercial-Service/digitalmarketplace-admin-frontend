@@ -72,6 +72,7 @@
         "value": true
       },
       "frameworkName": "G-Cloud 6",
+      "frameworkFramework": "g-cloud",
       "freeOption": false,
       "governanceFramework": {
         "assurance": "Independent validation of assertion",

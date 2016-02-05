@@ -2,6 +2,7 @@
   "frameworks": {
     "status": "standstill",
     "slug": "g-cloud-7",
-    "name": "G-Cloud 7"
+    "name": "G-Cloud 7",
+    "framework": "g-cloud"
   }
 }
