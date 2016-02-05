@@ -956,7 +956,7 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
     def test_should_remove_countersigned_agreement(self, s3, data_api_client):
-        s3.S3.return_value.delete_key.return_value = {'Key': 'digitalmarketplace-agreements-dev-dev'
+        s3.S3.return_value.delete_key.return_value = {'Key': 'digitalmarketplace-documents-dev-dev'
                                                       ',g-cloud-7/agreements/93495/93495-'
                                                       'countersigned-framework-agreement.pdf'}
         response = self.client.post('/admin/suppliers/1234/countersigned-agreements-remove/g-cloud-7')
@@ -964,7 +964,7 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
 
     def test_admin_should_not_be_able_to_remove_countersigned_agreement(self, s3, data_api_client):
         self.user_role = 'admin'
-        s3.S3.return_value.delete_key.return_value = {'Key': 'digitalmarketplace-agreements-dev-dev'
+        s3.S3.return_value.delete_key.return_value = {'Key': 'digitalmarketplace-documents-dev-dev'
                                                       ',g-cloud-7/agreements/93495/93495-'
                                                       'countersigned-framework-agreement.pdf'}
         response = self.client.post('/admin/suppliers/1234/countersigned-agreements-remove/g-cloud-7')
