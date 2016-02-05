@@ -773,7 +773,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
 class TestDownloadAgreementFile(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
-    def test_admin_user_should_not_be_able_to_download(self, s3, data_api_client):
+    def test_category_admin_user_should_not_be_able_to_download(self, s3, data_api_client):
         self.user_role = 'admin-ccs-category'
 
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
@@ -795,39 +795,39 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
             'frameworkInterest': {'declaration': {'SQ1-1a': 'Supplier name'}}
         }
         s3.S3.return_value.list.return_value = [
-            {'path': 'g-cloud-7/agreements/1234/Supplier_name-1234-foo.pdf'}
+            {'path': 'g-cloud-7/agreements/1234/1234-foo.pdf'}
         ]
         s3.S3.return_value.get_signed_url.return_value = None
 
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo')
 
-        s3.S3.return_value.list.assert_called_with(prefix='g-cloud-7/agreements/1234/Supplier_name-1234-foo')
-        s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/Supplier_name-1234-foo.pdf')
+        s3.S3.return_value.list.assert_called_with(prefix='g-cloud-7/agreements/1234/1234-foo')
+        s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/1234-foo.pdf')
         eq_(response.status_code, 404)
 
     def test_should_select_most_recent_matching_file(self, s3, data_api_client):
         data_api_client.get_supplier_framework_info.return_value = {
-            'frameworkInterest': {'declaration': {'SQ1-1a': 'Supplier name'}}
+            'frameworkInterest': {'declaration': {'key': 'value'}}
         }
         s3.S3.return_value.list.return_value = [
             {'path': 'foo.jpg'},
-            {'path': 'g-cloud-7/agreements/1234/Supplier_name-1234-foo.pdf'}
+            {'path': 'g-cloud-7/agreements/1234/1234-foo.pdf'}
         ]
         s3.S3.return_value.get_signed_url.return_value = 'http://foo/blah?extra'
 
         self.app.config['DM_ASSETS_URL'] = 'https://example'
 
-        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo')
+        self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo')
 
-        s3.S3.return_value.list.assert_called_with(prefix='g-cloud-7/agreements/1234/Supplier_name-1234-foo')
-        s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/Supplier_name-1234-foo.pdf')
+        s3.S3.return_value.list.assert_called_with(prefix='g-cloud-7/agreements/1234/1234-foo')
+        s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/1234-foo.pdf')
 
     def test_should_redirect(self, s3, data_api_client):
         data_api_client.get_supplier_framework_info.return_value = {
-            'frameworkInterest': {'declaration': {'SQ1-1a': 'Supplier name'}}
+            'frameworkInterest': {'declaration': {'key': 'Supplier name'}}
         }
         s3.S3.return_value.list.return_value = [
-            {'path': 'g-cloud-7/agreements/1234/Supplier_name-1234-foo.pdf'}
+            {'path': 'g-cloud-7/agreements/1234/1234-foo.pdf'}
         ]
         s3.S3.return_value.get_signed_url.return_value = 'http://foo/blah?extra'
 
@@ -835,10 +835,33 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo')
 
-        s3.S3.return_value.list.assert_called_with(prefix='g-cloud-7/agreements/1234/Supplier_name-1234-foo')
-        s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/Supplier_name-1234-foo.pdf')
+        s3.S3.return_value.list.assert_called_with(prefix='g-cloud-7/agreements/1234/1234-foo')
+        s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/1234-foo.pdf')
         eq_(response.status_code, 302)
         eq_(response.location, 'https://example/blah?extra')
+
+    def test_admin_should_be_able_to_download_countersigned_agreement(self, s3, data_api_client):
+        data_api_client.get_supplier_framework_info.return_value = {
+            'frameworkInterest': {'declaration': {'key': 'value'}}
+        }
+        s3.S3.return_value.list.return_value = [
+            {'path': 'g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf'}
+        ]
+        s3.S3.return_value.get_signed_url.return_value = 'http://foo/blah?extra'
+
+        self.app.config['DM_ASSETS_URL'] = 'https://example'
+
+        response = self.client.get(
+            '/admin/suppliers/1234/agreements/g-cloud-7/countersigned-framework-agreement.pdf'
+        )
+
+        s3.S3.return_value.list.assert_called_with(
+            prefix='g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf'
+        )
+        s3.S3.return_value.get_signed_url.assert_called_with(
+            'g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf'
+        )
+        eq_(response.status_code, 302)
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
@@ -929,49 +952,11 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
 
 @mock.patch('app.main.views.suppliers.data_api_client')
 @mock.patch('app.main.views.suppliers.s3')
-class TestDownloadCountersignedAgreementFile(LoggedInApplicationTest):
-    user_role = 'admin-ccs-sourcing'
-
-    def test_admin_user_should_not_be_able_to_download(self, s3, data_api_client):
-        self.user_role = 'admin'
-        s3.S3.return_value.get_key.return_value = {
-            'size': '7050',
-            'path': u'g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf',
-            'ext': u'pdf',
-            'last_modified': u'2016-01-15T12:58:08.000000Z',
-            'filename': u'93495-countersigned-framework-agreement'
-        }
-
-        response = self.client.get('/admin/suppliers/1234/countersigned-agreements-download/g-cloud-7')
-
-        eq_(response.status_code, 403)
-
-    def test_admin_user_should_be_able_to_download(self, s3, data_api_client):
-        s3.S3.return_value.get_key.return_value = {
-            'size': '7050',
-            'path': u'g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf',
-            'ext': u'pdf',
-            'last_modified': u'2016-01-15T12:58:08.000000Z',
-            'filename': u'93495-countersigned-framework-agreement'
-        }
-
-        response = self.client.get('/admin/suppliers/1234/countersigned-agreements-download/g-cloud-7')
-
-        eq_(response.status_code, 302)
-
-    def test_if_agreement_is_not_available_abort(self, s3, data_api_client):
-        s3.S3.return_value.get_key.return_value = []
-        response = self.client.get('/admin/suppliers/1234/countersigned-agreements-download/g-cloud-7')
-        eq_(response.status_code, 404)
-
-
-@mock.patch('app.main.views.suppliers.data_api_client')
-@mock.patch('app.main.views.suppliers.s3')
 class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
     def test_should_remove_countersigned_agreement(self, s3, data_api_client):
-        s3.S3.return_value.delete_key.return_value = {'Key': 'digitalmarketplace-agreements-dev-dev'
+        s3.S3.return_value.delete_key.return_value = {'Key': 'digitalmarketplace-documents-dev-dev'
                                                       ',g-cloud-7/agreements/93495/93495-'
                                                       'countersigned-framework-agreement.pdf'}
         response = self.client.post('/admin/suppliers/1234/countersigned-agreements-remove/g-cloud-7')
@@ -979,7 +964,7 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
 
     def test_admin_should_not_be_able_to_remove_countersigned_agreement(self, s3, data_api_client):
         self.user_role = 'admin'
-        s3.S3.return_value.delete_key.return_value = {'Key': 'digitalmarketplace-agreements-dev-dev'
+        s3.S3.return_value.delete_key.return_value = {'Key': 'digitalmarketplace-documents-dev-dev'
                                                       ',g-cloud-7/agreements/93495/93495-'
                                                       'countersigned-framework-agreement.pdf'}
         response = self.client.post('/admin/suppliers/1234/countersigned-agreements-remove/g-cloud-7')
