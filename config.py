@@ -21,7 +21,7 @@ class Config(object):
     DM_DOCUMENTS_URL = 'https://assets.dev.digitalmarketplace.service.gov.uk'
     DM_DATA_API_URL = None
     DM_DATA_API_AUTH_TOKEN = None
-    SECRET_KEY = os.getenv('DM_ADMIN_FRONTEND_COOKIE_SECRET')
+    SECRET_KEY = None
 
     DM_AGREEMENTS_BUCKET = None
     DM_COMMUNICATIONS_BUCKET = None
@@ -44,7 +44,7 @@ class Config(object):
     # Feature Flags
     RAISE_ERROR_ON_MISSING_FEATURES = True
 
-    SHARED_EMAIL_KEY = os.getenv('DM_SHARED_EMAIL_KEY')
+    SHARED_EMAIL_KEY = None
     INVITE_EMAIL_SALT = 'InviteEmailSalt'
 
     DM_MANDRILL_API_KEY = None
@@ -84,6 +84,16 @@ class Development(Config):
     AUTHENTICATION = True
     DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-communications-dev-dev'
     DM_AGREEMENTS_BUCKET = 'digitalmarketplace-documents-dev-dev'
+
+    DM_DATA_API_URL = "http://localhost:5000"
+    DM_DATA_API_AUTH_TOKEN = "myToken"
+    SECRET_KEY = "verySecretKey"
+    DM_S3_DOCUMENT_BUCKET = "digitalmarketplace-documents-dev-dev"
+    DM_DOCUMENTS_URL = "https://{}.s3-eu-west-1.amazonaws.com".format(DM_S3_DOCUMENT_BUCKET)
+    DM_MANDRILL_API_KEY = "not_a_real_key"
+    SHARED_EMAIL_KEY = "very_secret"
+    DM_AGREEMENTS_BUCKET = "digitalmarketplace-agreements-dev-dev"
+    DM_COMMUNICATIONS_BUCKET = "digitalmarketplace-communications-dev-dev"
 
 
 class Live(Config):
