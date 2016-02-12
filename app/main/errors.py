@@ -4,7 +4,7 @@ from dmapiclient import APIError
 
 
 @main.app_errorhandler(APIError)
-def api_error(e):
+def api_error_handler(e):
     return _render_error_template(e.status_code)
 
 
@@ -19,13 +19,13 @@ def page_not_found(e):
 
 
 @main.app_errorhandler(403)
-def page_not_found(e):
+def page_forbidden(e):
     return render_template("errors/403.html",
                            **main.config['BASE_TEMPLATE_DATA']), 403
 
 
 @main.app_errorhandler(500)
-def exception(e):
+def internal_server_error(e):
     return _render_error_template(500)
 
 
