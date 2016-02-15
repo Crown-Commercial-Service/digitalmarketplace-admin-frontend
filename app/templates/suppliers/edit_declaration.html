@@ -6,6 +6,19 @@
   Change {{ framework.name }} declaration
 {% endblock %}
 
+{% block breadcrumb %}
+  {%
+      with items = [
+          {
+              "link": url_for('.index'),
+              "label": "Admin home"
+          }
+      ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
 {% block main_content %}
   <div class="grid-row">
     <div class="service-title">
