@@ -7,6 +7,19 @@
   {{ service_data['serviceName'] }} – Digital Marketplace admin
 {% endblock %}
 
+{% block breadcrumb %}
+  {%
+      with items = [
+          {
+              "link": url_for('.index'),
+              "label": "Admin home"
+          }
+      ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
 {% block main_content %}
   {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
