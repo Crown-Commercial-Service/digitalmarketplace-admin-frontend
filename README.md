@@ -8,38 +8,40 @@ Frontend administration application for the digital marketplace.
 
 - Python app, based on the [Flask framework](http://flask.pocoo.org/)
 
-## Setup
+## Quickstart
 
 Install [Virtualenv](https://virtualenv.pypa.io/en/latest/)
+```
+sudo easy_install virtualenv
+```
 
+Install dependencies, build assets and run the app
+```
+make run_all
+```
+
+## Full setup
+
+Install [Virtualenv](https://virtualenv.pypa.io/en/latest/)
 ```
 sudo easy_install virtualenv
 ```
 
 Create a virtual environment
-
- ```
- virtualenv ./venv
- ```
-
- Activate the virtual environment
- ```
- source ./venv/bin/activate
- ```
-
-Set the required environment variables (for dev use local API instance if you
-have it running):
 ```
-export DM_DATA_API_URL=http://localhost:5000
-export DM_DATA_API_AUTH_TOKEN=<bearer_token>
+virtualenv ./venv
 ```
 
+### Activate the virtual environment
+```
+source ./venv/bin/activate
+```
 
 ### Upgrade dependencies
 
 Install new Python dependencies with pip
 
-```pip install -r requirements_for_test.txt```
+```make requirements_for_test```
 
 Install frontend dependencies with npm and gulp
 
@@ -74,24 +76,20 @@ Note: running `npm run frontend-build:watch` will also build the front-end code.
 ### Run the tests
 
 ```
-./scripts/run_tests.sh
+make test
 ```
 
 
-### Run the server
+### Run the development server
 
-To run the Admin Frontend App for local development you can use the convenient run
-script, which sets the required environment variables to defaults if they have
-not already been set:
+To run the Admin Frontend App for local development use the `run_all` target.
+This will install requirements, build assets and run the app.
 
 ```
-./scripts/run_app.sh
+make run_all
 ```
 
-More generally, the command to start the server is:
-```
-python application.py runserver
-```
+To just run the application use the `run_app` target.
 
 The admin frontend runs on port 5004. Use the app at [http://127.0.0.1:5004/admin/](http://127.0.0.1:5004/admin/)
 
