@@ -1,5 +1,4 @@
 {% import "toolkit/summary-table.html" as summary %}
-{% from 'macros/page_heading.html' import page_heading %}
 
 {% extends "_base_page.html" %}
 {% block page_title %}
@@ -24,11 +23,14 @@
   {% endwith %}
 {% endblock %}
 {% block main_content %}
-    <div class="grid-row">
-        <div class="service-title">
-            {{ page_heading(today|dateformat, "Activity for", "page-heading-smaller") }}
-        </div>
-    </div>
+    {%
+      with
+      smaller = true,
+      heading = today|dateformat,
+      context = "Activity for"
+    %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
     <div class="grid-row">
         {% if form.errors|length >= 1 %}
           <div class="validation-masthead" aria-labelledby="validation-masthead-heading">
