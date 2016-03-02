@@ -5,7 +5,6 @@ from flask_login import login_required
 from .. import main
 from ..auth import role_required
 from ... import data_api_client
-from . import get_template_data
 
 from dmutils import s3
 from dmutils.documents import file_is_pdf, file_is_zip
@@ -35,8 +34,7 @@ def manage_communications(framework_slug):
         itt_pack=itt_pack,
         clarification=clarification,
         communication=communication,
-        framework=framework,
-        **get_template_data()
+        framework=framework
     )
 
 

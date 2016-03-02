@@ -10,7 +10,6 @@ from ... import data_api_client
 from .. import main
 from ..auth import role_required
 from ..forms import ServiceUpdateAuditEventsForm
-from . import get_template_data
 
 
 @main.route('/service-status-updates', methods=['GET'])
@@ -47,8 +46,8 @@ def service_status_update_audits(day=None, page=1):
         next_day=day_as_datetime + timedelta(1) if day_as_datetime + timedelta(1) < datetime.today() else None,
         previous_page=status_update_audit_events.get('links', {}).get('prev'),
         next_page=status_update_audit_events.get('links', {}).get('next'),
-        page=page,
-        **get_template_data())
+        page=page
+    )
 
 
 @main.route('/service-updates', methods=['GET'])
@@ -63,8 +62,8 @@ def service_update_audits():
             today=datetime.utcnow().strftime(DATETIME_FORMAT),
             acknowledged=form.default_acknowledged(),
             audit_events=[],
-            form=form,
-            **get_template_data()), 400
+            form=form
+        ), 400
 
     audit_events = data_api_client.find_audit_events(
         audit_type=AuditTypes.update_service,
@@ -81,8 +80,8 @@ def service_update_audits():
         current_page=form.page.data,
         prev_page_exists=bool(audit_events['links'].get('prev')),
         next_page_exists=bool(audit_events['links'].get('next')),
-        form=form,
-        **get_template_data())
+        form=form
+    )
 
 
 @main.route('/service-updates/<audit_id>/acknowledge', methods=['POST'])
@@ -105,5 +104,5 @@ def submit_service_update_acknowledgment(audit_id):
             today=datetime.utcnow().strftime(DATETIME_FORMAT),
             audit_events=None,
             acknowledged=form.default_acknowledged(),
-            form=form,
-            **get_template_data()), 400
+            form=form
+        ), 400

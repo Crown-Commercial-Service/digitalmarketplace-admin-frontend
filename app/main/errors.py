@@ -20,8 +20,7 @@ def page_not_found(e):
 
 @main.app_errorhandler(403)
 def page_forbidden(e):
-    return render_template("errors/403.html",
-                           **main.config['BASE_TEMPLATE_DATA']), 403
+    return render_template("errors/403.html"), 403
 
 
 @main.app_errorhandler(500)
@@ -36,8 +35,7 @@ def service_unavailable(e):
 
 def _render_error_template(status_code):
     return render_template(
-        _get_template(status_code),
-        **main.config['BASE_TEMPLATE_DATA']
+        _get_template(status_code)
     ), status_code
 
 

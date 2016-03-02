@@ -8,7 +8,6 @@ from dmutils.documents import SIGNED_AGREEMENT_PREFIX
 from .. import main
 from ..auth import role_required
 from ... import data_api_client
-from . import get_template_data
 
 
 @main.route('/agreements/<framework_slug>', methods=['GET'])
@@ -28,6 +27,5 @@ def list_agreements(framework_slug):
         'view_agreements.html',
         framework=framework,
         supplier_frameworks=supplier_frameworks,
-        signed_agreement_prefix=SIGNED_AGREEMENT_PREFIX,
-        **get_template_data()
+        signed_agreement_prefix=SIGNED_AGREEMENT_PREFIX
     )
