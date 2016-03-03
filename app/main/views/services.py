@@ -11,7 +11,6 @@ from dmutils.s3 import S3
 from ... import data_api_client
 from ... import content_loader
 from .. import main
-from . import get_template_data
 
 from ..auth import role_required
 from ..helpers.diff_tools import get_diffs_from_service_data, get_revision_dates
@@ -21,7 +20,7 @@ from ..helpers.diff_tools import get_diffs_from_service_data, get_revision_dates
 @login_required
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
 def index():
-    return render_template("index.html", **get_template_data())
+    return render_template("index.html")
 
 
 @main.route('/services', methods=['GET'])
@@ -29,7 +28,7 @@ def index():
 @role_required('admin', 'admin-ccs-category')
 def find():
     if request.args.get("service_id") is None:
-        return render_template("index.html", **get_template_data()), 404
+        return render_template("index.html"), 404
     return redirect(
         url_for(".view", service_id=request.args.get("service_id")))
 
@@ -51,12 +50,12 @@ def view(service_id):
     service_data['priceString'] = format_service_price(service_data)
     content = content_loader.get_builder('g-cloud-6', 'edit_service_as_admin').filter(service_data)
 
-    template_data = get_template_data(
+    return render_template(
+        "view_service.html",
         sections=content,
         service_data=service_data,
         service_id=service_id
     )
-    return render_template("view_service.html", **template_data)
 
 
 @main.route('/services/status/<string:service_id>', methods=['POST'])
@@ -101,11 +100,11 @@ def edit(service_id, section):
 
     content = content_loader.get_builder('g-cloud-6', 'edit_service_as_admin').filter(service_data)
 
-    template_data = get_template_data(
+    return render_template(
+        "edit_section.html",
         section=content.get_section(section),
         service_data=service_data
     )
-    return render_template("edit_section.html", **template_data)
 
 
 @main.route(
@@ -168,13 +167,13 @@ def compare(old_archived_service_id, new_archived_service_id):
             service_data_revision_2
         )
 
-    template_data = get_template_data(
+    return render_template(
+        "compare_revisions.html",
         diffs=service_diffs,
         revision_dates=revision_dates,
         sections=content.sections,
         service_data=service_data
     )
-    return render_template("compare_revisions.html", **template_data)
 
 
 @main.route('/services/<service_id>/edit/<section_id>', methods=['POST'])
@@ -218,12 +217,10 @@ def update(service_id, section_id):
             posted_data['serviceName'] = service.get('serviceName', '')
         return render_template(
             "edit_section.html",
-            **get_template_data(
-                section=section,
-                service_data=posted_data,
-                service_id=service_id,
-                errors=errors
-            )
+            section=section,
+            service_data=posted_data,
+            service_id=service_id,
+            errors=errors
         ), 400
 
     return redirect(url_for(".view", service_id=service_id))

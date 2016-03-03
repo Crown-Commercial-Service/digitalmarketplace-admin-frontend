@@ -3,7 +3,6 @@ from flask_login import login_required, current_user, flash
 from dateutil.parser import parse as parse_date
 
 from .. import main
-from . import get_template_data
 from ... import data_api_client, content_loader
 from ..forms import EmailAddressForm
 from ..auth import role_required
@@ -27,8 +26,7 @@ def find_suppliers():
     return render_template(
         "view_suppliers.html",
         suppliers=suppliers['suppliers'],
-        signed_agreement_prefix=SIGNED_AGREEMENT_PREFIX,
-        **get_template_data()
+        signed_agreement_prefix=SIGNED_AGREEMENT_PREFIX
     )
 
 
@@ -40,8 +38,7 @@ def edit_supplier_name(supplier_id):
 
     return render_template(
         "edit_supplier_name.html",
-        supplier=supplier["suppliers"],
-        **get_template_data()
+        supplier=supplier["suppliers"]
     )
 
 
@@ -67,8 +64,8 @@ def view_supplier_declaration(supplier_id, framework_slug):
         supplier=supplier,
         framework=framework,
         declaration=declaration,
-        content=content,
-        **get_template_data())
+        content=content
+    )
 
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>/<document_name>', methods=['GET'])
@@ -114,8 +111,8 @@ def list_countersigned_agreement_file(supplier_id, framework_slug):
         supplier=supplier,
         framework=framework,
         countersigned_agreement=countersigned_agreement,
-        countersigned_agreement_filename=COUNTERSIGNED_AGREEMENT_FILENAME,
-        **get_template_data())
+        countersigned_agreement_filename=COUNTERSIGNED_AGREEMENT_FILENAME
+    )
 
 
 @main.route('/suppliers/<supplier_id>/countersigned-agreements/<framework_slug>', methods=['POST'])
@@ -209,8 +206,8 @@ def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
         supplier=supplier,
         framework=framework,
         declaration=declaration,
-        section=section,
-        **get_template_data())
+        section=section
+    )
 
 
 @main.route(
@@ -275,8 +272,7 @@ def find_supplier_users():
         "view_supplier_users.html",
         users=users["users"],
         form=form,
-        supplier=supplier["suppliers"],
-        **get_template_data()
+        supplier=supplier["suppliers"]
     )
 
 
@@ -332,8 +328,7 @@ def find_supplier_services():
     return render_template(
         "view_supplier_services.html",
         services=services["services"],
-        supplier=supplier["suppliers"],
-        **get_template_data()
+        supplier=supplier["suppliers"]
     )
 
 
@@ -409,6 +404,5 @@ def invite_user(supplier_id):
             "view_supplier_users.html",
             form=form,
             users=users["users"],
-            supplier=suppliers["suppliers"],
-            **get_template_data()
+            supplier=suppliers["suppliers"]
         ), 400

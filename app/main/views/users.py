@@ -4,7 +4,6 @@ from flask_login import login_required, flash
 
 import unicodecsv
 from .. import main
-from . import get_template_data
 from ... import data_api_client
 from ..auth import role_required
 
@@ -24,15 +23,15 @@ def find_user_by_email_address():
         return render_template(
             template,
             users=[users['users']],
-            email_address=request.args.get("email_address"),
-            **get_template_data())
+            email_address=request.args.get("email_address")
+        )
     else:
         flash('no_users', 'error')
         return render_template(
             template,
             users=list(),
-            email_address=None,
-            **get_template_data()), 404
+            email_address=None
+        ), 404
 
 
 @main.route('/users/download', methods=['GET'])
@@ -48,8 +47,7 @@ def list_frameworks_with_users(errors=None):
     return render_template(
         "download_users.html",
         framework_options=framework_options,
-        errors=errors,
-        **get_template_data()
+        errors=errors
     ), 200 if not errors else 400
 
 

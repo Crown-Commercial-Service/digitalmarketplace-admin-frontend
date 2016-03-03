@@ -8,7 +8,6 @@ from dmutils.formats import DATETIME_FORMAT
 
 from ..helpers.sum_counts import format_snapshots
 from .. import main
-from . import get_template_data
 from ... import data_api_client
 from ..auth import role_required
 
@@ -86,6 +85,5 @@ def view_statistics(framework_slug):
             'logged_in_recently': {
                 'recent_login': True
             }
-        }),
-        **get_template_data()
+        })
     )

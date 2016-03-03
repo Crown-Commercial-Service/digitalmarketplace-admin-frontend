@@ -6,13 +6,12 @@ from dmutils.user import user_has_role, User
 from .. import main
 from ... import data_api_client
 from ..forms import LoginForm
-from . import get_template_data
 
 
 @main.route('/login', methods=['GET'])
 def render_login():
     form = LoginForm()
-    return render_template('login.html', **get_template_data(form=form))
+    return render_template('login.html', form=form)
 
 
 @main.route('/login', methods=['POST'])
@@ -31,7 +30,8 @@ def process_login():
             flash('no_account', 'error')
             return render_template(
                 'login.html',
-                **get_template_data(form=form, next=next_url)
+                form=form,
+                next=next_url
             ), 403
 
         user = User.from_json(user_json)
@@ -45,7 +45,7 @@ def process_login():
     else:
         return render_template(
             'login.html',
-            **get_template_data(form=form)
+            form=form
         ), 400
 
 
