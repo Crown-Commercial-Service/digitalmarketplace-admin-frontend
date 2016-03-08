@@ -199,7 +199,7 @@ def update(service_id, section_id):
         service, request.files, section)
 
     if document_errors:
-        errors = section.get_error_messages(document_errors, service['lot'])
+        errors = section.get_error_messages(document_errors)
     else:
         posted_data.update(uploaded_documents)
 
@@ -210,7 +210,7 @@ def update(service_id, section_id):
                 posted_data,
                 current_user.email_address)
         except HTTPError as e:
-            errors = section.get_error_messages(e.message, service['lot'])
+            errors = section.get_error_messages(e.message)
 
     if errors:
         if not posted_data.get('serviceName', None):
