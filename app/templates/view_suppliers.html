@@ -32,8 +32,8 @@
     {% elif current_user.has_role("admin-ccs-sourcing") %}
       {% set field_headings = [
         "Name",
-        summary.hidden_field_heading("Change declarations"),
-        summary.hidden_field_heading("Download signed agreements"),
+        "G-Cloud 7",
+        "Digital Outcomes and Specialists",
       ] %}
     {% else %}
       {% set field_headings = [
@@ -57,16 +57,16 @@
         {% endif %}
         {% if current_user.has_role('admin-ccs-sourcing') %}
           {% call summary.field() %}
-            <div><a href="{{ url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="g-cloud-7") }}">G-Cloud 7 declaration</a></div>
-            <div><a href="{{ url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists") }}">Digital Outcomes and Specialists declaration</a></div>
+            <div><a href="{{ url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="g-cloud-7") }}">Edit declaration</a></div>
+            <div><a href="{{ url_for(".download_agreement_file", supplier_id=item.id, framework_slug="g-cloud-7", document_name=agreement_prefix) }}">Download agreement</a></div>
+            <div><a href="{{ url_for(".download_agreement_file", supplier_id=item.id, framework_slug="g-cloud-7", document_name=signed_agreement_prefix) }}">Download signed agreement</a></div>
+            <div><a href="{{ url_for(".list_countersigned_agreement_file", supplier_id=item.id, framework_slug="g-cloud-7") }}">Upload countersigned agreement</a></div>
           {% endcall %}
           {% call summary.field() %}
-            <div><a href="{{ url_for(".download_agreement_file", supplier_id=item.id, framework_slug="g-cloud-7", document_name=signed_agreement_prefix) }}">Download G-Cloud 7 agreement</a></div>
-            <div><a href="{{ url_for(".download_agreement_file", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists", document_name=signed_agreement_prefix) }}">Download Digital Outcomes and Specialists agreement</a></div>
-          {% endcall %}
-          {% call summary.field() %}
-            <div><a href="{{ url_for(".list_countersigned_agreement_file", supplier_id=item.id, framework_slug="g-cloud-7") }}">Upload G-Cloud 7 countersigned agreement</a></div>
-            <div><a href="{{ url_for(".list_countersigned_agreement_file", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists") }}">Upload Digital Outcomes and Specialists countersigned agreement</a></div>
+            <div><a href="{{ url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists") }}">Edit declaration</a></div>
+            <div><a href="{{ url_for(".download_agreement_file", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists", document_name=agreement_prefix) }}" >Download agreement</a></div>
+            <div><a href="{{ url_for(".download_agreement_file", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists", document_name=signed_agreement_prefix) }}">Download signed agreement</a></div>
+            <div><a href="{{ url_for(".list_countersigned_agreement_file", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists") }}">Upload countersigned agreement</a></div>
           {% endcall %}
         {% endif %}
         {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
