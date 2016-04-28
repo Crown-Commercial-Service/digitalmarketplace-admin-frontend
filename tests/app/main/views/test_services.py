@@ -173,12 +173,13 @@ class TestServiceEdit(LoggedInApplicationTest):
             '/admin/services/1/edit/features-and-benefits'
         )
         self.assertEquals(200, response.status_code)
+        stripped_page = self.strip_all_whitespace(response.data)
         self.assertIn(
-            b'id="input-serviceFeatures-0" class="text-box" value="bar"',
-            response.data)
+            b'id="input-serviceFeatures-0"class="text-box"value="bar"',
+            stripped_page)
         self.assertIn(
-            b'id="input-serviceFeatures-1" class="text-box" value=""',
-            response.data)
+            b'id="input-serviceFeatures-1"class="text-box"value=""',
+            stripped_page)
         response = self.client.post(
             '/admin/services/1/edit/features-and-benefits',
             data={
@@ -204,8 +205,8 @@ class TestServiceEdit(LoggedInApplicationTest):
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
-            b'id="input-serviceFeatures-0" class="text-box" value=""',
-            response.data)
+            b'id="input-serviceFeatures-0"class="text-box"value=""',
+            self.strip_all_whitespace(response.data))
 
     @mock.patch('app.main.views.services.data_api_client')
     @mock.patch('app.main.views.services.upload_service_documents')
