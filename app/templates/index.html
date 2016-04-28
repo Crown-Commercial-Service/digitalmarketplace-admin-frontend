@@ -41,24 +41,6 @@
                   <input type="text" name="service_id" id="service_id" class="text-box">
                   <input type="submit" value="Search" class="button-save">
               </form>
-
-              <form action="{{ url_for('.find_supplier_services') }}" method="get" class="question">
-                  <label class="question-heading" for="supplier_id_for_services">Find services by supplier ID</label>
-                  <p class='hint'>
-                    eg 54321
-                  </p>
-                  <input type="text" name="supplier_id" id="supplier_id_for_services" class="text-box">
-                  <input type="submit" value="Search" class="button-save">
-              </form>
-
-              <form action="{{ url_for('.find_supplier_users') }}" method="get" class="question">
-                  <label class="question-heading" for="supplier_id_for_users">Find users by supplier ID</label>
-                  <p class='hint'>
-                    eg 54321
-                  </p>
-                  <input type="text" name="supplier_id" id="supplier_id_for_users" class="text-box">
-                  <input type="submit" value="Search" class="button-save">
-              </form>
               {% endif %}
 
               <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
@@ -67,6 +49,15 @@
                   eg searching for c would give all suppliers starting with c
                 </p>
                 <input type="text" name="supplier_name_prefix" id="supplier_name_prefix" class="text-box">
+                <input type="submit" value="Search" class="button-save">
+              </form>
+
+              <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+                <label class="question-heading" for="supplier_duns_number">Find suppliers by DUNS number</label>
+                <p class="hint">
+                  DUNS numbers are usually 9 digits long, eg 234554321
+                </p>
+                <input type="text" name="supplier_duns_number" id="supplier_duns_number" class="text-box">
                 <input type="submit" value="Search" class="button-save">
               </form>
 

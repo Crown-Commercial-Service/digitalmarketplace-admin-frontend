@@ -21,7 +21,10 @@ from dmutils.formats import datetimeformat
 @login_required
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
 def find_suppliers():
-    suppliers = data_api_client.find_suppliers(prefix=request.args.get("supplier_name_prefix"))
+    suppliers = data_api_client.find_suppliers(
+        prefix=request.args.get("supplier_name_prefix"),
+        duns_number=request.args.get("supplier_duns_number")
+    )
 
     return render_template(
         "view_suppliers.html",
