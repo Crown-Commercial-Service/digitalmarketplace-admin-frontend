@@ -32,6 +32,9 @@ $path: "/admin/static/images/";
 @import "patterns/service-id";
 @import "patterns/pricing";
 
+// Blocks shared between multiple selectors
+@import "shared_placeholders/_temporary-messages.scss";
+
 // Layout of specific views
 @import "views/view_service";
 @import "views/edit_section";

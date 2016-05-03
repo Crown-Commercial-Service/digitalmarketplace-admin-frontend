@@ -10,7 +10,7 @@ from ..auth import role_required
 
 @main.route('/users', methods=['GET'])
 @login_required
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin')
 def find_user_by_email_address():
     template = "view_users.html"
     users = None

@@ -7,7 +7,7 @@ from ..auth import role_required
 from ... import data_api_client
 
 from dmutils import s3
-from dmutils.documents import file_is_pdf, file_is_zip
+from dmutils.documents import file_is_pdf, file_is_zip, file_is_csv
 
 
 def _get_path(framework_slug, path):
@@ -47,8 +47,8 @@ def upload_communication(framework_slug):
 
     if request.files.get('communication'):
         the_file = request.files['communication']
-        if not file_is_pdf(the_file):
-            errors['communication'] = 'not_pdf'
+        if not (file_is_pdf(the_file) or file_is_csv(the_file)):
+            errors['communication'] = 'not_pdf_or_csv'
 
         if 'communication' not in errors.keys():
             filename = _get_path(framework_slug, 'updates/communications') + '/' + the_file.filename

@@ -17,40 +17,35 @@
 
 {% block main_content %}
   {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-  {% for category, message in messages %}
-  {% if category == 'upload_communication' %}
-    <div class="banner-success-without-action">
-      <p class="banner-message">
-      {% if message == 'itt_pack' %}
-        ITT pack was uploaded.
-      {% elif message == 'clarification' %}
-        New clarification was uploaded.
-      {% elif message == 'communication' %}
-        New communication was uploaded.
+      {% if messages %}
+          {% for category, message in messages %}
+              {% if category == 'upload_communication' %}
+                <div class="banner-success-without-action">
+                  <p class="banner-message">
+                  {% if message == 'itt_pack' %}
+                    ITT pack was uploaded.
+                  {% elif message == 'clarification' %}
+                    New clarification was uploaded.
+                  {% elif message == 'communication' %}
+                    New communication was uploaded.
+                  {% endif %}
+                  </p>
+                </div>
+              {% else %}
+                <div class="banner-destructive-without-action">
+                    <p class="banner-message">
+                    {% if category == 'not_pdf_or_csv' and message == 'communication' %}
+                        Communication file is not a PDF or CSV.
+                    {% elif category == 'not_pdf' and message == 'clarification' %}
+                        Clarification file is not a PDF.
+                    {% elif category == 'not_zip' and message == 'itt_pack' %}
+                        ITT pack is not a zip file.
+                    {% endif %}
+                  </p>
+                </div>
+              {% endif %}
+          {% endfor %}
       {% endif %}
-      </p>
-    </div>
-  {% elif category == 'not_pdf' %}
-    <div class="banner-destructive-without-action">
-      <p class="banner-message">
-        {% if message == 'communication' %}
-        Communication file is not a PDF.
-        {% elif message == 'clarification' %}
-        Clarification file is not a PDF.
-        {% endif %}
-      </p>
-    </div>
-  {% elif category == 'not_zip' and message == 'itt_pack' %}
-    <div class="banner-destructive-without-action">
-      <p class="banner-message">
-        ITT pack is not a zip file.
-      </p>
-    </div>
-  {% endif %}
-
-  {% endfor %}
-  {% endif %}
   {% endwith %}
 
   {% with heading = "Upload {} communications".format(framework.name) %}
@@ -61,7 +56,7 @@
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     {% with
        question="Communication",
-       hint="This must be PDF",
+       hint="This must be PDF or CSV",
        name="communication",
        value="Last modified {}".format(communication.last_modified),
        error=communication_error

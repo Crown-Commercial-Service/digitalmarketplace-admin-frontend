@@ -41,24 +41,6 @@
                   <input type="text" name="service_id" id="service_id" class="text-box">
                   <input type="submit" value="Search" class="button-save">
               </form>
-
-              <form action="{{ url_for('.find_supplier_services') }}" method="get" class="question">
-                  <label class="question-heading" for="supplier_id_for_services">Find services by supplier ID</label>
-                  <p class='hint'>
-                    eg 54321
-                  </p>
-                  <input type="text" name="supplier_id" id="supplier_id_for_services" class="text-box">
-                  <input type="submit" value="Search" class="button-save">
-              </form>
-
-              <form action="{{ url_for('.find_supplier_users') }}" method="get" class="question">
-                  <label class="question-heading" for="supplier_id_for_users">Find users by supplier ID</label>
-                  <p class='hint'>
-                    eg 54321
-                  </p>
-                  <input type="text" name="supplier_id" id="supplier_id_for_users" class="text-box">
-                  <input type="submit" value="Search" class="button-save">
-              </form>
               {% endif %}
 
               <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
@@ -67,6 +49,15 @@
                   eg searching for c would give all suppliers starting with c
                 </p>
                 <input type="text" name="supplier_name_prefix" id="supplier_name_prefix" class="text-box">
+                <input type="submit" value="Search" class="button-save">
+              </form>
+
+              <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+                <label class="question-heading" for="supplier_duns_number">Find suppliers by DUNS number</label>
+                <p class="hint">
+                  DUNS numbers are usually 9 digits long, eg 234554321
+                </p>
+                <input type="text" name="supplier_duns_number" id="supplier_duns_number" class="text-box">
                 <input type="submit" value="Search" class="button-save">
               </form>
 
@@ -94,14 +85,9 @@
   {% endwith %}
   {% with items = [
       {
-          "body": "View G-Cloud 7 statistics",
-          "link": "/admin/statistics/g-cloud-7",
-          "title": "G-Cloud 7 statistics"
-      },
-      {
-          "body": "View Digital Outcomes and Specialists statistics",
-          "link": "/admin/statistics/digital-outcomes-and-specialists",
-          "title": "Digital Outcomes and Specialists statistics"
+          "body": "View G-Cloud 8 statistics",
+          "link": "/admin/statistics/g-cloud-8",
+          "title": "G-Cloud 8 statistics"
       }
   ]
   %}
@@ -146,9 +132,14 @@
           "title": "Digital Outcomes and Specialists communications"
       },
       {
+        "body": "Manage G-Cloud 8 communications",
+        "link": "/admin/communications/g-cloud-8",
+        "title": "G-Cloud 8 communications"
+      },
+      {
           "body": "Download a list of users for frameworks that are open, pending or live",
           "link": url_for(".list_frameworks_with_users"),
-          "title": "Download user list"
+          "title": "Download user lists"
       }
     ]
     %}
