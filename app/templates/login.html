@@ -72,16 +72,19 @@
                 </div>
             {% endif %}
 
-            {% with type = "save", label = "Log in" %}
-              {% include "toolkit/button.html" %}
-            {% endwith %}
-
             {% with
-              url = "/buyers/reset-password",
-              text = "Forgotten password",
-              bigger = True
+              url = "/reset-password",
+              text = "Forgotten password"
             %}
               {% include "toolkit/secondary-action-link.html" %}
+            {% endwith %}
+
+            {%
+              with
+              type = "save",
+              label = "Log in"
+            %}
+              {% include "toolkit/button.html" %}
             {% endwith %}
 
         </div>
