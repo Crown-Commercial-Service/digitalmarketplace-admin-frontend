@@ -8,7 +8,7 @@ from flask_wtf.csrf import CsrfProtect
 import dmapiclient
 from dmutils import init_app, flask_featureflags, formats
 from dmutils.user import User
-from dmutils.content_loader import ContentLoader
+from dmcontent.content_loader import ContentLoader
 
 from config import configs
 
