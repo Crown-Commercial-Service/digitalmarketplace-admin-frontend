@@ -48,6 +48,12 @@ class TestSuppliersListView(LoggedInApplicationTest):
 
         data_api_client.find_suppliers.assert_called_once_with(prefix=None, duns_number="987654321")
 
+    def test_should_find_by_supplier_id(self, data_api_client):
+        data_api_client.get_supplier.side_effect = HTTPError(Response(404))
+        self.client.get("/admin/suppliers?supplier_id=12345")
+
+        data_api_client.get_supplier.assert_called_once_with("12345")
+
 
 class TestSupplierUsersView(LoggedInApplicationTest):
 
