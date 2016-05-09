@@ -3,7 +3,8 @@ from flask_login import login_required, current_user
 from datetime import datetime
 
 from dmapiclient import HTTPError
-from dmutils.formats import DATETIME_FORMAT, format_service_price
+from dmutils.formats import DATETIME_FORMAT
+from dmcontent.formats import format_service_price
 from dmutils.documents import upload_service_documents
 from dmutils.s3 import S3
 
