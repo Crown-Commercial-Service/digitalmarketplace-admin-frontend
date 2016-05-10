@@ -4,7 +4,7 @@ from dateutil.parser import parse as parse_date
 
 from .. import main
 from ... import data_api_client, content_loader
-from ..forms import EmailAddressForm
+from ..forms import EmailAddressForm, MoveUserForm
 from ..auth import role_required
 from dmapiclient import HTTPError, APIError
 from dmapiclient.audit import AuditTypes
@@ -268,6 +268,7 @@ def update_supplier_name(supplier_id):
 @role_required('admin', 'admin-ccs-category')
 def find_supplier_users():
     form = EmailAddressForm()
+    form2 = MoveUserForm()
 
     if not request.args.get('supplier_id'):
         abort(404)
@@ -279,6 +280,7 @@ def find_supplier_users():
         "view_supplier_users.html",
         users=users["users"],
         form=form,
+        form2=form2,
         supplier=supplier["suppliers"]
     )
 
@@ -313,12 +315,50 @@ def deactivate_user(user_id):
     return redirect(url_for('.find_supplier_users', supplier_id=user['users']['supplier']['supplierId']))
 
 
-@main.route('/suppliers/users/<int:user_id>/remove-from-supplier', methods=['POST'])
+@main.route('/suppliers/<int:supplier_id>/move-existing-user', methods=['POST'])
 @login_required
 @role_required('admin')
-def remove_from_supplier(user_id):
-    data_api_client.update_user(user_id, role='buyer', updater=current_user.email_address)
-    return redirect(url_for('.find_supplier_users', supplier_id=request.form['supplier_id']))
+def move_user_to_new_supplier(supplier_id):
+    form = EmailAddressForm()
+    form2 = MoveUserForm()
+
+    try:
+        suppliers = data_api_client.get_supplier(supplier_id)
+        users = data_api_client.find_users(supplier_id)
+    except HTTPError as e:
+        current_app.logger.error(str(e), supplier_id)
+        if e.status_code != 404:
+            raise
+        else:
+            abort(404, "Supplier not found")
+
+    if form2.validate_on_submit():
+        try:
+            user = data_api_client.get_user(email_address=form2.user_to_move_email_address.data)
+        except HTTPError as e:
+            current_app.logger.error(str(e), supplier_id)
+            raise
+
+        if user:
+            data_api_client.update_user(
+                user['users']['id'],
+                role='supplier',
+                supplier_id=supplier_id,
+                active=True,
+                updater=current_user.email_address
+            )
+            flash("user_moved", "success")
+        else:
+            flash("user_not_moved", "error")
+        return redirect(url_for('.find_supplier_users', supplier_id=supplier_id))
+    else:
+        return render_template(
+            "view_supplier_users.html",
+            form=form,
+            form2=form2,
+            users=users["users"],
+            supplier=suppliers["suppliers"]
+        ), 400
 
 
 @main.route('/suppliers/services', methods=['GET'])
@@ -344,6 +384,7 @@ def find_supplier_services():
 @role_required('admin')
 def invite_user(supplier_id):
     form = EmailAddressForm()
+    form2 = MoveUserForm()
 
     try:
         suppliers = data_api_client.get_supplier(supplier_id)
@@ -410,6 +451,7 @@ def invite_user(supplier_id):
         return render_template(
             "view_supplier_users.html",
             form=form,
+            form2=form2,
             users=users["users"],
             supplier=suppliers["suppliers"]
         ), 400
