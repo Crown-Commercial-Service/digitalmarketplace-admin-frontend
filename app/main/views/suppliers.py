@@ -21,14 +21,17 @@ from dmutils.formats import datetimeformat
 @login_required
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
 def find_suppliers():
-    suppliers = data_api_client.find_suppliers(
-        prefix=request.args.get("supplier_name_prefix"),
-        duns_number=request.args.get("supplier_duns_number")
-    )
+    if request.args.get("supplier_id"):
+        suppliers = [data_api_client.get_supplier(request.args.get("supplier_id"))['suppliers']]
+    else:
+        suppliers = data_api_client.find_suppliers(
+            prefix=request.args.get("supplier_name_prefix"),
+            duns_number=request.args.get("supplier_duns_number")
+        )['suppliers']
 
     return render_template(
         "view_suppliers.html",
-        suppliers=suppliers['suppliers'],
+        suppliers=suppliers,
         signed_agreement_prefix=SIGNED_AGREEMENT_PREFIX,
         agreement_prefix=AGREEMENT_FILENAME
     )
