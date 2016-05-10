@@ -10,5 +10,6 @@ unicodecsv==0.14.1
 
 boto==2.36.0
 
-git+https://github.com/alphagov/digitalmarketplace-utils.git@19.8.0#egg=digitalmarketplace-utils==19.8.0
+git+https://github.com/alphagov/digitalmarketplace-content-loader.git@1.0.0#egg=digitalmarketplace-content-loader==1.0.1
+git+https://github.com/alphagov/digitalmarketplace-utils.git@20.0.0#egg=digitalmarketplace-utils==20.0.0
 git+https://github.com/alphagov/digitalmarketplace-apiclient.git@1.2.0#egg=digitalmarketplace-apiclient==1.2.0

@@ -474,11 +474,11 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
 
         # check dates are right
         self.assertIn(
-            self.strip_all_whitespace('Monday 01 December 2014 at 10:55'),
+            self.strip_all_whitespace('Monday 1 December 2014 at 10:55'),
             self.strip_all_whitespace(response.get_data(as_text=True))
         )
         self.assertIn(
-            self.strip_all_whitespace('Tuesday 02 December 2014 at 10:55'),
+            self.strip_all_whitespace('Tuesday 2 December 2014 at 10:55'),
             self.strip_all_whitespace(response.get_data(as_text=True))
         )
 
