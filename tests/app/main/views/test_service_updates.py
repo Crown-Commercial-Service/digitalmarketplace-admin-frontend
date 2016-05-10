@@ -190,7 +190,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             Activity for
         </p>
         <h1>
-        Friday 01 January 2010
+        Friday 1 January 2010
         </h1>
         """
 
@@ -407,7 +407,7 @@ class TestServiceStatusUpdates(LoggedInApplicationTest):
 
         page_contents = self._replace_whitespace(response.get_data(as_text=True))
 
-        self.assertIn('Friday01January2016', page_contents)
+        self.assertIn('Friday1January2016', page_contents)
         self.assertIn('1234567890', page_contents)
 
     def test_should_link_to_previous_and_next_days(self, data_api_client):
