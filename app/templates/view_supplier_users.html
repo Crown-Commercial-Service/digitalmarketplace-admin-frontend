@@ -63,8 +63,9 @@
               'Name',
               'Email address',
               'Last login',
-              'Last password change',
-              'Locked'
+              'Pwd changed',
+              'Locked',
+              summary.hidden_field_heading("") if current_user.has_role('admin') else "Status"
           ],
           field_headings_visible=True)
       %}
