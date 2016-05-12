@@ -149,12 +149,12 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         )
 
         self.assertIn(
-            '<input type="submit" class="button-secondary"  value="Remove from supplier" />',
+            '<button class="button-save">Move user to this supplier</button>',
             response.get_data(as_text=True)
         )
 
         self.assertIn(
-            '<form action="/admin/suppliers/users/999/remove-from-supplier" method="post">',
+            '<form action="/admin/suppliers/1234/move-existing-user" method="post">',
             response.get_data(as_text=True)
         )
 
@@ -238,16 +238,19 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_call_api_to_remove_user_from_supplier(self, data_api_client):
+    def test_should_call_api_to_move_user_to_another_supplier(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.get_user.return_value = self.load_example_listing("user_response")
         data_api_client.update_user.return_value = self.load_example_listing("user_response")
 
         response = self.client.post(
-            '/admin/suppliers/users/999/remove-from-supplier',
-            data={'supplier_id': 1000}
+            '/admin/suppliers/1000/move-existing-user',
+            data={'user_to_move_email_address': 'test.user@sme.com'}
         )
 
-        data_api_client.update_user.assert_called_with(999, role='buyer', updater="test@example.com")
+        data_api_client.update_user.assert_called_with(
+            999, role='supplier', supplier_id=1000, active=True, updater="test@example.com"
+        )
 
         self.assertEquals(302, response.status_code)
         self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
