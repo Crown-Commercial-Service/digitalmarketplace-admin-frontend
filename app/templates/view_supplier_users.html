@@ -156,22 +156,22 @@
           <div class="grid-row">
               <div class="column-two-thirds">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                  {% if form.email_address.errors %}
+                  {% if invite_form.email_address.errors %}
                   <div class="validation-wrapper">
                       {% endif %}
                       <div class="question">
-                          {{ form.email_address.label(class="question-heading-with-hint") }}
+                          {{ invite_form.email_address.label(class="question-heading-with-hint") }}
                           <p class="hint">
-                              Enter the email address you of the person you wish to invite
+                              Enter the email address of the person you wish to invite
                           </p>
-                          {% if form.email_address.errors %}
+                          {% if invite_form.email_address.errors %}
                           <p class="validation-message" id="error-email-address-textbox">
-                              {% for error in form.email_address.errors %}{{ error }}{% endfor %}
+                              {% for error in invite_form.email_address.errors %}{{ error }}{% endfor %}
                           </p>
                           {% endif %}
-                          {{ form.email_address(class="text-box", autocomplete="off") }}
+                          {{ invite_form.email_address(class="text-box", autocomplete="off") }}
                       </div>
-                      {% if form.email_address.errors %}
+                      {% if invite_form.email_address.errors %}
                   </div>
                   {% endif %}
                  <button class="button-save">Send invitation</button>
@@ -185,22 +185,22 @@
             <div class="grid-row">
                 <div class="column-two-thirds">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    {% if form2.user_to_move_email_address.errors %}
+                    {% if move_user_form.user_to_move_email_address.errors %}
                     <div class="validation-wrapper">
                         {% endif %}
                         <div class="question">
-                            {{ form2.user_to_move_email_address.label(class="question-heading-with-hint") }}
+                            {{ move_user_form.user_to_move_email_address.label(class="question-heading-with-hint") }}
                             <p class="hint">
-                                Enter the email address you of the existing user you wish to move to this supplier
+                                Enter the email address of the existing user you wish to move to this supplier
                             </p>
-                            {% if form2.user_to_move_email_address.errors %}
+                            {% if move_user_form.user_to_move_email_address.errors %}
                             <p class="validation-message" id="error-email-address-textbox">
-                                {% for error in form2.user_to_move_email_address.errors %}{{ error }}{% endfor %}
+                                {% for error in move_user_form.user_to_move_email_address.errors %}{{ error }}{% endfor %}
                             </p>
                             {% endif %}
-                            {{ form2.user_to_move_email_address(class="text-box", autocomplete="off") }}
+                            {{ move_user_form.user_to_move_email_address(class="text-box", autocomplete="off") }}
                         </div>
-                        {% if form2.user_to_move_email_address.errors %}
+                        {% if move_user_form.user_to_move_email_address.errors %}
                     </div>
                     {% endif %}
                     <button class="button-save">Move user to this supplier</button>

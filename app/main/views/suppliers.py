@@ -267,8 +267,6 @@ def update_supplier_name(supplier_id):
 @login_required
 @role_required('admin', 'admin-ccs-category')
 def find_supplier_users():
-    form = EmailAddressForm()
-    form2 = MoveUserForm()
 
     if not request.args.get('supplier_id'):
         abort(404)
@@ -279,8 +277,8 @@ def find_supplier_users():
     return render_template(
         "view_supplier_users.html",
         users=users["users"],
-        form=form,
-        form2=form2,
+        invite_form=EmailAddressForm(),
+        move_user_form=MoveUserForm(),
         supplier=supplier["suppliers"]
     )
 
@@ -319,8 +317,7 @@ def deactivate_user(user_id):
 @login_required
 @role_required('admin')
 def move_user_to_new_supplier(supplier_id):
-    form = EmailAddressForm()
-    form2 = MoveUserForm()
+    move_user_form = MoveUserForm()
 
     try:
         suppliers = data_api_client.get_supplier(supplier_id)
@@ -332,9 +329,9 @@ def move_user_to_new_supplier(supplier_id):
         else:
             abort(404, "Supplier not found")
 
-    if form2.validate_on_submit():
+    if move_user_form.validate_on_submit():
         try:
-            user = data_api_client.get_user(email_address=form2.user_to_move_email_address.data)
+            user = data_api_client.get_user(email_address=move_user_form.user_to_move_email_address.data)
         except HTTPError as e:
             current_app.logger.error(str(e), supplier_id)
             raise
@@ -354,8 +351,8 @@ def move_user_to_new_supplier(supplier_id):
     else:
         return render_template(
             "view_supplier_users.html",
-            form=form,
-            form2=form2,
+            invite_form=EmailAddressForm(),
+            move_user_form=move_user_form,
             users=users["users"],
             supplier=suppliers["suppliers"]
         ), 400
@@ -383,8 +380,7 @@ def find_supplier_services():
 @login_required
 @role_required('admin')
 def invite_user(supplier_id):
-    form = EmailAddressForm()
-    form2 = MoveUserForm()
+    invite_form = EmailAddressForm()
 
     try:
         suppliers = data_api_client.get_supplier(supplier_id)
@@ -396,12 +392,12 @@ def invite_user(supplier_id):
         else:
             abort(404, "Supplier not found")
 
-    if form.validate_on_submit():
+    if invite_form.validate_on_submit():
         token = generate_token(
             {
                 "supplier_id": supplier_id,
                 "supplier_name": suppliers['suppliers']['name'],
-                "email_address": form.email_address.data
+                "email_address": invite_form.email_address.data
             },
             current_app.config['SHARED_EMAIL_KEY'],
             current_app.config['INVITE_EMAIL_SALT']
@@ -420,7 +416,7 @@ def invite_user(supplier_id):
 
         try:
             send_email(
-                form.email_address.data,
+                invite_form.email_address.data,
                 email_body,
                 current_app.config['DM_MANDRILL_API_KEY'],
                 current_app.config['INVITE_EMAIL_SUBJECT'],
@@ -432,7 +428,7 @@ def invite_user(supplier_id):
             current_app.logger.error(
                 "Invitation email failed to send error {} to {} supplier {} supplier id {} ".format(
                     str(e),
-                    form.email_address.data,
+                    invite_form.email_address.data,
                     current_user.supplier_name,
                     current_user.supplier_id)
             )
@@ -443,15 +439,15 @@ def invite_user(supplier_id):
             user=current_user.email_address,
             object_type='suppliers',
             object_id=supplier_id,
-            data={'invitedEmail': form.email_address.data})
+            data={'invitedEmail': invite_form.email_address.data})
 
         flash('user_invited', 'success')
         return redirect(url_for('.find_supplier_users', supplier_id=supplier_id))
     else:
         return render_template(
             "view_supplier_users.html",
-            form=form,
-            form2=form2,
+            invite_form=invite_form,
+            move_user_form=MoveUserForm(),
             users=users["users"],
             supplier=suppliers["suppliers"]
         ), 400
