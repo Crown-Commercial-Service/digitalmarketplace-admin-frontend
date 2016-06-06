@@ -72,6 +72,15 @@
                   <input type="submit" value="Search" class="button-save">
               </form>
 
+              <form action="{{ url_for('.find_buyer_by_brief_id') }}" method="get" class="question">
+                  <label class="question-heading" for="email_address">Find buyer by brief ID</label>
+                  <p class='hint'>
+                    Brief IDs are digits
+                  </p>
+                  <input type="text" name="brief_id" id="brief_id" class="text-box">
+                  <input type="submit" value="Search" class="button-save">
+              </form>
+
               {% endif %}
           </div>
       </div>
