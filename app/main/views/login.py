@@ -21,8 +21,8 @@ def process_login():
     if form.validate_on_submit():
         user_json = data_api_client.authenticate_user(
             form.email_address.data,
-            form.password.data,
-            supplier=False)
+            form.password.data
+            )
 
         if not any(user_has_role(user_json, role) for role in ['admin', 'admin-ccs-category', 'admin-ccs-sourcing']):
             message = "login.fail: Failed to log in: %s"
