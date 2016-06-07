@@ -19,7 +19,7 @@ class TestBuyersView(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
         banner_message = document.xpath('//p[@class="banner-message"]//text()')[0].strip()
 
-        self.assertEqual("Sorry, we couldn't find an opportunity with the ID: 1", banner_message)
+        self.assertEqual("There are no opportunities with ID 1", banner_message)
 
     def test_table_should_show_a_useful_message_if_no_users(self, data_api_client):
         data_api_client.get_brief.return_value = {
