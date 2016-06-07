@@ -19,7 +19,7 @@ class TestBuyersView(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
         banner_message = document.xpath('//p[@class="banner-message"]//text()')[0].strip()
 
-        self.assertEqual("Sorry, we couldn't find a brief with the supplied ID: 1", banner_message)
+        self.assertEqual("Sorry, we couldn't find a brief with the ID: 1", banner_message)
 
     def test_table_should_show_a_useful_message_if_no_users(self, data_api_client):
         data_api_client.get_brief.return_value = {
@@ -46,5 +46,5 @@ class TestBuyersView(LoggedInApplicationTest):
         phone = document.xpath('//td[@class="summary-item-field"]//text()')[4].strip()
 
         self.assertEqual("Test Buyer", name)
-        self.assertEqual("test_buyer@gov.uk", email)
-        self.assertEqual("02078481548", phone)
+        self.assertEqual("test_buyer@example.com", email)
+        self.assertEqual("02078888888", phone)
