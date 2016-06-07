@@ -36,9 +36,9 @@
     "specialistRole": "developer",
     "users": [
       {
-        "emailAddress": "test_buyer@gov.uk",
+        "emailAddress": "test_buyer@example.com",
         "name": "Test Buyer",
-        "phoneNumber": "02078481548",
+        "phoneNumber": "02078888888",
         "active": true,
         "role": "buyer",
         "id": 10348
