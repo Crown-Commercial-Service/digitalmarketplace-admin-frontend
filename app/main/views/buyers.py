@@ -20,7 +20,6 @@ def find_buyer_by_brief_id():
         return render_template(
             "view_buyers.html",
             users=list(),
-            title=None,
             brief_id=brief_id
         ), 404
 
