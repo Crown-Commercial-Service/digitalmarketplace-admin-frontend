@@ -5,6 +5,7 @@ from .. import main
 from ... import data_api_client
 from ..auth import role_required
 
+
 @main.route('/buyers', methods=['GET'])
 @login_required
 @role_required('admin')
