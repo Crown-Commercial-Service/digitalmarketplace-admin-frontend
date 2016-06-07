@@ -23,8 +23,8 @@
   {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
       {% for category, message in messages %}
-          {% if message == 'no_brief' %}
-              {% set displayed_message = "Sorry, we couldn't find a brief with the ID: {}".format(brief_id) %}
+          {% if message == 'no_opportunity' %}
+              {% set displayed_message = "Sorry, we couldn't find an opportunity with the ID: {}".format(opportunity_id) %}
           {% endif %}
           {%
           with
@@ -37,7 +37,7 @@
   {% endif %}
   {% endwith %}
 
-  {% with heading = brief_id + ' - ' + title if title %}
+  {% with heading = opportunity_id + ' - ' + title if title %}
   {% include "toolkit/page-heading.html" %}
   {% endwith %}
 
@@ -72,12 +72,12 @@
 
   <br>
 
-  <form action="{{ url_for('.find_buyer_by_brief_id') }}" method="get" class="question">
-      <label class="question-heading" for="email_address">Find buyer by brief ID</label>
+  <form action="{{ url_for('.find_buyer_by_opportunity_id') }}" method="get" class="question">
+      <label class="question-heading" for="email_address">Find buyer by opportunity ID</label>
       <p class='hint'>
-        Brief IDs are digits
+        Opportunity IDs are digits
       </p>
-      <input type="text" name="brief_id" id="brief_id" class="text-box">
+      <input type="text" name="opportunity_id" id="opportunity_id" class="text-box">
       <input type="submit" value="Search" class="button-save">
   </form>
   </div>
