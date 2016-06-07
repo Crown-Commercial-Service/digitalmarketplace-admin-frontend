@@ -6,15 +6,15 @@ from lxml import html
 @mock.patch('app.main.views.buyers.data_api_client')
 class TestBuyersView(LoggedInApplicationTest):
 
-    def test_should_be_a_404_if_no_opportunity_found(self, data_api_client):
+    def test_should_be_a_404_if_no_brief_found(self, data_api_client):
         data_api_client.get_brief.return_value = None
-        response = self.client.get('admin/buyers?opportunity_id=1')
+        response = self.client.get('admin/buyers?brief_id=1')
 
         self.assertEqual(response.status_code, 404)
 
-    def test_should_display_a_useful_message_if_no_opportunity_found(self, data_api_client):
+    def test_should_display_a_useful_message_if_no_brief_found(self, data_api_client):
         data_api_client.get_brief.return_value = None
-        response = self.client.get('admin/buyers?opportunity_id=1')
+        response = self.client.get('admin/buyers?brief_id=1')
 
         document = html.fromstring(response.get_data(as_text=True))
         banner_message = document.xpath('//p[@class="banner-message"]//text()')[0].strip()
@@ -28,7 +28,7 @@ class TestBuyersView(LoggedInApplicationTest):
                 'users': list()
             }
         }
-        response = self.client.get('admin/buyers?opportunity_id=1')
+        response = self.client.get('admin/buyers?brief_id=1')
 
         document = html.fromstring(response.get_data(as_text=True))
         table_content = document.xpath('//p[@class="summary-item-no-content"]//text()')[0].strip()
@@ -36,9 +36,9 @@ class TestBuyersView(LoggedInApplicationTest):
         self.assertEqual("No buyers to show", table_content)
 
     def test_should_show_buyers_contact_details(self, data_api_client):
-        opportunity = self.load_example_listing("brief_response")
-        data_api_client.get_brief.return_value = opportunity
-        response = self.client.get('/admin/buyers?opportunity_id=1')
+        brief = self.load_example_listing("brief_response")
+        data_api_client.get_brief.return_value = brief
+        response = self.client.get('/admin/buyers?brief_id=1')
 
         document = html.fromstring(response.get_data(as_text=True))
         name = document.xpath('//td[@class="summary-item-field-first"]//text()')[1].strip()

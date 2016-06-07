@@ -72,12 +72,12 @@
                   <input type="submit" value="Search" class="button-save">
               </form>
 
-              <form action="{{ url_for('.find_buyer_by_opportunity_id') }}" method="get" class="question">
-                  <label class="question-heading" for="opportunity_id">Find buyer by opportunity ID</label>
+              <form action="{{ url_for('.find_buyer_by_brief_id') }}" method="get" class="question">
+                  <label class="question-heading" for="brief_id">Find buyer by opportunity ID</label>
                   <p class='hint'>
                     You can find this number at the end of the opportunities’ URL.
                   </p>
-                  <input type="text" name="opportunity_id" id="opportunuty_id" class="text-box">
+                  <input type="text" name="brief_id" id="brief_id" class="text-box">
                   <input type="submit" value="Search" class="button-save">
               </form>
 
