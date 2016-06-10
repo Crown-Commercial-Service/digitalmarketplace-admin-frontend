@@ -1,0 +1,85 @@
+{% import "toolkit/summary-table.html" as summary %}
+
+{% extends "_base_page.html" %}
+
+{% block page_title %}
+    Buyers – Digital Marketplace admin
+{% endblock %}
+
+{% block breadcrumb %}
+  {%
+      with items = [
+          {
+              "link": url_for('.index'),
+              "label": "Admin home"
+          },
+      ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+      {% for category, message in messages %}
+          {% if message == 'no_brief' %}
+              {% set displayed_message = "There are no opportunities with ID {}".format(brief_id) %}
+          {% endif %}
+          {%
+          with
+              message = displayed_message,
+              type = "destructive" if category == 'error' else "success"
+          %}
+          {% include "toolkit/notification-banner.html" %}
+          {% endwith %}
+      {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  {% with heading = brief_id + ' - ' + title if title %}
+  {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+
+  {% call(item) summary.list_table(
+          users,
+          caption="Buyers",
+          empty_message="No buyers to show",
+          field_headings=[
+              'Name',
+              'Email',
+              'Phone number'
+          ],
+          field_headings_visible=True)
+      %}
+
+      {% call summary.row() %}
+
+        {{ summary.field_name(item.name) }}
+
+        {% call summary.field() %}
+          {{ item.emailAddress }}
+        {% endcall %}
+
+        {% call summary.field() %}
+          {{ item.phoneNumber }}
+        {% endcall %}
+
+
+      {% endcall %}
+
+  {% endcall %}
+
+  <br>
+
+  <form action="{{ url_for('.find_buyer_by_brief_id') }}" method="get" class="question">
+      <label class="question-heading" for="brief_id">Find buyer by opportunity ID</label>
+      <p class='hint'>
+        You can find this number at the end of the opportunities’ URL.
+      </p>
+      <input type="text" name="brief_id" id="brief_id" class="text-box">
+      <input type="submit" value="Search" class="button-save">
+  </form>
+  </div>
+
+{% endblock %}

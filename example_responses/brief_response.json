@@ -1,0 +1,65 @@
+{
+  "briefs": {
+    "startDate": "31/12/2016",
+    "links": {
+        "framework": "http://localhost:5000/frameworks/digital-outcomes-and-specialists",
+        "self": "http://localhost:5000/briefs/99"
+    },
+    "evaluationType": [
+      "Reference"
+    ],
+    "niceToHaveRequirements": [
+      "Do you like cats?",
+      "Is your cat named Eva?"
+    ],
+    "applicationsClosedAt": "2016-06-07T23:59:59.000000Z",
+    "essentialRequirements": [
+      "Can you do coding?",
+      "Can you do Python?"
+    ],
+    "updatedAt": "2016-05-24T16:44:17.133633Z",
+    "existingTeam": "Digital Marketplace team",
+    "specialistWork": "Work on the Digital Marketplace",
+    "id": 99,
+    "createdAt": "2016-05-24T16:44:17.106766Z",
+    "clarificationQuestionsAreClosed": true,
+    "frameworkFramework": "dos",
+    "clarificationQuestionsClosedAt": "2016-05-31T23:59:59.000000Z",
+    "lotSlug": "digital-specialists",
+    "clarificationQuestionsPublishedBy": "2016-06-06T23:59:59.000000Z",
+    "organisation": "Driver and Vehicle Licensing Agency",
+    "frameworkStatus": "live",
+    "lotName": "Digital specialists",
+    "location": "Scotland",
+    "lot": "digital-specialists",
+    "clarificationQuestions": [],
+    "specialistRole": "developer",
+    "users": [
+      {
+        "emailAddress": "test_buyer@example.com",
+        "name": "Test Buyer",
+        "phoneNumber": "02078888888",
+        "active": true,
+        "role": "buyer",
+        "id": 10348
+      }
+    ],
+    "priceWeighting": 20,
+    "contractLength": "1 day",
+    "culturalWeighting": 10,
+    "publishedAt": "2016-05-24T16:44:17.130998Z",
+    "status": "live",
+    "technicalWeighting": 70,
+    "culturalFitCriteria": [
+      "Cultural fit criteria 1",
+      "Cultural fit criteria 2"
+    ],
+    "title": "Individual Specialist-Buyer Requirements",
+    "frameworkSlug": "digital-outcomes-and-specialists",
+    "numberOfSuppliers": 5,
+    "summary": "Make a flappy bird clone except where the bird drives very safely",
+    "frameworkName": "Digital Outcomes and Specialists",
+    "workingArrangements": "Working from home",
+    "workplaceAddress": "Aviation House"
+  }
+}

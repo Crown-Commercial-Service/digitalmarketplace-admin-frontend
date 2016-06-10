@@ -57,7 +57,7 @@ class TestLogin(BaseApplicationTest):
             'email_address': '  valid@email.com  ',
             'password': '1234567890'
         })
-        data_api_client.authenticate_user.assert_called_with('valid@email.com', '1234567890', supplier=False)
+        data_api_client.authenticate_user.assert_called_with('valid@email.com', '1234567890')
 
     @mock.patch('app.main.views.login.data_api_client')
     def test_should_not_strip_whitespace_surrounding_login_password_field(self, data_api_client):
@@ -66,7 +66,7 @@ class TestLogin(BaseApplicationTest):
             'email_address': 'valid@email.com',
             'password': '  1234567890  '
         })
-        data_api_client.authenticate_user.assert_called_with('valid@email.com', '  1234567890  ', supplier=False)
+        data_api_client.authenticate_user.assert_called_with('valid@email.com', '  1234567890  ')
 
     @mock.patch('app.main.views.login.data_api_client')
     def test_ok_next_url_redirects_on_login(self, data_api_client):
