@@ -1,5 +1,14 @@
 @import "_grid_layout.scss";
+@import "_conditionals.scss";
+@import "_measurements.scss";
 
 .footer-categories, .footer-meta {
   @extend %grid-row;
+}
+
+.footer-meta {
+  padding: 0 $gutter-half;
+  @include media(tablet) {
+    padding: 0;
+  }
 }
