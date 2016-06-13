@@ -1,0 +1,5 @@
+@import "_grid_layout.scss";
+
+.footer-categories, .footer-meta {
+  @extend %grid-row;
+}
