@@ -38,7 +38,7 @@ class Config(object):
     # Logging
     DM_LOG_LEVEL = 'DEBUG'
     DM_APP_NAME = 'admin-frontend'
-    DM_LOG_PATH = '/var/log/digitalmarketplace/application.log'
+    DM_LOG_PATH = None
     DM_DOWNSTREAM_REQUEST_ID_HEADER = 'X-Amz-Cf-Id'
 
     # Feature Flags
@@ -71,6 +71,7 @@ class Test(Config):
     SECRET_KEY = "test_secret"
 
     DM_LOG_LEVEL = 'CRITICAL'
+    DM_LOG_PATH = '/var/log/digitalmarketplace/application.log'
     SHARED_EMAIL_KEY = 'KEY'
     INVITE_EMAIL_SALT = 'SALT'
     DM_MANDRILL_API_KEY = "MANDRILL"

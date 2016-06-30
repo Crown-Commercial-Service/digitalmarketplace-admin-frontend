@@ -10,6 +10,6 @@ unicodecsv==0.14.1
 
 boto==2.36.0
 
-git+https://github.com/alphagov/digitalmarketplace-content-loader.git@1.0.0#egg=digitalmarketplace-content-loader==1.0.1
-git+https://github.com/alphagov/digitalmarketplace-utils.git@20.0.0#egg=digitalmarketplace-utils==20.0.0
-git+https://github.com/alphagov/digitalmarketplace-apiclient.git@3.7.0#egg=digitalmarketplace-apiclient==3.7.0
+git+https://github.com/AusDTO/dto-digitalmarketplace-content-loader.git@1.0.0#egg=dto-digitalmarketplace-content-loader==1.0.0
+git+https://github.com/AusDTO/dto-digitalmarketplace-utils.git@21.1.1#egg=dto-digitalmarketplace-utils==21.1.1
+git+https://github.com/AusDTO/dto-digitalmarketplace-apiclient.git@4.0.0#egg=dto-digitalmarketplace-apiclient==4.0.0
