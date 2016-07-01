@@ -3,4 +3,4 @@
 set -ex
 
 . venv/bin/activate
-python application.py runserver
+python application.py runprodserver
