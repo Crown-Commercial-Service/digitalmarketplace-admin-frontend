@@ -1,7 +1,7 @@
 applications:
     - name: dm-dev-admin-frontend
       command: scripts/cf_run.sh
-      buildpack: 'https://github.com/AusDTO/cf-diy-buildpack.git#v0.1.0-alpha'
+      buildpack: 'https://github.com/AusDTO/cf-diy-buildpack.git#v0.2.0-alpha'
       memory: 128M
       disk_quota: 512M
       env:
