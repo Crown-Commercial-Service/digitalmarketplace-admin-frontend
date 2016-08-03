@@ -145,3 +145,23 @@
     {% include "toolkit/forms/textbox.html" %}
   {% endwith %}
 {%- endmacro %}
+
+{% macro multiquestion(question_content, service_data, errors, question_number=None, get_question=None) -%}
+<fieldset class="question" id="{{ question_content.id }}">
+  <legend>
+    <span class="visually-hidden">{{ question_content.name }}</span>
+  </legend>
+
+  <span class="question-heading">
+      <strong>{{ question_content.name }}</strong>
+  </span>
+
+  {% for child_question in question_content.questions %}
+    {% if errors and errors[child_question.id] %}
+      {{ text(child_question, service_data, errors) }}
+    {% else %}
+      {{ text(child_question, service_data, {}) }}
+    {% endif %}
+  {% endfor %}
+</fieldset>
+{%- endmacro %}
