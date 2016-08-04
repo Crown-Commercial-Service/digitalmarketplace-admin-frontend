@@ -463,7 +463,7 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
             def filter(*args):
                 return self.TestContent()
 
-        content_loader.get_builder.return_value = TestBuilder()
+        content_loader.get_manifest.return_value = TestBuilder()
         response = self._get_archived_services_response('10', '20')
 
         # check title is there
@@ -506,6 +506,6 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
             def filter(*args):
                 return self.TestContent()
 
-        content_loader.get_builder.return_value = TestBuilder()
+        content_loader.get_manifest.return_value = TestBuilder()
         response = self._get_archived_services_response('10', '50')
         self.assertEqual(200, response.status_code)

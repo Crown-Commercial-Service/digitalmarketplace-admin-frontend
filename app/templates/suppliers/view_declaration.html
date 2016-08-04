@@ -33,7 +33,7 @@
     </div>
   </div>
 
-  {% for section in content %}
+  {% for section in content.summary(declaration) %}
     {{ summary.heading(section.name) }}
     {{ summary.top_link("Edit", url_for('.edit_supplier_declaration_section', supplier_id=supplier.id, framework_slug=framework.slug, section_id=section.id)) }}
     {% call(item) summary.list_table(
@@ -47,7 +47,7 @@
     ) %}
       {% call summary.row() %}
         {{ summary.field_name(item.question) }}
-        {{ summary[item.type](declaration[item.id]) }}
+        {{ summary[item.type](item.value) }}
       {% endcall %}
     {% endcall %}
   {% endfor %}
