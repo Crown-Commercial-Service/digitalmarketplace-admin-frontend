@@ -94,3 +94,46 @@ def download_users(framework_slug):
             "Content-Type": "text/csv; header=present"
         }
     )
+
+
+@main.route('/users/download/buyers', methods=['GET'])
+@login_required
+@role_required('admin')
+def download_buyers_and_briefs():
+    buyer_rows = data_api_client.export_buyers_with_briefs().get('buyers', [])
+    buyer_headings = [
+        "buyer_name",
+        "buyer_email",
+        "buyer_phone",
+        "buyer_created",
+        "briefs"
+    ]
+
+    buyer_rows.insert(0, {header: header for header in buyer_headings})
+
+    def iter_csv(rows):
+
+        class Line(object):
+            def __init__(self):
+                self._line = None
+
+            def write(self, line):
+                self._line = line
+
+            def read(self):
+                return self._line
+
+        line = Line()
+        writer = unicodecsv.writer(line)
+        for row in rows:
+            writer.writerow([row.get(header, '') for header in buyer_headings])
+            yield line.read()
+
+    return Response(
+        iter_csv(buyer_rows),
+        mimetype='text/csv',
+        headers={
+            "Content-Disposition": "attachment;filename=buyers.csv",
+            "Content-Type": "text/csv; header=present"
+        }
+    )
