@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from flask import render_template, request, Response
 from flask_login import login_required, flash
+from datetime import datetime
 from ..helpers import csv_generator
 
 from .. import main
@@ -88,12 +89,12 @@ def download_buyers_and_briefs():
         "buyer_created",
         "briefs"
     ]
-
+    timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
     return Response(
         csv_generator.iter_csv(buyer_rows, buyer_headings),
         mimetype='text/csv',
         headers={
-            "Content-Disposition": "attachment;filename=buyers.csv",
+            "Content-Disposition": "attachment;filename=buyers_{}.csv".format(timestamp),
             "Content-Type": "text/csv; header=present"
         }
     )

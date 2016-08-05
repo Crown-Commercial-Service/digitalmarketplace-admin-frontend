@@ -1,5 +1,6 @@
 # coding=utf-8
 from __future__ import unicode_literals
+from datetime import datetime
 
 import mock
 import copy
@@ -315,3 +316,14 @@ class TestBuyersExport(LoggedInApplicationTest):
         response = self.client.get('/admin/users/download/buyers')
 
         assert response.mimetype == 'text/csv'
+
+    def test_filename_includes_a_timestamp(self, data_api_client):
+        with mock.patch('app.main.views.users.datetime') as mock_date:
+            mock_date.utcnow.return_value = datetime(2016, 8, 5, 16, 0, 0)
+            data_api_client.export_buyers_with_briefs.return_value = {
+                "buyers": [{}]
+            }
+
+            response = self.client.get('/admin/users/download/buyers')
+            
+            assert response.headers[1][1] == 'attachment;filename=buyers_20160805T160000.csv'
