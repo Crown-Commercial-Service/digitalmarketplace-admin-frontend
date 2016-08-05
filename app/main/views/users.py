@@ -1,8 +1,9 @@
 from __future__ import unicode_literals
 from flask import render_template, request, Response
 from flask_login import login_required, flash
+from datetime import datetime
+from ..helpers import csv_generator
 
-import unicodecsv
 from .. import main
 from ... import data_api_client
 from ..auth import role_required
@@ -65,32 +66,35 @@ def download_users(framework_slug):
         "application_result",
         "framework_agreement"
     ]
-    # insert header column
-    supplier_rows.insert(0, {header: header for header in supplier_headers})
-
-    def iter_csv(rows):
-
-        class Line(object):
-            def __init__(self):
-                self._line = None
-
-            def write(self, line):
-                self._line = line
-
-            def read(self):
-                return self._line
-
-        line = Line()
-        writer = unicodecsv.writer(line)
-        for row in rows:
-            writer.writerow([row.get(header, '') for header in supplier_headers])
-            yield line.read()
 
     return Response(
-        iter_csv(supplier_rows),
+        csv_generator.iter_csv(supplier_rows, supplier_headers),
         mimetype='text/csv',
         headers={
             "Content-Disposition": "attachment;filename=users-{}.csv".format(framework_slug),
+            "Content-Type": "text/csv; header=present"
+        }
+    )
+
+
+@main.route('/users/download/buyers', methods=['GET'])
+@login_required
+@role_required('admin')
+def download_buyers_and_briefs():
+    buyer_rows = data_api_client.export_buyers_with_briefs().get('buyers', [])
+    buyer_headings = [
+        "buyer_name",
+        "buyer_email",
+        "buyer_phone",
+        "buyer_created",
+        "briefs"
+    ]
+    timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
+    return Response(
+        csv_generator.iter_csv(buyer_rows, buyer_headings),
+        mimetype='text/csv',
+        headers={
+            "Content-Disposition": "attachment;filename=buyers_{}.csv".format(timestamp),
             "Content-Type": "text/csv; header=present"
         }
     )

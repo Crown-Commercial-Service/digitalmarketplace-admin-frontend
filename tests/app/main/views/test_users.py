@@ -1,5 +1,6 @@
 # coding=utf-8
 from __future__ import unicode_literals
+from datetime import datetime
 
 import mock
 import copy
@@ -283,3 +284,46 @@ class TestUsersExport(LoggedInApplicationTest):
         response = self._return_user_export_response(data_api_client, framework, users)
         assert response.status_code == 200
         self._assert_things_about_user_export(response, users)
+
+
+@mock.patch('app.main.views.users.data_api_client')
+class TestBuyersExport(LoggedInApplicationTest):
+
+    def test_response_data_has_buyer_info(self, data_api_client):
+        data_api_client.export_buyers_with_briefs.return_value = {
+            "buyers": [{
+                "buyer_name": "Chris",
+                "buyer_email": "chris@gov.uk",
+                "buyer_phone": "01234567891",
+                "buyer_created": "Thu, 04 Aug 2016 12:00:00 GMT",
+                "briefs": "This is a brief - draft"
+            }]
+        }
+
+        response = self.client.get('/admin/users/download/buyers')
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+        buyer = rows[1]
+
+        assert response.status_code == 200
+        assert buyer == [u'Chris', u'chris@gov.uk', u'01234567891',
+                         u'"Thu', u' 04 Aug 2016 12:00:00 GMT"', u'This is a brief - draft']
+
+    def test_response_is_a_csv(self, data_api_client):
+        data_api_client.export_buyers_with_briefs.return_value = {
+            "buyers": [{}]
+        }
+
+        response = self.client.get('/admin/users/download/buyers')
+
+        assert response.mimetype == 'text/csv'
+
+    def test_filename_includes_a_timestamp(self, data_api_client):
+        with mock.patch('app.main.views.users.datetime') as mock_date:
+            mock_date.utcnow.return_value = datetime(2016, 8, 5, 16, 0, 0)
+            data_api_client.export_buyers_with_briefs.return_value = {
+                "buyers": [{}]
+            }
+
+            response = self.client.get('/admin/users/download/buyers')
+            
+            assert response.headers[1][1] == 'attachment;filename=buyers_20160805T160000.csv'
