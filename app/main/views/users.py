@@ -1,8 +1,8 @@
 from __future__ import unicode_literals
 from flask import render_template, request, Response
 from flask_login import login_required, flash
+from ..helpers import csv_generator
 
-import unicodecsv
 from .. import main
 from ... import data_api_client
 from ..auth import role_required
@@ -65,29 +65,9 @@ def download_users(framework_slug):
         "application_result",
         "framework_agreement"
     ]
-    # insert header column
-    supplier_rows.insert(0, {header: header for header in supplier_headers})
-
-    def iter_csv(rows):
-
-        class Line(object):
-            def __init__(self):
-                self._line = None
-
-            def write(self, line):
-                self._line = line
-
-            def read(self):
-                return self._line
-
-        line = Line()
-        writer = unicodecsv.writer(line)
-        for row in rows:
-            writer.writerow([row.get(header, '') for header in supplier_headers])
-            yield line.read()
 
     return Response(
-        iter_csv(supplier_rows),
+        csv_generator.iter_csv(supplier_rows, supplier_headers),
         mimetype='text/csv',
         headers={
             "Content-Disposition": "attachment;filename=users-{}.csv".format(framework_slug),
@@ -109,28 +89,8 @@ def download_buyers_and_briefs():
         "briefs"
     ]
 
-    buyer_rows.insert(0, {header: header for header in buyer_headings})
-
-    def iter_csv(rows):
-
-        class Line(object):
-            def __init__(self):
-                self._line = None
-
-            def write(self, line):
-                self._line = line
-
-            def read(self):
-                return self._line
-
-        line = Line()
-        writer = unicodecsv.writer(line)
-        for row in rows:
-            writer.writerow([row.get(header, '') for header in buyer_headings])
-            yield line.read()
-
     return Response(
-        iter_csv(buyer_rows),
+        csv_generator.iter_csv(buyer_rows, buyer_headings),
         mimetype='text/csv',
         headers={
             "Content-Disposition": "attachment;filename=buyers.csv",
