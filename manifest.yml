@@ -1,9 +1,9 @@
 applications:
     - name: dm-dev-admin-frontend
-      command: scripts/cf_run.sh
-      buildpack: 'https://github.com/AusDTO/cf-diy-buildpack.git#v0.3.0-alpha'
+      command: python application.py runprodserver
+      buildpack: https://github.com/cloudfoundry/buildpack-python.git
       memory: 128M
-      disk_quota: 512M
+      disk_quota: 1G
+      instances: 1
       env:
-          BUILD_CMD: scripts/cf_build.sh
           DM_DATA_API_URL: https://dm-dev-api.apps.staging.digital.gov.au/

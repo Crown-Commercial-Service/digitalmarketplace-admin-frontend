@@ -22,6 +22,8 @@ class Config(object):
     DM_DATA_API_URL = None
     DM_DATA_API_AUTH_TOKEN = None
     SECRET_KEY = None
+    DM_HTTP_PROTO = 'http'
+    DM_DEFAULT_CACHE_MAX_AGE = 30
 
     DM_AGREEMENTS_BUCKET = None
     DM_COMMUNICATIONS_BUCKET = None
@@ -71,7 +73,8 @@ class Test(Config):
     SECRET_KEY = "test_secret"
 
     DM_LOG_LEVEL = 'CRITICAL'
-    DM_LOG_PATH = '/var/log/digitalmarketplace/application.log'
+    DM_LOG_PATH = None
+#    DM_LOG_PATH = '/var/log/digitalmarketplace/application.log'
     SHARED_EMAIL_KEY = 'KEY'
     INVITE_EMAIL_SALT = 'SALT'
     DM_MANDRILL_API_KEY = "MANDRILL"
