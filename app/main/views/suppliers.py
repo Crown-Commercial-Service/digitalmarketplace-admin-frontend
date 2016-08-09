@@ -64,7 +64,7 @@ def view_supplier_declaration(supplier_id, framework_slug):
             raise
         declaration = {}
 
-    content = content_loader.get_builder(framework_slug, 'declaration').filter(declaration)
+    content = content_loader.get_manifest(framework_slug, 'declaration').filter(declaration)
 
     return render_template(
         "suppliers/view_declaration.html",
@@ -203,7 +203,7 @@ def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
             raise
         declaration = {}
 
-    content = content_loader.get_builder(framework_slug, 'declaration').filter(declaration)
+    content = content_loader.get_manifest(framework_slug, 'declaration').filter(declaration)
     section = content.get_section(section_id)
     if section is None:
         abort(404)
@@ -232,7 +232,7 @@ def update_supplier_declaration_section(supplier_id, framework_slug, section_id)
             raise
         declaration = {}
 
-    content = content_loader.get_builder(framework_slug, 'declaration').filter(declaration)
+    content = content_loader.get_manifest(framework_slug, 'declaration').filter(declaration)
     section = content.get_section(section_id)
     if section is None:
         abort(404)
