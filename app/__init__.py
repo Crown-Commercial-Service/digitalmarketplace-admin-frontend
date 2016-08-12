@@ -6,7 +6,7 @@ from flask_login import LoginManager
 from flask_wtf.csrf import CsrfProtect
 
 import dmapiclient
-from dmutils import init_app, flask_featureflags, formats
+from dmutils import init_app, init_frontend_app, flask_featureflags, formats
 from dmutils.user import User
 from dmcontent.content_loader import ContentLoader
 
@@ -49,21 +49,14 @@ def create_app(config_name):
     from .main import main as main_blueprint
     from .status import status as status_blueprint
 
-    application.register_blueprint(status_blueprint, url_prefix='/admin')
-    application.register_blueprint(main_blueprint, url_prefix='/admin')
+    url_prefix = application.config['URL_PREFIX']
+    application.register_blueprint(status_blueprint, url_prefix=url_prefix)
+    application.register_blueprint(main_blueprint, url_prefix=url_prefix)
     login_manager.login_view = 'main.render_login'
     main_blueprint.config = application.config.copy()
 
-    @application.before_request
-    def remove_trailing_slash():
-        if request.path != '/' and request.path.endswith('/'):
-            return redirect(request.path[:-1], code=301)
+    init_frontend_app(application, data_api_client, login_manager)
 
     application.add_template_filter(parse_document_upload_time)
 
     return application
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.load_user(data_api_client, user_id)
