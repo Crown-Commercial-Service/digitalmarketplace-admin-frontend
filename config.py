@@ -8,6 +8,8 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
 
+    URL_PREFIX = '/admin'
+
     VERSION = get_version_label(
         os.path.abspath(os.path.dirname(__file__))
     )
@@ -29,7 +31,7 @@ class Config(object):
     DM_COMMUNICATIONS_BUCKET = None
     DM_ASSETS_URL = None
 
-    STATIC_URL_PATH = '/admin/static'
+    STATIC_URL_PATH = URL_PREFIX + '/static'
     ASSET_PATH = STATIC_URL_PATH + '/'
     BASE_TEMPLATE_DATA = {
         'header_class': 'with-proposition',
@@ -74,7 +76,6 @@ class Test(Config):
 
     DM_LOG_LEVEL = 'CRITICAL'
     DM_LOG_PATH = None
-#    DM_LOG_PATH = '/var/log/digitalmarketplace/application.log'
     SHARED_EMAIL_KEY = 'KEY'
     INVITE_EMAIL_SALT = 'SALT'
     DM_MANDRILL_API_KEY = "MANDRILL"
