@@ -37,7 +37,13 @@
 
   {% endif %}{# /if not frameworks_options #}
 
-    <p class='question-heading'>Please select a framework</p>
+    {%
+      with
+      smaller = true,
+      heading = "Suppliers"
+    %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
     {% for framework in framework_options %}
       {%
         with
@@ -51,6 +57,24 @@
         {% include "toolkit/browse-list.html" %}
       {% endwith %}
     {% endfor %}
+    {%
+      with
+      smaller = true,
+      heading = "Buyers"
+    %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
+    {%
+      with
+      items = [
+        {
+            "title": 'All frameworks',
+            "link": url_for('.download_buyers_and_briefs')
+        }
+      ]
+    %}
+      {% include "toolkit/browse-list.html" %}
+    {% endwith %}
 
 
 {% endblock %}
