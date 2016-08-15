@@ -1,5 +1,6 @@
 # coding=utf-8
 from __future__ import unicode_literals
+from datetime import datetime
 
 import mock
 import copy
@@ -283,3 +284,275 @@ class TestUsersExport(LoggedInApplicationTest):
         response = self._return_user_export_response(data_api_client, framework, users)
         assert response.status_code == 200
         self._assert_things_about_user_export(response, users)
+
+
+@mock.patch('app.main.views.users.data_api_client')
+class TestBuyersExport(LoggedInApplicationTest):
+
+    def test_response_data_has_buyer_info(self, data_api_client):
+        data_api_client.find_users_iter.return_value = [
+            {
+                'id': 1,
+                "name": "Chris",
+                "emailAddress": "chris@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+            }
+        ]
+
+        data_api_client.find_briefs_iter.return_value = [
+            {
+                'title': 'This is a brief',
+                'status': 'draft',
+                'users': [{
+                    'id': 1
+                }]
+            }
+        ]
+
+        response = self.client.get('/admin/users/download/buyers')
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+        header = rows[0]
+        buyer = rows[1]
+
+        assert response.status_code == 200
+        assert header == [u'name', u'emailAddress', u'phoneNumber', u'createdAt', u'briefs']
+        assert buyer == [u'Chris', u'chris@gov.uk', u'01234567891',
+                         u'"Thu', u' 04 Aug 2016 12:00:00 GMT"', u'This is a brief - draft']
+
+    def test_response_has_only_one_line_for_buyer_if_multiple_briefs(self, data_api_client):
+        data_api_client.find_users_iter.return_value = [
+            {
+                'id': 1,
+                "name": "Chris",
+                "emailAddress": "chris@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+            }
+        ]
+
+        data_api_client.find_briefs_iter.return_value = [
+            {
+                'title': 'This is a brief',
+                'status': 'draft',
+                'users': [{
+                    'id': 1
+                }]
+            },
+            {
+                'title': 'This is a second brief',
+                'status': 'draft',
+                'users': [{
+                    'id': 1
+                }]
+            }
+        ]
+
+        response = self.client.get('/admin/users/download/buyers')
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+        buyer = rows[1]
+
+        assert response.status_code == 200
+        assert len(rows) == 2
+        assert buyer == [u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu',
+                         u' 04 Aug 2016 12:00:00 GMT"',
+                         u'This is a brief - draft; This is a second brief - draft']
+
+    def test_buyer_is_listed_if_they_have_no_briefs(self, data_api_client):
+        data_api_client.find_users_iter.return_value = [
+            {
+                'id': 1,
+                "name": "Chris",
+                "emailAddress": "chris@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+            }
+        ]
+
+        response = self.client.get('/admin/users/download/buyers')
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+        buyer = rows[1]
+
+        assert response.status_code == 200
+        assert buyer == [u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu',
+                         u' 04 Aug 2016 12:00:00 GMT"', '']
+
+    def test_multiple_buyers_are_assigned_correct_briefs(self, data_api_client):
+        data_api_client.find_users_iter.return_value = [
+            {
+                'id': 1,
+                "name": "Chris",
+                "emailAddress": "chris@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+            },
+            {
+                'id': 2,
+                "name": "Topher",
+                "emailAddress": "topher@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "Fri, 05 Aug 2016 12:00:00 GMT"
+            }
+        ]
+
+        data_api_client.find_briefs_iter.return_value = [
+            {
+                'title': 'This is a brief',
+                'status': 'draft',
+                'users': [{
+                    'id': 1
+                }]
+            },
+            {
+                'title': 'This is a second brief',
+                'status': 'draft',
+                'users': [{
+                    'id': 2
+                }]
+            }
+        ]
+
+        response = self.client.get('/admin/users/download/buyers')
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+        buyer_one = rows[1]
+        buyer_two = rows[2]
+
+        assert buyer_one == [u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu',
+                             u' 04 Aug 2016 12:00:00 GMT"', u'This is a brief - draft']
+        assert buyer_two == [u'Topher', u'topher@gov.uk', u'01234567891', u'"Fri',
+                             u' 05 Aug 2016 12:00:00 GMT"', u'This is a second brief - draft']
+
+    def test_mutiple_buyers_are_assigned_same_brief_if_they_are_users(self, data_api_client):
+        data_api_client.find_users_iter.return_value = [
+            {
+                'id': 1,
+                "name": "Chris",
+                "emailAddress": "chris@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+            },
+            {
+                'id': 2,
+                "name": "Topher",
+                "emailAddress": "topher@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "Fri, 05 Aug 2016 12:00:00 GMT"
+            }
+        ]
+
+        data_api_client.find_briefs_iter.return_value = [
+            {
+                'title': 'This is a brief',
+                'status': 'draft',
+                'users': [
+                    {
+                        'id': 1
+                    },
+                    {
+                        'id': 2
+                    }
+                ]
+            }
+        ]
+
+        response = self.client.get('/admin/users/download/buyers')
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+        buyer_one = rows[1]
+        buyer_two = rows[2]
+
+        assert buyer_one == [u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu',
+                             u' 04 Aug 2016 12:00:00 GMT"', u'This is a brief - draft']
+        assert buyer_two == [u'Topher', u'topher@gov.uk', u'01234567891', u'"Fri',
+                             u' 05 Aug 2016 12:00:00 GMT"', u'This is a brief - draft']
+
+    def test_csv_is_sorted_by_name(self, data_api_client):
+        data_api_client.find_users_iter.return_value = [
+            {
+                'id': 1,
+                "name": "Zebedee",
+                "emailAddress": "zebedee@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+            },
+            {
+                'id': 2,
+                "name": "Dougal",
+                "emailAddress": "dougal@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "Fri, 05 Aug 2016 12:00:00 GMT"
+            },
+            {
+                'id': 3,
+                "name": "Brian",
+                "emailAddress": "brian@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "Sat, 06 Aug 2016 12:00:00 GMT"
+            },
+            {
+                'id': 4,
+                "name": "Florence",
+                "emailAddress": "florence@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "Sun, 07 Aug 2016 12:00:00 GMT"
+            }
+        ]
+
+        response = self.client.get('/admin/users/download/buyers')
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+
+        assert rows[1][0] == 'Brian'
+        assert rows[2][0] == 'Dougal'
+        assert rows[3][0] == 'Florence'
+        assert rows[4][0] == 'Zebedee'
+
+    def test_response_is_a_csv(self, data_api_client):
+        data_api_client.find_users_iter.return_value = [
+            {
+                'id': 1,
+                "name": "Chris",
+                "emailAddress": "chris@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+            }
+        ]
+
+        data_api_client.find_briefs_iter.return_value = [
+            {
+                'title': 'This is a brief',
+                'status': 'draft',
+                'users': [{
+                    'id': 1
+                }]
+            }
+        ]
+
+        response = self.client.get('/admin/users/download/buyers')
+
+        assert response.mimetype == 'text/csv'
+
+    def test_filename_includes_a_timestamp(self, data_api_client):
+        with mock.patch('app.main.views.users.datetime') as mock_date:
+            mock_date.utcnow.return_value = datetime(2016, 8, 5, 16, 0, 0)
+            data_api_client.find_users_iter.return_value = [
+                {
+                    'id': 1,
+                    "name": "Chris",
+                    "emailAddress": "chris@gov.uk",
+                    "phoneNumber": "01234567891",
+                    "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+                }
+            ]
+
+            data_api_client.find_briefs_iter.return_value = [
+                {
+                    'title': 'This is a brief',
+                    'status': 'draft',
+                    'users': [{
+                        'id': 1
+                    }]
+                }
+            ]
+
+            response = self.client.get('/admin/users/download/buyers')
+
+            assert response.headers['Content-Disposition'] == 'attachment;filename=buyers_20160805T160000.csv'
