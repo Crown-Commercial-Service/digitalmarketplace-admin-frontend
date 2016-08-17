@@ -38,7 +38,7 @@ class Config(object):
     # Logging
     DM_LOG_LEVEL = 'DEBUG'
     DM_APP_NAME = 'admin-frontend'
-    DM_LOG_PATH = '/var/log/digitalmarketplace/application.log'
+    DM_LOG_PATH = None
     DM_DOWNSTREAM_REQUEST_ID_HEADER = 'X-Amz-Cf-Id'
 
     # Feature Flags
@@ -101,6 +101,7 @@ class Live(Config):
     AUTHENTICATION = True
     DM_HTTP_PROTO = 'https'
     DM_DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
+    DM_LOG_PATH = '/var/log/digitalmarketplace/application.log'
 
 
 class Staging(Config):
@@ -108,6 +109,7 @@ class Staging(Config):
     AUTHENTICATION = True
     WTF_CSRF_ENABLED = False
     DM_DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
+    DM_LOG_PATH = '/var/log/digitalmarketplace/application.log'
 
 
 configs = {

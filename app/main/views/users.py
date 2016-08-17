@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 from flask import render_template, request, Response
 from flask_login import login_required, flash
 from datetime import datetime
-from ..helpers import csv_generator
+from dmutils import csv_generator
 
 from .. import main
 from ... import data_api_client
