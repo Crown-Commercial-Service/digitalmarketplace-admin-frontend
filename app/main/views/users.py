@@ -67,8 +67,13 @@ def download_users(framework_slug):
         "framework_agreement"
     ]
 
+    formated_rows = []
+    for row in supplier_rows:
+        formated_rows.append([row[heading] for heading in supplier_headers])
+    formated_rows.insert(0, supplier_headers)
+
     return Response(
-        csv_generator.iter_csv(supplier_rows, supplier_headers),
+        csv_generator.iter_csv(formated_rows),
         mimetype='text/csv',
         headers={
             "Content-Disposition": "attachment;filename=users-{}.csv".format(framework_slug),
@@ -83,6 +88,13 @@ def download_users(framework_slug):
 def download_buyers_and_briefs():
     buyers = (user for user in data_api_client.find_users_iter(role='buyer'))
     briefs = (brief for brief in data_api_client.find_briefs_iter(with_users=True))
+    buyer_headings = [
+        "name",
+        "emailAddress",
+        "phoneNumber",
+        "createdAt",
+        "briefs"
+    ]
 
     buyers_dict = {}
     for buyer in buyers:
@@ -102,17 +114,10 @@ def download_buyers_and_briefs():
     formatted_buyer_brief_rows.sort(key=lambda x: x[0])
     formatted_buyer_brief_rows.insert(0, buyer_headings)
 
-    buyer_headings = [
-        "name",
-        "emailAddress",
-        "phoneNumber",
-        "createdAt",
-        "briefs"
-    ]
     timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
 
     return Response(
-        csv_generator.iter_csv(formatted_buyer_brief_rows, buyer_headings),
+        csv_generator.iter_csv(formatted_buyer_brief_rows),
         mimetype='text/csv',
         headers={
             "Content-Disposition": "attachment;filename=buyers_{}.csv".format(timestamp),
