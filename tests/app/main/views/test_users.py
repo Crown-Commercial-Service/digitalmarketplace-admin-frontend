@@ -465,6 +465,33 @@ class TestBuyersExport(LoggedInApplicationTest):
         assert buyer_two == [u'Topher', u'topher@gov.uk', u'01234567891', u'"Fri',
                              u' 05 Aug 2016 12:00:00 GMT"', u'This is a brief - draft']
 
+    def test_brief_status_is_output_as_open_instead_of_live(self, data_api_client):
+        data_api_client.find_users_iter.return_value = [
+            {
+                'id': 1,
+                "name": "Chris",
+                "emailAddress": "chris@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+            }
+        ]
+
+        data_api_client.find_briefs_iter.return_value = [
+            {
+                'title': 'This is a brief',
+                'status': 'live',
+                'users': [{
+                    'id': 1
+                }]
+            }
+        ]
+
+        response = self.client.get('/admin/users/download/buyers')
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+        buyer = rows[1]
+
+        assert buyer[5] == u'This is a brief - open'
+
     def test_csv_is_sorted_by_name(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
             {
