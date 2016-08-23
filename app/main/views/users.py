@@ -103,7 +103,7 @@ def download_buyers_and_briefs():
 
     for brief in briefs:
         for user in brief['users']:
-            brief_string = '{} - {}'.format(brief['title'], brief['status'])
+            brief_string = '{} - {}'.format(brief['title'], 'open' if brief['status'] == 'live' else brief['status'])
             buyers_dict[user['id']]['briefs'].append(brief_string)
 
     formatted_buyer_brief_rows = []
