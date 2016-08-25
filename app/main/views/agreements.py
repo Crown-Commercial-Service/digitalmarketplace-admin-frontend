@@ -24,7 +24,7 @@ def list_agreements(framework_slug):
             parse_date(supplier_framework['agreementReturnedAt']))
 
     return render_template(
-        'view_agreements.html',
+        "view_agreements_g8.html" if framework_slug == "g-cloud-8" else 'view_agreements.html',
         framework=framework,
         supplier_frameworks=supplier_frameworks,
         signed_agreement_prefix=SIGNED_AGREEMENT_PREFIX
