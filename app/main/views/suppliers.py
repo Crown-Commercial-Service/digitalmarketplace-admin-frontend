@@ -75,6 +75,37 @@ def view_supplier_declaration(supplier_id, framework_slug):
     )
 
 
+@main.route('/suppliers/<supplier_id>/agreements/<framework_slug>', methods=['GET'])
+@login_required
+@role_required('admin', 'admin-ccs-sourcing')
+def view_signed_agreement(supplier_id, framework_slug):
+    supplier = data_api_client.get_supplier(supplier_id)['suppliers']
+    framework = data_api_client.get_framework(framework_slug)['frameworks']
+    if not framework.get('frameworkAgreementVersion'):
+        abort(404)
+    supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
+    if not supplier_framework.get('agreementReturned'):
+        abort(404)
+
+    agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
+    prefix = get_agreement_document_path(framework_slug, supplier_id, SIGNED_AGREEMENT_PREFIX)
+    agreement_documents = agreements_bucket.list(prefix=prefix)
+    if not len(agreement_documents):
+        abort(404)
+    path = agreement_documents[-1]['path']
+    url = get_signed_url(agreements_bucket, path, current_app.config['DM_ASSETS_URL'])
+    if not url:
+        abort(404)
+    return render_template(
+        "suppliers/view_signed_agreement.html",
+        supplier=supplier,
+        framework=framework,
+        supplier_framework=supplier_framework,
+        agreement_url=url,
+        agreement_ext=agreement_documents[-1]['ext']
+    )
+
+
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>/<document_name>', methods=['GET'])
 @login_required
 @role_required('admin', 'admin-ccs-sourcing')
