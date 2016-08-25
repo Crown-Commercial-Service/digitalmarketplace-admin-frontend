@@ -77,7 +77,7 @@ def view_supplier_declaration(supplier_id, framework_slug):
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>', methods=['GET'])
 @login_required
-@role_required('admin', 'admin-ccs-sourcing')
+@role_required('admin-ccs-sourcing')
 def view_signed_agreement(supplier_id, framework_slug):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
