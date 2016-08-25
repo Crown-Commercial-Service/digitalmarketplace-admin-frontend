@@ -64,16 +64,17 @@ def download_users(framework_slug):
         "declaration_status",
         "application_status",
         "application_result",
-        "framework_agreement"
+        "framework_agreement",
+        "variations_agreed"
     ]
 
-    formated_rows = []
+    formatted_rows = []
     for row in supplier_rows:
-        formated_rows.append([row[heading] for heading in supplier_headers])
-    formated_rows.insert(0, supplier_headers)
+        formatted_rows.append([row[heading] for heading in supplier_headers])
+    formatted_rows.insert(0, supplier_headers)
 
     return Response(
-        csv_generator.iter_csv(formated_rows),
+        csv_generator.iter_csv(formatted_rows),
         mimetype='text/csv',
         headers={
             "Content-Disposition": "attachment;filename=users-{}.csv".format(framework_slug),

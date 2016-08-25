@@ -263,7 +263,8 @@ class TestUsersExport(LoggedInApplicationTest):
             "framework_agreement": False,
             "supplier_id": 1,
             "user_email": "test.user@sme.com",
-            "user_name": "Tess User"
+            "user_name": "Test User",
+            "variations_agreed": "var1"
         }]
 
         response = self._return_user_export_response(data_api_client, framework, users)
@@ -278,7 +279,8 @@ class TestUsersExport(LoggedInApplicationTest):
             "framework_agreement": False,
             "supplier_id": 1,
             "user_email": "test.user@sme.com",
-            "user_name": "Tess User"
+            "user_name": "Test User",
+            "variations_agreed": "var1"
         }]
 
         response = self._return_user_export_response(data_api_client, framework, users)
