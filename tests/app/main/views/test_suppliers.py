@@ -1000,3 +1000,119 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
             response.get_data(as_text=True)
         )
         eq_(response.status_code, 200)
+
+
+@mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.s3')
+class TestViewingASupplierDeclaration(LoggedInApplicationTest):
+    user_role = 'admin-ccs-sourcing'
+
+    def test_should_not_be_visible_to_admin_users(self, s3, data_api_client):
+        self.user_role = 'admin'
+
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+
+        eq_(response.status_code, 403)
+
+    def test_should_404_if_supplier_does_not_exist(self, s3, data_api_client):
+        data_api_client.get_supplier.side_effect = APIError(Response(404))
+
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+
+        eq_(response.status_code, 404)
+        data_api_client.get_supplier.assert_called_with('1234')
+        assert not data_api_client.get_framework.called
+
+    def test_should_404_if_framework_does_not_exist(self, s3, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.side_effect = APIError(Response(404))
+
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+
+        eq_(response.status_code, 404)
+        data_api_client.get_supplier.assert_called_with('1234')
+        data_api_client.get_framework.assert_called_with('g-cloud-8')
+
+    def test_should_404_if_agreement_not_returned(self, s3, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        not_returned = self.load_example_listing('supplier_framework_response')
+        not_returned['frameworkInterest']['agreementReturned'] = False
+        data_api_client.get_supplier_framework_info.return_value = not_returned
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+
+        eq_(response.status_code, 404)
+        data_api_client.get_supplier.assert_called_with('1234')
+        data_api_client.get_framework.assert_called_with('g-cloud-8')
+        data_api_client.get_supplier_framework_info.assert_called_with('1234', 'g-cloud-8')
+
+    def test_should_show_agreement_details_on_page(self, s3, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
+            'supplier_framework_response'
+        )
+        s3.S3.return_value.list.return_value = [
+            {'size': 441902,
+             'path': 'g-cloud-8/agreements/1234/1234-signed-framework-agreement.png',
+             'ext': 'pdf',
+             'last_modified': '2016-08-25T15:23:59.000000Z',
+             'filename': '700005-signed-framework-agreement'}
+        ]
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+        document = html.fromstring(response.get_data(as_text=True))
+        eq_(response.status_code, 200)
+        # Registered Address
+        assert len(document.xpath('//li[contains(text(), "Corsewall Lighthouse")]')) == 1
+        assert len(document.xpath('//li[contains(text(), "Stranraer")]')) == 1
+        assert len(document.xpath('//li[contains(text(), "DG9 0QG")]')) == 1
+        # Company number - linked
+        assert len(document.xpath('//a[@href="https://beta.companieshouse.gov.uk/company/1234456"][contains(text(), "1234456")]')) == 1  # noqa
+        # Signer details
+        assert len(document.xpath('//p[contains(text(), "Signer Name")]')) == 1
+        assert len(document.xpath('//p[contains(text(), "Ace Developer")]')) == 1
+        # Uploader details
+        assert len(document.xpath('//p[contains(text(), "Uploader Name")]')) == 1
+        assert len(document.xpath('//p[contains(text(), "uploader@email.com")]')) == 1
+
+    def test_should_embed_for_pdf_file(self, s3, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
+            'supplier_framework_response'
+        )
+        s3.S3.return_value.list.return_value = [
+            {'size': 441902,
+             'path': 'g-cloud-8/agreements/1234/1234-signed-framework-agreement.pdf',
+             'ext': 'pdf',
+             'last_modified': '2016-08-25T15:23:59.000000Z',
+             'filename': '700005-signed-framework-agreement'}
+        ]
+        with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
+            mock_get_url.return_value = "http://example.com/document/1234.pdf"
+            response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+            document = html.fromstring(response.get_data(as_text=True))
+            eq_(response.status_code, 200)
+            assert len(document.xpath('//embed[@src="http://example.com/document/1234.pdf"]')) == 1
+            assert len(document.xpath('//img[@src="http://example.com/document/1234.pdf"]')) == 0
+
+    def test_should_img_for_image_file(self, s3, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
+            'supplier_framework_response'
+        )
+        s3.S3.return_value.list.return_value = [
+            {'size': 441902,
+             'path': 'g-cloud-8/agreements/1234/1234-signed-framework-agreement.png',
+             'ext': 'png',
+             'last_modified': '2016-08-25T15:23:59.000000Z',
+             'filename': '700005-signed-framework-agreement'}
+        ]
+        with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
+            mock_get_url.return_value = "http://example.com/document/1234.png"
+            response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+            document = html.fromstring(response.get_data(as_text=True))
+            eq_(response.status_code, 200)
+            assert len(document.xpath('//img[@src="http://example.com/document/1234.png"]')) == 1
+            assert len(document.xpath('//embed[@src="http://example.com/document/1234.png"]')) == 0

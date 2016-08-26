@@ -1,0 +1,106 @@
+{% import 'macros/toolkit_forms.html' as forms %}
+
+{% extends "_base_page.html" %}
+
+{% block page_title %}
+Countersign {{ framework.name }} agreement for {{ supplier.name }}
+{% endblock %}
+
+{% block breadcrumb %}
+    {%
+    with items = [
+        {
+            "link": url_for('.index'),
+            "label": "Admin home"
+        },
+        {
+            "link": url_for('.list_agreements', framework_slug=framework.slug),
+            "label": "%s agreements" | format(framework.name)
+        },
+        ]
+    %}
+        {% include "toolkit/breadcrumb.html" %}
+    {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+<div class='grid-row'>
+
+    <div class="column-one-third">
+        {%
+            with
+            heading = supplier.name,
+            smaller = True
+        %}
+        {% include "toolkit/page-heading.html" %}
+        {% endwith %}
+
+        <h2>Registered address</h2>
+        <ul class="padding-bottom-small">
+            <li>{{ supplier_framework.declaration.registeredAddressBuilding }}</li>
+            <li>{{ supplier_framework.declaration.registeredAddressTown }}</li>
+            <li>{{ supplier_framework.declaration.registeredAddressPostcode }}</li>
+        </ul>
+        
+        <h2>Company number</h2>
+        <div class="padding-bottom-small">
+            {%
+            with
+                text = supplier_framework.declaration.companyRegistrationNumber,
+                link = "https://beta.companieshouse.gov.uk/company/%s" | format(supplier_framework.declaration.companyRegistrationNumber)
+            %}
+            {% include "toolkit/external-link.html" %}
+            {% endwith %}
+        </div>
+
+        <!-- 
+        <h2>Appointment is to</h2>
+        <ul class="padding-bottom-small">
+            <li>Add lot names here</li>
+            <li>(<a href="https://www.pivotaltracker.com/story/show/128842227">see this story</a>)</li>
+        </ul>
+        -->
+        
+        <h2>Signed by</h2>
+        <p class="padding-bottom-small">
+            {{ supplier_framework.agreementDetails.signerName}}, {{ supplier_framework.agreementDetails.signerRole }}
+        </p>
+
+        <h2>Uploaded by</h2>
+        <p class="padding-bottom-small">
+            {{ supplier_framework.agreementDetails.uploaderUserName }}, {{ supplier_framework.agreementDetails.uploaderUserEmail }}
+            <br>
+            {{ supplier_framework.agreementReturnedAt|datetimeformat }}
+        </p>
+
+        <!-- 
+        <form action="{# url_for('.countersign_agreement', etc) #}">
+            {%
+              with
+              type = "save",
+              label = "Accept and continue"
+            %}
+                {% include "toolkit/button.html" %}
+            {% endwith %}
+        </form>
+
+        <form action="{# url_for('.put_agreement_on_hold', etc) #}">
+            {%
+              with
+              type = "secondary",
+              label = "Put on hold and continue"
+            %}
+              {% include "toolkit/button.html" %}
+            {% endwith %}
+        </form>
+        -->
+    </div>
+
+    <div class="column-two-thirds">
+        {% if agreement_ext == 'pdf' %}
+            <embed src="{{ agreement_url }}" class="border-image" height="930" type="application/pdf">
+        {% else %}
+            <img src="{{ agreement_url }}" class="border-image" >
+        {% endif %}
+    </div>
+{% endblock %}

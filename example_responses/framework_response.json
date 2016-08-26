@@ -1,8 +1,54 @@
 {
   "frameworks": {
-    "status": "standstill",
-    "slug": "g-cloud-7",
-    "name": "G-Cloud 7",
-    "framework": "g-cloud"
+    "status":"live",
+    "frameworkAgreementVersion":"v1.0",
+    "name":"G-Cloud 8",
+    "lots":[
+      {
+        "name":"Software as a Service",
+        "unitPlural":"services",
+        "id":1,
+        "allowsBrief":false,
+        "unitSingular":"service",
+        "oneServiceLimit":false,
+        "slug":"saas"
+      },
+      {
+        "name":"Platform as a Service",
+        "unitPlural":"services",
+        "id":2,
+        "allowsBrief":false,
+        "unitSingular":"service",
+        "oneServiceLimit":false,
+        "slug":"paas"
+      },
+      {
+        "name":"Infrastructure as a Service",
+        "unitPlural":"services",
+        "id":3,
+        "allowsBrief":false,
+        "unitSingular":"service",
+        "oneServiceLimit":false,
+        "slug":"iaas"
+      },
+      {
+        "name":"Specialist Cloud Services",
+        "unitPlural":"services",
+        "id":4,
+        "allowsBrief":false,
+        "unitSingular":"service",
+        "oneServiceLimit":false,
+        "slug":"scs"
+      }
+    ],
+    "clarificationQuestionsOpen":false,
+    "variations":{
+      "1":{
+        "createdAt":"2016-08-19T15:31:00.000000Z"
+      }
+    },
+    "slug":"g-cloud-8",
+    "framework":"g-cloud",
+    "id":6
   }
 }
