@@ -15,7 +15,7 @@ Countersign {{ framework.name }} agreement for {{ supplier.name }}
         },
         {
             "link": url_for('.list_agreements', framework_slug=framework.slug),
-            "label": "{} agreements".format(framework.name)
+            "label": "%s agreements" | format(framework.name)
         },
         ]
     %}
@@ -47,7 +47,7 @@ Countersign {{ framework.name }} agreement for {{ supplier.name }}
             {%
             with
                 text = supplier_framework.declaration.companyRegistrationNumber,
-                link = "https://beta.companieshouse.gov.uk/company/{}".format(supplier_framework.declaration.companyRegistrationNumber)
+                link = "https://beta.companieshouse.gov.uk/company/%s" | format(supplier_framework.declaration.companyRegistrationNumber)
             %}
             {% include "toolkit/external-link.html" %}
             {% endwith %}
