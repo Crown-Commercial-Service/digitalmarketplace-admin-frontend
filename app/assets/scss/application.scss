@@ -21,6 +21,8 @@ $path: "/admin/static/images/";
 @import "toolkit/notification-banners";
 @import "toolkit/page-headings";
 @import "toolkit/previous-next-navigation";
+@import "toolkit/search/search-result.scss";
+@import "toolkit/search/search-summary.scss";
 @import "toolkit/secondary-action-link";
 
 /* Blocks shared between multiple selectors */
@@ -38,6 +40,9 @@ $path: "/admin/static/images/";
 // Blocks shared between multiple selectors
 @import "shared_placeholders/_temporary-messages.scss";
 
+// Styles shared by different html patterns
+@import "shared_scss/_dmspeak.scss";
+
 // Layout of specific views
 @import "views/view_service";
 @import "views/edit_section";
@@ -54,6 +59,21 @@ $path: "/admin/static/images/";
 }
 
 .border-image {
-     width: 100%;
-     border: 5px solid #dee0e2;
+  width: 100%;
+  border: 5px solid #dee0e2;
+}
+
+.lead {
+  margin-bottom: 20px;
+}
+
+.search-summary {
+  padding: 0 0 $gutter-half;
+  margin: 0 0 $gutter-half;
+  border-bottom: 1px solid $border-colour;
+
+  em {
+    font-style: normal;
+    font-weight: bold;
+  }
 }

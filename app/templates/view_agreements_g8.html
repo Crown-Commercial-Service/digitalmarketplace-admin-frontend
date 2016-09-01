@@ -1,0 +1,48 @@
+{% import "toolkit/summary-table.html" as summary %}
+
+{% extends "_base_page.html" %}
+
+{% block breadcrumb %}
+  {%
+      with items = [
+          {
+              "link": url_for('.index'),
+              "label": "Admin home"
+          }
+      ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+
+  {% with smaller = True, heading = "{} framework agreements".format(framework.name) %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+
+  <div class="grid-row">
+    <div class="column-two-thirds dmspeak">
+      <div class="lead">
+          <p>
+            Review the information for each agreement, accept it, and continue to the next one.
+          </p>
+          <p>
+            If there’s a problem with an agreement, contact the person who uploaded it and come back to it later. Ask
+            suppliers to resubmit from the link in the email they received after they were accepted on to the framework.
+          </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-row">
+      <div class="column-one-third search-page-filters">
+
+      </div>
+      <div class="column-two-thirds">
+          {% include "_view_agreements_summary.html" %}
+          {% include "_view_agreements_results.html" %}
+      </div>
+  </div>
+
+{% endblock %}

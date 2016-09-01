@@ -1,0 +1,12 @@
+{% for supplier_framework in supplier_frameworks %}
+<div class="search-result">
+  <h2 class="search-result-title">
+    <a href="{{ url_for('.view_signed_agreement', supplier_id=supplier_framework.supplierId, framework_slug=supplier_framework.frameworkSlug) }}">{{ supplier_framework.supplierName }}</a>
+  </h2>
+  <ul class="search-result-important-metadata">
+    <li class="search-result-metadata-item">
+      Submitted: {{ supplier_framework.agreementReturnedAt }}
+    </li>
+  </ul>
+</div>
+{% endfor %}
