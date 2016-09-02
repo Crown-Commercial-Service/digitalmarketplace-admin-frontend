@@ -1052,6 +1052,29 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
             'supplier_framework_response'
         )
+
+        def find_services_iter_side_effect(*args, **kwargs):
+            assert int(kwargs["supplier_id"]) == 1234
+            assert kwargs["framework"] == "g-cloud-8"
+            # very minimal fake services
+            return iter((
+                {
+                    "id": 1111,
+                    "lotSlug": "dried-fruit",
+                    "lotName": "Raisins & dates",
+                },
+                {
+                    "id": 2222,
+                    "lotSlug": "salad",
+                    "lotName": "Lettuce & cucumber",
+                },
+                {
+                    "id": 3333,
+                    "lotSlug": "dried-fruit",
+                    "lotName": "Raisins & dates",
+                },
+            ))
+        data_api_client.find_services_iter.side_effect = find_services_iter_side_effect
         s3.S3.return_value.list.return_value = [
             {'size': 441902,
              'path': 'g-cloud-8/agreements/1234/1234-signed-framework-agreement.png',
@@ -1068,6 +1091,9 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         assert len(document.xpath('//li[contains(text(), "DG9 0QG")]')) == 1
         # Company number - linked
         assert len(document.xpath('//a[@href="https://beta.companieshouse.gov.uk/company/1234456"][contains(text(), "1234456")]')) == 1  # noqa
+        # Lots
+        assert len(document.xpath('//li[contains(text(), "Lettuce & cucumber")]')) == 1
+        assert len(document.xpath('//li[contains(text(), "Raisins & dates")]')) == 1
         # Signer details
         assert len(document.xpath('//p[contains(text(), "Signer Name")]')) == 1
         assert len(document.xpath('//p[contains(text(), "Ace Developer")]')) == 1

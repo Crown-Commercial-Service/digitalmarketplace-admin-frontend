@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from flask import render_template, request, redirect, url_for, abort, current_app
 from flask_login import login_required, current_user, flash
 from dateutil.parser import parse as parse_date
@@ -87,6 +89,16 @@ def view_signed_agreement(supplier_id, framework_slug):
     if not supplier_framework.get('agreementReturned'):
         abort(404)
 
+    # build an OrderedDict of applied-for lotSlug against lotName, ordered by lotSlug
+    lot_slugs_names = OrderedDict(sorted(
+        (service["lotSlug"], service["lotName"],)
+        for service in data_api_client.find_services_iter(
+            supplier_id=supplier_id,
+            framework=framework_slug,
+            )
+        )
+    )
+
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
     prefix = get_agreement_document_path(framework_slug, supplier_id, SIGNED_AGREEMENT_PREFIX)
     agreement_documents = agreements_bucket.list(prefix=prefix)
@@ -101,6 +113,7 @@ def view_signed_agreement(supplier_id, framework_slug):
         supplier=supplier,
         framework=framework,
         supplier_framework=supplier_framework,
+        lot_slugs_names=lot_slugs_names,
         agreement_url=url,
         agreement_ext=agreement_documents[-1]['ext']
     )

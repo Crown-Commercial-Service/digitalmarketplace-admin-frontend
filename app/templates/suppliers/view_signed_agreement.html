@@ -53,13 +53,12 @@ Countersign {{ framework.name }} agreement for {{ supplier.name }}
             {% endwith %}
         </div>
 
-        <!-- 
         <h2>Appointment is to</h2>
         <ul class="padding-bottom-small">
-            <li>Add lot names here</li>
-            <li>(<a href="https://www.pivotaltracker.com/story/show/128842227">see this story</a>)</li>
+          {% for lot_slug, lot_name in lot_slugs_names.items() %}
+            <li>{{ lot_name }}</li>
+          {% endfor %}
         </ul>
-        -->
         
         <h2>Signed by</h2>
         <p class="padding-bottom-small">
