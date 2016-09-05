@@ -1073,7 +1073,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         assert len(document.xpath('//p[contains(text(), "Ace Developer")]')) == 1
         # Uploader details
         assert len(document.xpath('//p[contains(text(), "Uploader Name")]')) == 1
-        assert len(document.xpath('//p[contains(text(), "uploader@email.com")]')) == 1
+        assert len(document.xpath('//span[contains(text(), "uploader@email.com")]')) == 1
 
     def test_should_embed_for_pdf_file(self, s3, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')

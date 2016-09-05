@@ -68,7 +68,11 @@ Countersign {{ framework.name }} agreement for {{ supplier.name }}
 
         <h2>Uploaded by</h2>
         <p class="padding-bottom-small">
-            {{ supplier_framework.agreementDetails.uploaderUserName }}, {{ supplier_framework.agreementDetails.uploaderUserEmail }}
+            {{ supplier_framework.agreementDetails.uploaderUserName }}
+            <br>
+            <span class="break-email">
+                {{ supplier_framework.agreementDetails.uploaderUserEmail }}
+            </span>
             <br>
             {{ supplier_framework.agreementReturnedAt|datetimeformat }}
         </p>
