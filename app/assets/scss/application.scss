@@ -21,8 +21,6 @@ $path: "/admin/static/images/";
 @import "toolkit/notification-banners";
 @import "toolkit/page-headings";
 @import "toolkit/previous-next-navigation";
-@import "toolkit/search/search-result.scss";
-@import "toolkit/search/search-summary.scss";
 @import "toolkit/secondary-action-link";
 
 /* Blocks shared between multiple selectors */
@@ -50,6 +48,7 @@ $path: "/admin/static/images/";
 @import "_diff.scss";
 @import "views/statistics";
 @import "views/view_declaration";
+@import "views/list_agreements";
 
 // Graphs
 @import "_c3";
