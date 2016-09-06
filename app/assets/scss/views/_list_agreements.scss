@@ -1,0 +1,17 @@
+@import "search/_search-summary.scss";
+@import "search/_search-result.scss";
+
+.search-page-filters {
+  .status-filters {
+    h2 {
+      @include bold-19;
+    }
+
+    ul {
+      @include core-16;
+      list-style: none;
+      padding-left: 0;
+      margin: 5px 0 $gutter;
+    }
+  }
+}

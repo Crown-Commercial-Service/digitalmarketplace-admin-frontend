@@ -80,14 +80,14 @@ class TestListAgreements(LoggedInApplicationTest):
             )
         assert tuple(unpack_search_result(result) for result in page.cssselect('.search-result')) == (
             (
-                "/admin/suppliers/11111/agreements/g-cloud-8",
-                "My Supplier",
-                "Submitted: Sunday 1 November 2015 at 01:01",
-            ),
-            (
                 "/admin/suppliers/11112/agreements/g-cloud-8",
                 "My other supplier",
                 "Submitted: Friday 30 October 2015 at 01:01",
+            ),
+            (
+                "/admin/suppliers/11111/agreements/g-cloud-8",
+                "My Supplier",
+                "Submitted: Sunday 1 November 2015 at 01:01",
             ),
         )
 

@@ -36,13 +36,18 @@
   </div>
 
   <div class="grid-row">
-      <div class="column-one-third search-page-filters">
-
+    <div class="column-one-third search-page-filters">
+      <div class="status-filters">
+        <h2>Choose a status</h2>
+        <ul>
+          <li>Waiting for countersigning</li>
+        </ul>
       </div>
-      <div class="column-two-thirds">
-          {% include "_view_agreements_summary.html" %}
-          {% include "_view_agreements_results.html" %}
-      </div>
+    </div>
+    <div class="column-two-thirds">
+      {% include "_view_agreements_summary.html" %}
+      {% include "_view_agreements_results.html" %}
+    </div>
   </div>
 
 {% endblock %}

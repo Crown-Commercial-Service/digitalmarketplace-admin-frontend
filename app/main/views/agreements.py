@@ -19,6 +19,9 @@ def list_agreements(framework_slug):
         framework_slug, agreement_returned=True
     )['supplierFrameworks']
 
+    # reversing this: API returns SupplierFrameworks agreementReturnedAt ascending, we want it descending
+    supplier_frameworks.reverse()
+
     for supplier_framework in supplier_frameworks:
         supplier_framework['agreementReturnedAt'] = datetimeformat(
             parse_date(supplier_framework['agreementReturnedAt']))
