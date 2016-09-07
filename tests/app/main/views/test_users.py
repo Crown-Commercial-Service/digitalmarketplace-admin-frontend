@@ -320,7 +320,7 @@ class TestBuyersExport(LoggedInApplicationTest):
         assert response.status_code == 200
         assert header == [u'name', u'emailAddress', u'phoneNumber', u'createdAt', u'briefs']
         assert buyer == [u'Chris', u'chris@gov.uk', u'01234567891',
-                         u'"Thu', u' 04 Aug 2016 12:00:00 GMT"', u'This is a brief - draft']
+                         u'"Thu', u' 04 Aug 2016 12:00:00 GMT"', u'This is a brief - None - draft']
 
     def test_response_has_only_one_line_for_buyer_if_multiple_briefs(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
@@ -337,6 +337,7 @@ class TestBuyersExport(LoggedInApplicationTest):
             {
                 'title': 'This is a brief',
                 'status': 'draft',
+                'location': 'Wales',
                 'users': [{
                     'id': 1
                 }]
@@ -358,7 +359,7 @@ class TestBuyersExport(LoggedInApplicationTest):
         assert len(rows) == 2
         assert buyer == [u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu',
                          u' 04 Aug 2016 12:00:00 GMT"',
-                         u'This is a brief - draft; This is a second brief - draft']
+                         u'This is a brief - Wales - draft; This is a second brief - None - draft']
 
     def test_buyer_is_listed_if_they_have_no_briefs(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
@@ -400,6 +401,7 @@ class TestBuyersExport(LoggedInApplicationTest):
         data_api_client.find_briefs_iter.return_value = [
             {
                 'title': 'This is a brief',
+                'location': 'London',
                 'status': 'draft',
                 'users': [{
                     'id': 1
@@ -407,6 +409,7 @@ class TestBuyersExport(LoggedInApplicationTest):
             },
             {
                 'title': 'This is a second brief',
+                'location': 'Wales',
                 'status': 'draft',
                 'users': [{
                     'id': 2
@@ -420,9 +423,9 @@ class TestBuyersExport(LoggedInApplicationTest):
         buyer_two = rows[2]
 
         assert buyer_one == [u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu',
-                             u' 04 Aug 2016 12:00:00 GMT"', u'This is a brief - draft']
+                             u' 04 Aug 2016 12:00:00 GMT"', u'This is a brief - London - draft']
         assert buyer_two == [u'Topher', u'topher@gov.uk', u'01234567891', u'"Fri',
-                             u' 05 Aug 2016 12:00:00 GMT"', u'This is a second brief - draft']
+                             u' 05 Aug 2016 12:00:00 GMT"', u'This is a second brief - Wales - draft']
 
     def test_mutiple_buyers_are_assigned_same_brief_if_they_are_users(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
@@ -446,6 +449,7 @@ class TestBuyersExport(LoggedInApplicationTest):
             {
                 'title': 'This is a brief',
                 'status': 'draft',
+                'location': 'Wales',
                 'users': [
                     {
                         'id': 1
@@ -463,9 +467,9 @@ class TestBuyersExport(LoggedInApplicationTest):
         buyer_two = rows[2]
 
         assert buyer_one == [u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu',
-                             u' 04 Aug 2016 12:00:00 GMT"', u'This is a brief - draft']
+                             u' 04 Aug 2016 12:00:00 GMT"', u'This is a brief - Wales - draft']
         assert buyer_two == [u'Topher', u'topher@gov.uk', u'01234567891', u'"Fri',
-                             u' 05 Aug 2016 12:00:00 GMT"', u'This is a brief - draft']
+                             u' 05 Aug 2016 12:00:00 GMT"', u'This is a brief - Wales - draft']
 
     def test_brief_status_is_output_as_open_instead_of_live(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
@@ -481,6 +485,7 @@ class TestBuyersExport(LoggedInApplicationTest):
         data_api_client.find_briefs_iter.return_value = [
             {
                 'title': 'This is a brief',
+                'location': 'London',
                 'status': 'live',
                 'users': [{
                     'id': 1
@@ -492,7 +497,7 @@ class TestBuyersExport(LoggedInApplicationTest):
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
         buyer = rows[1]
 
-        assert buyer[5] == u'This is a brief - open'
+        assert buyer[5] == u'This is a brief - London - open'
 
     def test_csv_is_sorted_by_name(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
