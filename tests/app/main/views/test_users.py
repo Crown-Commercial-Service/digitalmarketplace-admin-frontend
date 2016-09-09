@@ -313,16 +313,25 @@ class TestBuyersExport(LoggedInApplicationTest):
         ]
 
         response = self.client.get('/admin/users/download/buyers')
+
+        assert response.status_code == 200
+
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+        assert len(rows) == 2
+
         header = rows[0]
         buyer = rows[1]
 
-        assert response.status_code == 200
-        assert header == [u'name', u'emailAddress', u'phoneNumber', u'createdAt', u'briefs']
-        assert buyer == [u'Chris', u'chris@gov.uk', u'01234567891',
-                         u'"Thu', u' 04 Aug 2016 12:00:00 GMT"', u'This is a brief - None - draft']
+        assert header == [
+            u'user.name', u'user.emailAddress', u'user.phoneNumber', u'user.createdAt',
+            u'brief.title', u'brief.status', u'brief.applicationsClosedAtIfClosed',
+        ]
+        assert buyer == [
+            u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
+            u'This is a brief', u'draft', u'',
+        ]
 
-    def test_response_has_only_one_line_for_buyer_if_multiple_briefs(self, data_api_client):
+    def test_response_has_two_lines_for_buyer_if_multiple_briefs(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
             {
                 'id': 1,
@@ -330,7 +339,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "emailAddress": "chris@gov.uk",
                 "phoneNumber": "01234567891",
                 "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
-            }
+            },
         ]
 
         data_api_client.find_briefs_iter.return_value = [
@@ -348,18 +357,26 @@ class TestBuyersExport(LoggedInApplicationTest):
                 'users': [{
                     'id': 1
                 }]
-            }
+            },
         ]
 
         response = self.client.get('/admin/users/download/buyers')
-        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
-        buyer = rows[1]
 
         assert response.status_code == 200
-        assert len(rows) == 2
-        assert buyer == [u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu',
-                         u' 04 Aug 2016 12:00:00 GMT"',
-                         u'This is a brief - Wales - draft; This is a second brief - None - draft']
+
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+        buyer_briefs = rows[1:]
+
+        assert buyer_briefs == [
+            [
+                u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
+                u'This is a brief', u'draft', u'',
+            ],
+            [
+                u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
+                u'This is a second brief', u'draft', u'',
+            ],
+        ]
 
     def test_buyer_is_listed_if_they_have_no_briefs(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
@@ -373,12 +390,18 @@ class TestBuyersExport(LoggedInApplicationTest):
         ]
 
         response = self.client.get('/admin/users/download/buyers')
-        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
-        buyer = rows[1]
 
         assert response.status_code == 200
-        assert buyer == [u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu',
-                         u' 04 Aug 2016 12:00:00 GMT"', '']
+
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+        buyer_briefs = rows[1:]
+
+        assert buyer_briefs == [
+            [
+                u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
+                u'', u'', u'',
+            ],
+        ]
 
     def test_multiple_buyers_are_assigned_correct_briefs(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
@@ -418,14 +441,21 @@ class TestBuyersExport(LoggedInApplicationTest):
         ]
 
         response = self.client.get('/admin/users/download/buyers')
-        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
-        buyer_one = rows[1]
-        buyer_two = rows[2]
+        assert response.status_code == 200
 
-        assert buyer_one == [u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu',
-                             u' 04 Aug 2016 12:00:00 GMT"', u'This is a brief - London - draft']
-        assert buyer_two == [u'Topher', u'topher@gov.uk', u'01234567891', u'"Fri',
-                             u' 05 Aug 2016 12:00:00 GMT"', u'This is a second brief - Wales - draft']
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+        buyer_briefs = rows[1:]
+
+        assert buyer_briefs == [
+            [
+                u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
+                u'This is a brief', u'draft', u'',
+            ],
+            [
+                u'Topher', u'topher@gov.uk', u'01234567891', u'"Fri', u' 05 Aug 2016 12:00:00 GMT"',
+                u'This is a second brief', u'draft', u'',
+            ],
+        ]
 
     def test_mutiple_buyers_are_assigned_same_brief_if_they_are_users(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
@@ -462,14 +492,22 @@ class TestBuyersExport(LoggedInApplicationTest):
         ]
 
         response = self.client.get('/admin/users/download/buyers')
-        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
-        buyer_one = rows[1]
-        buyer_two = rows[2]
 
-        assert buyer_one == [u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu',
-                             u' 04 Aug 2016 12:00:00 GMT"', u'This is a brief - Wales - draft']
-        assert buyer_two == [u'Topher', u'topher@gov.uk', u'01234567891', u'"Fri',
-                             u' 05 Aug 2016 12:00:00 GMT"', u'This is a brief - Wales - draft']
+        assert response.status_code == 200
+
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+        buyer_briefs = rows[1:]
+
+        assert buyer_briefs == [
+            [
+                u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
+                u'This is a brief', u'draft', u'',
+            ],
+            [
+                u'Topher', u'topher@gov.uk', u'01234567891', u'"Fri', u' 05 Aug 2016 12:00:00 GMT"',
+                u'This is a brief', u'draft', u'',
+            ],
+        ]
 
     def test_brief_status_is_output_as_open_instead_of_live(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
@@ -494,10 +532,13 @@ class TestBuyersExport(LoggedInApplicationTest):
         ]
 
         response = self.client.get('/admin/users/download/buyers')
+
+        assert response.status_code == 200
+
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
         buyer = rows[1]
 
-        assert buyer[5] == u'This is a brief - London - open'
+        assert buyer[5:7] == [u'This is a brief', u'open']
 
     def test_csv_is_sorted_by_name(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
@@ -532,12 +573,12 @@ class TestBuyersExport(LoggedInApplicationTest):
         ]
 
         response = self.client.get('/admin/users/download/buyers')
+
+        assert response.status_code == 200
+
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
 
-        assert rows[1][0] == 'Brian'
-        assert rows[2][0] == 'Dougal'
-        assert rows[3][0] == 'Florence'
-        assert rows[4][0] == 'Zebedee'
+        assert [row[0] for row in rows[1:5]] == ['Brian', 'Dougal', 'Florence', 'Zebedee']
 
     def test_response_is_a_csv(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
