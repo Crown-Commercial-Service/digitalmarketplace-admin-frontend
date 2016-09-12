@@ -298,7 +298,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "name": "Chris",
                 "emailAddress": "chris@gov.uk",
                 "phoneNumber": "01234567891",
-                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT",
             }
         ]
 
@@ -308,7 +308,8 @@ class TestBuyersExport(LoggedInApplicationTest):
                 'status': 'draft',
                 'users': [{
                     'id': 1
-                }]
+                }],
+                "location": "Wales",
             }
         ]
 
@@ -324,11 +325,11 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         assert header == [
             u'user.name', u'user.emailAddress', u'user.phoneNumber', u'user.createdAt',
-            u'brief.title', u'brief.status', u'brief.applicationsClosedAtIfClosed',
+            u'brief.title', u'brief.location', u'brief.status', u'brief.applicationsClosedAtIfClosed',
         ]
         assert buyer == [
             u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
-            u'This is a brief', u'draft', u'',
+            u'This is a brief', u'Wales', u'draft', u'',
         ]
 
     def test_response_has_two_lines_for_buyer_if_multiple_briefs(self, data_api_client):
@@ -370,11 +371,11 @@ class TestBuyersExport(LoggedInApplicationTest):
         assert buyer_briefs == [
             [
                 u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
-                u'This is a brief', u'draft', u'',
+                u'This is a brief', u'Wales', u'draft', u'',
             ],
             [
                 u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
-                u'This is a second brief', u'draft', u'',
+                u'This is a second brief', u'', u'draft', u'',
             ],
         ]
 
@@ -399,7 +400,7 @@ class TestBuyersExport(LoggedInApplicationTest):
         assert buyer_briefs == [
             [
                 u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
-                u'', u'', u'',
+                u'', u'', u'', u'',
             ],
         ]
 
@@ -449,11 +450,11 @@ class TestBuyersExport(LoggedInApplicationTest):
         assert buyer_briefs == [
             [
                 u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
-                u'This is a brief', u'draft', u'',
+                u'This is a brief', u'London', u'draft', u'',
             ],
             [
                 u'Topher', u'topher@gov.uk', u'01234567891', u'"Fri', u' 05 Aug 2016 12:00:00 GMT"',
-                u'This is a second brief', u'draft', u'',
+                u'This is a second brief', u'Wales', u'draft', u'',
             ],
         ]
 
@@ -501,11 +502,11 @@ class TestBuyersExport(LoggedInApplicationTest):
         assert buyer_briefs == [
             [
                 u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
-                u'This is a brief', u'draft', u'',
+                u'This is a brief', u'Wales', u'draft', u'',
             ],
             [
                 u'Topher', u'topher@gov.uk', u'01234567891', u'"Fri', u' 05 Aug 2016 12:00:00 GMT"',
-                u'This is a brief', u'draft', u'',
+                u'This is a brief', u'Wales', u'draft', u'',
             ],
         ]
 
@@ -538,7 +539,7 @@ class TestBuyersExport(LoggedInApplicationTest):
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
         buyer = rows[1]
 
-        assert buyer[5:7] == [u'This is a brief', u'open']
+        assert buyer[5:8] == [u'This is a brief', u'London', u'open']
 
     def test_csv_is_sorted_by_name(self, data_api_client):
         data_api_client.find_users_iter.return_value = [

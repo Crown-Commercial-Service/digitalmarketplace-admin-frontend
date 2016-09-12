@@ -110,6 +110,7 @@ def download_buyers_and_briefs():
     # no user_generated_fields as of yet
     brief_verbatim_fields = (
         "title",
+        "location",
     )
     brief_generated_fields = OrderedDict((
         (
