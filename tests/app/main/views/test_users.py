@@ -298,7 +298,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "name": "Chris",
                 "emailAddress": "chris@gov.uk",
                 "phoneNumber": "01234567891",
-                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT",
+                "createdAt": "2016-08-04T12:00:00.000000Z",
             }
         ]
 
@@ -328,7 +328,7 @@ class TestBuyersExport(LoggedInApplicationTest):
             u'brief.title', u'brief.location', u'brief.status', u'brief.applicationsClosedAtIfClosed',
         ]
         assert buyer == [
-            u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
+            u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04T12:00:00.000000Z',
             u'This is a brief', u'Wales', u'draft', u'',
         ]
 
@@ -339,7 +339,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "name": "Chris",
                 "emailAddress": "chris@gov.uk",
                 "phoneNumber": "01234567891",
-                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+                "createdAt": "2016-08-04T12:00:00.000000Z"
             },
         ]
 
@@ -370,11 +370,11 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         assert buyer_briefs == [
             [
-                u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
+                u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04T12:00:00.000000Z',
                 u'This is a brief', u'Wales', u'draft', u'',
             ],
             [
-                u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
+                u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04T12:00:00.000000Z',
                 u'This is a second brief', u'', u'draft', u'',
             ],
         ]
@@ -386,7 +386,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "name": "Chris",
                 "emailAddress": "chris@gov.uk",
                 "phoneNumber": "01234567891",
-                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+                "createdAt": "2016-08-04T12:00:00.000000Z",
             }
         ]
 
@@ -399,7 +399,7 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         assert buyer_briefs == [
             [
-                u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
+                u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04T12:00:00.000000Z',
                 u'', u'', u'', u'',
             ],
         ]
@@ -411,15 +411,15 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "name": "Chris",
                 "emailAddress": "chris@gov.uk",
                 "phoneNumber": "01234567891",
-                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+                "createdAt": "2016-08-04T12:00:00.000000Z",
             },
             {
                 'id': 2,
                 "name": "Topher",
                 "emailAddress": "topher@gov.uk",
                 "phoneNumber": "01234567891",
-                "createdAt": "Fri, 05 Aug 2016 12:00:00 GMT"
-            }
+                "createdAt": "2016-08-05T12:00:00.000000Z",
+            },
         ]
 
         data_api_client.find_briefs_iter.return_value = [
@@ -449,11 +449,11 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         assert buyer_briefs == [
             [
-                u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
+                u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04T12:00:00.000000Z',
                 u'This is a brief', u'London', u'draft', u'',
             ],
             [
-                u'Topher', u'topher@gov.uk', u'01234567891', u'"Fri', u' 05 Aug 2016 12:00:00 GMT"',
+                u'Topher', u'topher@gov.uk', u'01234567891', u'2016-08-05T12:00:00.000000Z',
                 u'This is a second brief', u'Wales', u'draft', u'',
             ],
         ]
@@ -465,15 +465,15 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "name": "Chris",
                 "emailAddress": "chris@gov.uk",
                 "phoneNumber": "01234567891",
-                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+                "createdAt": "2016-08-04T12:00:00.000000Z",
             },
             {
                 'id': 2,
                 "name": "Topher",
                 "emailAddress": "topher@gov.uk",
                 "phoneNumber": "01234567891",
-                "createdAt": "Fri, 05 Aug 2016 12:00:00 GMT"
-            }
+                "createdAt": "2016-08-05T12:00:00.000000Z",
+            },
         ]
 
         data_api_client.find_briefs_iter.return_value = [
@@ -501,11 +501,11 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         assert buyer_briefs == [
             [
-                u'Chris', u'chris@gov.uk', u'01234567891', u'"Thu', u' 04 Aug 2016 12:00:00 GMT"',
+                u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04T12:00:00.000000Z',
                 u'This is a brief', u'Wales', u'draft', u'',
             ],
             [
-                u'Topher', u'topher@gov.uk', u'01234567891', u'"Fri', u' 05 Aug 2016 12:00:00 GMT"',
+                u'Topher', u'topher@gov.uk', u'01234567891', u'2016-08-05T12:00:00.000000Z',
                 u'This is a brief', u'Wales', u'draft', u'',
             ],
         ]
@@ -517,7 +517,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "name": "Chris",
                 "emailAddress": "chris@gov.uk",
                 "phoneNumber": "01234567891",
-                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+                "createdAt": "2016-08-04T12:00:00.000000Z",
             }
         ]
 
@@ -539,7 +539,7 @@ class TestBuyersExport(LoggedInApplicationTest):
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
         buyer = rows[1]
 
-        assert buyer[5:8] == [u'This is a brief', u'London', u'open']
+        assert buyer[4:7] == [u'This is a brief', u'London', u'open']
 
     def test_csv_is_sorted_by_name(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
@@ -548,29 +548,29 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "name": "Zebedee",
                 "emailAddress": "zebedee@gov.uk",
                 "phoneNumber": "01234567891",
-                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
+                "createdAt": "2016-08-04T12:00:00.000000Z",
             },
             {
                 'id': 2,
                 "name": "Dougal",
                 "emailAddress": "dougal@gov.uk",
                 "phoneNumber": "01234567891",
-                "createdAt": "Fri, 05 Aug 2016 12:00:00 GMT"
+                "createdAt": "2016-08-05T12:00:00.000000Z",
             },
             {
                 'id': 3,
                 "name": "Brian",
                 "emailAddress": "brian@gov.uk",
                 "phoneNumber": "01234567891",
-                "createdAt": "Sat, 06 Aug 2016 12:00:00 GMT"
+                "createdAt": "2016-08-06T12:00:00.000000Z",
             },
             {
                 'id': 4,
                 "name": "Florence",
                 "emailAddress": "florence@gov.uk",
                 "phoneNumber": "01234567891",
-                "createdAt": "Sun, 07 Aug 2016 12:00:00 GMT"
-            }
+                "createdAt": "2016-08-07T12:00:00.000000Z",
+            },
         ]
 
         response = self.client.get('/admin/users/download/buyers')
@@ -588,8 +588,8 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "name": "Chris",
                 "emailAddress": "chris@gov.uk",
                 "phoneNumber": "01234567891",
-                "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
-            }
+                "createdAt": "2016-08-04T12:00:00.000000Z",
+            },
         ]
 
         data_api_client.find_briefs_iter.return_value = [
@@ -615,8 +615,8 @@ class TestBuyersExport(LoggedInApplicationTest):
                     "name": "Chris",
                     "emailAddress": "chris@gov.uk",
                     "phoneNumber": "01234567891",
-                    "createdAt": "Thu, 04 Aug 2016 12:00:00 GMT"
-                }
+                    "createdAt": "2016-08-04T12:00:00.000000Z",
+                },
             ]
 
             data_api_client.find_briefs_iter.return_value = [
