@@ -105,9 +105,13 @@ def download_buyers_and_briefs():
         "name",
         "emailAddress",
         "phoneNumber",
-        "createdAt",
     )
-    # no user_generated_fields as of yet
+    user_generated_fields = OrderedDict((
+        (
+            "createdAtDate",
+            lambda brief: brief.get("createdAt", "").partition("T")[0],  # cheap truncation of iso timestamp
+        ),
+    ))
     brief_verbatim_fields = (
         "title",
         "location",
@@ -118,8 +122,9 @@ def download_buyers_and_briefs():
             lambda brief: "open" if brief.get("status") == "live" else brief.get("status", ""),
         ),
         (
-            "applicationsClosedAtIfClosed",
-            lambda brief: brief.get("applicationsClosedAt", "") if brief.get("status") == "closed" else "",
+            "applicationsClosedAtDateIfClosed",
+            lambda brief:
+                (brief.get("applicationsClosedAt", "") if brief.get("status") == "closed" else "").partition("T")[0],
         ),
     ))
 
@@ -128,7 +133,7 @@ def download_buyers_and_briefs():
             # header row
             tuple(chain(
                 ("user.{}".format(field_name) for field_name in user_verbatim_fields),
-                # no user_generated_fields as of yet
+                ("user.{}".format(field_name) for field_name in iterkeys(user_generated_fields)),
                 ("brief.{}".format(field_name) for field_name in brief_verbatim_fields),
                 ("brief.{}".format(field_name) for field_name in iterkeys(brief_generated_fields)),
             )),
@@ -137,7 +142,7 @@ def download_buyers_and_briefs():
             # data rows
             tuple(chain(
                 (user.get(field_name, "") for field_name in user_verbatim_fields),
-                # no user_generated_fields as of yet
+                (func(user) for func in itervalues(user_generated_fields)),
                 (brief.get(field_name, "") for field_name in brief_verbatim_fields),
                 (func(brief) for func in itervalues(brief_generated_fields)),
             ))

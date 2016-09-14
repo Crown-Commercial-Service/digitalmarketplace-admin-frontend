@@ -324,11 +324,11 @@ class TestBuyersExport(LoggedInApplicationTest):
         buyer = rows[1]
 
         assert header == [
-            u'user.name', u'user.emailAddress', u'user.phoneNumber', u'user.createdAt',
-            u'brief.title', u'brief.location', u'brief.status', u'brief.applicationsClosedAtIfClosed',
+            u'user.name', u'user.emailAddress', u'user.phoneNumber', u'user.createdAtDate',
+            u'brief.title', u'brief.location', u'brief.status', u'brief.applicationsClosedAtDateIfClosed',
         ]
         assert buyer == [
-            u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04T12:00:00.000000Z',
+            u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04',
             u'This is a brief', u'Wales', u'draft', u'',
         ]
 
@@ -370,11 +370,11 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         assert buyer_briefs == [
             [
-                u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04T12:00:00.000000Z',
+                u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04',
                 u'This is a brief', u'Wales', u'draft', u'',
             ],
             [
-                u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04T12:00:00.000000Z',
+                u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04',
                 u'This is a second brief', u'', u'draft', u'',
             ],
         ]
@@ -399,7 +399,7 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         assert buyer_briefs == [
             [
-                u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04T12:00:00.000000Z',
+                u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04',
                 u'', u'', u'', u'',
             ],
         ]
@@ -449,11 +449,11 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         assert buyer_briefs == [
             [
-                u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04T12:00:00.000000Z',
+                u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04',
                 u'This is a brief', u'London', u'draft', u'',
             ],
             [
-                u'Topher', u'topher@gov.uk', u'01234567891', u'2016-08-05T12:00:00.000000Z',
+                u'Topher', u'topher@gov.uk', u'01234567891', u'2016-08-05',
                 u'This is a second brief', u'Wales', u'draft', u'',
             ],
         ]
@@ -501,11 +501,11 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         assert buyer_briefs == [
             [
-                u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04T12:00:00.000000Z',
+                u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04',
                 u'This is a brief', u'Wales', u'draft', u'',
             ],
             [
-                u'Topher', u'topher@gov.uk', u'01234567891', u'2016-08-05T12:00:00.000000Z',
+                u'Topher', u'topher@gov.uk', u'01234567891', u'2016-08-05',
                 u'This is a brief', u'Wales', u'draft', u'',
             ],
         ]
