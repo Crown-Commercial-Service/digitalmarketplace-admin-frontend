@@ -528,7 +528,8 @@ class TestBuyersExport(LoggedInApplicationTest):
                 'status': 'live',
                 'users': [{
                     'id': 1
-                }]
+                }],
+                "applicationsClosedAt": "2016-09-05T12:00:00.000000Z",
             }
         ]
 
@@ -539,7 +540,39 @@ class TestBuyersExport(LoggedInApplicationTest):
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
         buyer = rows[1]
 
-        assert buyer[4:7] == [u'This is a brief', u'London', u'open']
+        assert buyer[4:] == [u"This is a brief", u"London", u"open", u"",]
+
+    def test_brief_applications_closed_at_is_output_if_status_closed(self, data_api_client):
+        data_api_client.find_users_iter.return_value = [
+            {
+                'id': 1,
+                "name": "Chris",
+                "emailAddress": "chris@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "2016-08-04T12:00:00.000000Z",
+            }
+        ]
+
+        data_api_client.find_briefs_iter.return_value = [
+            {
+                'title': 'This is a brief',
+                'location': 'London',
+                'status': 'closed',
+                'users': [{
+                    'id': 1
+                }],
+                "applicationsClosedAt": "2016-09-05T12:00:00.000000Z",
+            }
+        ]
+
+        response = self.client.get('/admin/users/download/buyers')
+
+        assert response.status_code == 200
+
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+        buyer = rows[1]
+
+        assert buyer[4:] == [u"This is a brief", u"London", u"closed", u"2016-09-05",]
 
     def test_csv_is_sorted_by_name(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
