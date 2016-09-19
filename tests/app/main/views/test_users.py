@@ -540,7 +540,7 @@ class TestBuyersExport(LoggedInApplicationTest):
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
         buyer = rows[1]
 
-        assert buyer[4:] == [u"This is a brief", u"London", u"open", u"",]
+        assert buyer[4:] == [u"This is a brief", u"London", u"open", u"", ]
 
     def test_brief_applications_closed_at_is_output_if_status_closed(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
@@ -572,7 +572,7 @@ class TestBuyersExport(LoggedInApplicationTest):
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
         buyer = rows[1]
 
-        assert buyer[4:] == [u"This is a brief", u"London", u"closed", u"2016-09-05",]
+        assert buyer[4:] == [u"This is a brief", u"London", u"closed", u"2016-09-05", ]
 
     def test_csv_is_sorted_by_name(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
