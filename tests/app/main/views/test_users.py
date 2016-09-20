@@ -304,6 +304,7 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         data_api_client.find_briefs_iter.return_value = [
             {
+                'id': 321,
                 'title': 'This is a brief',
                 'status': 'draft',
                 'users': [{
@@ -330,6 +331,7 @@ class TestBuyersExport(LoggedInApplicationTest):
             u'user.phoneNumber',
             u'user.createdAtDate',
 
+            u'brief.id',
             u'brief.title',
             u'brief.location',
             u'brief.lotSlug',
@@ -338,7 +340,7 @@ class TestBuyersExport(LoggedInApplicationTest):
         ]
         assert buyer == [
             u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04',
-            u'This is a brief', u'Wales', u'magic-roundabout', u'draft', u'',
+            u'321', u'This is a brief', u'Wales', u'magic-roundabout', u'draft', u'',
         ]
 
     def test_response_has_two_lines_for_buyer_if_multiple_briefs(self, data_api_client):
@@ -348,12 +350,13 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "name": "Chris",
                 "emailAddress": "chris@gov.uk",
                 "phoneNumber": "01234567891",
-                "createdAt": "2016-08-04T12:00:00.000000Z"
+                "createdAt": "2016-08-04T12:00:00.000000Z",
             },
         ]
 
         data_api_client.find_briefs_iter.return_value = [
             {
+                'id': 321,
                 'title': 'This is a brief',
                 'status': 'draft',
                 'location': 'Wales',
@@ -363,6 +366,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 'lotSlug': 'magic-roundabout',
             },
             {
+                'id': 432,
                 'title': 'This is a second brief',
                 'status': 'draft',
                 'users': [{
@@ -382,11 +386,11 @@ class TestBuyersExport(LoggedInApplicationTest):
         assert buyer_briefs == [
             [
                 u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04',
-                u'This is a brief', u'Wales', u'magic-roundabout', u'draft', u'',
+                u'321', u'This is a brief', u'Wales', u'magic-roundabout', u'draft', u'',
             ],
             [
                 u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04',
-                u'This is a second brief', u'', u'manege-enchante', u'draft', u'',
+                u'432', u'This is a second brief', u'', u'manege-enchante', u'draft', u'',
             ],
         ]
 
@@ -411,7 +415,7 @@ class TestBuyersExport(LoggedInApplicationTest):
         assert buyer_briefs == [
             [
                 u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04',
-                u'', u'', u'', u'', u'',
+                u'', u'', u'', u'', u'', u'',
             ],
         ]
 
@@ -435,6 +439,7 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         data_api_client.find_briefs_iter.return_value = [
             {
+                'id': 321,
                 'title': 'This is a brief',
                 'location': 'London',
                 'status': 'draft',
@@ -444,6 +449,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 'lotSlug': 'magic-roundabout',
             },
             {
+                'id': 432,
                 'title': 'This is a second brief',
                 'location': 'Wales',
                 'status': 'draft',
@@ -463,11 +469,11 @@ class TestBuyersExport(LoggedInApplicationTest):
         assert buyer_briefs == [
             [
                 u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04',
-                u'This is a brief', u'London', u'magic-roundabout', u'draft', u'',
+                u'321', u'This is a brief', u'London', u'magic-roundabout', u'draft', u'',
             ],
             [
                 u'Topher', u'topher@gov.uk', u'01234567891', u'2016-08-05',
-                u'This is a second brief', u'Wales', u'manege-enchante', u'draft', u'',
+                u'432', u'This is a second brief', u'Wales', u'manege-enchante', u'draft', u'',
             ],
         ]
 
@@ -491,6 +497,7 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         data_api_client.find_briefs_iter.return_value = [
             {
+                'id': 321,
                 'title': 'This is a brief',
                 'status': 'draft',
                 'location': 'Wales',
@@ -516,11 +523,11 @@ class TestBuyersExport(LoggedInApplicationTest):
         assert buyer_briefs == [
             [
                 u'Chris', u'chris@gov.uk', u'01234567891', u'2016-08-04',
-                u'This is a brief', u'Wales', u'magic-roundabout', u'draft', u'',
+                u'321', u'This is a brief', u'Wales', u'magic-roundabout', u'draft', u'',
             ],
             [
                 u'Topher', u'topher@gov.uk', u'01234567891', u'2016-08-05',
-                u'This is a brief', u'Wales', u'magic-roundabout', u'draft', u'',
+                u'321', u'This is a brief', u'Wales', u'magic-roundabout', u'draft', u'',
             ],
         ]
 
@@ -537,6 +544,7 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         data_api_client.find_briefs_iter.return_value = [
             {
+                'id': 321,
                 'title': 'This is a brief',
                 'location': 'London',
                 'status': 'live',
@@ -555,7 +563,7 @@ class TestBuyersExport(LoggedInApplicationTest):
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
         buyer = rows[1]
 
-        assert buyer[4:] == [u"This is a brief", u"London", u'magic-roundabout', u"open", u"", ]
+        assert buyer[4:] == [u"321", u"This is a brief", u"London", u'magic-roundabout', u"open", u"", ]
 
     def test_brief_applications_closed_at_is_output_if_status_closed(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
@@ -570,6 +578,7 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         data_api_client.find_briefs_iter.return_value = [
             {
+                'id': 321,
                 'title': 'This is a brief',
                 'location': 'London',
                 'status': 'closed',
@@ -588,7 +597,7 @@ class TestBuyersExport(LoggedInApplicationTest):
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
         buyer = rows[1]
 
-        assert buyer[4:] == [u"This is a brief", u"London", u'magic-roundabout', u"closed", u"2016-09-05", ]
+        assert buyer[4:] == [u"321", u"This is a brief", u"London", u'magic-roundabout', u"closed", u"2016-09-05", ]
 
     def test_csv_is_sorted_by_name(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
@@ -643,6 +652,7 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         data_api_client.find_briefs_iter.return_value = [
             {
+                'id': 321,
                 'title': 'This is a brief',
                 'status': 'draft',
                 'users': [{
@@ -671,6 +681,7 @@ class TestBuyersExport(LoggedInApplicationTest):
 
             data_api_client.find_briefs_iter.return_value = [
                 {
+                    'id': 321,
                     'title': 'This is a brief',
                     'status': 'draft',
                     'users': [{
