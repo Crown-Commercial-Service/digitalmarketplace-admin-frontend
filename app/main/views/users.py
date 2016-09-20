@@ -115,6 +115,7 @@ def download_buyers_and_briefs():
     brief_verbatim_fields = (
         "title",
         "location",
+        "lotSlug",
     )
     brief_generated_fields = OrderedDict((
         (
