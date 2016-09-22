@@ -19,7 +19,8 @@ def list_agreements(framework_slug):
         framework_slug, agreement_returned=True
     )['supplierFrameworks']
 
-    # reversing this: API returns SupplierFrameworks agreementReturnedAt ascending, we want it descending
+    # API returns SupplierFrameworks by agreementReturnedAt descending (newest first)
+    # We want it ascending (oldest first)
     supplier_frameworks.reverse()
 
     for supplier_framework in supplier_frameworks:
