@@ -89,7 +89,7 @@
       {% call summary.field() %}
       {% if item.locked and current_user.has_role('admin') %}
       <form action="{{ url_for('.unlock_user', user_id=item.id) }}" method="post">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          {{ form.csrf_token }}
           <input type="hidden" name="source" value="{{ url_for('.find_user_by_email_address', email_address=email_address) }}"/>
           {%
               with
@@ -110,7 +110,7 @@
           {% if item.active %}
             {% if current_user.has_role('admin') %}
               <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  {{ form.csrf_token }}
                   <input type="hidden" name="source" value="{{ url_for('.find_user_by_email_address', email_address=email_address) }}"/>
                   {%
                       with
@@ -126,7 +126,7 @@
           {% else %}
             {% if current_user.has_role('admin') %}
               <form action="{{ url_for('.activate_user', user_id=item.id) }}" method="post">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  {{ form.csrf_token }}
                   <input type="hidden" name="source" value="{{ url_for('.find_user_by_email_address', email_address=email_address) }}"/>
                   {%
                       with

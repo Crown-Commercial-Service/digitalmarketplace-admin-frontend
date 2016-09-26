@@ -3,6 +3,7 @@ import re
 import os
 
 from dmutils.user import User
+from dmutils.forms import FakeCsrf
 from flask import json
 
 from app import create_app
@@ -71,7 +72,8 @@ class LoggedInApplicationTest(BaseApplicationTest):
                     'locked': False,
                     'passwordChangedAt': '2015-01-01T00:00:00Z',
                     'active': True,
-                    'name': 'tester'
+                    'name': 'tester',
+                    'termsAcceptedAt': '2015-01-01T00:00:00.0Z',
                 }
             }
         }
@@ -82,8 +84,10 @@ class LoggedInApplicationTest(BaseApplicationTest):
         self._data_api_client.start()
         res = self.client.post('/admin/login', data={
             'email_address': 'test@example.com',
-            'password': '1234567890'
+            'password': '1234567890',
+            'csrf_token': FakeCsrf.valid_token,
         })
+        assert res.status_code < 400
 
         self._user_callback = login_manager.user_callback
         login_manager.user_loader(self.user_loader)
@@ -91,7 +95,7 @@ class LoggedInApplicationTest(BaseApplicationTest):
     def user_loader(self, user_id):
         if user_id:
             return User(
-                user_id, 'test@example.com', None, None, False, True, 'tester', self.user_role
+                user_id, 'test@example.com', None, None, False, True, 'tester', self.user_role, '2015-01-01T00:00:00.0Z'
             )
 
     def tearDown(self):

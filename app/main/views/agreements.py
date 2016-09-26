@@ -1,8 +1,8 @@
-from flask import render_template
+from flask import current_app, render_template
 from flask_login import login_required
 from dateutil.parser import parse as parse_date
 
-from dmutils.formats import datetimeformat
+from dmutils.formats import DateFormatter
 from dmutils.documents import SIGNED_AGREEMENT_PREFIX
 
 from .. import main
@@ -19,8 +19,9 @@ def list_agreements(framework_slug):
         framework_slug, agreement_returned=True
     )['supplierFrameworks']
 
+    date_formatter = DateFormatter(current_app.config['DM_TIMEZONE'])
     for supplier_framework in supplier_frameworks:
-        supplier_framework['agreementReturnedAt'] = datetimeformat(
+        supplier_framework['agreementReturnedAt'] = date_formatter.datetimeformat(
             parse_date(supplier_framework['agreementReturnedAt']))
 
     return render_template(

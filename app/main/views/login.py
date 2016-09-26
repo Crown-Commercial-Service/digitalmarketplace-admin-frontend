@@ -17,8 +17,8 @@ def render_login():
 @main.route('/login', methods=['POST'])
 def process_login():
     next_url = request.args.get('next')
-    form = LoginForm()
-    if form.validate_on_submit():
+    form = LoginForm(request.form)
+    if form.validate():
         user_json = data_api_client.authenticate_user(
             form.email_address.data,
             form.password.data

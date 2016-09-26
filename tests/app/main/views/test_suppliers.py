@@ -10,7 +10,8 @@ from lxml import html
 from nose.tools import eq_
 from nose.tools import assert_equals
 from dmapiclient import HTTPError, APIError
-from dmutils.email import MandrillException
+from dmutils.email import EmailError
+from dmutils.forms import FakeCsrf
 from dmapiclient.audit import AuditTypes
 from ...helpers import LoggedInApplicationTest, Response
 
@@ -118,7 +119,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
             response.get_data(as_text=True)
         )
         self.assertIn(
-            "10:33:53",
+            "19:33:53",
             response.get_data(as_text=True)
         )
         self.assertIn(
@@ -126,7 +127,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
             response.get_data(as_text=True)
         )
         self.assertIn(
-            "13:46:01",
+            "22:46:01",
             response.get_data(as_text=True)
         )
         self.assertIn(
@@ -203,7 +204,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.update_user.return_value = self.load_example_listing("user_response")
 
-        response = self.client.post('/admin/suppliers/users/999/unlock')
+        response = self.client.post('/admin/suppliers/users/999/unlock', data={'csrf_token': FakeCsrf.valid_token})
 
         data_api_client.update_user.assert_called_with(999, locked=False, updater="test@example.com")
 
@@ -215,7 +216,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.update_user.return_value = self.load_example_listing("user_response")
 
-        response = self.client.post('/admin/suppliers/users/999/activate')
+        response = self.client.post('/admin/suppliers/users/999/activate', data={'csrf_token': FakeCsrf.valid_token})
 
         data_api_client.update_user.assert_called_with(999, active=True, updater="test@example.com")
 
@@ -229,7 +230,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.post(
             '/admin/suppliers/users/999/deactivate',
-            data={'supplier_id': 1000}
+            data={'supplier_id': 1000, 'csrf_token': FakeCsrf.valid_token}
         )
 
         data_api_client.update_user.assert_called_with(999, active=False, updater="test@example.com")
@@ -245,7 +246,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.post(
             '/admin/suppliers/1000/move-existing-user',
-            data={'user_to_move_email_address': 'test.user@sme.com'}
+            data={'user_to_move_email_address': 'test.user@sme.com', 'csrf_token': FakeCsrf.valid_token}
         )
 
         data_api_client.update_user.assert_called_with(
@@ -394,7 +395,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
 
         response = self.client.post(
             "/admin/suppliers/1234/invite-user",
-            data={'email_address': 'notatallvalid'},
+            data={'email_address': 'notatallvalid', 'csrf_token': FakeCsrf.valid_token},
             follow_redirects=True
         )
 
@@ -408,7 +409,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
 
         response = self.client.post(
             "/admin/suppliers/1234/invite-user",
-            data={},
+            data={'csrf_token': FakeCsrf.valid_token},
             follow_redirects=True
         )
 
@@ -420,7 +421,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
 
         response = self.client.post(
             "/admin/suppliers/bad/invite-user",
-            data={},
+            data={'csrf_token': FakeCsrf.valid_token},
             follow_redirects=True
         )
 
@@ -434,7 +435,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
 
         response = self.client.post(
             "/admin/suppliers/1234/invite-user",
-            data={},
+            data={'csrf_token': FakeCsrf.valid_token},
             follow_redirects=True
         )
 
@@ -449,7 +450,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
 
         response = self.client.post(
             "/admin/suppliers/1234/invite-user",
-            data={},
+            data={'csrf_token': FakeCsrf.valid_token},
             follow_redirects=True
         )
 
@@ -469,6 +470,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             "/admin/suppliers/1234/invite-user",
             data={
                 'email_address': 'this@isvalid.com',
+                'csrf_token': FakeCsrf.valid_token,
             })
 
         generate_token.assert_called_once_with(
@@ -477,8 +479,8 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
                 "supplier_name": "Supplier Name",
                 "email_address": "this@isvalid.com"
             },
-            'KEY',
-            'SALT'
+            self.app.config['SECRET_KEY'],
+            self.app.config['INVITE_EMAIL_SALT'],
         )
 
         self.assertEqual(res.status_code, 302)
@@ -494,7 +496,8 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         res = self.client.post(
             '/admin/suppliers/1234/invite-user',
             data={
-                'email_address': 'email@example.com'
+                'email_address': 'email@example.com',
+                'csrf_token': FakeCsrf.valid_token,
             })
 
         data_api_client.create_audit_event.assert_called_once_with(
@@ -518,6 +521,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             "/admin/suppliers/1234/invite-user",
             data={
                 'email_address': 'this@isvalid.com',
+                'csrf_token': FakeCsrf.valid_token,
             })
 
         self.assertFalse(data_api_client.find_users.called)
@@ -535,13 +539,13 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             "/admin/suppliers/1234/invite-user",
             data={
                 'email_address': 'this@isvalid.com',
+                'csrf_token': FakeCsrf.valid_token,
             }
         )
 
         send_email.assert_called_once_with(
             'this@isvalid.com',
             mock.ANY,
-            'MANDRILL',
             'Your Digital Marketplace invitation',
             'enquiries@digitalmarketplace.service.gov.uk',
             'Digital Marketplace Admin',
@@ -557,16 +561,17 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_users.return_value = self.load_example_listing("users_response")
 
-        self.client.post(
+        res = self.client.post(
             "/admin/suppliers/1234/invite-user",
             data={
                 'email_address': '  this@isvalid.com  ',
+                'csrf_token': FakeCsrf.valid_token,
             }
         )
+        assert res.status_code < 400
 
         send_email.assert_called_once_with(
             'this@isvalid.com',
-            mock.ANY,
             mock.ANY,
             mock.ANY,
             mock.ANY,
@@ -589,9 +594,9 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             "/admin/suppliers/1234/invite-user",
             data={
                 'email_address': 'this@isvalid.com',
+                'csrf_token': FakeCsrf.valid_token,
             }
         )
-
         render_template.assert_called_once_with(
             "emails/invite_user_email.html",
             url="http://localhost/suppliers/create-user/token",
@@ -606,17 +611,17 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
     def test_should_be_a_503_if_email_fails(self, data_api_client, send_email):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_users.return_value = self.load_example_listing("users_response")
-        send_email.side_effect = MandrillException("Arrrgh")
+        send_email.side_effect = EmailError("Arrrgh")
         res = self.client.post(
             "/admin/suppliers/1234/invite-user",
             data={
                 'email_address': 'this@isvalid.com',
+                'csrf_token': FakeCsrf.valid_token,
             })
 
         send_email.assert_called_once_with(
-            'this@isvalid.com',
+            u'this@isvalid.com',
             mock.ANY,
-            'MANDRILL',
             'Your Digital Marketplace invitation',
             'enquiries@digitalmarketplace.service.gov.uk',
             'Digital Marketplace Admin',

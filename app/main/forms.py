@@ -1,13 +1,12 @@
-from flask_wtf import Form
 from wtforms import StringField, DateField, PasswordField, IntegerField
 from wtforms.validators import Optional, AnyOf, DataRequired, \
     Email
 from datetime import datetime
 from dmutils.formats import DATE_FORMAT
-from dmutils.forms import StripWhitespaceStringField
+from dmutils.forms import DmForm, StripWhitespaceStringField
 
 
-class ServiceUpdateAuditEventsForm(Form):
+class ServiceUpdateAuditEventsForm(DmForm):
     audit_date = DateField(
         'Audit Date',
         format=DATE_FORMAT,
@@ -45,7 +44,7 @@ class ServiceUpdateAuditEventsForm(Form):
             return datetime.utcnow()
 
 
-class LoginForm(Form):
+class LoginForm(DmForm):
     email_address = StripWhitespaceStringField('Email address', validators=[
         DataRequired(message='Email cannot be empty'),
         Email(message='Please enter a valid email address')
@@ -55,14 +54,14 @@ class LoginForm(Form):
     ])
 
 
-class EmailAddressForm(Form):
+class EmailAddressForm(DmForm):
     email_address = StripWhitespaceStringField('Email address', validators=[
         DataRequired(message="Email can not be empty"),
         Email(message="Please enter a valid email address")
     ])
 
 
-class MoveUserForm(Form):
+class MoveUserForm(DmForm):
     user_to_move_email_address = StripWhitespaceStringField('Move an existing user to this supplier', validators=[
         DataRequired(message="Email can not be empty"),
         Email(message="Please enter a valid email address")

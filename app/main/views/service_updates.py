@@ -5,6 +5,7 @@ from flask_login import login_required, current_user
 
 from dmapiclient.audit import AuditTypes
 from dmutils.formats import DATETIME_FORMAT
+from dmutils.forms import DmForm
 
 from ... import data_api_client
 from .. import main
@@ -54,7 +55,8 @@ def service_status_update_audits(day=None, page=1):
 @login_required
 @role_required('admin', 'admin-ccs-category')
 def service_update_audits():
-    form = ServiceUpdateAuditEventsForm(request.args, csrf_enabled=False)
+    form = ServiceUpdateAuditEventsForm(request.args)
+    form.csrf_token.data = form.csrf_token.current_token
 
     if not form.validate():
         return render_template(
