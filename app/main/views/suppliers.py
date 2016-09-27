@@ -25,10 +25,7 @@ def find_suppliers():
     if request.args.get('supplier_code'):
         suppliers = [data_api_client.get_supplier(request.args.get('supplier_code'))['suppliers']]
     else:
-        suppliers = data_api_client.find_suppliers(
-            prefix=request.args.get("supplier_name_prefix"),
-            duns_number=request.args.get("supplier_duns_number")
-        )['suppliers']
+        suppliers = data_api_client.find_suppliers(prefix=request.args.get('supplier_name_prefix'))['suppliers']
 
     return render_template_with_csrf(
         "view_suppliers.html",
