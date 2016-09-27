@@ -129,7 +129,7 @@ class TestUsersView(LoggedInApplicationTest):
 
         supplier_link = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/a')[0]
-        self.assertEquals('/admin/suppliers?supplier_id=1000', supplier_link.attrib['href'])
+        self.assertEquals('/admin/suppliers?supplier_code=1000', supplier_link.attrib['href'])
 
     def test_should_show_unlock_button(self, data_api_client):
         buyer = self.load_example_listing("user_response")

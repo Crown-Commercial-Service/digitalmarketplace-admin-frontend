@@ -23,7 +23,7 @@ from dmutils.forms import DmForm, render_template_with_csrf
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
 def find_suppliers():
     if request.args.get('supplier_code'):
-        suppliers = [data_api_client.get_supplier(request.args.get('supplier_code'))['suppliers']]
+        suppliers = [data_api_client.get_supplier(request.args.get('supplier_code'))['supplier']]
     else:
         suppliers = data_api_client.find_suppliers(prefix=request.args.get('supplier_name_prefix'))['suppliers']
 
@@ -287,7 +287,7 @@ def unlock_user(user_id):
     user = data_api_client.update_user(user_id, locked=False, updater=current_user.email_address)
     if "source" in request.form:
         return redirect(request.form["source"])
-    return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierId']))
+    return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierCode']))
 
 
 @main.route('/suppliers/users/<int:user_id>/activate', methods=['POST'])
@@ -297,7 +297,7 @@ def activate_user(user_id):
     user = data_api_client.update_user(user_id, active=True, updater=current_user.email_address)
     if "source" in request.form:
         return redirect(request.form["source"])
-    return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierId']))
+    return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierCode']))
 
 
 @main.route('/suppliers/users/<int:user_id>/deactivate', methods=['POST'])
@@ -307,7 +307,7 @@ def deactivate_user(user_id):
     user = data_api_client.update_user(user_id, active=False, updater=current_user.email_address)
     if "source" in request.form:
         return redirect(request.form["source"])
-    return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierId']))
+    return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierCode']))
 
 
 @main.route('/suppliers/<int:supplier_code>/move-existing-user', methods=['POST'])
