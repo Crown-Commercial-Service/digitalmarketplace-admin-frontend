@@ -1,16 +1,8 @@
 machine:
-  services:
-    - docker  # For monitoring
   node:
     version: 5.5.0
   timezone:
     Australia/Sydney
-  post:
-    # For monitoring:
-    - pip install awscli
-    - sudo curl -o /usr/local/bin/ecs-cli https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest
-    - sudo chmod +x /usr/local/bin/ecs-cli
-    - /usr/local/bin/ecs-cli --version
 
 dependencies:
   pre:
@@ -19,7 +11,6 @@ dependencies:
     - cf -v
   override:
     - ./scripts/ci_build.sh
-    - DOCKERFILE_PATH=./monitoring/Dockerfile DOCKER_IMAGE_NAME=gov-au-marketplace ./scripts/ci-monitor-build.sh
 
 test:
   override:
