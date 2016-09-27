@@ -152,7 +152,7 @@
 
   {% if current_user.has_role('admin') %}
   <div class='page-section'>
-      <form action="{{ url_for('.invite_user', supplier_id=supplier.id) }}" method="post">
+      <form action="{{ url_for('.invite_user', supplier_code=supplier.code) }}" method="post">
           {{ form.csrf_token }}
           <div class="grid-row">
               <div class="column-two-thirds">
@@ -181,7 +181,7 @@
   </div>
 
     <div class='page-section'>
-        <form action="{{ url_for('.move_user_to_new_supplier', supplier_id=supplier.id) }}" method="post">
+        <form action="{{ url_for('.move_user_to_new_supplier', supplier_code=supplier.code) }}" method="post">
             {{ form.csrf_token }}
             <div class="grid-row">
                 <div class="column-two-thirds">

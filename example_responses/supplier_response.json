@@ -1,34 +1,31 @@
 {
-  "suppliers": {
-    "clients": [],
-    "contactInformation": [
-      {
-        "id": 2,
-        "website": "supplier.dmdev",
-        "email": "supplier@user.dmdev",
-        "contactName": "Supplier Person",
-        "phoneNumber": "0800123123",
-        "address1": "1 Street",
-        "address2": "2 Building",
-        "city": "Supplierville",
-        "country": "Supplierland",
-        "postcode": "11 AB",
-        "links": {
-          "self": "http://localhost:5000/suppliers/1234/contact-information/1234"
-        }
-      }
-    ],
-    "description": "Supplier Description",
-    "dunsNumber": "1234",
-    "eSourcingId": "1234",
-    "id": 1234,
-    "links": {
-      "self": "http://localhost:5000/suppliers/1234"
-    },
-    "name": "Supplier Name",
-    "service_counts": {
-      "G-Cloud 5": 4,
-      "G-Cloud 6": 5
+    "supplier": {
+        "abn": "50 110 219 460",
+        "acn": null,
+        "address": {
+            "country": "Australia",
+            "postalCode": "4120",
+            "state": "QLD",
+            "suburb": "Brisbane"
+        },
+        "code": 0,
+        "contacts": [
+            {
+                "email": "anne@example.com",
+                "name": "Anne Example",
+                "role": "Example Provider"
+            }
+        ],
+        "creationTime": "2016-09-06T00:29:44.074960Z",
+        "dataVersion": null,
+        "description": null,
+        "extraLinks": [],
+        "lastUpdateTime": "2016-09-06T00:29:44.067375Z",
+        "longName": "Example Pty Ltd",
+        "name": "Example Pty Ltd",
+        "prices": [],
+        "references": [],
+        "summary": "An example company",
+        "website": "https://example.com"
     }
-  }
 }

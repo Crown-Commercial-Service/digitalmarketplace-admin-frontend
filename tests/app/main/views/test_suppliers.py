@@ -26,9 +26,9 @@ class TestSuppliersListView(LoggedInApplicationTest):
 
     def test_should_list_suppliers(self, data_api_client):
         data_api_client.find_suppliers.return_value = {
-            "suppliers": [
-                {"id": 1234, "name": "Supplier 1"},
-                {"id": 1235, "name": "Supplier 2"},
+            'suppliers': [
+                {'code': 1234, 'name': 'Supplier 1'},
+                {'code': 1235, 'name': 'Supplier 2'},
             ]
         }
         response = self.client.get("/admin/suppliers")
@@ -49,9 +49,9 @@ class TestSuppliersListView(LoggedInApplicationTest):
 
         data_api_client.find_suppliers.assert_called_once_with(prefix=None, duns_number="987654321")
 
-    def test_should_find_by_supplier_id(self, data_api_client):
+    def test_should_find_by_supplier_code(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
-        self.client.get("/admin/suppliers?supplier_id=12345")
+        self.client.get('/admin/suppliers?supplier_code=12345')
 
         data_api_client.get_supplier.assert_called_once_with("12345")
 
@@ -61,17 +61,17 @@ class TestSupplierUsersView(LoggedInApplicationTest):
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_404_if_no_supplier_does_not_exist(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
-        response = self.client.get('/admin/suppliers/users?supplier_id=999')
+        response = self.client.get('/admin/suppliers/users?supplier_code=999')
         self.assertEquals(404, response.status_code)
 
-    def test_should_404_if_no_supplier_id(self):
+    def test_should_404_if_no_supplier_code(self):
         response = self.client.get('/admin/suppliers/users')
         self.assertEquals(404, response.status_code)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_call_apis_with_supplier_id(self, data_api_client):
+    def test_should_call_apis_with_supplier_code(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        response = self.client.get('/admin/suppliers/users?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/users?supplier_code=1000')
 
         self.assertEquals(200, response.status_code)
 
@@ -81,11 +81,11 @@ class TestSupplierUsersView(LoggedInApplicationTest):
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_have_supplier_name_on_page(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        response = self.client.get('/admin/suppliers/users?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/users?supplier_code=1000')
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
-            "Supplier Name",
+            'Example Pty Ltd',
             response.get_data(as_text=True)
         )
 
@@ -94,7 +94,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_users.return_value = {'users': {}}
 
-        response = self.client.get('/admin/suppliers/users?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/users?supplier_code=1000')
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
@@ -107,7 +107,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_users.return_value = self.load_example_listing("users_response")
 
-        response = self.client.get('/admin/suppliers/users?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/users?supplier_code=1000')
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
@@ -155,7 +155,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         )
 
         self.assertIn(
-            '<form action="/admin/suppliers/1234/move-existing-user" method="post">',
+            '<form action="/admin/suppliers/0/move-existing-user" method="post">',
             response.get_data(as_text=True)
         )
 
@@ -167,7 +167,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         users["users"][0]["locked"] = True
         data_api_client.find_users.return_value = users
 
-        response = self.client.get('/admin/suppliers/users?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/users?supplier_code=1000')
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
@@ -187,7 +187,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         users["users"][0]["active"] = False
         data_api_client.find_users.return_value = users
 
-        response = self.client.get('/admin/suppliers/users?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/users?supplier_code=1000')
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
@@ -209,7 +209,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         data_api_client.update_user.assert_called_with(999, locked=False, updater="test@example.com")
 
         self.assertEquals(302, response.status_code)
-        self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
+        self.assertEquals('http://localhost/admin/suppliers/users?supplier_code=1000', response.location)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_activate_user(self, data_api_client):
@@ -221,7 +221,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         data_api_client.update_user.assert_called_with(999, active=True, updater="test@example.com")
 
         self.assertEquals(302, response.status_code)
-        self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
+        self.assertEquals('http://localhost/admin/suppliers/users?supplier_code=1000', response.location)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_deactivate_user(self, data_api_client):
@@ -230,13 +230,13 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.post(
             '/admin/suppliers/users/999/deactivate',
-            data={'supplier_id': 1000, 'csrf_token': FakeCsrf.valid_token}
+            data={'supplier_code': 1000, 'csrf_token': FakeCsrf.valid_token}
         )
 
         data_api_client.update_user.assert_called_with(999, active=False, updater="test@example.com")
 
         self.assertEquals(302, response.status_code)
-        self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
+        self.assertEquals('http://localhost/admin/suppliers/users?supplier_code=1000', response.location)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_move_user_to_another_supplier(self, data_api_client):
@@ -250,11 +250,11 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         )
 
         data_api_client.update_user.assert_called_with(
-            999, role='supplier', supplier_id=1000, active=True, updater="test@example.com"
+            999, role='supplier', supplier_code=1000, active=True, updater='test@example.com'
         )
 
         self.assertEquals(302, response.status_code)
-        self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
+        self.assertEquals('http://localhost/admin/suppliers/users?supplier_code=1000', response.location)
 
 
 class TestSupplierServicesView(LoggedInApplicationTest):
@@ -262,17 +262,17 @@ class TestSupplierServicesView(LoggedInApplicationTest):
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_404_if_supplier_does_not_exist_on_services(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
-        response = self.client.get('/admin/suppliers/services?supplier_id=999')
+        response = self.client.get('/admin/suppliers/services?supplier_code=999')
         self.assertEquals(404, response.status_code)
 
-    def test_should_404_if_no_supplier_id_on_services(self):
+    def test_should_404_if_no_supplier_code_on_services(self):
         response = self.client.get('/admin/suppliers/users')
         self.assertEquals(404, response.status_code)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_call_service_apis_with_supplier_id(self, data_api_client):
+    def test_should_call_service_apis_with_supplier_code(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        response = self.client.get('/admin/suppliers/services?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/services?supplier_code=1000')
 
         self.assertEquals(200, response.status_code)
 
@@ -283,7 +283,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
     def test_should_indicate_if_supplier_has_no_services(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_services.return_value = {'services': []}
-        response = self.client.get('/admin/suppliers/services?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/services?supplier_code=1000')
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
@@ -296,11 +296,11 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_services.return_value = {'services': []}
 
-        response = self.client.get('/admin/suppliers/services?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/services?supplier_code=1000')
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
-            "Supplier Name",
+            'Example Pty Ltd',
             response.get_data(as_text=True)
         )
 
@@ -309,7 +309,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_services.return_value = self.load_example_listing("services_response")
 
-        response = self.client.get('/admin/suppliers/services?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/services?supplier_code=1000')
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
@@ -353,7 +353,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         services["services"][0]["status"] = "disabled"
         data_api_client.find_services.return_value = services
 
-        response = self.client.get('/admin/suppliers/services?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/services?supplier_code=1000')
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
@@ -373,7 +373,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         services["services"][0]["status"] = "enabled"
         data_api_client.find_services.return_value = services
 
-        response = self.client.get('/admin/suppliers/services?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/services?supplier_code=1000')
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
@@ -417,7 +417,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         self.assertTrue("Email can not be empty" in response.get_data(as_text=True))
 
     @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_be_a_404_if_non_int_supplier_id(self, data_api_client):
+    def test_should_be_a_404_if_non_int_supplier_code(self, data_api_client):
 
         response = self.client.post(
             "/admin/suppliers/bad/invite-user",
@@ -429,7 +429,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         self.assertFalse(data_api_client.called)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_be_a_404_if_supplier_id_not_found(self, data_api_client):
+    def test_should_be_a_404_if_supplier_code_not_found(self, data_api_client):
 
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
 
@@ -475,16 +475,16 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
 
         generate_token.assert_called_once_with(
             {
-                "supplier_id": 1234,
-                "supplier_name": "Supplier Name",
-                "email_address": "this@isvalid.com"
+                'supplier_code': 1234,
+                'supplier_name': 'Example Pty Ltd',
+                'email_address': 'this@isvalid.com',
             },
             self.app.config['SECRET_KEY'],
             self.app.config['INVITE_EMAIL_SALT'],
         )
 
         self.assertEqual(res.status_code, 302)
-        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_id=1234')
+        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_code=1234')
 
     @mock.patch('app.main.views.suppliers.generate_token')
     @mock.patch('app.main.views.suppliers.send_email')
@@ -508,12 +508,12 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             data={'invitedEmail': 'email@example.com'})
 
         self.assertEqual(res.status_code, 302)
-        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_id=1234')
+        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_code=1234')
 
     @mock.patch('app.main.views.suppliers.generate_token')
     @mock.patch('app.main.views.suppliers.send_email')
     @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_not_send_email_if_bad_supplier_id(self, data_api_client, send_email, generate_token):
+    def test_should_not_send_email_if_bad_supplier_code(self, data_api_client, send_email, generate_token):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         data_api_client.find_users.side_effect = HTTPError(Response(404))
 
@@ -553,7 +553,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         )
 
         self.assertEqual(res.status_code, 302)
-        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_id=1234')
+        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_code=1234')
 
     @mock.patch('app.main.views.suppliers.send_email')
     @mock.patch('app.main.views.suppliers.data_api_client')
@@ -600,11 +600,11 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         render_template.assert_called_once_with(
             "emails/invite_user_email.html",
             url="http://localhost/suppliers/create-user/token",
-            supplier="Supplier Name"
+            supplier='Example Pty Ltd'
         )
 
         self.assertEqual(res.status_code, 302)
-        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_id=1234')
+        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_code=1234')
 
     @mock.patch('app.main.views.suppliers.send_email')
     @mock.patch('app.main.views.suppliers.data_api_client')
