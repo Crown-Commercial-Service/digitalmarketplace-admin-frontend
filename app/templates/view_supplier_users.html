@@ -156,9 +156,27 @@
           {{ form.csrf_token }}
           <div class="grid-row">
               <div class="column-two-thirds">
+                  {% if invite_form.name.errors %}
+                  <div class="validation-wrapper">
+                  {% endif %}
+                      <div class="question">
+                          {{ invite_form.name.label(class="question-heading-with-hint") }}
+                          <p class="hint">
+                              Enter the name of the person you wish to invite
+                          </p>
+                          {% if invite_form.name.errors %}
+                          <p class="validation-message" id="error-name-textbox">
+                              {% for error in invite_form.name.errors %}{{ error }}{% endfor %}
+                          </p>
+                          {% endif %}
+                          {{ invite_form.name(class="text-box", autocomplete="off") }}
+                      </div>
+                  {% if invite_form.name.errors %}
+                  </div>
+                  {% endif %}
                   {% if invite_form.email_address.errors %}
                   <div class="validation-wrapper">
-                      {% endif %}
+                  {% endif %}
                       <div class="question">
                           {{ invite_form.email_address.label(class="question-heading-with-hint") }}
                           <p class="hint">
@@ -171,7 +189,7 @@
                           {% endif %}
                           {{ invite_form.email_address(class="text-box", autocomplete="off") }}
                       </div>
-                      {% if invite_form.email_address.errors %}
+                  {% if invite_form.email_address.errors %}
                   </div>
                   {% endif %}
                  <button class="button-save">Send invitation</button>

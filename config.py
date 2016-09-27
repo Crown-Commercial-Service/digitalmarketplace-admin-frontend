@@ -22,6 +22,8 @@ class Config(object):
     CSRF_ENABLED = True
     CSRF_TIME_LIMIT = 8*3600
 
+    DM_MAIN_SERVER_NAME = 'localhost:8000'
+
     DM_S3_DOCUMENT_BUCKET = None
     DM_DOCUMENTS_URL = 'https://assets.dev.digitalmarketplace.service.gov.uk'
     DM_DATA_API_URL = None
@@ -51,12 +53,16 @@ class Config(object):
     RAISE_ERROR_ON_MISSING_FEATURES = True
 
     SHARED_EMAIL_KEY = None
-    INVITE_EMAIL_SALT = 'InviteEmailSalt'
+    INVITE_EMAIL_SALT = 'SupplierInviteEmail'
 
-    INVITE_EMAIL_NAME = 'Digital Marketplace Admin'
-    INVITE_EMAIL_FROM = 'enquiries@digitalmarketplace.service.gov.uk'
+    GENERIC_CONTACT_EMAIL = 'marketplace@digital.gov.au'
+    DM_GENERIC_NOREPLY_EMAIL = 'no-reply@marketplace.digital.gov.au'
+    DM_GENERIC_ADMIN_NAME = 'Digital Marketplace Admin'
+
+    INVITE_EMAIL_NAME = DM_GENERIC_ADMIN_NAME
+    INVITE_EMAIL_FROM = DM_GENERIC_NOREPLY_EMAIL
     INVITE_EMAIL_SUBJECT = 'Your Digital Marketplace invitation'
-    CREATE_USER_PATH = 'suppliers/create-user'
+    CREATE_USER_PATH = 'sellers/create-user'
 
     @staticmethod
     def init_app(app):
@@ -77,6 +83,8 @@ class Test(Config):
     SECRET_KEY = 'TestKeyTestKeyTestKeyTestKeyTestKeyTestKeyX='
 
     DM_TIMEZONE = 'Australia/Sydney'
+
+    DM_MAIN_SERVER_NAME = 'localhost'
 
     DM_LOG_LEVEL = 'CRITICAL'
     DM_LOG_PATH = None
@@ -108,6 +116,7 @@ class Live(Config):
     AUTHENTICATION = True
     DM_HTTP_PROTO = 'https'
     DM_DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
+    DM_MAIN_SERVER_NAME = 'marketplace.service.gov.au'
 
 
 class Staging(Config):

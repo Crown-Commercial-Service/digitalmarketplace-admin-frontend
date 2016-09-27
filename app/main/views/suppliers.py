@@ -4,8 +4,9 @@ from dateutil.parser import parse as parse_date
 
 from .. import main
 from ... import data_api_client, content_loader
-from ..forms import EmailAddressForm, MoveUserForm
+from app.main.forms import MoveUserForm, InviteForm
 from ..auth import role_required
+
 from dmapiclient import HTTPError, APIError
 from dmapiclient.audit import AuditTypes
 from dmutils.email import send_email, generate_token, EmailError
@@ -274,7 +275,7 @@ def find_supplier_users():
     return render_template_with_csrf(
         "view_supplier_users.html",
         users=users["users"],
-        invite_form=EmailAddressForm(),
+        invite_form=InviteForm(),
         move_user_form=MoveUserForm(),
         supplier=supplier['supplier']
     )
@@ -349,7 +350,7 @@ def move_user_to_new_supplier(supplier_code):
         return render_template_with_csrf(
             "view_supplier_users.html",
             status_code=400,
-            invite_form=EmailAddressForm(),
+            invite_form=InviteForm(),
             move_user_form=move_user_form,
             users=users["users"],
             supplier=suppliers['supplier']
@@ -378,7 +379,7 @@ def find_supplier_services():
 @login_required
 @role_required('admin')
 def invite_user(supplier_code):
-    invite_form = EmailAddressForm(request.form)
+    invite_form = InviteForm(request.form)
 
     try:
         supplier = data_api_client.get_supplier(supplier_code)['supplier']
@@ -391,53 +392,55 @@ def invite_user(supplier_code):
             abort(404, "Supplier not found")
 
     if invite_form.validate():
-        token = generate_token(
-            {
-                'supplier_code': supplier_code,
-                'supplier_name': supplier['name'],
-                'email_address': invite_form.email_address.data
-            },
-            current_app.config['SHARED_EMAIL_KEY'],
-            current_app.config['INVITE_EMAIL_SALT']
-        )
+        email_address = invite_form.email_address.data
+        user_name = invite_form.name.data
+        data = {
+            'name': user_name,
+            'emailAddress': email_address,
+            'supplierCode': supplier_code,
+            'supplierName': supplier['name'],
+        }
+        token = generate_token(data, current_app.config['SECRET_KEY'], current_app.config['INVITE_EMAIL_SALT'])
 
-        url = "{}{}/{}".format(
-            request.url_root,
+        url = '{}://{}/{}/{}'.format(
+            current_app.config['DM_HTTP_PROTO'],
+            current_app.config['DM_MAIN_SERVER_NAME'],
             current_app.config['CREATE_USER_PATH'],
             format(token)
         )
 
         email_body = render_template(
-            "emails/invite_user_email.html",
+            'emails/invite_user_email.html',
             url=url,
-            supplier=supplier['name']
+            supplier=supplier['name'],
+            name=user_name,
         )
 
         try:
             send_email(
-                invite_form.email_address.data,
+                email_address,
                 email_body,
                 current_app.config['INVITE_EMAIL_SUBJECT'],
                 current_app.config['INVITE_EMAIL_FROM'],
                 current_app.config['INVITE_EMAIL_NAME'],
-                ["user-invite"]
             )
         except EmailError as e:
             current_app.logger.error(
                 'Invitation email failed to send error {} to {} supplier {} supplier code {} '.format(
                     str(e),
-                    invite_form.email_address.data,
+                    email_address,
                     current_user.supplier_name,
                     current_user.supplier_code)
             )
             abort(503, "Failed to send user invite reset")
 
-        data_api_client.create_audit_event(
-            audit_type=AuditTypes.invite_user,
-            user=current_user.email_address,
-            object_type='suppliers',
-            object_id=supplier_code,
-            data={'invitedEmail': invite_form.email_address.data})
+        try:
+            data_api_client.record_supplier_invite(
+                supplier_code=supplier_code,
+                email_address=email_address
+            )
+        except APIError as e:
+            current_app.logger.warning('Could not record supplier invite for {}: {}'.format(e.message, email_address))
 
         flash('user_invited', 'success')
         return redirect(url_for('.find_supplier_users', supplier_code=supplier_code))

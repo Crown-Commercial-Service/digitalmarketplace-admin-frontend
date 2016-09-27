@@ -388,8 +388,12 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         data_api_client.find_users.return_value = self.load_example_listing("users_response")
 
         response = self.client.post(
-            "/admin/suppliers/1234/invite-user",
-            data={'email_address': 'notatallvalid', 'csrf_token': FakeCsrf.valid_token},
+            '/admin/suppliers/1234/invite-user',
+            data={
+                'name': 'A Name',
+                'email_address': 'notatallvalid',
+                'csrf_token': FakeCsrf.valid_token,
+            },
             follow_redirects=True
         )
 
@@ -397,24 +401,44 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         self.assertTrue("Please enter a valid email address" in response.get_data(as_text=True))
 
     @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_not_allow_missing_name_on_invite_user(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_users.return_value = self.load_example_listing("users_response")
+
+        response = self.client.post(
+            '/admin/suppliers/1234/invite-user',
+            data={
+                'email_address': 'test@example.com',
+                'csrf_token': FakeCsrf.valid_token,
+            },
+            follow_redirects=True
+        )
+
+        self.assertEquals(400, response.status_code)
+        self.assertTrue('name' in response.get_data(as_text=True))
+
+    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_not_allow_missing_email_on_invite_user(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_users.return_value = self.load_example_listing("users_response")
 
         response = self.client.post(
-            "/admin/suppliers/1234/invite-user",
-            data={'csrf_token': FakeCsrf.valid_token},
+            '/admin/suppliers/1234/invite-user',
+            data={
+                'name': 'A Name',
+                'csrf_token': FakeCsrf.valid_token,
+            },
             follow_redirects=True
         )
 
         self.assertEquals(400, response.status_code)
-        self.assertTrue("Email can not be empty" in response.get_data(as_text=True))
+        self.assertTrue("Email cannot be empty" in response.get_data(as_text=True))
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_be_a_404_if_non_int_supplier_code(self, data_api_client):
 
         response = self.client.post(
-            "/admin/suppliers/bad/invite-user",
+            '/admin/suppliers/bad/invite-user',
             data={'csrf_token': FakeCsrf.valid_token},
             follow_redirects=True
         )
@@ -428,7 +452,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
 
         response = self.client.post(
-            "/admin/suppliers/1234/invite-user",
+            '/admin/suppliers/1234/invite-user',
             data={'csrf_token': FakeCsrf.valid_token},
             follow_redirects=True
         )
@@ -443,7 +467,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         data_api_client.find_users.side_effect = HTTPError(Response(404))
 
         response = self.client.post(
-            "/admin/suppliers/1234/invite-user",
+            '/admin/suppliers/1234/invite-user',
             data={'csrf_token': FakeCsrf.valid_token},
             follow_redirects=True
         )
@@ -461,17 +485,19 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         send_email.return_value = True
 
         res = self.client.post(
-            "/admin/suppliers/1234/invite-user",
+            '/admin/suppliers/1234/invite-user',
             data={
+                'name': 'A Name',
                 'email_address': 'this@isvalid.com',
                 'csrf_token': FakeCsrf.valid_token,
             })
 
         generate_token.assert_called_once_with(
             {
-                'supplier_code': 1234,
-                'supplier_name': 'Example Pty Ltd',
-                'email_address': 'this@isvalid.com',
+                'supplierCode': 1234,
+                'supplierName': 'Example Pty Ltd',
+                'emailAddress': 'this@isvalid.com',
+                'name': 'A Name',
             },
             self.app.config['SECRET_KEY'],
             self.app.config['INVITE_EMAIL_SALT'],
@@ -480,49 +506,6 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         self.assertEqual(res.status_code, 302)
         self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_code=1234')
 
-    @mock.patch('app.main.views.suppliers.generate_token')
-    @mock.patch('app.main.views.suppliers.send_email')
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_create_audit_event(self, data_api_client, send_email, generate_token):
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.find_users.return_value = self.load_example_listing('users_response')
-
-        res = self.client.post(
-            '/admin/suppliers/1234/invite-user',
-            data={
-                'email_address': 'email@example.com',
-                'csrf_token': FakeCsrf.valid_token,
-            })
-
-        data_api_client.create_audit_event.assert_called_once_with(
-            audit_type=AuditTypes.invite_user,
-            user='test@example.com',
-            object_type='suppliers',
-            object_id=1234,
-            data={'invitedEmail': 'email@example.com'})
-
-        self.assertEqual(res.status_code, 302)
-        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_code=1234')
-
-    @mock.patch('app.main.views.suppliers.generate_token')
-    @mock.patch('app.main.views.suppliers.send_email')
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_not_send_email_if_bad_supplier_code(self, data_api_client, send_email, generate_token):
-        data_api_client.get_supplier.side_effect = HTTPError(Response(404))
-        data_api_client.find_users.side_effect = HTTPError(Response(404))
-
-        res = self.client.post(
-            "/admin/suppliers/1234/invite-user",
-            data={
-                'email_address': 'this@isvalid.com',
-                'csrf_token': FakeCsrf.valid_token,
-            })
-
-        self.assertFalse(data_api_client.find_users.called)
-        self.assertFalse(send_email.called)
-        self.assertFalse(generate_token.called)
-        self.assertEqual(res.status_code, 404)
-
     @mock.patch('app.main.views.suppliers.send_email')
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_send_email_with_correct_params(self, data_api_client, send_email):
@@ -530,8 +513,9 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         data_api_client.find_users.return_value = self.load_example_listing("users_response")
 
         res = self.client.post(
-            "/admin/suppliers/1234/invite-user",
+            '/admin/suppliers/1234/invite-user',
             data={
+                'name': 'A Name',
                 'email_address': 'this@isvalid.com',
                 'csrf_token': FakeCsrf.valid_token,
             }
@@ -541,9 +525,8 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             'this@isvalid.com',
             mock.ANY,
             'Your Digital Marketplace invitation',
-            'enquiries@digitalmarketplace.service.gov.uk',
-            'Digital Marketplace Admin',
-            ["user-invite"]
+            self.app.config['INVITE_EMAIL_FROM'],
+            self.app.config['INVITE_EMAIL_NAME'],
         )
 
         self.assertEqual(res.status_code, 302)
@@ -556,8 +539,9 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         data_api_client.find_users.return_value = self.load_example_listing("users_response")
 
         res = self.client.post(
-            "/admin/suppliers/1234/invite-user",
+            '/admin/suppliers/1234/invite-user',
             data={
+                'name': 'A Name',
                 'email_address': '  this@isvalid.com  ',
                 'csrf_token': FakeCsrf.valid_token,
             }
@@ -570,7 +554,6 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             mock.ANY,
             mock.ANY,
             mock.ANY,
-            mock.ANY
         )
 
     @mock.patch('app.main.views.suppliers.generate_token')
@@ -585,16 +568,18 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         generate_token.return_value = "token"
 
         res = self.client.post(
-            "/admin/suppliers/1234/invite-user",
+            '/admin/suppliers/1234/invite-user',
             data={
+                'name': 'A Name',
                 'email_address': 'this@isvalid.com',
                 'csrf_token': FakeCsrf.valid_token,
             }
         )
         render_template.assert_called_once_with(
-            "emails/invite_user_email.html",
-            url="http://localhost/suppliers/create-user/token",
-            supplier='Example Pty Ltd'
+            'emails/invite_user_email.html',
+            url='http://localhost/sellers/create-user/token',
+            supplier='Example Pty Ltd',
+            name='A Name',
         )
 
         self.assertEqual(res.status_code, 302)
@@ -609,6 +594,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         res = self.client.post(
             "/admin/suppliers/1234/invite-user",
             data={
+                'name': 'A Name',
                 'email_address': 'this@isvalid.com',
                 'csrf_token': FakeCsrf.valid_token,
             })
@@ -617,9 +603,8 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             u'this@isvalid.com',
             mock.ANY,
             'Your Digital Marketplace invitation',
-            'enquiries@digitalmarketplace.service.gov.uk',
-            'Digital Marketplace Admin',
-            ["user-invite"]
+            self.app.config['INVITE_EMAIL_FROM'],
+            self.app.config['INVITE_EMAIL_NAME'],
         )
 
         self.assertEqual(res.status_code, 503)

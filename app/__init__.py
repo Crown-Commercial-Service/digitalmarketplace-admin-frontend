@@ -53,4 +53,10 @@ def create_app(config_name):
 
     application.add_template_filter(parse_document_upload_time)
 
+    @application.context_processor
+    def extra_template_variables():
+        return {
+            'generic_contact_email': application.config['GENERIC_CONTACT_EMAIL'],
+        }
+
     return application
