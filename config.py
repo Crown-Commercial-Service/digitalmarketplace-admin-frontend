@@ -39,13 +39,7 @@ class Config(object):
         'ENFORCE_TERMS_REVIEW': False,
     }
 
-    STATIC_URL_PATH = URL_PREFIX + '/static'
-    ASSET_PATH = STATIC_URL_PATH + '/'
-    BASE_TEMPLATE_DATA = {
-        'header_class': 'with-proposition',
-        'asset_path': ASSET_PATH,
-        'asset_fingerprinter': AssetFingerprinter(asset_root=ASSET_PATH)
-    }
+    ASSET_PATH = URL_PREFIX + '/static'
 
     # Logging
     DM_LOG_LEVEL = 'DEBUG'
