@@ -108,35 +108,6 @@ class TestLogin(BaseApplicationTest):
             assert_in('HttpOnly', cookie_parts)
             assert_in('Path=/admin', cookie_parts)
 
-    @mock.patch('app.data_api_client')
-    @mock.patch('app.main.views.login.data_api_client')
-    def test_should_redirect_to_login_on_logout(self, login_data_api_client, init_data_api_client):
-        login_data_api_client.authenticate_user.return_value = user_data()
-        init_data_api_client.get_user.return_value = user_data()
-        self.client.post('/admin/login', data={
-            'email_address': 'valid@example.com',
-            'password': '1234567890',
-            'csrf_token': FakeCsrf.valid_token,
-        })
-        res = self.client.get('/admin/logout')
-        assert_equal(res.status_code, 302)
-        assert_equal(urlsplit(res.location).path, '/admin/login')
-
-    @mock.patch('app.data_api_client')
-    @mock.patch('app.main.views.login.data_api_client')
-    def test_logout_should_log_user_out(self, login_data_api_client, init_data_api_client):
-        login_data_api_client.authenticate_user.return_value = user_data()
-        init_data_api_client.get_user.return_value = user_data()
-        self.client.post('/admin/login', data={
-            'email_address': 'valid@example.com',
-            'password': '1234567890',
-            'csrf_token': FakeCsrf.valid_token,
-        })
-        self.client.get('/admin/logout')
-        res = self.client.get('/admin')
-        assert_equal(res.status_code, 302)
-        assert_equal(urlsplit(res.location).path, '/admin/login')
-
     @mock.patch('app.main.views.login.data_api_client')
     def test_should_return_a_403_for_invalid_login(self, data_api_client):
         data_api_client.authenticate_user.return_value = None
@@ -184,6 +155,20 @@ class TestLogin(BaseApplicationTest):
             'csrf_token': FakeCsrf.valid_token,
         })
         assert_equal(res.status_code, 400)
+
+
+class TestLogout(LoggedInApplicationTest):
+
+    def test_should_redirect_to_login_on_logout(self):
+        res = self.client.get('/admin/logout')
+        assert_equal(res.status_code, 302)
+        assert_equal(urlsplit(res.location).path, '/admin/login')
+
+    def test_logout_should_log_user_out(self):
+        self.client.get('/admin/logout')
+        res = self.client.get('/admin')
+        assert_equal(res.status_code, 302)
+        assert_equal(urlsplit(res.location).path, '/admin/login')
 
 
 class TestSession(BaseApplicationTest):
