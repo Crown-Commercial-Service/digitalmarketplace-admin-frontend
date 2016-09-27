@@ -54,15 +54,19 @@ class LoginForm(DmForm):
     ])
 
 
-class EmailAddressForm(DmForm):
-    email_address = StripWhitespaceStringField('Email address', validators=[
+class MoveUserForm(DmForm):
+    user_to_move_email_address = StripWhitespaceStringField('Move an existing user to this supplier', validators=[
         DataRequired(message="Email can not be empty"),
         Email(message="Please enter a valid email address")
     ])
 
 
-class MoveUserForm(DmForm):
-    user_to_move_email_address = StripWhitespaceStringField('Move an existing user to this supplier', validators=[
-        DataRequired(message="Email can not be empty"),
+class InviteForm(DmForm):
+    name = StripWhitespaceStringField('Name', validators=[
+        DataRequired(message="Name cannot be empty"),
+    ])
+
+    email_address = StripWhitespaceStringField('Email address', validators=[
+        DataRequired(message="Email cannot be empty"),
         Email(message="Please enter a valid email address")
     ])
