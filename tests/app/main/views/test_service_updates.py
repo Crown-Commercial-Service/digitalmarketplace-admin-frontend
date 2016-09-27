@@ -2,6 +2,7 @@ import mock
 
 from datetime import datetime
 from dmutils.formats import DISPLAY_DATE_FORMAT
+from dmutils.forms import FakeCsrf
 from dmapiclient.audit import AuditTypes
 
 from ...helpers import LoggedInApplicationTest
@@ -207,7 +208,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
             '/admin/service-updates/123/acknowledge',
             data={
                 'acknowledged': 'false',
-                'audit_date': '2010-01-05'
+                'audit_date': '2010-01-05',
+                'csrf_token': FakeCsrf.valid_token,
             }
         )
 
@@ -233,7 +235,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
             '/admin/service-updates/123/acknowledge',
             data={
                 'acknowledged': 'false',
-                'audit_date': 'invalid'
+                'audit_date': 'invalid',
+                'csrf_token': FakeCsrf.valid_token,
             }
         )
 
@@ -311,7 +314,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         )
         self.assertIn(
             self._replace_whitespace(
-               '<td class="summary-item-field"><span>09:49:22<br/>17 June</span></td>'),  # noqa
+               '<td class="summary-item-field"><span>18:49:22<br/>17 June</span></td>'),  # noqa
             self._replace_whitespace(response.get_data(as_text=True))
         )
         self.assertIn(
@@ -337,7 +340,10 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_call_api_ack_audit_event(self, data_api_client):
-        response = self.client.post('/admin/service-updates/123/acknowledge?audit_date=2010-01-01&acknowledged=all')  # noqa
+        response = self.client.post(
+            '/admin/service-updates/123/acknowledge?audit_date=2010-01-01&acknowledged=all',
+            data={'csrf_token': FakeCsrf.valid_token},
+        )
         self.assertEquals(302, response.status_code)
 
         data_api_client.acknowledge_audit_event.assert_called_with(

@@ -14,7 +14,8 @@ from dmutils.documents import (
     AGREEMENT_FILENAME, SIGNED_AGREEMENT_PREFIX, COUNTERSIGNED_AGREEMENT_FILENAME,
 )
 from dmutils import s3
-from dmutils.formats import datetimeformat
+from dmutils.formats import DateFormatter
+from dmutils.forms import DmForm, render_template_with_csrf
 
 
 @main.route('/suppliers', methods=['GET'])
@@ -29,7 +30,7 @@ def find_suppliers():
             duns_number=request.args.get("supplier_duns_number")
         )['suppliers']
 
-    return render_template(
+    return render_template_with_csrf(
         "view_suppliers.html",
         suppliers=suppliers,
         signed_agreement_prefix=SIGNED_AGREEMENT_PREFIX,
@@ -43,7 +44,7 @@ def find_suppliers():
 def edit_supplier_name(supplier_id):
     supplier = data_api_client.get_supplier(supplier_id)
 
-    return render_template(
+    return render_template_with_csrf(
         "edit_supplier_name.html",
         supplier=supplier["suppliers"]
     )
@@ -66,7 +67,7 @@ def view_supplier_declaration(supplier_id, framework_slug):
 
     content = content_loader.get_manifest(framework_slug, 'declaration').filter(declaration)
 
-    return render_template(
+    return render_template_with_csrf(
         "suppliers/view_declaration.html",
         supplier=supplier,
         framework=framework,
@@ -107,13 +108,14 @@ def list_countersigned_agreement_file(supplier_id, framework_slug):
     countersigned_agreement_document = agreements_bucket.get_key(path)
     if countersigned_agreement_document:
         countersigned_agreement = countersigned_agreement_document
-        countersigned_agreement['last_modified'] = datetimeformat(parse_date(
+        date_formatter = DateFormatter(current_app.config['DM_TIMEZONE'])
+        countersigned_agreement['last_modified'] = date_formatter.datetimeformat(parse_date(
             countersigned_agreement['last_modified']))
         countersigned_agreement = [countersigned_agreement]
     else:
         countersigned_agreement = []
 
-    return render_template(
+    return render_template_with_csrf(
         "suppliers/upload_countersigned_agreement.html",
         supplier=supplier,
         framework=framework,
@@ -208,7 +210,7 @@ def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
     if section is None:
         abort(404)
 
-    return render_template(
+    return render_template_with_csrf(
         "suppliers/edit_declaration.html",
         supplier=supplier,
         framework=framework,
@@ -274,7 +276,7 @@ def find_supplier_users():
     supplier = data_api_client.get_supplier(request.args['supplier_id'])
     users = data_api_client.find_users(request.args.get("supplier_id"))
 
-    return render_template(
+    return render_template_with_csrf(
         "view_supplier_users.html",
         users=users["users"],
         invite_form=EmailAddressForm(),
@@ -317,7 +319,7 @@ def deactivate_user(user_id):
 @login_required
 @role_required('admin')
 def move_user_to_new_supplier(supplier_id):
-    move_user_form = MoveUserForm()
+    move_user_form = MoveUserForm(request.form)
 
     try:
         suppliers = data_api_client.get_supplier(supplier_id)
@@ -329,7 +331,7 @@ def move_user_to_new_supplier(supplier_id):
         else:
             abort(404, "Supplier not found")
 
-    if move_user_form.validate_on_submit():
+    if move_user_form.validate():
         try:
             user = data_api_client.get_user(email_address=move_user_form.user_to_move_email_address.data)
         except HTTPError as e:
@@ -349,13 +351,14 @@ def move_user_to_new_supplier(supplier_id):
             flash("user_not_moved", "error")
         return redirect(url_for('.find_supplier_users', supplier_id=supplier_id))
     else:
-        return render_template(
+        return render_template_with_csrf(
             "view_supplier_users.html",
+            status_code=400,
             invite_form=EmailAddressForm(),
             move_user_form=move_user_form,
             users=users["users"],
             supplier=suppliers["suppliers"]
-        ), 400
+        )
 
 
 @main.route('/suppliers/services', methods=['GET'])
@@ -369,7 +372,7 @@ def find_supplier_services():
     supplier = data_api_client.get_supplier(request.args['supplier_id'])
     services = data_api_client.find_services(request.args.get("supplier_id"))
 
-    return render_template(
+    return render_template_with_csrf(
         "view_supplier_services.html",
         services=services["services"],
         supplier=supplier["suppliers"]
@@ -380,7 +383,7 @@ def find_supplier_services():
 @login_required
 @role_required('admin')
 def invite_user(supplier_id):
-    invite_form = EmailAddressForm()
+    invite_form = EmailAddressForm(request.form)
 
     try:
         suppliers = data_api_client.get_supplier(supplier_id)
@@ -392,7 +395,7 @@ def invite_user(supplier_id):
         else:
             abort(404, "Supplier not found")
 
-    if invite_form.validate_on_submit():
+    if invite_form.validate():
         token = generate_token(
             {
                 "supplier_id": supplier_id,
@@ -418,7 +421,6 @@ def invite_user(supplier_id):
             send_email(
                 invite_form.email_address.data,
                 email_body,
-                current_app.config['DM_MANDRILL_API_KEY'],
                 current_app.config['INVITE_EMAIL_SUBJECT'],
                 current_app.config['INVITE_EMAIL_FROM'],
                 current_app.config['INVITE_EMAIL_NAME'],
@@ -426,11 +428,11 @@ def invite_user(supplier_id):
             )
         except EmailError as e:
             current_app.logger.error(
-                "Invitation email failed to send error {} to {} supplier {} supplier id {} ".format(
+                'Invitation email failed to send error {} to {} supplier {} supplier code {} '.format(
                     str(e),
                     invite_form.email_address.data,
                     current_user.supplier_name,
-                    current_user.supplier_id)
+                    current_user.supplier_code)
             )
             abort(503, "Failed to send user invite reset")
 
@@ -444,10 +446,11 @@ def invite_user(supplier_id):
         flash('user_invited', 'success')
         return redirect(url_for('.find_supplier_users', supplier_id=supplier_id))
     else:
-        return render_template(
+        return render_template_with_csrf(
             "view_supplier_users.html",
+            status_code=400,
             invite_form=invite_form,
             move_user_form=MoveUserForm(),
             users=users["users"],
             supplier=suppliers["suppliers"]
-        ), 400
+        )

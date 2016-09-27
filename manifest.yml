@@ -1,5 +1,5 @@
 applications:
-    - name: dm-dev-admin-frontend
+    - name: dm-dev-admin
       command: python application.py runprodserver
       buildpack: https://github.com/cloudfoundry/buildpack-python.git
       memory: 128M

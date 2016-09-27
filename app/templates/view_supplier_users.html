@@ -96,7 +96,7 @@
       {% call summary.field() %}
       {% if item.locked and current_user.has_role('admin') %}
       <form action="{{ url_for('.unlock_user', user_id=item.id) }}" method="post">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          {{ form.csrf_token }}
           {%
               with
               type = "secondary",
@@ -116,7 +116,7 @@
       {% if item.active %}
         {% if current_user.has_role('admin') %}
           <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              {{ form.csrf_token }}
               {%
                   with
                   type = "destructive",
@@ -131,7 +131,7 @@
       {% else %}
         {% if current_user.has_role('admin') %}
           <form action="{{ url_for('.activate_user', user_id=item.id) }}" method="post">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              {{ form.csrf_token }}
               {%
                   with
                   type = "secondary",
@@ -153,9 +153,9 @@
   {% if current_user.has_role('admin') %}
   <div class='page-section'>
       <form action="{{ url_for('.invite_user', supplier_id=supplier.id) }}" method="post">
+          {{ form.csrf_token }}
           <div class="grid-row">
               <div class="column-two-thirds">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                   {% if invite_form.email_address.errors %}
                   <div class="validation-wrapper">
                       {% endif %}
@@ -182,9 +182,9 @@
 
     <div class='page-section'>
         <form action="{{ url_for('.move_user_to_new_supplier', supplier_id=supplier.id) }}" method="post">
+            {{ form.csrf_token }}
             <div class="grid-row">
                 <div class="column-two-thirds">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     {% if move_user_form.user_to_move_email_address.errors %}
                     <div class="validation-wrapper">
                         {% endif %}

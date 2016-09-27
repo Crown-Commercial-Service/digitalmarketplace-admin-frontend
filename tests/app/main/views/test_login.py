@@ -7,6 +7,7 @@ try:
 except ImportError:
     from urllib.parse import urlsplit
 
+from dmutils.forms import FakeCsrf
 from dmutils.user import User
 
 from ...helpers import BaseApplicationTest, LoggedInApplicationTest
@@ -20,7 +21,8 @@ def user_data(role='admin'):
             'role': role,
             'locked': False,
             'active': True,
-            'name': "tester"
+            'name': 'tester',
+            'termsAcceptedAt': '2015-01-01T00:00:00.0Z'
         }
     }
 
@@ -43,19 +45,18 @@ class TestLogin(BaseApplicationTest):
         init_data_api_client.get_user.return_value = user_data()
         res = self.client.post('/admin/login', data={
             'email_address': 'valid@email.com',
-            'password': '1234567890'
+            'password': '1234567890',
+            'csrf_token': FakeCsrf.valid_token,
         })
         assert_equal(res.status_code, 302)
-
-        res = self.client.get('/admin')
-        assert_equal(res.status_code, 200)
 
     @mock.patch('app.main.views.login.data_api_client')
     def test_should_strip_whitespace_surrounding_login_email_address_field(self, data_api_client):
         data_api_client.authenticate_user.return_value = user_data()
         self.client.post("/admin/login", data={
             'email_address': '  valid@email.com  ',
-            'password': '1234567890'
+            'password': '1234567890',
+            'csrf_token': FakeCsrf.valid_token,
         })
         data_api_client.authenticate_user.assert_called_with('valid@email.com', '1234567890')
 
@@ -64,7 +65,8 @@ class TestLogin(BaseApplicationTest):
         data_api_client.authenticate_user.return_value = user_data()
         self.client.post("/admin/login", data={
             'email_address': 'valid@email.com',
-            'password': '  1234567890  '
+            'password': '  1234567890  ',
+            'csrf_token': FakeCsrf.valid_token,
         })
         data_api_client.authenticate_user.assert_called_with('valid@email.com', '  1234567890  ')
 
@@ -74,6 +76,7 @@ class TestLogin(BaseApplicationTest):
         res = self.client.post('/admin/login?next=/admin/safe', data={
             'email_address': 'valid@example.com',
             'password': '1234567890',
+            'csrf_token': FakeCsrf.valid_token,
         })
         assert_equal(res.status_code, 302)
         assert_equal(urlsplit(res.location).path, '/admin/safe')
@@ -84,6 +87,7 @@ class TestLogin(BaseApplicationTest):
         res = self.client.post('/admin/login?next=http://badness.com', data={
             'email_address': 'valid@example.com',
             'password': '1234567890',
+            'csrf_token': FakeCsrf.valid_token,
         })
         assert_equal(res.status_code, 302)
         assert_equal(urlsplit(res.location).path, '/admin')
@@ -97,38 +101,12 @@ class TestLogin(BaseApplicationTest):
             res = self.client.post('/admin/login', data={
                 'email_address': 'valid@example.com',
                 'password': '1234567890',
+                'csrf_token': FakeCsrf.valid_token,
             })
             cookie_parts = res.headers['Set-Cookie'].split('; ')
             assert_in('Secure', cookie_parts)
             assert_in('HttpOnly', cookie_parts)
             assert_in('Path=/admin', cookie_parts)
-
-    @mock.patch('app.data_api_client')
-    @mock.patch('app.main.views.login.data_api_client')
-    def test_should_redirect_to_login_on_logout(self, login_data_api_client, init_data_api_client):
-        login_data_api_client.authenticate_user.return_value = user_data()
-        init_data_api_client.get_user.return_value = user_data()
-        self.client.post('/admin/login', data={
-            'email_address': 'valid@example.com',
-            'password': '1234567890',
-        })
-        res = self.client.get('/admin/logout')
-        assert_equal(res.status_code, 302)
-        assert_equal(urlsplit(res.location).path, '/admin/login')
-
-    @mock.patch('app.data_api_client')
-    @mock.patch('app.main.views.login.data_api_client')
-    def test_logout_should_log_user_out(self, login_data_api_client, init_data_api_client):
-        login_data_api_client.authenticate_user.return_value = user_data()
-        init_data_api_client.get_user.return_value = user_data()
-        self.client.post('/admin/login', data={
-            'email_address': 'valid@example.com',
-            'password': '1234567890',
-        })
-        self.client.get('/admin/logout')
-        res = self.client.get('/admin')
-        assert_equal(res.status_code, 302)
-        assert_equal(urlsplit(res.location).path, '/admin/login')
 
     @mock.patch('app.main.views.login.data_api_client')
     def test_should_return_a_403_for_invalid_login(self, data_api_client):
@@ -137,6 +115,7 @@ class TestLogin(BaseApplicationTest):
         res = self.client.post('/admin/login', data={
             'email_address': 'valid@example.com',
             'password': '1234567890',
+            'csrf_token': FakeCsrf.valid_token,
         })
 
         assert_equal(res.status_code, 403)
@@ -148,6 +127,7 @@ class TestLogin(BaseApplicationTest):
         res = self.client.post('/admin/login', data={
             'email_address': 'valid@example.com',
             'password': '1234567890',
+            'csrf_token': FakeCsrf.valid_token,
         })
 
         assert_equal(res.status_code, 403)
@@ -159,6 +139,7 @@ class TestLogin(BaseApplicationTest):
         res = self.client.post('/admin/login', data={
             'email_address': 'valid@example.com',
             'password': '1234567890',
+            'csrf_token': FakeCsrf.valid_token,
         })
 
         assert_equal(res.status_code, 302)
@@ -171,15 +152,30 @@ class TestLogin(BaseApplicationTest):
         res = self.client.post('/admin/login', data={
             'email_address': 'invalid',
             'password': '1234567890',
+            'csrf_token': FakeCsrf.valid_token,
         })
         assert_equal(res.status_code, 400)
 
 
+class TestLogout(LoggedInApplicationTest):
+
+    def test_should_redirect_to_login_on_logout(self):
+        res = self.client.get('/admin/logout')
+        assert_equal(res.status_code, 302)
+        assert_equal(urlsplit(res.location).path, '/admin/login')
+
+    def test_logout_should_log_user_out(self):
+        self.client.get('/admin/logout')
+        res = self.client.get('/admin')
+        assert_equal(res.status_code, 302)
+        assert_equal(urlsplit(res.location).path, '/admin/login')
+
+
 class TestSession(BaseApplicationTest):
     def test_url_with_non_canonical_trailing_slash(self):
-        response = self.client.get('/admin/')
+        response = self.client.get('/admin/login/')
         self.assertEquals(301, response.status_code)
-        self.assertEquals("http://localhost/admin", response.location)
+        self.assertEquals("http://localhost/admin/login", response.location)
 
 
 class TestLoginFormsNotAutofillable(BaseApplicationTest):
@@ -216,7 +212,15 @@ class TestRoleRequired(LoggedInApplicationTest):
     def user_loader(self, user_id):
         if user_id:
             return User(
-                user_id, 'test@example.com', None, None, False, True, 'tester', 'admin-ccs-category'
+                user_id,
+                'test@example.com',
+                None,
+                None,
+                False,
+                True,
+                'tester',
+                'admin-ccs-category',
+                '2015-01-01T00:00:00.0Z'
             )
 
     def test_admin_ccs_can_view_admin_dashboard(self):

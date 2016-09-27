@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 from flask import render_template, request, Response
 from flask_login import login_required, flash
 
+from dmutils.forms import render_template_with_csrf
+
 import unicodecsv
 from .. import main
 from ... import data_api_client
@@ -20,18 +22,19 @@ def find_user_by_email_address():
         users = data_api_client.get_user(email_address=request.args.get("email_address"))
 
     if users:
-        return render_template(
+        return render_template_with_csrf(
             template,
             users=[users['users']],
             email_address=request.args.get("email_address")
         )
     else:
         flash('no_users', 'error')
-        return render_template(
+        return render_template_with_csrf(
             template,
+            status_code=404,
             users=list(),
             email_address=None
-        ), 404
+        )
 
 
 @main.route('/users/download', methods=['GET'])

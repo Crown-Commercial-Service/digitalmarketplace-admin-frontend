@@ -3,10 +3,9 @@ from datetime import timedelta, datetime
 from flask import Flask, request, redirect
 from flask.ext.bootstrap import Bootstrap
 from flask_login import LoginManager
-from flask_wtf.csrf import CsrfProtect
 
 import dmapiclient
-from dmutils import init_app, init_frontend_app, flask_featureflags, formats
+from dmutils import init_app, init_frontend_app, formats
 from dmutils.user import User
 from dmcontent.content_loader import ContentLoader
 
@@ -14,9 +13,7 @@ from config import configs
 
 
 bootstrap = Bootstrap()
-csrf = CsrfProtect()
 data_api_client = dmapiclient.DataAPIClient()
-feature_flags = flask_featureflags.FeatureFlag()
 login_manager = LoginManager()
 
 content_loader = ContentLoader('app/content')
@@ -39,11 +36,8 @@ def create_app(config_name):
         configs[config_name],
         bootstrap=bootstrap,
         data_api_client=data_api_client,
-        feature_flags=feature_flags,
         login_manager=login_manager
     )
-    # Should be incorporated into digitalmarketplace-utils as well
-    csrf.init_app(application)
 
     application.permanent_session_lifetime = timedelta(hours=1)
     from .main import main as main_blueprint

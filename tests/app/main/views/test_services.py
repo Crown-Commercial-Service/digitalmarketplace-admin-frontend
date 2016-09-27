@@ -102,7 +102,7 @@ class TestServiceEdit(LoggedInApplicationTest):
     def test_service_edit_documents_post(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
-            'supplierId': 2,
+            'supplierCode': 2,
             'frameworkSlug': 'g-cloud-7',
             'lot': 'SCS',
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",

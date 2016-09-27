@@ -24,9 +24,9 @@
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
   <form method="post">
+    {{ form.csrf_token }}
     <div class="grid-row">
       <div class="column-two-thirds">
-        <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
         {%
           with
           question = "New name",

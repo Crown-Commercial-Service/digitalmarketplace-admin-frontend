@@ -5,8 +5,6 @@
   Digital Marketplace admin
 {% endblock %}
 
-{% set csrf = csrf_token() %}
-
 {% block breadcrumb %}
   {%
     with items = [
@@ -130,7 +128,7 @@
                   {% elif current_user.has_role('admin') %}
                     <form action="{{ url_for('.submit_service_update_acknowledgment', audit_id=item.id) }}" method="post">
                         <div style="display:none;">
-                            <input name="csrf_token" type="hidden" value="{{ csrf }}">
+                            {{ form.csrf_token }}
                             <input name="acknowledged" type="hidden" value="{{ acknowledged }}">
                             <input name="audit_date" type="hidden" value="{% if form.audit_date.data %}{{ form.audit_date.data }}{% endif %}">
                         </div>

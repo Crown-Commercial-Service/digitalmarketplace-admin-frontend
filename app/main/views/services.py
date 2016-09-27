@@ -3,8 +3,9 @@ from flask_login import login_required, current_user
 from datetime import datetime
 
 from dmapiclient import HTTPError
-from dmutils.formats import DATETIME_FORMAT
 from dmcontent.formats import format_service_price
+from dmutils.formats import DATETIME_FORMAT
+from dmutils.forms import render_template_with_csrf
 from dmutils.documents import upload_service_documents
 from dmutils.s3 import S3
 
@@ -51,7 +52,7 @@ def view(service_id):
     service_data['priceString'] = format_service_price(service_data)
     content = content_loader.get_manifest('g-cloud-6', 'edit_service_as_admin').filter(service_data)
 
-    return render_template(
+    return render_template_with_csrf(
         "view_service.html",
         sections=content,
         service_data=service_data,
@@ -101,7 +102,7 @@ def edit(service_id, section):
 
     content = content_loader.get_manifest('g-cloud-6', 'edit_service_as_admin').filter(service_data)
 
-    return render_template(
+    return render_template_with_csrf(
         "edit_section.html",
         section=content.get_section(section),
         service_data=service_data
@@ -168,7 +169,7 @@ def compare(old_archived_service_id, new_archived_service_id):
             service_data_revision_2
         )
 
-    return render_template(
+    return render_template_with_csrf(
         "compare_revisions.html",
         diffs=service_diffs,
         revision_dates=revision_dates,
@@ -216,12 +217,13 @@ def update(service_id, section_id):
     if errors:
         if not posted_data.get('serviceName', None):
             posted_data['serviceName'] = service.get('serviceName', '')
-        return render_template(
+        return render_template_with_csrf(
             "edit_section.html",
+            status_code=400,
             section=section,
             service_data=posted_data,
             service_id=service_id,
             errors=errors
-        ), 400
+        )
 
     return redirect(url_for(".view", service_id=service_id))

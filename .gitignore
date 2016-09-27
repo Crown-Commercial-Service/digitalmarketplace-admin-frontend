@@ -69,3 +69,7 @@ app/static
 
 # Pycharm
 .idea/
+
+# Vim
+*.swo
+*.swp

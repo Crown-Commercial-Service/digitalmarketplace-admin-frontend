@@ -85,7 +85,7 @@ class TestUsersView(LoggedInApplicationTest):
 
         last_login = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[3].strip()
-        self.assertEquals('10:33:53', last_login)
+        self.assertEquals('19:33:53', last_login)
 
         last_login_day = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[4].strip()
@@ -93,7 +93,7 @@ class TestUsersView(LoggedInApplicationTest):
 
         last_password_changed = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[5].strip()
-        self.assertEquals('13:46:01', last_password_changed)
+        self.assertEquals('22:46:01', last_password_changed)
 
         last_password_changed_day = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[6].strip()

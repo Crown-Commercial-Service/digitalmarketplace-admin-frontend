@@ -14,11 +14,14 @@ class Config(object):
         os.path.abspath(os.path.dirname(__file__))
     )
     DEBUG = True
-    WTF_CSRF_ENABLED = True
     SESSION_COOKIE_NAME = 'dm_admin_session'
     SESSION_COOKIE_PATH = '/admin'
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = True
+
+    CSRF_ENABLED = True
+    CSRF_TIME_LIMIT = 8*3600
+
     DM_S3_DOCUMENT_BUCKET = None
     DM_DOCUMENTS_URL = 'https://assets.dev.digitalmarketplace.service.gov.uk'
     DM_DATA_API_URL = None
@@ -26,10 +29,15 @@ class Config(object):
     SECRET_KEY = None
     DM_HTTP_PROTO = 'http'
     DM_DEFAULT_CACHE_MAX_AGE = 30
+    DM_TIMEZONE = 'Australia/Sydney'
 
     DM_AGREEMENTS_BUCKET = None
     DM_COMMUNICATIONS_BUCKET = None
     DM_ASSETS_URL = None
+
+    FEATURE_FLAGS = {
+        'ENFORCE_TERMS_REVIEW': False,
+    }
 
     STATIC_URL_PATH = URL_PREFIX + '/static'
     ASSET_PATH = STATIC_URL_PATH + '/'
@@ -51,7 +59,6 @@ class Config(object):
     SHARED_EMAIL_KEY = None
     INVITE_EMAIL_SALT = 'InviteEmailSalt'
 
-    DM_MANDRILL_API_KEY = None
     INVITE_EMAIL_NAME = 'Digital Marketplace Admin'
     INVITE_EMAIL_FROM = 'enquiries@digitalmarketplace.service.gov.uk'
     INVITE_EMAIL_SUBJECT = 'Your Digital Marketplace invitation'
@@ -69,16 +76,18 @@ class Config(object):
 
 class Test(Config):
     DEBUG = True
+    CSRF_ENABLED = False
+    CSRF_FAKED = True
     AUTHENTICATION = True
-    WTF_CSRF_ENABLED = False
     DM_DOCUMENTS_URL = 'https://assets.test.digitalmarketplace.service.gov.uk'
-    SECRET_KEY = "test_secret"
+    SECRET_KEY = 'TestKeyTestKeyTestKeyTestKeyTestKeyTestKeyX='
+
+    DM_TIMEZONE = 'Australia/Sydney'
 
     DM_LOG_LEVEL = 'CRITICAL'
     DM_LOG_PATH = None
-    SHARED_EMAIL_KEY = 'KEY'
+    SHARED_EMAIL_KEY = SECRET_KEY
     INVITE_EMAIL_SALT = 'SALT'
-    DM_MANDRILL_API_KEY = "MANDRILL"
     DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-communications-dev-dev'
     DM_AGREEMENTS_BUCKET = 'digitalmarketplace-documents-dev-dev'
 
@@ -92,11 +101,10 @@ class Development(Config):
 
     DM_DATA_API_URL = "http://localhost:5000"
     DM_DATA_API_AUTH_TOKEN = "myToken"
-    SECRET_KEY = "verySecretKey"
+    SECRET_KEY = 'DevKeyDevKeyDevKeyDevKeyDevKeyDevKeyDevKeyX='
     DM_S3_DOCUMENT_BUCKET = "digitalmarketplace-documents-dev-dev"
     DM_DOCUMENTS_URL = "https://{}.s3-eu-west-1.amazonaws.com".format(DM_S3_DOCUMENT_BUCKET)
-    DM_MANDRILL_API_KEY = "not_a_real_key"
-    SHARED_EMAIL_KEY = "very_secret"
+    SHARED_EMAIL_KEY = SECRET_KEY
     DM_AGREEMENTS_BUCKET = "digitalmarketplace-agreements-dev-dev"
     DM_COMMUNICATIONS_BUCKET = "digitalmarketplace-communications-dev-dev"
 
@@ -111,7 +119,6 @@ class Live(Config):
 class Staging(Config):
     DEBUG = False
     AUTHENTICATION = True
-    WTF_CSRF_ENABLED = False
     DM_DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
 
 
