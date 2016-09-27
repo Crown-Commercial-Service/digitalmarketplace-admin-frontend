@@ -52,15 +52,6 @@
                 <input type="submit" value="Search" class="button-save">
               </form>
 
-              <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
-                <label class="question-heading" for="supplier_duns_number">Find suppliers by DUNS number</label>
-                <p class="hint">
-                  DUNS numbers are usually 9 digits long, eg 234554321
-                </p>
-                <input type="text" name="supplier_duns_number" id="supplier_duns_number" class="text-box">
-                <input type="submit" value="Search" class="button-save">
-              </form>
-
               {% if current_user.has_any_role('admin') %}
 
               <form action="{{ url_for('.find_user_by_email_address') }}" method="get" class="question">
@@ -94,9 +85,9 @@
   {% endwith %}
   {% with items = [
       {
-          "body": "View G-Cloud 8 statistics",
-          "link": "/admin/statistics/g-cloud-8",
-          "title": "G-Cloud 8 statistics"
+          "body": "View Digital Service Professionals statistics",
+          "link": "/admin/statistics/digital-service-professionals",
+          "title": "Digital Service Professionals statistics"
       }
   ]
   %}
