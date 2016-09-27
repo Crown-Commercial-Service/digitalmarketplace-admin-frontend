@@ -1,8 +1,14 @@
 from __future__ import unicode_literals
+
+from itertools import chain
+from collections import OrderedDict
+
 from flask import render_template, request, Response
 from flask_login import login_required, flash
 from datetime import datetime
 from dmutils import csv_generator
+from six import itervalues, iterkeys
+from unicodecsv import DictWriter
 
 from .. import main
 from ... import data_api_client
@@ -87,42 +93,79 @@ def download_users(framework_slug):
 @login_required
 @role_required('admin')
 def download_buyers_and_briefs():
-    buyers = (user for user in data_api_client.find_users_iter(role='buyer'))
-    briefs = (brief for brief in data_api_client.find_briefs_iter(with_users=True))
-    buyer_headings = [
+    users = {user["id"]: dict(user, briefs=[]) for user in data_api_client.find_users_iter(role="buyer")}
+
+    # join users with briefs (a "hash join")
+    for brief in data_api_client.find_briefs_iter(with_users=True):
+        for user in brief["users"]:
+            users[user["id"]]["briefs"].append(brief)
+
+    # not using DATETIME_FORMAT as we'll be using this in a filename and don't want any odd characters
+    timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
+
+    # "verbatim" fields have the same column heading as the dict key they're retrieved from
+    user_verbatim_fields = (
         "name",
         "emailAddress",
         "phoneNumber",
-        "createdAt",
-        "briefs"
-    ]
+    )
+    # "generated" fields have a column heading "label" and callable to generate the field value given a user(/brief)
+    user_generated_fields = OrderedDict((
+        (
+            "createdAtDate",
+            lambda brief: brief.get("createdAt", "").partition("T")[0],  # cheap truncation of iso timestamp
+        ),
+    ))
+    brief_verbatim_fields = (
+        "id",
+        "title",
+        "location",
+        "lotSlug",
+    )
+    brief_generated_fields = OrderedDict((
+        (
+            "status",
+            lambda brief: "open" if brief.get("status") == "live" else brief.get("status", ""),
+        ),
+        (
+            "applicationsClosedAtDateIfClosed",
+            lambda brief:
+                (brief.get("applicationsClosedAt", "") if brief.get("status") == "closed" else "").partition("T")[0],
+        ),
+    ))
 
-    buyers_dict = {}
-    for buyer in buyers:
-        buyer['briefs'] = []
-        buyers_dict[buyer['id']] = buyer
-
-    for brief in briefs:
-        for user in brief['users']:
-            brief_string = '{} - {} - {}'.format(
-                brief['title'],
-                brief.get('location'),
-                'open' if brief['status'] == 'live' else brief['status'],
+    rows_iter = chain(
+        (
+            # header row
+            tuple(chain(
+                ("user.{}".format(field_name) for field_name in user_verbatim_fields),
+                ("user.{}".format(field_name) for field_name in iterkeys(user_generated_fields)),
+                ("brief.{}".format(field_name) for field_name in brief_verbatim_fields),
+                ("brief.{}".format(field_name) for field_name in iterkeys(brief_generated_fields)),
+            )),
+        ),
+        (
+            # data rows
+            tuple(chain(
+                (user.get(field_name, "") for field_name in user_verbatim_fields),
+                (func(user) for func in itervalues(user_generated_fields)),
+                (brief.get(field_name, "") for field_name in brief_verbatim_fields),
+                (func(brief) for func in itervalues(brief_generated_fields)),
+            ))
+            for user, brief in chain.from_iterable(  # using from_iterable to flatten an iterable of iterables (of
+                                                     # (user, brief) pairs) into a single iterable
+                (
+                    (user, brief) for brief in
+                    (user["briefs"] or ({},))   # if user has an empty seq of briefs add a single fake blank
+                                                # one ("outer join" behaviour)
+                )
+                for user in sorted(itervalues(users), key=lambda user: user["name"])
             )
-            buyers_dict[user['id']]['briefs'].append(brief_string)
-
-    formatted_buyer_brief_rows = []
-    for id_num, buyer_with_briefs in buyers_dict.items():
-        buyer_with_briefs['briefs'] = '; '.join(buyer_with_briefs['briefs'])
-        formatted_buyer_brief_rows.append([buyer_with_briefs.get(header, '') for header in buyer_headings])
-
-    formatted_buyer_brief_rows.sort(key=lambda x: x[0])
-    formatted_buyer_brief_rows.insert(0, buyer_headings)
-
-    timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
+        ),
+    )
 
     return Response(
-        csv_generator.iter_csv(formatted_buyer_brief_rows),
+        csv_generator.iter_csv(rows_iter),
         mimetype='text/csv',
         headers={
             "Content-Disposition": "attachment;filename=buyers_{}.csv".format(timestamp),
