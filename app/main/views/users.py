@@ -100,12 +100,16 @@ def download_buyers_and_briefs():
         for user in brief["users"]:
             users[user["id"]]["briefs"].append(brief)
 
+    # not using DATETIME_FORMAT as we'll be using this in a filename and don't want any odd characters
     timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
+
+    # "verbatim" fields have the same column heading as the dict key they're retrieved from
     user_verbatim_fields = (
         "name",
         "emailAddress",
         "phoneNumber",
     )
+    # "generated" fields have a column heading "label" and callable to generate the field value given a user(/brief)
     user_generated_fields = OrderedDict((
         (
             "createdAtDate",
@@ -148,7 +152,8 @@ def download_buyers_and_briefs():
                 (brief.get(field_name, "") for field_name in brief_verbatim_fields),
                 (func(brief) for func in itervalues(brief_generated_fields)),
             ))
-            for user, brief in chain.from_iterable(
+            for user, brief in chain.from_iterable(  # using from_iterable to flatten an iterable of iterables (of
+                                                     # (user, brief) pairs) into a single iterable
                 (
                     (user, brief) for brief in
                     (user["briefs"] or ({},))   # if user has an empty seq of briefs add a single fake blank
