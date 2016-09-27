@@ -64,7 +64,7 @@
 
       {% call summary.field() %}
           {% if item.role == 'supplier' %}
-          <a href="{{ url_for('.find_suppliers', supplier_id=item.supplier.supplierId) }}">{{ item.supplier.name }}</a>
+          <a href="{{ url_for('.find_suppliers', supplier_code=item.supplier.supplierCode) }}">{{ item.supplier.name }}</a>
           {% endif %}
       {% endcall %}
 

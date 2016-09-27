@@ -13,8 +13,9 @@
     "role": "supplier",
     "supplier": {
       "name": "SME Corp UK Limited",
-      "supplierId": 1000
+      "supplierCode": 1000
     },
-    "updatedAt": "2015-07-23T09:33:53.507659Z"
+    "updatedAt": "2015-07-23T09:33:53.507659Z",
+	"termsAcceptedAt": "2016-09-23T01:21:44.309585Z"
   }
 }
