@@ -22,8 +22,8 @@ from dmutils.forms import DmForm, render_template_with_csrf
 @login_required
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
 def find_suppliers():
-    if request.args.get("supplier_id"):
-        suppliers = [data_api_client.get_supplier(request.args.get("supplier_id"))['suppliers']]
+    if request.args.get('supplier_code'):
+        suppliers = [data_api_client.get_supplier(request.args.get('supplier_code'))['suppliers']]
     else:
         suppliers = data_api_client.find_suppliers(
             prefix=request.args.get("supplier_name_prefix"),
@@ -38,28 +38,28 @@ def find_suppliers():
     )
 
 
-@main.route('/suppliers/<string:supplier_id>/edit/name', methods=['GET'])
+@main.route('/suppliers/<string:supplier_code>/edit/name', methods=['GET'])
 @login_required
 @role_required('admin')
-def edit_supplier_name(supplier_id):
-    supplier = data_api_client.get_supplier(supplier_id)
+def edit_supplier_name(supplier_code):
+    supplier = data_api_client.get_supplier(supplier_code)
 
     return render_template_with_csrf(
         "edit_supplier_name.html",
-        supplier=supplier["suppliers"]
+        supplier=supplier['supplier']
     )
 
 
-@main.route('/suppliers/<string:supplier_id>/edit/declarations/<string:framework_slug>', methods=['GET'])
+@main.route('/suppliers/<string:supplier_code>/edit/declarations/<string:framework_slug>', methods=['GET'])
 @login_required
 @role_required('admin-ccs-sourcing')
-def view_supplier_declaration(supplier_id, framework_slug):
-    supplier = data_api_client.get_supplier(supplier_id)['suppliers']
+def view_supplier_declaration(supplier_code, framework_slug):
+    supplier = data_api_client.get_supplier(supplier_code)['supplier']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
     if framework['status'] not in ['pending', 'standstill', 'live']:
         abort(403)
     try:
-        declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
+        declaration = data_api_client.get_supplier_declaration(supplier_code, framework_slug)['declaration']
     except APIError as e:
         if e.status_code != 404:
             raise
@@ -76,15 +76,15 @@ def view_supplier_declaration(supplier_id, framework_slug):
     )
 
 
-@main.route('/suppliers/<supplier_id>/agreements/<framework_slug>/<document_name>', methods=['GET'])
+@main.route('/suppliers/<supplier_code>/agreements/<framework_slug>/<document_name>', methods=['GET'])
 @login_required
 @role_required('admin', 'admin-ccs-sourcing')
-def download_agreement_file(supplier_id, framework_slug, document_name):
-    supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
+def download_agreement_file(supplier_code, framework_slug, document_name):
+    supplier_framework = data_api_client.get_supplier_framework_info(supplier_code, framework_slug)['frameworkInterest']
     if not supplier_framework.get('declaration'):
         abort(404)
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
-    prefix = get_agreement_document_path(framework_slug, supplier_id, document_name)
+    prefix = get_agreement_document_path(framework_slug, supplier_code, document_name)
     agreement_documents = agreements_bucket.list(prefix=prefix)
     if not len(agreement_documents):
         abort(404)
@@ -96,15 +96,15 @@ def download_agreement_file(supplier_id, framework_slug, document_name):
     return redirect(url)
 
 
-@main.route('/suppliers/<supplier_id>/countersigned-agreements/<framework_slug>',
+@main.route('/suppliers/<supplier_code>/countersigned-agreements/<framework_slug>',
             methods=['GET'])
 @login_required
 @role_required('admin-ccs-sourcing')
-def list_countersigned_agreement_file(supplier_id, framework_slug):
-    supplier = data_api_client.get_supplier(supplier_id)['suppliers']
+def list_countersigned_agreement_file(supplier_code, framework_slug):
+    supplier = data_api_client.get_supplier(supplier_code)['supplier']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
-    path = get_agreement_document_path(framework_slug, supplier_id, COUNTERSIGNED_AGREEMENT_FILENAME)
+    path = get_agreement_document_path(framework_slug, supplier_code, COUNTERSIGNED_AGREEMENT_FILENAME)
     countersigned_agreement_document = agreements_bucket.get_key(path)
     if countersigned_agreement_document:
         countersigned_agreement = countersigned_agreement_document
@@ -124,10 +124,10 @@ def list_countersigned_agreement_file(supplier_id, framework_slug):
     )
 
 
-@main.route('/suppliers/<supplier_id>/countersigned-agreements/<framework_slug>', methods=['POST'])
+@main.route('/suppliers/<supplier_code>/countersigned-agreements/<framework_slug>', methods=['POST'])
 @login_required
 @role_required('admin-ccs-sourcing')
-def upload_countersigned_agreement_file(supplier_id, framework_slug):
+def upload_countersigned_agreement_file(supplier_code, framework_slug):
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
     errors = {}
 
@@ -137,14 +137,14 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
             errors['countersigned_agreement'] = 'not_pdf'
 
         if 'countersigned_agreement' not in errors.keys():
-            filename = get_agreement_document_path(framework_slug, supplier_id, COUNTERSIGNED_AGREEMENT_FILENAME)
+            filename = get_agreement_document_path(framework_slug, supplier_code, COUNTERSIGNED_AGREEMENT_FILENAME)
             agreements_bucket.save(filename, the_file)
 
             data_api_client.create_audit_event(
                 audit_type=AuditTypes.upload_countersigned_agreement,
                 user=current_user.email_address,
                 object_type='suppliers',
-                object_id=supplier_id,
+                object_id=supplier_code,
                 data={'upload_countersigned_agreement': filename})
 
             flash('countersigned_agreement', 'upload_countersigned_agreement')
@@ -155,18 +155,18 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
 
     return redirect(url_for(
         '.list_countersigned_agreement_file',
-        supplier_id=supplier_id,
+        supplier_code=supplier_code,
         framework_slug=framework_slug)
     )
 
 
-@main.route('/suppliers/<supplier_id>/countersigned-agreements-remove/<framework_slug>',
+@main.route('/suppliers/<supplier_code>/countersigned-agreements-remove/<framework_slug>',
             methods=['GET', 'POST'])
 @login_required
 @role_required('admin-ccs-sourcing')
-def remove_countersigned_agreement_file(supplier_id, framework_slug):
+def remove_countersigned_agreement_file(supplier_code, framework_slug):
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
-    document = get_agreement_document_path(framework_slug, supplier_id, COUNTERSIGNED_AGREEMENT_FILENAME)
+    document = get_agreement_document_path(framework_slug, supplier_code, COUNTERSIGNED_AGREEMENT_FILENAME)
 
     if request.method == 'GET':
         flash('countersigned_agreement', 'remove_countersigned_agreement')
@@ -178,28 +178,28 @@ def remove_countersigned_agreement_file(supplier_id, framework_slug):
             audit_type=AuditTypes.delete_countersigned_agreement,
             user=current_user.email_address,
             object_type='suppliers',
-            object_id=supplier_id,
+            object_id=supplier_code,
             data={'upload_countersigned_agreement': document})
 
     return redirect(url_for(
         '.list_countersigned_agreement_file',
-        supplier_id=supplier_id,
+        supplier_code=supplier_code,
         framework_slug=framework_slug)
     )
 
 
 @main.route(
-    '/suppliers/<string:supplier_id>/edit/declarations/<string:framework_slug>/<string:section_id>',
+    '/suppliers/<string:supplier_code>/edit/declarations/<string:framework_slug>/<string:section_id>',
     methods=['GET'])
 @login_required
 @role_required('admin-ccs-sourcing')
-def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
-    supplier = data_api_client.get_supplier(supplier_id)['suppliers']
+def edit_supplier_declaration_section(supplier_code, framework_slug, section_id):
+    supplier = data_api_client.get_supplier(supplier_code)['supplier']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
     if framework['status'] not in ['pending', 'standstill', 'live']:
         abort(403)
     try:
-        declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
+        declaration = data_api_client.get_supplier_declaration(supplier_code, framework_slug)['declaration']
     except APIError as e:
         if e.status_code != 404:
             raise
@@ -220,15 +220,15 @@ def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
 
 
 @main.route(
-    '/suppliers/<string:supplier_id>/edit/declarations/<string:framework_slug>/<string:section_id>',
+    '/suppliers/<string:supplier_code>/edit/declarations/<string:framework_slug>/<string:section_id>',
     methods=['POST'])
-def update_supplier_declaration_section(supplier_id, framework_slug, section_id):
-    supplier = data_api_client.get_supplier(supplier_id)['suppliers']
+def update_supplier_declaration_section(supplier_code, framework_slug, section_id):
+    supplier = data_api_client.get_supplier(supplier_code)['supplier']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
     if framework['status'] not in ['pending', 'standstill', 'live']:
         abort(403)
     try:
-        declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
+        declaration = data_api_client.get_supplier_declaration(supplier_code, framework_slug)['declaration']
     except APIError as e:
         if e.status_code != 404:
             raise
@@ -244,23 +244,21 @@ def update_supplier_declaration_section(supplier_id, framework_slug, section_id)
     if section.has_changes_to_save(declaration, posted_data):
         declaration.update(posted_data)
         data_api_client.set_supplier_declaration(
-            supplier_id, framework_slug, declaration,
+            supplier_code, framework_slug, declaration,
             current_user.email_address)
 
     return redirect(url_for('.view_supplier_declaration',
-                            supplier_id=supplier_id, framework_slug=framework_slug))
+                            supplier_code=supplier_code, framework_slug=framework_slug))
 
 
-@main.route('/suppliers/<string:supplier_id>/edit/name', methods=['POST'])
+@main.route('/suppliers/<string:supplier_code>/edit/name', methods=['POST'])
 @login_required
 @role_required('admin')
-def update_supplier_name(supplier_id):
-    supplier = data_api_client.get_supplier(supplier_id)
+def update_supplier_name(supplier_code):
+    supplier = data_api_client.get_supplier(supplier_code)
     new_supplier_name = request.form.get('new_supplier_name', '')
 
-    data_api_client.update_supplier(
-        supplier['suppliers']['id'], {'name': new_supplier_name}, current_user.email_address
-    )
+    data_api_client.update_supplier(supplier_code, {'name': new_supplier_name})
 
     return redirect(url_for('.find_suppliers', supplier_name_prefix=new_supplier_name[:1]))
 
@@ -270,18 +268,18 @@ def update_supplier_name(supplier_id):
 @role_required('admin', 'admin-ccs-category')
 def find_supplier_users():
 
-    if not request.args.get('supplier_id'):
+    if not request.args.get('supplier_code'):
         abort(404)
 
-    supplier = data_api_client.get_supplier(request.args['supplier_id'])
-    users = data_api_client.find_users(request.args.get("supplier_id"))
+    supplier = data_api_client.get_supplier(request.args['supplier_code'])
+    users = data_api_client.find_users(request.args.get('supplier_code'))
 
     return render_template_with_csrf(
         "view_supplier_users.html",
         users=users["users"],
         invite_form=EmailAddressForm(),
         move_user_form=MoveUserForm(),
-        supplier=supplier["suppliers"]
+        supplier=supplier['supplier']
     )
 
 
@@ -292,7 +290,7 @@ def unlock_user(user_id):
     user = data_api_client.update_user(user_id, locked=False, updater=current_user.email_address)
     if "source" in request.form:
         return redirect(request.form["source"])
-    return redirect(url_for('.find_supplier_users', supplier_id=user['users']['supplier']['supplierId']))
+    return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierId']))
 
 
 @main.route('/suppliers/users/<int:user_id>/activate', methods=['POST'])
@@ -302,7 +300,7 @@ def activate_user(user_id):
     user = data_api_client.update_user(user_id, active=True, updater=current_user.email_address)
     if "source" in request.form:
         return redirect(request.form["source"])
-    return redirect(url_for('.find_supplier_users', supplier_id=user['users']['supplier']['supplierId']))
+    return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierId']))
 
 
 @main.route('/suppliers/users/<int:user_id>/deactivate', methods=['POST'])
@@ -312,20 +310,20 @@ def deactivate_user(user_id):
     user = data_api_client.update_user(user_id, active=False, updater=current_user.email_address)
     if "source" in request.form:
         return redirect(request.form["source"])
-    return redirect(url_for('.find_supplier_users', supplier_id=user['users']['supplier']['supplierId']))
+    return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierId']))
 
 
-@main.route('/suppliers/<int:supplier_id>/move-existing-user', methods=['POST'])
+@main.route('/suppliers/<int:supplier_code>/move-existing-user', methods=['POST'])
 @login_required
 @role_required('admin')
-def move_user_to_new_supplier(supplier_id):
+def move_user_to_new_supplier(supplier_code):
     move_user_form = MoveUserForm(request.form)
 
     try:
-        suppliers = data_api_client.get_supplier(supplier_id)
-        users = data_api_client.find_users(supplier_id)
+        suppliers = data_api_client.get_supplier(supplier_code)
+        users = data_api_client.find_users(supplier_code)
     except HTTPError as e:
-        current_app.logger.error(str(e), supplier_id)
+        current_app.logger.error(str(e), supplier_code)
         if e.status_code != 404:
             raise
         else:
@@ -335,21 +333,21 @@ def move_user_to_new_supplier(supplier_id):
         try:
             user = data_api_client.get_user(email_address=move_user_form.user_to_move_email_address.data)
         except HTTPError as e:
-            current_app.logger.error(str(e), supplier_id)
+            current_app.logger.error(str(e), supplier_code)
             raise
 
         if user:
             data_api_client.update_user(
                 user['users']['id'],
                 role='supplier',
-                supplier_id=supplier_id,
+                supplier_code=supplier_code,
                 active=True,
                 updater=current_user.email_address
             )
             flash("user_moved", "success")
         else:
             flash("user_not_moved", "error")
-        return redirect(url_for('.find_supplier_users', supplier_id=supplier_id))
+        return redirect(url_for('.find_supplier_users', supplier_code=supplier_code))
     else:
         return render_template_with_csrf(
             "view_supplier_users.html",
@@ -357,7 +355,7 @@ def move_user_to_new_supplier(supplier_id):
             invite_form=EmailAddressForm(),
             move_user_form=move_user_form,
             users=users["users"],
-            supplier=suppliers["suppliers"]
+            supplier=suppliers['supplier']
         )
 
 
@@ -366,30 +364,30 @@ def move_user_to_new_supplier(supplier_id):
 @role_required('admin', 'admin-ccs-category')
 def find_supplier_services():
 
-    if not request.args.get('supplier_id'):
+    if not request.args.get('supplier_code'):
         abort(404)
 
-    supplier = data_api_client.get_supplier(request.args['supplier_id'])
-    services = data_api_client.find_services(request.args.get("supplier_id"))
+    supplier = data_api_client.get_supplier(request.args['supplier_code'])
+    services = data_api_client.find_services(request.args.get('supplier_code'))
 
     return render_template_with_csrf(
         "view_supplier_services.html",
         services=services["services"],
-        supplier=supplier["suppliers"]
+        supplier=supplier['supplier']
     )
 
 
-@main.route('/suppliers/<int:supplier_id>/invite-user', methods=['POST'])
+@main.route('/suppliers/<int:supplier_code>/invite-user', methods=['POST'])
 @login_required
 @role_required('admin')
-def invite_user(supplier_id):
+def invite_user(supplier_code):
     invite_form = EmailAddressForm(request.form)
 
     try:
-        suppliers = data_api_client.get_supplier(supplier_id)
-        users = data_api_client.find_users(supplier_id)
+        supplier = data_api_client.get_supplier(supplier_code)['supplier']
+        users = data_api_client.find_users(supplier_code)
     except HTTPError as e:
-        current_app.logger.error(str(e), supplier_id)
+        current_app.logger.error(str(e), supplier_code)
         if e.status_code != 404:
             raise
         else:
@@ -398,9 +396,9 @@ def invite_user(supplier_id):
     if invite_form.validate():
         token = generate_token(
             {
-                "supplier_id": supplier_id,
-                "supplier_name": suppliers['suppliers']['name'],
-                "email_address": invite_form.email_address.data
+                'supplier_code': supplier_code,
+                'supplier_name': supplier['name'],
+                'email_address': invite_form.email_address.data
             },
             current_app.config['SHARED_EMAIL_KEY'],
             current_app.config['INVITE_EMAIL_SALT']
@@ -415,7 +413,8 @@ def invite_user(supplier_id):
         email_body = render_template(
             "emails/invite_user_email.html",
             url=url,
-            supplier=suppliers['suppliers']['name'])
+            supplier=supplier['name']
+        )
 
         try:
             send_email(
@@ -440,11 +439,11 @@ def invite_user(supplier_id):
             audit_type=AuditTypes.invite_user,
             user=current_user.email_address,
             object_type='suppliers',
-            object_id=supplier_id,
+            object_id=supplier_code,
             data={'invitedEmail': invite_form.email_address.data})
 
         flash('user_invited', 'success')
-        return redirect(url_for('.find_supplier_users', supplier_id=supplier_id))
+        return redirect(url_for('.find_supplier_users', supplier_code=supplier_code))
     else:
         return render_template_with_csrf(
             "view_supplier_users.html",
@@ -452,5 +451,5 @@ def invite_user(supplier_id):
             invite_form=invite_form,
             move_user_form=MoveUserForm(),
             users=users["users"],
-            supplier=suppliers["suppliers"]
+            supplier=supplier
         )

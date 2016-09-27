@@ -41,7 +41,7 @@
       {% include "toolkit/notification-banner.html" %}
     {% endwith %}
     {% elif category == 'remove_countersigned_agreement' %}
-    <form method="post" action='{{ url_for(".remove_countersigned_agreement_file", supplier_id=supplier.id, framework_slug=framework.slug) }}'>
+    <form method="post" action='{{ url_for(".remove_countersigned_agreement_file", supplier_code=supplier.code, framework_slug=framework.slug) }}'>
     {{ form.csrf_token }}
     <div class="banner-destructive-with-action">
       <p class="banner-message">
@@ -85,9 +85,9 @@
       {{ summary.field_name("{} countersigned agreement".format(framework.name)) }}
       {{ summary.text(countersigned_agreement.last_modified) }}
       {% call summary.field(wide=True) %}
-        <a href="{{ url_for('.download_agreement_file', supplier_id=supplier.id, framework_slug=framework.slug, document_name=countersigned_agreement_filename) }}" download>Download agreement</a>
+        <a href="{{ url_for('.download_agreement_file', supplier_code=supplier.code, framework_slug=framework.slug, document_name=countersigned_agreement_filename) }}" download>Download agreement</a>
       {% endcall %}
-      {{ summary.remove_link("Remove", url_for('.remove_countersigned_agreement_file', supplier_id=supplier.id, framework_slug=framework.slug) ) }}
+      {{ summary.remove_link("Remove", url_for('.remove_countersigned_agreement_file', supplier_code=supplier.code, framework_slug=framework.slug) ) }}
     {% endcall %}
   {% endcall %}
 
