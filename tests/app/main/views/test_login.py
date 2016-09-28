@@ -145,7 +145,7 @@ class TestLogin(BaseApplicationTest):
         assert_equal(res.status_code, 302)
 
     def test_should_be_validation_error_if_no_email_or_password(self):
-        res = self.client.post('/admin/login', data={})
+        res = self.client.post('/admin/login', data={'csrf_token': FakeCsrf.valid_token})
         assert_equal(res.status_code, 400)
 
     def test_should_be_validation_error_if_invalid_email(self):
@@ -232,29 +232,64 @@ class TestRoleRequired(LoggedInApplicationTest):
         assert_equal(403, response.status_code)
 
     def test_admin_role_required_service_section_edit(self):
-        response = self.client.post('/admin/services/1/edit/documents')
+        response = self.client.post(
+            '/admin/services/1/edit/documents',
+            data={
+                'csrf_token': FakeCsrf.valid_token,
+            }
+        )
         assert_equal(403, response.status_code)
 
     def test_admin_role_required_service_status_edit(self):
-        response = self.client.post('/admin/services/status/1')
+        response = self.client.post(
+            '/admin/services/status/1',
+            data={
+                'csrf_token': FakeCsrf.valid_token,
+            }
+        )
         assert_equal(403, response.status_code)
 
     def test_admin_role_required_audit_acknowledge(self):
-        response = self.client.post('/admin/service-updates/1/acknowledge')
+        response = self.client.post(
+            '/admin/service-updates/1/acknowledge',
+            data={
+                'csrf_token': FakeCsrf.valid_token,
+            }
+        )
         assert_equal(403, response.status_code)
 
     def test_admin_role_required_unlock_user(self):
-        response = self.client.post('/admin/suppliers/users/1/unlock')
+        response = self.client.post(
+            '/admin/suppliers/users/1/unlock',
+            data={
+                'csrf_token': FakeCsrf.valid_token,
+            }
+        )
         assert_equal(403, response.status_code)
 
     def test_admin_role_required_activate_user(self):
-        response = self.client.post('/admin/suppliers/users/1/activate')
+        response = self.client.post(
+            '/admin/suppliers/users/1/activate',
+            data={
+                'csrf_token': FakeCsrf.valid_token,
+            }
+        )
         assert_equal(403, response.status_code)
 
     def test_admin_role_required_deactivate_user(self):
-        response = self.client.post('/admin/suppliers/users/1/deactivate')
+        response = self.client.post(
+            '/admin/suppliers/users/1/deactivate',
+            data={
+                'csrf_token': FakeCsrf.valid_token,
+            }
+        )
         assert_equal(403, response.status_code)
 
     def test_admin_role_required_invite_user(self):
-        response = self.client.post('/admin/suppliers/1/invite-user')
+        response = self.client.post(
+            '/admin/suppliers/1/invite-user',
+            data={
+                'csrf_token': FakeCsrf.valid_token,
+            }
+        )
         assert_equal(403, response.status_code)

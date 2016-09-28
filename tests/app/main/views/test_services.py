@@ -7,6 +7,7 @@ except ImportError:
 import mock
 
 from dmapiclient import HTTPError, REQUEST_ERROR_MESSAGE
+from dmutils.forms import FakeCsrf
 from ...helpers import LoggedInApplicationTest
 
 
@@ -87,7 +88,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         }}
         response = self.client.post(
             '/admin/services/1/edit/documents',
-            data={}
+            data={'csrf_token': FakeCsrf.valid_token}
         )
 
         data_api_client.get_service.assert_called_with('1')
@@ -117,6 +118,7 @@ class TestServiceEdit(LoggedInApplicationTest):
                 'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
                 'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.pdf'),
                 'termsAndConditionsDocumentURL': (StringIO(b''), ''),
+                'csrf_token': FakeCsrf.valid_token,
             }
         )
 
@@ -147,6 +149,7 @@ class TestServiceEdit(LoggedInApplicationTest):
                 'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
                 'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.txt'),
                 'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
+                'csrf_token': FakeCsrf.valid_token,
             }
         )
 
@@ -185,6 +188,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             data={
                 'serviceFeatures': 'foo',
                 'serviceBenefits': 'foo',
+                'csrf_token': FakeCsrf.valid_token,
             }
         )
         data_api_client.update_service.assert_called_with('1', {
@@ -228,6 +232,7 @@ class TestServiceEdit(LoggedInApplicationTest):
                 'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
                 'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.txt'),
                 'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
+                'csrf_token': FakeCsrf.valid_token,
             }
         )
         self.assertIn('There was a problem with the answer to this question',
@@ -272,8 +277,13 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
 
     def test_status_update_to_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {}}
-        response1 = self.client.post('/admin/services/status/1',
-                                     data={'service_status': 'removed'})
+        response1 = self.client.post(
+            '/admin/services/status/1',
+            data={
+                'service_status': 'removed',
+                'csrf_token': FakeCsrf.valid_token,
+            }
+        )
         data_api_client.update_service_status.assert_called_with(
             '1', 'disabled', 'test@example.com')
         self.assertEquals(302, response1.status_code)
@@ -285,8 +295,13 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
 
     def test_status_update_to_private(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {}}
-        response1 = self.client.post('/admin/services/status/1',
-                                     data={'service_status': 'private'})
+        response1 = self.client.post(
+            '/admin/services/status/1',
+            data={
+                'service_status': 'private',
+                'csrf_token': FakeCsrf.valid_token,
+            }
+        )
         data_api_client.update_service_status.assert_called_with(
             '1', 'enabled', 'test@example.com')
         self.assertEquals(302, response1.status_code)
@@ -298,8 +313,13 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
 
     def test_status_update_to_published(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {}}
-        response1 = self.client.post('/admin/services/status/1',
-                                     data={'service_status': 'public'})
+        response1 = self.client.post(
+            '/admin/services/status/1',
+            data={
+                'service_status': 'public',
+                'csrf_token': FakeCsrf.valid_token,
+            }
+        )
         data_api_client.update_service_status.assert_called_with(
             '1', 'published', 'test@example.com')
         self.assertEquals(302, response1.status_code)
@@ -310,8 +330,13 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
                       response2.data)
 
     def test_bad_status_gives_error_message(self, data_api_client):
-        response1 = self.client.post('/admin/services/status/1',
-                                     data={'service_status': 'suspended'})
+        response1 = self.client.post(
+            '/admin/services/status/1',
+            data={
+                'service_status': 'suspended',
+                'csrf_token': FakeCsrf.valid_token,
+            }
+        )
         self.assertEquals(302, response1.status_code)
         self.assertEquals(response1.location,
                           'http://localhost/admin/services/1')

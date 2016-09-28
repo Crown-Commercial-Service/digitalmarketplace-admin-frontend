@@ -224,7 +224,10 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.post(
             '/admin/suppliers/users/999/deactivate',
-            data={'supplier_code': 1000, 'csrf_token': FakeCsrf.valid_token}
+            data={
+                'supplier_code': 1000,
+                'csrf_token': FakeCsrf.valid_token,
+            }
         )
 
         data_api_client.update_user.assert_called_with(999, active=False, updater="test@example.com")
@@ -240,7 +243,10 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.post(
             '/admin/suppliers/1000/move-existing-user',
-            data={'user_to_move_email_address': 'test.user@sme.com', 'csrf_token': FakeCsrf.valid_token}
+            data={
+                'user_to_move_email_address': 'test.user@sme.com',
+                'csrf_token': FakeCsrf.valid_token,
+            }
         )
 
         data_api_client.update_user.assert_called_with(
@@ -756,7 +762,13 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
 
         response = self.client.post(
             '/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials',
-            data={'PR1': 'false'})
+            data={
+                'PR1': 'false',
+                'csrf_token': FakeCsrf.valid_token,
+            }
+        )
+
+        assert response.status_code == 302
 
         declaration = self.load_example_listing('declaration_response')['declaration']
         declaration['PR1'] = False
@@ -834,10 +846,11 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo')
 
-        s3.S3.return_value.list.assert_called_with(prefix='g-cloud-7/agreements/1234/1234-foo')
-        s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/1234-foo.pdf')
         eq_(response.status_code, 302)
         eq_(response.location, 'https://example/blah?extra')
+
+        s3.S3.return_value.list.assert_called_with(prefix='g-cloud-7/agreements/1234/1234-foo')
+        s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/1234-foo.pdf')
 
     def test_admin_should_be_able_to_download_countersigned_agreement(self, s3, data_api_client):
         data_api_client.get_supplier_framework_info.return_value = {
@@ -908,10 +921,14 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             'last_modified': u'2016-01-15T12:58:08.000000Z',
             'filename': u'93495-countersigned-framework-agreement'
         }
-        response = self.client.post('/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
-                                    data=dict(
-                                        countersigned_agreement=(io.BytesIO(b"this is a test"),
-                                                                 'test.odt'), ), follow_redirects=True)
+        response = self.client.post(
+            '/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
+            data={
+                'countersigned_agreement': (io.BytesIO(b"this is a test"), 'test.odt'),
+                'csrf_token': FakeCsrf.valid_token,
+            },
+            follow_redirects=True
+        )
 
         self.assertIn(
             'This must be a pdf',
@@ -928,11 +945,14 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             'filename': u'1234-countersigned-framework-agreement'
         }
 
-        response = self.client.post('/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
-                                    data=dict(
-                                        countersigned_agreement=(io.BytesIO(b"this is a test"),
-                                                                 'countersigned_agreement.pdf'),
-                                    ), follow_redirects=True)
+        response = self.client.post(
+            '/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
+            data={
+                'countersigned_agreement': (io.BytesIO(b"this is a test"), 'countersigned_agreement.pdf'),
+                'csrf_token': FakeCsrf.valid_token,
+            },
+            follow_redirects=True
+        )
 
         data_api_client.create_audit_event.assert_called_once_with(
             audit_type=AuditTypes.upload_countersigned_agreement,
@@ -958,7 +978,10 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
         s3.S3.return_value.delete_key.return_value = {'Key': 'digitalmarketplace-documents-dev-dev'
                                                       ',g-cloud-7/agreements/93495/93495-'
                                                       'countersigned-framework-agreement.pdf'}
-        response = self.client.post('/admin/suppliers/1234/countersigned-agreements-remove/g-cloud-7')
+        response = self.client.post(
+            '/admin/suppliers/1234/countersigned-agreements-remove/g-cloud-7',
+            data={'csrf_token': FakeCsrf.valid_token},
+        )
         eq_(response.status_code, 302)
 
     def test_admin_should_not_be_able_to_remove_countersigned_agreement(self, s3, data_api_client):
@@ -966,7 +989,10 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
         s3.S3.return_value.delete_key.return_value = {'Key': 'digitalmarketplace-documents-dev-dev'
                                                       ',g-cloud-7/agreements/93495/93495-'
                                                       'countersigned-framework-agreement.pdf'}
-        response = self.client.post('/admin/suppliers/1234/countersigned-agreements-remove/g-cloud-7')
+        response = self.client.post(
+            '/admin/suppliers/1234/countersigned-agreements-remove/g-cloud-7',
+            data={'csrf_token': FakeCsrf.valid_token},
+        )
         eq_(response.status_code, 403)
 
     def test_should_display_remove_countersigned_agreement_message(self, s3, data_api_client):
