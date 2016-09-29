@@ -23,7 +23,7 @@ def service_status_update_audits(day=None, page=1):
     if day is None:
         return redirect(url_for(
             '.service_status_update_audits',
-            day=datetime.today().strftime('%Y-%m-%d')
+            day=datetime.utcnow().strftime('%Y-%m-%d')
         ))
 
     try:
@@ -44,7 +44,7 @@ def service_status_update_audits(day=None, page=1):
         day=day,
         day_as_datetime=day_as_datetime,
         previous_day=day_as_datetime - timedelta(1),
-        next_day=day_as_datetime + timedelta(1) if day_as_datetime + timedelta(1) < datetime.today() else None,
+        next_day=day_as_datetime + timedelta(1) if day_as_datetime + timedelta(1) < datetime.utcnow() else None,
         previous_page=status_update_audit_events.get('links', {}).get('prev'),
         next_page=status_update_audit_events.get('links', {}).get('next'),
         page=page
