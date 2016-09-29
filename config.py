@@ -1,5 +1,4 @@
 import os
-import jinja2
 from dmutils.status import enabled_since, get_version_label
 from dmutils.asset_fingerprint import AssetFingerprinter
 
@@ -63,15 +62,6 @@ class Config(object):
     INVITE_EMAIL_FROM = DM_GENERIC_NOREPLY_EMAIL
     INVITE_EMAIL_SUBJECT = 'Your Digital Marketplace invitation'
     CREATE_USER_PATH = 'sellers/create-user'
-
-    @staticmethod
-    def init_app(app):
-        repo_root = os.path.abspath(os.path.dirname(__file__))
-        template_folders = [
-            os.path.join(repo_root, 'app/templates')
-        ]
-        jinja_loader = jinja2.FileSystemLoader(template_folders)
-        app.jinja_loader = jinja_loader
 
 
 class Test(Config):
