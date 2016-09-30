@@ -37,7 +37,6 @@ class Config(object):
     DM_ASSETS_URL = None
 
     FEATURE_FLAGS = {
-        'ENFORCE_TERMS_REVIEW': False,
     }
 
     ASSET_PATH = URL_PREFIX + '/static'
