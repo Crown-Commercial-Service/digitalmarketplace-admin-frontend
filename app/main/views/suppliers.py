@@ -14,7 +14,7 @@ from dmutils.email import send_email, generate_token, MandrillException
 from dmutils.documents import (
     get_signed_url, get_agreement_document_path, file_is_pdf,
     AGREEMENT_FILENAME, SIGNED_AGREEMENT_PREFIX, COUNTERSIGNED_AGREEMENT_FILENAME,
-)
+    get_extension)
 from dmutils import s3
 from dmutils.formats import datetimeformat
 
@@ -100,11 +100,7 @@ def view_signed_agreement(supplier_id, framework_slug):
     )
 
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
-    prefix = get_agreement_document_path(framework_slug, supplier_id, SIGNED_AGREEMENT_PREFIX)
-    agreement_documents = agreements_bucket.list(prefix=prefix)
-    if not len(agreement_documents):
-        abort(404)
-    path = agreement_documents[-1]['path']
+    path = supplier_framework['agreementPath']
     url = get_signed_url(agreements_bucket, path, current_app.config['DM_ASSETS_URL'])
     if not url:
         abort(404)
@@ -115,7 +111,7 @@ def view_signed_agreement(supplier_id, framework_slug):
         supplier_framework=supplier_framework,
         lot_slugs_names=lot_slugs_names,
         agreement_url=url,
-        agreement_ext=agreement_documents[-1]['ext']
+        agreement_ext=get_extension(path)
     )
 
 
