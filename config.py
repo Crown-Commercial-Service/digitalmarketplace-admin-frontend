@@ -52,6 +52,8 @@ class Config(object):
 
     SHARED_EMAIL_KEY = None
     INVITE_EMAIL_SALT = 'SupplierInviteEmail'
+    RESET_PASSWORD_SALT = 'ResetPasswordSalt'
+    BUYER_CREATION_TOKEN_SALT = 'BuyerCreation'
 
     GENERIC_CONTACT_EMAIL = 'marketplace@digital.gov.au'
     DM_GENERIC_NOREPLY_EMAIL = 'no-reply@marketplace.digital.gov.au'

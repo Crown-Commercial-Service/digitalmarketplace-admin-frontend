@@ -267,6 +267,15 @@ class TestRoleRequired(LoggedInApplicationTest):
         )
         assert_equal(403, response.status_code)
 
+    def test_admin_role_required_password_reset_user(self):
+        response = self.client.post(
+            '/admin/suppliers/users/1/reset_password',
+            data={
+                'csrf_token': FakeCsrf.valid_token,
+            }
+        )
+        assert_equal(405, response.status_code)
+
     def test_admin_role_required_activate_user(self):
         response = self.client.post(
             '/admin/suppliers/users/1/activate',

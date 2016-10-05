@@ -134,6 +134,11 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         )
 
         self.assertIn(
+            '<a href="/admin/suppliers/users/999/reset_password"',
+            response.get_data(as_text=True)
+        )
+
+        self.assertIn(
             '<input type="submit" class="button-destructive"  value="Deactivate" />',
             response.get_data(as_text=True)
         )

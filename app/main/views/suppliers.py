@@ -311,6 +311,26 @@ def deactivate_user(user_id):
     return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierCode']))
 
 
+@main.route('/suppliers/users/<int:user_id>/reset_password', methods=['GET'])
+@login_required
+@role_required('admin')
+def reset_password(user_id):
+    user = data_api_client.get_user(user_id)
+
+    token = generate_token(
+        {
+            "user": user_id,
+            "email": user['users']['emailAddress']
+        },
+        current_app.config['SECRET_KEY'],
+        current_app.config['RESET_PASSWORD_SALT']
+    )
+
+    url = '/reset-password/'+token
+
+    return redirect(url)
+
+
 @main.route('/suppliers/<int:supplier_code>/move-existing-user', methods=['POST'])
 @login_required
 @role_required('admin')
