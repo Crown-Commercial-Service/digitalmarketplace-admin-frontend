@@ -115,6 +115,8 @@
       {% call summary.field() %}
       {% if item.active %}
         {% if current_user.has_role('admin') %}
+          <a href="{{ url_for('.reset_password', user_id=item.id) }}">Reset Password</a>
+
           <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
               {{ form.csrf_token }}
               {%

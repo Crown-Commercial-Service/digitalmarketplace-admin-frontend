@@ -151,6 +151,19 @@ class TestUsersView(LoggedInApplicationTest):
         self.assertEquals('Unlock', unlock_button)
         self.assertEquals('/admin/users?email_address=test.user%40sme.com', return_link.attrib['value'])
 
+    def test_should_show_password_reset(self, data_api_client):
+        buyer = self.load_example_listing("user_response")
+
+        data_api_client.get_user.return_value = buyer
+        response = self.client.get('/admin/users?email_address=test.user@sme.com')
+        self.assertEquals(response.status_code, 200)
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        reset_link = document.xpath(
+            '//tr[@class="summary-item-row"]//a[text()="Reset Password"]')[0]
+        self.assertEquals('/admin/suppliers/users/999/reset_password', reset_link.attrib['href'])
+
     def test_should_show_deactivate_button(self, data_api_client):
         buyer = self.load_example_listing("user_response")
 
