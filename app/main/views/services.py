@@ -49,7 +49,7 @@ def view(service_id):
         return redirect(url_for('.index'))
 
     service_data['priceString'] = format_service_price(service_data)
-    content = content_loader.get_manifest('g-cloud-6', 'edit_service_as_admin').filter(service_data)
+    content = content_loader.get_manifest(service_data['frameworkSlug'], 'edit_service_as_admin').filter(service_data)
 
     return render_template(
         "view_service.html",
@@ -99,7 +99,7 @@ def update_service_status(service_id):
 def edit(service_id, section):
     service_data = data_api_client.get_service(service_id)['services']
 
-    content = content_loader.get_manifest('g-cloud-6', 'edit_service_as_admin').filter(service_data)
+    content = content_loader.get_manifest(service_data['frameworkSlug'], 'edit_service_as_admin').filter(service_data)
 
     return render_template(
         "edit_section.html",
@@ -186,7 +186,7 @@ def update(service_id, section_id):
         abort(404)
     service = service['services']
 
-    content = content_loader.get_manifest('g-cloud-6', 'edit_service_as_admin').filter(service)
+    content = content_loader.get_manifest(service['frameworkSlug'], 'edit_service_as_admin').filter(service)
     section = content.get_section(section_id)
     if section is None or not section.editable:
         abort(404)

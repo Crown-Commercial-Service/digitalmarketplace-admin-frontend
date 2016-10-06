@@ -13,7 +13,9 @@ from ...helpers import LoggedInApplicationTest
 class TestServiceView(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_response(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {}}
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-8'
+        }}
         response = self.client.get('/admin/services/1')
 
         data_api_client.get_service.assert_called_with('1')
@@ -22,7 +24,9 @@ class TestServiceView(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_view_with_no_features_or_benefits(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {}}
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-8'
+        }}
         response = self.client.get('/admin/services/1')
 
         data_api_client.get_service.assert_called_with('1')
@@ -45,19 +49,22 @@ class TestServiceView(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
     def test_independence_of_viewing_services(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
-            'lot': 'SCS'
+            'lot': 'SCS',
+            'frameworkSlug': 'g-cloud-8',
         }}
         response = self.client.get('/admin/services/1')
         self.assertIn(b'Termination cost', response.data)
 
         data_api_client.get_service.return_value = {'services': {
-            'lot': 'SaaS'
+            'lot': 'SaaS',
+            'frameworkSlug': 'g-cloud-8',
         }}
         response = self.client.get('/admin/services/1')
         self.assertNotIn(b'Termination cost', response.data)
 
         data_api_client.get_service.return_value = {'services': {
-            'lot': 'SCS'
+            'lot': 'SCS',
+            'frameworkSlug': 'g-cloud-8',
         }}
         response = self.client.get('/admin/services/1')
         self.assertIn(b'Termination cost', response.data)
@@ -65,8 +72,21 @@ class TestServiceView(LoggedInApplicationTest):
 
 class TestServiceEdit(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
+    def test_edit_dos_service_title(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'digital-outcomes-and-specialists'
+        }}
+        response = self.client.get('/admin/services/1/edit/description')
+
+        data_api_client.get_service.assert_called_with('1')
+
+        assert response.status_code == 200
+
+    @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_documents_get_response(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {}}
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-8'
+        }}
         response = self.client.get('/admin/services/1/edit/documents')
 
         data_api_client.get_service.assert_called_with('1')
@@ -161,6 +181,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,
+            'frameworkSlug': 'g-cloud-8',
             'lot': 'IaaS',
             'serviceFeatures': [
                 "bar",
@@ -196,7 +217,8 @@ class TestServiceEdit(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_with_no_features_or_benefits(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
-            'lot': 'SaaS'
+            'lot': 'SaaS',
+            'frameworkSlug': 'g-cloud-8',
         }}
         response = self.client.get(
             '/admin/services/1/edit/features-and-benefits')
@@ -240,6 +262,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
     def test_cannot_make_removed_service_public(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
+            'frameworkSlug': 'g-cloud-8',
             'supplierId': 2,
             'status': 'disabled'
         }}
@@ -251,6 +274,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
     def test_can_make_private_service_public_or_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
+            'frameworkSlug': 'g-cloud-8',
             'supplierId': 2,
             'status': 'enabled'
         }}
@@ -262,6 +286,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
     def test_can_make_public_service_private_or_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
+            'frameworkSlug': 'g-cloud-8',
             'supplierId': 2,
             'status': 'published'
         }}
@@ -271,7 +296,9 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         self.assertIn(b'<input type="radio" name="service_status" id="service_status_published" value="public" checked="checked" />', response.data)  # noqa
 
     def test_status_update_to_removed(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {}}
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-7',
+        }}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'removed'})
         data_api_client.update_service_status.assert_called_with(
@@ -284,7 +311,9 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
                       response2.data)
 
     def test_status_update_to_private(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {}}
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-8',
+        }}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'private'})
         data_api_client.update_service_status.assert_called_with(
@@ -297,7 +326,9 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
                       response2.data)
 
     def test_status_update_to_published(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {}}
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'digital-outcomes-and-specialists',
+        }}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'public'})
         data_api_client.update_service_status.assert_called_with(
@@ -310,6 +341,9 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
                       response2.data)
 
     def test_bad_status_gives_error_message(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-7',
+        }}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'suspended'})
         self.assertEquals(302, response1.status_code)
