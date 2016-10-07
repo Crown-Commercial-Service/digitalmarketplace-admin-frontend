@@ -3,7 +3,7 @@
 {% extends "_base_page.html" %}
 
 {% block page_title %}
-Countersign {{ framework.name }} agreement for {{ supplier.name }}
+Countersign {{ framework.name }} agreement for {{ supplier_framework.declaration.nameOfOrganisation }}
 {% endblock %}
 
 {% block breadcrumb %}
@@ -24,86 +24,115 @@ Countersign {{ framework.name }} agreement for {{ supplier.name }}
 {% endblock %}
 
 {% block main_content %}
-<div class='grid-row'>
 
-    <div class="column-one-third">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
         {%
-            with
-            heading = supplier.name,
-            smaller = True
+          with
+          message = message,
+          type = "success"
         %}
-        {% include "toolkit/page-heading.html" %}
+          {% include "toolkit/notification-banner.html" %}
         {% endwith %}
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 
-        <h2>Registered address</h2>
-        <ul class="padding-bottom-small">
-            <li>{{ supplier_framework.declaration.registeredAddressBuilding }}</li>
-            <li>{{ supplier_framework.declaration.registeredAddressTown }}</li>
-            <li>{{ supplier_framework.declaration.registeredAddressPostcode }}</li>
-        </ul>
-        
-        <h2>Company number</h2>
-        <div class="padding-bottom-small">
-            {%
-            with
-                text = supplier_framework.declaration.companyRegistrationNumber,
-                link = "https://beta.companieshouse.gov.uk/company/%s" | format(supplier_framework.declaration.companyRegistrationNumber)
-            %}
-            {% include "toolkit/external-link.html" %}
-            {% endwith %}
-        </div>
 
-        <h2>Appointment is to</h2>
-        <ul class="padding-bottom-small">
-          {% for lot_slug, lot_name in lot_slugs_names.items() %}
-            <li>{{ lot_name }}</li>
-          {% endfor %}
-        </ul>
-        
-        <h2>Signed by</h2>
+<div class='grid-row'>
+  <div class="column-one-third">
+      {%
+          with
+          heading = supplier_framework.declaration.nameOfOrganisation,
+          smaller = True
+      %}
+      {% include "toolkit/page-heading.html" %}
+      {% endwith %}
+
+      <h2>Registered address</h2>
+      <ul class="padding-bottom-small">
+          <li>{{ supplier_framework.declaration.registeredAddressBuilding }}</li>
+          <li>{{ supplier_framework.declaration.registeredAddressTown }}</li>
+          <li>{{ supplier_framework.declaration.registeredAddressPostcode }}</li>
+      </ul>
+
+      <h2>Company number</h2>
+      <div class="padding-bottom-small">
+          {%
+          with
+              text = supplier_framework.declaration.companyRegistrationNumber,
+              link = "https://beta.companieshouse.gov.uk/company/%s" | format(supplier_framework.declaration.companyRegistrationNumber),
+              target = _blank
+          %}
+          {% include "toolkit/external-link.html" %}
+          {% endwith %}
+      </div>
+
+      <h2>Appointment is to</h2>
+      <ul class="padding-bottom-small">
+        {% for lot_slug, lot_name in lot_slugs_names.items() %}
+          <li>{{ lot_name }}</li>
+        {% endfor %}
+      </ul>
+
+      <h2>Signed by</h2>
+      <p class="padding-bottom-small">
+          {{ supplier_framework.agreementDetails.signerName}}, {{ supplier_framework.agreementDetails.signerRole }}
+      </p>
+
+      <h2>Uploaded by</h2>
+      <p class="padding-bottom-small">
+          {{ supplier_framework.agreementDetails.uploaderUserName }}
+          <br>
+          <span class="break-email">
+              {{ supplier_framework.agreementDetails.uploaderUserEmail }}
+          </span>
+          <br>
+          {{ supplier_framework.agreementReturnedAt|datetimeformat }}
+      </p>
+
+      {% if supplier_framework.agreementStatus in ['approved', 'countersigned'] %}
+        <h2>Accepted by</h2>
         <p class="padding-bottom-small">
-            {{ supplier_framework.agreementDetails.signerName}}, {{ supplier_framework.agreementDetails.signerRole }}
+          {{ supplier_framework.countersignedDetails.approvedByUserName }}
+          <br>
+          {{ supplier_framework.countersignedAt|datetimeformat }}
         </p>
 
-        <h2>Uploaded by</h2>
-        <p class="padding-bottom-small">
-            {{ supplier_framework.agreementDetails.uploaderUserName }}
-            <br>
-            <span class="break-email">
-                {{ supplier_framework.agreementDetails.uploaderUserEmail }}
-            </span>
-            <br>
-            {{ supplier_framework.agreementReturnedAt|datetimeformat }}
-        </p>
-
-        <!-- 
-        <form action="{# url_for('.countersign_agreement', etc) #}">
+      {% elif current_user.role == 'admin-ccs-sourcing' %}
+        <form action="{{ url_for('.approve_agreement_for_countersignature', agreement_id=supplier_framework.agreementId, organisation=supplier_framework.declaration.nameOfOrganisation) }}" method="post">
+          <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
             {%
               with
               type = "save",
               label = "Accept and continue"
             %}
-                {% include "toolkit/button.html" %}
-            {% endwith %}
-        </form>
-
-        <form action="{# url_for('.put_agreement_on_hold', etc) #}">
-            {%
-              with
-              type = "secondary",
-              label = "Put on hold and continue"
-            %}
               {% include "toolkit/button.html" %}
             {% endwith %}
         </form>
-        -->
-    </div>
-
-    <div class="column-two-thirds">
-        {% if agreement_ext == 'pdf' %}
-            <embed src="{{ agreement_url }}" class="border-image" height="930" type="application/pdf">
-        {% else %}
-            <img src="{{ agreement_url }}" class="border-image" >
+        {% if supplier_framework.agreementStatus != 'on hold' %}
+          <form action="{{ url_for('.put_signed_agreement_on_hold', agreement_id=supplier_framework.agreementId, organisation=supplier_framework.declaration.nameOfOrganisation) }}" method="post">
+            <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+              {%
+                with
+                type = "secondary",
+                label = "Put on hold and continue"
+              %}
+                {% include "toolkit/button.html" %}
+              {% endwith %}
+          </form>
         {% endif %}
-    </div>
+      {% endif %}
+
+
+  </div>
+
+  <div class="column-two-thirds">
+      {% if agreement_ext == 'pdf' %}
+          <embed src="{{ agreement_url }}" class="border-image" height="930" type="application/pdf">
+      {% else %}
+          <img src="{{ agreement_url }}" class="border-image" >
+      {% endif %}
+  </div>
 {% endblock %}
