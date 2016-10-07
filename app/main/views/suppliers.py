@@ -191,6 +191,8 @@ def list_countersigned_agreement_file(supplier_id, framework_slug):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
+    if not supplier_framework['onFramework'] or supplier_framework['agreementStatus'] in (None, 'draft'):
+        abort(404)
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
     countersigned_agreement_document = agreements_bucket.get_key(supplier_framework.get('countersignedPath'))
 
@@ -212,6 +214,10 @@ def list_countersigned_agreement_file(supplier_id, framework_slug):
 @login_required
 @role_required('admin-ccs-sourcing')
 def upload_countersigned_agreement_file(supplier_id, framework_slug):
+    supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
+    if not supplier_framework['onFramework'] or supplier_framework['agreementStatus'] in (None, 'draft'):
+        abort(404)
+    agreement_id = supplier_framework['agreementId']
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
     errors = {}
 
@@ -221,18 +227,30 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
             errors['countersigned_agreement'] = 'not_pdf'
 
         if 'countersigned_agreement' not in errors.keys():
-            filename = generate_timestamped_document_upload_path(
+            if supplier_framework['agreementStatus'] not in ['approved', 'countersigned']:
+                data_api_client.approve_agreement_for_countersignature(
+                    agreement_id,
+                    current_user.email_address,
+                    current_user.id
+                )
+
+            path = generate_timestamped_document_upload_path(
                 framework_slug, supplier_id, 'agreements', COUNTERSIGNED_AGREEMENT_FILENAME
             )
-            agreements_bucket.save(filename, the_file)
-            # TODO: SET THE COUNTERSIGNED PATH IN THE API BUY UPDATING THE RELEVANT FrameworkAgreement
+            agreements_bucket.save(path, the_file)
+
+            data_api_client.update_framework_agreement(
+                agreement_id,
+                {"countersignedAgreementPath": path},
+                current_user.email_address
+            )
 
             data_api_client.create_audit_event(
                 audit_type=AuditTypes.upload_countersigned_agreement,
                 user=current_user.email_address,
                 object_type='suppliers',
                 object_id=supplier_id,
-                data={'upload_countersigned_agreement': filename})
+                data={'upload_countersigned_agreement': path})
 
             flash('countersigned_agreement', 'upload_countersigned_agreement')
 
@@ -260,8 +278,15 @@ def remove_countersigned_agreement_file(supplier_id, framework_slug):
         flash('countersigned_agreement', 'remove_countersigned_agreement')
 
     if request.method == 'POST':
+        # Remove path first - as we don't want path to exist in DB with no corresponding file in S3
+        # But an orphaned file in S3 wouldn't be so bad
+        data_api_client.update_framework_agreement(
+            supplier_framework['agreementId'],
+            {"countersignedAgreementPath": None},
+            current_user.email_address
+        )
         agreements_bucket.delete_key(document)
-        # TODO: DELETE THE COUNTERSIGNED PATH IN THE API BUY UPDATING THE RELEVANT FrameworkAgreement
+
         data_api_client.create_audit_event(
             audit_type=AuditTypes.delete_countersigned_agreement,
             user=current_user.email_address,
@@ -519,8 +544,8 @@ def invite_user(supplier_id):
                 "Invitation email failed to send error {} to {} supplier {} supplier id {} ".format(
                     str(e),
                     invite_form.email_address.data,
-                    current_user.supplier_name,
-                    current_user.supplier_id)
+                    suppliers['suppliers']['name'],
+                    supplier_id)
             )
             abort(503, "Failed to send user invite reset")
 
