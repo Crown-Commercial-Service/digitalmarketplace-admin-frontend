@@ -1,9 +1,9 @@
+from dmutils.documents import degenerate_document_path_and_return_doc_name
 from flask import render_template
 from flask_login import login_required
 from dateutil.parser import parse as parse_date
 
 from dmutils.formats import datetimeformat
-from dmutils.documents import SIGNED_AGREEMENT_PREFIX
 
 from .. import main
 from ..auth import role_required
@@ -31,5 +31,5 @@ def list_agreements(framework_slug):
         "view_agreements_g8.html" if framework_slug == "g-cloud-8" else 'view_agreements.html',
         framework=framework,
         supplier_frameworks=supplier_frameworks,
-        signed_agreement_prefix=SIGNED_AGREEMENT_PREFIX
+        degenerate_document_path_and_return_doc_name=lambda x: degenerate_document_path_and_return_doc_name(x)
     )
