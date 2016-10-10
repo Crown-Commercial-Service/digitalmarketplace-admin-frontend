@@ -1064,6 +1064,7 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.s3')
 class TestViewingASupplierDeclaration(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
@@ -1076,7 +1077,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         data_api_client.get_supplier.assert_called_with('1234')
         assert not data_api_client.get_framework.called
 
-    def test_should_404_if_framework_does_not_exist(self, data_api_client):
+    def test_should_404_if_framework_does_not_exist(self, s3, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
         data_api_client.get_framework.side_effect = APIError(Response(404))
 
@@ -1086,7 +1087,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         data_api_client.get_supplier.assert_called_with('1234')
         data_api_client.get_framework.assert_called_with('g-cloud-8')
 
-    def test_should_404_if_agreement_not_returned(self, data_api_client):
+    def test_should_404_if_agreement_not_returned(self, s3, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
         data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
         not_returned = self.load_example_listing('supplier_framework_response')
@@ -1099,7 +1100,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         data_api_client.get_framework.assert_called_with('g-cloud-8')
         data_api_client.get_supplier_framework_info.assert_called_with('1234', 'g-cloud-8')
 
-    def test_should_show_agreement_details_on_page(self, data_api_client):
+    def test_should_show_agreement_details_on_page(self, s3, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
         data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
         data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
@@ -1151,7 +1152,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
             assert len(document.xpath('//p[contains(text(), "Uploader Name")]')) == 1
             assert len(document.xpath('//span[contains(text(), "uploader@email.com")]')) == 1
 
-    def test_should_embed_for_pdf_file(self, data_api_client):
+    def test_should_embed_for_pdf_file(self, s3, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
         data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
         data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
@@ -1166,7 +1167,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
             assert len(document.xpath('//embed[@src="http://example.com/document/1234.pdf"]')) == 1
             assert len(document.xpath('//img[@src="http://example.com/document/1234.pdf"]')) == 0
 
-    def test_should_img_for_image_file(self, data_api_client):
+    def test_should_img_for_image_file(self, s3, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
         data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
         supplier_framework_info = self.load_example_listing(
