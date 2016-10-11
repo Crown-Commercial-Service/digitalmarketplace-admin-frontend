@@ -125,7 +125,7 @@ def view_signed_agreement(supplier_id, framework_slug):
 def put_signed_agreement_on_hold(agreement_id):
     data_api_client.put_signed_agreement_on_hold(agreement_id, current_user.email_address)
 
-    organisation = request.args['organisation']
+    organisation = request.form['nameOfOrganisation']
     flash('The agreement for {} was put on hold.'.format(organisation), 'message')
 
     return redirect(url_for(
@@ -141,9 +141,9 @@ def approve_agreement_for_countersignature(agreement_id):
     data_api_client.approve_agreement_for_countersignature(agreement_id,
                                                            current_user.email_address,
                                                            current_user.id)
-
-    organisation = request.args['organisation']
-    flash('A confirmation was sent to {}.'.format(organisation), 'message')
+    organisation = request.form['nameOfOrganisation']
+    flash('The agreement for {} was approved. They will receive a countersigned version soon.'
+          .format(organisation), 'message')
 
     return redirect(url_for(
         '.list_agreements',

@@ -1154,7 +1154,7 @@ class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
         data_api_client.put_signed_agreement_on_hold.assert_called_once_with('123', 'test@example.com')
 
     def test_it_correctly_sets_the_flash_message(self, data_api_client):
-        self.client.post("/admin/suppliers/agreements/123/on-hold?organisation=Test")
+        self.client.post("/admin/suppliers/agreements/123/on-hold", data=dict(nameOfOrganisation='Test'))
 
         assert_flashes(self, "The agreement for Test was put on hold.")
 
@@ -1177,9 +1177,9 @@ class TestApproveAgreement(LoggedInApplicationTest):
                                                                                        '1234')
 
     def test_it_correctly_sets_the_flash_message(self, data_api_client):
-        self.client.post("/admin/suppliers/agreements/123/approve?organisation=Test")
+        self.client.post("/admin/suppliers/agreements/123/approve", data=dict(nameOfOrganisation='Test'))
 
-        assert_flashes(self, "A confirmation was sent to Test.")
+        assert_flashes(self, "The agreement for Test was approved. They will receive a countersigned version soon.")
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')

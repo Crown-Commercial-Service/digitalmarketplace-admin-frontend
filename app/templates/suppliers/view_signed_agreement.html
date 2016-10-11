@@ -101,26 +101,28 @@ Countersign {{ framework.name }} agreement for {{ supplier_framework.declaration
         </p>
 
       {% elif current_user.role == 'admin-ccs-sourcing' %}
-        <form action="{{ url_for('.approve_agreement_for_countersignature', agreement_id=supplier_framework.agreementId, organisation=supplier_framework.declaration.nameOfOrganisation) }}" method="post">
+        <form action="{{ url_for('.approve_agreement_for_countersignature', agreement_id=supplier_framework.agreementId) }}" method="post">
           <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+          <input name="nameOfOrganisation" value="{{ supplier_framework.declaration.nameOfOrganisation }}" type="hidden">
+          {%
+            with
+            type = "save",
+            label = "Accept and continue"
+          %}
+            {% include "toolkit/button.html" %}
+          {% endwith %}
+        </form>
+        {% if supplier_framework.agreementStatus != 'on hold' %}
+          <form action="{{ url_for('.put_signed_agreement_on_hold', agreement_id=supplier_framework.agreementId) }}" method="post">
+            <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+            <input name="nameOfOrganisation" value="{{ supplier_framework.declaration.nameOfOrganisation }}" type="hidden">
             {%
               with
-              type = "save",
-              label = "Accept and continue"
+              type = "secondary",
+              label = "Put on hold and continue"
             %}
               {% include "toolkit/button.html" %}
             {% endwith %}
-        </form>
-        {% if supplier_framework.agreementStatus != 'on hold' %}
-          <form action="{{ url_for('.put_signed_agreement_on_hold', agreement_id=supplier_framework.agreementId, organisation=supplier_framework.declaration.nameOfOrganisation) }}" method="post">
-            <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
-              {%
-                with
-                type = "secondary",
-                label = "Put on hold and continue"
-              %}
-                {% include "toolkit/button.html" %}
-              {% endwith %}
           </form>
         {% endif %}
       {% endif %}
