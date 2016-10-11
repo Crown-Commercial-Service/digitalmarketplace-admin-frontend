@@ -79,7 +79,7 @@ def view_supplier_declaration(supplier_id, framework_slug):
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>', methods=['GET'])
 @login_required
-@role_required('admin-ccs-sourcing')
+@role_required('admin', 'admin-ccs-sourcing')
 def view_signed_agreement(supplier_id, framework_slug):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
@@ -116,6 +116,38 @@ def view_signed_agreement(supplier_id, framework_slug):
         lot_slugs_names=lot_slugs_names,
         agreement_url=url,
         agreement_ext=agreement_documents[-1]['ext']
+    )
+
+
+@main.route('/suppliers/agreements/<agreement_id>/on-hold', methods=['POST'])
+@login_required
+@role_required('admin-ccs-sourcing')
+def put_signed_agreement_on_hold(agreement_id):
+    data_api_client.put_signed_agreement_on_hold(agreement_id, current_user.email_address)
+
+    organisation = request.form['nameOfOrganisation']
+    flash('The agreement for {} was put on hold.'.format(organisation), 'message')
+
+    return redirect(url_for(
+        '.list_agreements',
+        framework_slug='g-cloud-8')
+    )
+
+
+@main.route('/suppliers/agreements/<agreement_id>/approve', methods=['POST'])
+@login_required
+@role_required('admin-ccs-sourcing')
+def approve_agreement_for_countersignature(agreement_id):
+    data_api_client.approve_agreement_for_countersignature(agreement_id,
+                                                           current_user.email_address,
+                                                           current_user.id)
+    organisation = request.form['nameOfOrganisation']
+    flash('The agreement for {} was approved. They will receive a countersigned version soon.'
+          .format(organisation), 'message')
+
+    return redirect(url_for(
+        '.list_agreements',
+        framework_slug='g-cloud-8')
     )
 
 

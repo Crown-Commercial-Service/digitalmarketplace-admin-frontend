@@ -13,6 +13,7 @@ from dmapiclient import HTTPError, APIError
 from dmutils.email import MandrillException
 from dmapiclient.audit import AuditTypes
 from ...helpers import LoggedInApplicationTest, Response
+from ..helpers.flash_tester import assert_flashes
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
@@ -1007,13 +1008,6 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
 class TestViewingASupplierDeclaration(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
-    def test_should_not_be_visible_to_admin_users(self, s3, data_api_client):
-        self.user_role = 'admin'
-
-        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
-
-        eq_(response.status_code, 403)
-
     def test_should_404_if_supplier_does_not_exist(self, s3, data_api_client):
         data_api_client.get_supplier.side_effect = APIError(Response(404))
 
@@ -1142,3 +1136,137 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
             eq_(response.status_code, 200)
             assert len(document.xpath('//img[@src="http://example.com/document/1234.png"]')) == 1
             assert len(document.xpath('//embed[@src="http://example.com/document/1234.png"]')) == 0
+
+
+@mock.patch('app.main.views.suppliers.data_api_client')
+class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
+    user_role = 'admin-ccs-sourcing'
+
+    def test_it_fails_if_not_ccs_admin(self, data_api_client):
+        self.user_role = 'admin'
+        res = self.client.post('/admin/suppliers/agreements/123/on-hold')
+
+        assert res.status_code == 403
+
+    def test_it_correctly_calls_the_apiclient(self, data_api_client):
+        res = self.client.post('/admin/suppliers/agreements/123/on-hold')
+
+        data_api_client.put_signed_agreement_on_hold.assert_called_once_with('123', 'test@example.com')
+
+    def test_it_correctly_sets_the_flash_message(self, data_api_client):
+        self.client.post("/admin/suppliers/agreements/123/on-hold", data=dict(nameOfOrganisation='Test'))
+
+        assert_flashes(self, "The agreement for Test was put on hold.")
+
+
+@mock.patch('app.main.views.suppliers.data_api_client')
+class TestApproveAgreement(LoggedInApplicationTest):
+    user_role = 'admin-ccs-sourcing'
+
+    def test_it_fails_if_not_ccs_admin(self, data_api_client):
+        self.user_role = 'admin'
+        res = self.client.post('/admin/suppliers/agreements/123/approve')
+
+        assert res.status_code == 403
+
+    def test_it_correctly_calls_the_apiclient(self, data_api_client):
+        res = self.client.post('/admin/suppliers/agreements/123/approve')
+
+        data_api_client.approve_agreement_for_countersignature.assert_called_once_with('123',
+                                                                                       'test@example.com',
+                                                                                       '1234')
+
+    def test_it_correctly_sets_the_flash_message(self, data_api_client):
+        self.client.post("/admin/suppliers/agreements/123/approve", data=dict(nameOfOrganisation='Test'))
+
+        assert_flashes(self, "The agreement for Test was approved. They will receive a countersigned version soon.")
+
+
+@mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.get_signed_url')
+@mock.patch('app.main.views.suppliers.s3')
+class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
+    user_role = 'admin-ccs-sourcing'
+
+    def set_mocks(self, s3, get_signed_url, data_api_client, **kwargs):
+        data_api_client.get_supplier.return_value = {
+            'suppliers': {}
+        }
+        data_api_client.get_framework.return_value = {
+            'frameworks': {
+                'frameworkAgreementVersion': 'v1.0'
+            }
+        }
+        data_api_client.get_supplier_framework_info.return_value = {
+            'frameworkInterest': {
+                'agreementReturned': True,
+                'agreementStatus': kwargs['agreement_status'],
+                'declaration': '',
+                'agreementDetails': {},
+                'countersignedDetails': {}
+            }
+        }
+        data_api_client.find_services_iter.return_value = []
+        get_signed_url.return_value = '#'
+        s3.S3.return_value.list.return_value = [
+            {'path': 'g-cloud-8/agreements/1234/1234-signed-framework-agreement.png',
+             'ext': 'pdf'}
+        ]
+
+    def test_none_shown_if_user_not_ccs_admin(self, s3, get_signed_url, data_api_client):
+        self.user_role = 'admin'
+        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
+
+        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+        assert res.status_code == 200
+
+        data = res.get_data(as_text=True)
+
+        assert 'Accept and continue' not in data
+        assert 'Put on hold and continue' not in data
+
+    def test_both_shown_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client):
+        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
+
+        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+        assert res.status_code == 200
+
+        data = res.get_data(as_text=True)
+
+        assert 'Accept and continue' in data
+        assert 'Put on hold and continue' in data
+
+    def test_only_counter_sign_shown_if_agreement_on_hold(self, s3, get_signed_url, data_api_client):
+        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='on hold')
+
+        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+        assert res.status_code == 200
+
+        data = res.get_data(as_text=True)
+
+        assert 'Accept and continue' in data
+        assert 'Put on hold and continue' not in data
+
+    def test_none_shown_if_agreement_approved(self, s3, get_signed_url, data_api_client):
+        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='approved')
+
+        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+        assert res.status_code == 200
+
+        data = res.get_data(as_text=True)
+
+        assert 'Accept and continue' not in data
+        assert 'Put on hold and continue' not in data
+        assert 'Accepted by' in data
+
+    def test_none_shown_if_agreement_countersigned(self, s3, get_signed_url, data_api_client):
+        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='countersigned')
+
+        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+        assert res.status_code == 200
+
+        data = res.get_data(as_text=True)
+
+        assert 'Accept and continue' not in data
+        assert 'Put on hold and continue' not in data
+        assert 'Accepted by' in data
