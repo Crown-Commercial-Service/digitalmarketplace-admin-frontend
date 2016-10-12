@@ -1318,3 +1318,53 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert 'Accept and continue' not in data
         assert 'Put on hold and continue' not in data
         assert 'Accepted by' in data
+
+
+@mock.patch('app.main.views.agreements.data_api_client')
+class TestNextAgreementRedirect(LoggedInApplicationTest):
+    user_role = 'admin'
+
+    @property
+    def dummy_supplier_frameworks(self):
+        # a property so we ensure we get a new clone every time we request it
+        return {
+            "supplierFrameworks": [
+                {
+                    "supplierId": 4321,
+                    "frameworkSlug": "g-cloud-8",
+                },
+                {
+                    "supplierId": 1234,
+                    "frameworkSlug": "g-cloud-8",
+                },
+                {
+                    "supplierId": 31415,
+                    "frameworkSlug": "g-cloud-8",
+                },
+                {
+                    "supplierId": 27,
+                    "frameworkSlug": "g-cloud-8",
+                },
+                {
+                    "supplierId": 141,
+                    "frameworkSlug": "g-cloud-8",
+                },
+            ],
+        }
+
+    def test_happy_path(self, data_api_client):
+        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8/next')
+        assert res.status_code == 302
+        assert res.location == "http://localhost/admin/suppliers/4321/agreements/g-cloud-8"
+
+    def test_unknown_supplier_returns_404(self, data_api_client):
+        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+        res = self.client.get('/admin/suppliers/999/agreements/g-cloud-8/next')
+        assert res.status_code == 404
+
+    def test_final_supplier_redirects_to_list(self, data_api_client):
+        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+        res = self.client.get('/admin/suppliers/4321/agreements/g-cloud-8/next')
+        assert res.status_code == 302
+        assert res.location == "http://localhost/admin/agreements/g-cloud-8"
