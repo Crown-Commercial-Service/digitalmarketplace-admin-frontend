@@ -1215,6 +1215,7 @@ class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
         data_api_client.put_signed_agreement_on_hold.assert_called_once_with('123', 'test@example.com')
         assert_flashes(self, "The agreement for Test was put on hold.")
         assert res.status_code == 302
+        assert res.location == "http://localhost/admin/suppliers/4321/agreements/g-cloud-99-flake/next"
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
@@ -1251,6 +1252,7 @@ class TestApproveAgreement(LoggedInApplicationTest):
                                                                                        '1234')
         assert_flashes(self, "The agreement for Test was approved. They will receive a countersigned version soon.")
         assert res.status_code == 302
+        assert res.location == "http://localhost/admin/suppliers/4321/agreements/g-cloud-99p-world/next"
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
