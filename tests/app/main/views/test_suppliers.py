@@ -1189,44 +1189,68 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
 class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
+    @property
+    def put_signed_agreement_on_hold_return_value(self):
+        # a property so we always get a clean *copy* of this to work with
+        return {
+            "agreement": {
+                "id": 123,
+                "supplierId": 4321,
+                "frameworkSlug": "g-cloud-99-flake",
+            },
+        }
+
     def test_it_fails_if_not_ccs_admin(self, data_api_client):
         self.user_role = 'admin'
-        res = self.client.post('/admin/suppliers/agreements/123/on-hold')
+        data_api_client.put_signed_agreement_on_hold.return_value = self.put_signed_agreement_on_hold_return_value
+        res = self.client.post('/admin/suppliers/agreements/123/on-hold', data={"nameOfOrganisation": "Test"})
 
+        assert not data_api_client.put_signed_agreement_on_hold.called
         assert res.status_code == 403
 
-    def test_it_correctly_calls_the_apiclient(self, data_api_client):
-        res = self.client.post('/admin/suppliers/agreements/123/on-hold')
+    def test_happy_path(self, data_api_client):
+        data_api_client.put_signed_agreement_on_hold.return_value = self.put_signed_agreement_on_hold_return_value
+        res = self.client.post('/admin/suppliers/agreements/123/on-hold', data={"nameOfOrganisation": "Test"})
 
         data_api_client.put_signed_agreement_on_hold.assert_called_once_with('123', 'test@example.com')
-
-    def test_it_correctly_sets_the_flash_message(self, data_api_client):
-        self.client.post("/admin/suppliers/agreements/123/on-hold", data=dict(nameOfOrganisation='Test'))
-
         assert_flashes(self, "The agreement for Test was put on hold.")
+        assert res.status_code == 302
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
 class TestApproveAgreement(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
+    @property
+    def put_signed_agreement_on_hold_return_value(self):
+        # a property so we always get a clean *copy* of this to work with
+        return {
+            "agreement": {
+                "id": 123,
+                "supplierId": 4321,
+                "frameworkSlug": "g-cloud-99p-world",
+            },
+        }
+
     def test_it_fails_if_not_ccs_admin(self, data_api_client):
         self.user_role = 'admin'
-        res = self.client.post('/admin/suppliers/agreements/123/approve')
+        data_api_client.approve_agreement_for_countersignature.return_value = \
+            self.put_signed_agreement_on_hold_return_value
+        res = self.client.post('/admin/suppliers/agreements/123/approve', data={"nameOfOrganisation": "Test"})
 
+        assert not data_api_client.approve_agreement_for_countersignature.called
         assert res.status_code == 403
 
-    def test_it_correctly_calls_the_apiclient(self, data_api_client):
-        res = self.client.post('/admin/suppliers/agreements/123/approve')
+    def test_happy_path(self, data_api_client):
+        data_api_client.approve_agreement_for_countersignature.return_value = \
+            self.put_signed_agreement_on_hold_return_value
+        res = self.client.post('/admin/suppliers/agreements/123/approve', data={"nameOfOrganisation": "Test"})
 
         data_api_client.approve_agreement_for_countersignature.assert_called_once_with('123',
                                                                                        'test@example.com',
                                                                                        '1234')
-
-    def test_it_correctly_sets_the_flash_message(self, data_api_client):
-        self.client.post("/admin/suppliers/agreements/123/approve", data=dict(nameOfOrganisation='Test'))
-
         assert_flashes(self, "The agreement for Test was approved. They will receive a countersigned version soon.")
+        assert res.status_code == 302
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
