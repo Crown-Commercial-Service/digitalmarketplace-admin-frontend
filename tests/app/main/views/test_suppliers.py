@@ -1237,7 +1237,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert 'Put on hold and continue' in data
 
     def test_only_counter_sign_shown_if_agreement_on_hold(self, s3, get_signed_url, data_api_client):
-        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='on hold')
+        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='on-hold')
 
         res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
         assert res.status_code == 200
