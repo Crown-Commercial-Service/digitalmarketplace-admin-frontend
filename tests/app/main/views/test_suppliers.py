@@ -1306,6 +1306,9 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert "Accept and continue" not in data
         assert "Put on hold and continue" not in data
         assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
+        assert len(document.xpath(
+            "//a[@href='/admin/suppliers/1234/agreements/g-cloud-8/next'][normalize-space(string())='Next agreement']"
+        )) == 1
 
     def test_both_shown_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
@@ -1325,6 +1328,9 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             "//input[@type='submit'][@value='Put on hold and continue']"
         )) == 1
         assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
+        assert len(document.xpath(
+            "//a[@href='/admin/suppliers/1234/agreements/g-cloud-8/next'][normalize-space(string())='Next agreement']"
+        )) == 1
 
     def test_only_counter_sign_shown_if_agreement_on_hold(self, s3, get_signed_url, data_api_client):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='on-hold')
@@ -1341,6 +1347,9 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         )) == 1
         assert "Put on hold and continue" not in data
         assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
+        assert len(document.xpath(
+            "//a[@href='/admin/suppliers/1234/agreements/g-cloud-8/next'][normalize-space(string())='Next agreement']"
+        )) == 1
 
     def test_none_shown_if_agreement_approved(self, s3, get_signed_url, data_api_client):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='approved')
@@ -1354,6 +1363,9 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert "Accept and continue" not in data
         assert "Put on hold and continue" not in data
         assert len(document.xpath("//h2[normalize-space(string())='Accepted by']")) == 1
+        assert len(document.xpath(
+            "//a[@href='/admin/suppliers/1234/agreements/g-cloud-8/next'][normalize-space(string())='Next agreement']"
+        )) == 1
 
     def test_none_shown_if_agreement_countersigned(self, s3, get_signed_url, data_api_client):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='countersigned')
@@ -1367,6 +1379,9 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert "Accept and continue" not in data
         assert "Put on hold and continue" not in data
         assert len(document.xpath("//h2[normalize-space(string())='Accepted by']")) == 1
+        assert len(document.xpath(
+            "//a[@href='/admin/suppliers/1234/agreements/g-cloud-8/next'][normalize-space(string())='Next agreement']"
+        )) == 1
 
 
 @mock.patch('app.main.views.agreements.data_api_client')
