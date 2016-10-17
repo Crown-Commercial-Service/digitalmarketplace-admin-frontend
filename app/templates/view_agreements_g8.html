@@ -39,9 +39,20 @@
     <div class="column-one-third search-page-filters">
       <div class="status-filters">
         <h2>Choose a status</h2>
-        <ul>
-          <li>Waiting for countersigning</li>
-        </ul>
+          <ul>
+            <li>
+              {% if status %}<a href="{{ url_for(".list_agreements", framework_slug=framework.slug) }}">{% endif %}
+                All
+              {% if status %}</a>{% endif %}
+            </li>
+        {% for status_key, status_label in status_labels.items() %}
+            <li>
+              {% if status_key != status %}<a href="{{ url_for(".list_agreements", framework_slug=framework.slug, status=status_key) }}">{% endif %}
+                {{ status_label }}
+              {% if status_key != status %}</a>{% endif %}
+            </li>
+        {% endfor %}
+          </ul>
       </div>
     </div>
     <div class="column-two-thirds">
