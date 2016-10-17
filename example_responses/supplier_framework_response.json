@@ -1,13 +1,9 @@
 {
   "frameworkInterest": {
-    "agreementReturnedAt": "2016-08-25T15:24:04.625965Z",
     "supplierId": 1234,
+    "supplierName": "Lighthouse Supplier Name",
     "frameworkSlug": "g-cloud-8",
-    "countersignedAt": null,
     "onFramework": true,
-    "agreementReturned": true,
-    "agreedVariations": {
-    },
     "declaration": {
       "termsAndConditions": true,
       "registeredAddressBuilding": "Corsewall Lighthouse",
@@ -65,8 +61,8 @@
       "fraudAndTheft": false,
       "tradingNames": "Lighthouse Trading Name"
     },
-    "countersigned": false,
-    "supplierName": "Lighthouse Supplier Name",
+    "agreementReturnedAt": "2016-08-25T15:24:04.625965Z",
+    "agreementReturned": true,
     "agreementDetails": {
       "frameworkAgreementVersion": "v1.0",
       "uploaderUserEmail": "uploader@email.com",
@@ -74,6 +70,14 @@
       "signerName": "Signer Name",
       "uploaderUserName": "Uploader Name",
       "signerRole": "Ace Developer"
+    },
+    "agreementPath": "g-cloud-8/agreements/1234/framework-agreement.pdf",
+    "countersignedAt": null,
+    "countersigned": false,
+    "countersignedDetails": null,
+    "countersignedPath": null,
+    "agreementStatus": "signed",
+    "agreedVariations": {
     }
   }
 }

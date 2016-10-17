@@ -6,6 +6,7 @@ except ImportError:
     from urllib.parse import urlsplit
     from io import BytesIO as StringIO
 import mock
+from freezegun import freeze_time
 from lxml import html
 from nose.tools import eq_
 from nose.tools import assert_equals
@@ -31,6 +32,12 @@ class TestSuppliersListView(LoggedInApplicationTest):
                 {"id": 1235, "name": "Supplier 2"},
             ]
         }
+        data_api_client.get_supplier_framework_info.side_effect = [
+            {"frameworkInterest": {"agreementPath": "path/the/first/1234-g7-agreement.pdf"}},
+            {"frameworkInterest": {"agreementPath": None}},  # Supplier 1234 hasn't returned their DOS agreement yet
+            HTTPError(Response(404)),                        # Supplier 1235 isn't on G-Cloud 7
+            {"frameworkInterest": {"agreementPath": "path/the/third/1235-dos-agreement.jpg"}},
+        ]
         response = self.client.get("/admin/suppliers")
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -796,62 +803,27 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
 
         eq_(response.status_code, 403)
 
-    def test_should_404_if_no_documents_listed(self, s3, data_api_client):
-        data_api_client.get_supplier_framework_info.return_value = {
-            'frameworkInterest': {'declaration': {'SQ1-1a': 'Supplier name'}}
-        }
-        s3.S3.return_value.list.return_value = []
-        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo')
-
-        assert not s3.S3.return_value.get_signed_url.called
-        eq_(response.status_code, 404)
-
     def test_should_404_if_document_does_not_exist(self, s3, data_api_client):
         data_api_client.get_supplier_framework_info.return_value = {
             'frameworkInterest': {'declaration': {'SQ1-1a': 'Supplier name'}}
         }
-        s3.S3.return_value.list.return_value = [
-            {'path': 'g-cloud-7/agreements/1234/1234-foo.pdf'}
-        ]
         s3.S3.return_value.get_signed_url.return_value = None
 
-        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo')
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
 
-        s3.S3.return_value.list.assert_called_with(prefix='g-cloud-7/agreements/1234/1234-foo')
         s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/1234-foo.pdf')
         eq_(response.status_code, 404)
-
-    def test_should_select_most_recent_matching_file(self, s3, data_api_client):
-        data_api_client.get_supplier_framework_info.return_value = {
-            'frameworkInterest': {'declaration': {'key': 'value'}}
-        }
-        s3.S3.return_value.list.return_value = [
-            {'path': 'foo.jpg'},
-            {'path': 'g-cloud-7/agreements/1234/1234-foo.pdf'}
-        ]
-        s3.S3.return_value.get_signed_url.return_value = 'http://foo/blah?extra'
-
-        self.app.config['DM_ASSETS_URL'] = 'https://example'
-
-        self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo')
-
-        s3.S3.return_value.list.assert_called_with(prefix='g-cloud-7/agreements/1234/1234-foo')
-        s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/1234-foo.pdf')
 
     def test_should_redirect(self, s3, data_api_client):
         data_api_client.get_supplier_framework_info.return_value = {
             'frameworkInterest': {'declaration': {'key': 'Supplier name'}}
         }
-        s3.S3.return_value.list.return_value = [
-            {'path': 'g-cloud-7/agreements/1234/1234-foo.pdf'}
-        ]
         s3.S3.return_value.get_signed_url.return_value = 'http://foo/blah?extra'
 
         self.app.config['DM_ASSETS_URL'] = 'https://example'
 
-        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo')
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
 
-        s3.S3.return_value.list.assert_called_with(prefix='g-cloud-7/agreements/1234/1234-foo')
         s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/1234-foo.pdf')
         eq_(response.status_code, 302)
         eq_(response.location, 'https://example/blah?extra')
@@ -860,20 +832,13 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
         data_api_client.get_supplier_framework_info.return_value = {
             'frameworkInterest': {'declaration': {'key': 'value'}}
         }
-        s3.S3.return_value.list.return_value = [
-            {'path': 'g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf'}
-        ]
         s3.S3.return_value.get_signed_url.return_value = 'http://foo/blah?extra'
-
         self.app.config['DM_ASSETS_URL'] = 'https://example'
 
         response = self.client.get(
             '/admin/suppliers/1234/agreements/g-cloud-7/countersigned-framework-agreement.pdf'
         )
 
-        s3.S3.return_value.list.assert_called_with(
-            prefix='g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf'
-        )
         s3.S3.return_value.get_signed_url.assert_called_with(
             'g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf'
         )
@@ -900,11 +865,26 @@ class TestListCountersignedAgreementFile(LoggedInApplicationTest):
             'last_modified': u'2016-01-15T12:58:08.000000Z',
             'filename': u'93495-countersigned-framework-agreement'
         }
+        data_api_client.get_supplier_framework_info.return_value = \
+            {"frameworkInterest": {
+                "onFramework": True,
+                "agreementStatus": "signed",
+                "countersignedPath": "g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf"
+            }}
+
         response = self.client.get('/admin/suppliers/1234/countersigned-agreements/g-cloud-7')
         eq_(response.status_code, 200)
 
     def test_should_display_no_documents_if_no_documents_listed(self, s3, data_api_client):
         s3.S3.return_value.get_key.return_value = []
+        data_api_client.get_supplier_framework_info.return_value = {
+            "frameworkInterest": {
+                "onFramework": True,
+                "agreementStatus": "signed",
+                "countersignedPath": None
+            }
+        }
+
         response = self.client.get('/admin/suppliers/1234/countersigned-agreements/g-cloud-7')
         self.assertIn(
             'No agreements have been uploaded',
@@ -912,6 +892,7 @@ class TestListCountersignedAgreementFile(LoggedInApplicationTest):
         )
 
 
+@freeze_time('2016-12-25 06:30:01')
 @mock.patch('app.main.views.suppliers.data_api_client')
 @mock.patch('app.main.views.suppliers.s3')
 class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
@@ -925,6 +906,14 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             'last_modified': u'2016-01-15T12:58:08.000000Z',
             'filename': u'93495-countersigned-framework-agreement'
         }
+        data_api_client.get_supplier_framework_info.return_value = \
+            {"frameworkInterest": {
+                "onFramework": True,
+                "agreementStatus": "signed",
+                "agreementId": 1212,
+                "countersignedPath": "g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf"
+            }}
+
         response = self.client.post('/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
                                     data=dict(
                                         countersigned_agreement=(io.BytesIO(b"this is a test"),
@@ -936,7 +925,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
         )
         eq_(response.status_code, 200)
 
-    def test_should_create_audit_event(self, s3, data_api_client):
+    def test_can_upload_countersigned_agreement_for_signed_agreement(self, s3, data_api_client):
         s3.S3.return_value.get_key.return_value = {
             'size': '7050',
             'path': u'g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf',
@@ -944,12 +933,35 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             'last_modified': u'2016-01-15T12:58:08.000000Z',
             'filename': u'1234-countersigned-framework-agreement'
         }
-
+        data_api_client.get_supplier_framework_info.return_value = \
+            {"frameworkInterest": {
+                "onFramework": True,
+                "agreementStatus": "signed",
+                "agreementId": 1212,
+                "countersignedPath": None
+            }}
         response = self.client.post('/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
                                     data=dict(
                                         countersigned_agreement=(io.BytesIO(b"this is a test"),
                                                                  'countersigned_agreement.pdf'),
-                                    ), follow_redirects=True)
+                                    ))
+
+        data_api_client.approve_agreement_for_countersignature.assert_called_once_with(
+            1212,
+            'test@example.com',
+            '1234'
+        )
+
+        s3.S3.return_value.save.assert_called_once_with(
+            "g-cloud-7/agreements/1234/1234-countersigned-framework-agreement-2016-12-25-063001.pdf",
+            mock.ANY
+        )
+
+        data_api_client.update_framework_agreement.assert_called_once_with(
+            1212,
+            {"countersignedAgreementPath": "g-cloud-7/agreements/1234/1234-countersigned-framework-agreement-2016-12-25-063001.pdf"},  # noqa
+            'test@example.com'
+        )
 
         data_api_client.create_audit_event.assert_called_once_with(
             audit_type=AuditTypes.upload_countersigned_agreement,
@@ -957,13 +969,55 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             object_type='suppliers',
             object_id=u'1234',
             data={'upload_countersigned_agreement': 'g-cloud-7/agreements/1234/1234-countersigned-'
-                  'framework-agreement.pdf'})
+                  'framework-agreement-2016-12-25-063001.pdf'})
 
-        self.assertIn(
-            'Countersigned agreement file was uploaded',
-            response.get_data(as_text=True)
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/suppliers/1234/countersigned-agreements/g-cloud-7'
+
+    def test_can_upload_countersigned_agreement_for_already_countersigned_agreement(self, s3, data_api_client):
+        s3.S3.return_value.get_key.return_value = {
+            'size': '7050',
+            'path': u'g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf',
+            'ext': u'pdf',
+            'last_modified': u'2016-01-15T12:58:08.000000Z',
+            'filename': u'1234-countersigned-framework-agreement'
+        }
+        data_api_client.get_supplier_framework_info.return_value = \
+            {"frameworkInterest": {
+                "onFramework": True,
+                "agreementStatus": "countersigned",
+                "agreementId": 1212,
+                "countersignedPath": "g-cloud-7/agreements/1234/1234-countersigned-framework-agreement-2016-12-25-063001.pdf"  # noqa
+            }}
+        response = self.client.post('/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
+                                    data=dict(
+                                        countersigned_agreement=(io.BytesIO(b"this is a test"),
+                                                                 'countersigned_agreement.pdf'),
+                                    ))
+
+        data_api_client.approve_agreement_for_countersignature.assert_not_called()
+
+        s3.S3.return_value.save.assert_called_once_with(
+            "g-cloud-7/agreements/1234/1234-countersigned-framework-agreement-2016-12-25-063001.pdf",
+            mock.ANY
         )
-        self.assertEqual(response.status_code, 200)
+
+        data_api_client.update_framework_agreement.assert_called_once_with(
+            1212,
+            {"countersignedAgreementPath": "g-cloud-7/agreements/1234/1234-countersigned-framework-agreement-2016-12-25-063001.pdf"},  # noqa
+            'test@example.com'
+        )
+
+        data_api_client.create_audit_event.assert_called_once_with(
+            audit_type=AuditTypes.upload_countersigned_agreement,
+            user='test@example.com',
+            object_type='suppliers',
+            object_id=u'1234',
+            data={'upload_countersigned_agreement': 'g-cloud-7/agreements/1234/1234-countersigned-'
+                  'framework-agreement-2016-12-25-063001.pdf'})
+
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/suppliers/1234/countersigned-agreements/g-cloud-7'
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
@@ -994,6 +1048,12 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
             'last_modified': u'2016-01-15T12:58:08.000000Z',
             'filename': u'93495-countersigned-framework-agreement'
         }
+        data_api_client.get_supplier_framework_info.return_value = \
+            {"frameworkInterest": {
+                "onFramework": True,
+                "agreementStatus": "signed",
+                "countersignedPath": "g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf"
+            }}
         response = self.client.get('/admin/suppliers/1234/countersigned-agreements-remove/g-cloud-7',
                                    follow_redirects=True)
         self.assertIn(
@@ -1069,31 +1129,28 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
                 },
             ))
         data_api_client.find_services_iter.side_effect = find_services_iter_side_effect
-        s3.S3.return_value.list.return_value = [
-            {'size': 441902,
-             'path': 'g-cloud-8/agreements/1234/1234-signed-framework-agreement.png',
-             'ext': 'pdf',
-             'last_modified': '2016-08-25T15:23:59.000000Z',
-             'filename': '700005-signed-framework-agreement'}
-        ]
-        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
-        document = html.fromstring(response.get_data(as_text=True))
-        eq_(response.status_code, 200)
-        # Registered Address
-        assert len(document.xpath('//li[contains(text(), "Corsewall Lighthouse")]')) == 1
-        assert len(document.xpath('//li[contains(text(), "Stranraer")]')) == 1
-        assert len(document.xpath('//li[contains(text(), "DG9 0QG")]')) == 1
-        # Company number - linked
-        assert len(document.xpath('//a[@href="https://beta.companieshouse.gov.uk/company/1234456"][contains(text(), "1234456")]')) == 1  # noqa
-        # Lots
-        assert len(document.xpath('//li[contains(text(), "Lettuce & cucumber")]')) == 1
-        assert len(document.xpath('//li[contains(text(), "Raisins & dates")]')) == 1
-        # Signer details
-        assert len(document.xpath('//p[contains(text(), "Signer Name")]')) == 1
-        assert len(document.xpath('//p[contains(text(), "Ace Developer")]')) == 1
-        # Uploader details
-        assert len(document.xpath('//p[contains(text(), "Uploader Name")]')) == 1
-        assert len(document.xpath('//span[contains(text(), "uploader@email.com")]')) == 1
+
+        with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
+            mock_get_url.return_value = "http://example.com/document/1234.pdf"
+
+            response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+            document = html.fromstring(response.get_data(as_text=True))
+            eq_(response.status_code, 200)
+            # Registered Address
+            assert len(document.xpath('//li[contains(text(), "Corsewall Lighthouse")]')) == 1
+            assert len(document.xpath('//li[contains(text(), "Stranraer")]')) == 1
+            assert len(document.xpath('//li[contains(text(), "DG9 0QG")]')) == 1
+            # Company number - linked
+            assert len(document.xpath('//a[@href="https://beta.companieshouse.gov.uk/company/1234456"][contains(text(), "1234456")]')) == 1  # noqa
+            # Lots
+            assert len(document.xpath('//li[contains(text(), "Lettuce & cucumber")]')) == 1
+            assert len(document.xpath('//li[contains(text(), "Raisins & dates")]')) == 1
+            # Signer details
+            assert len(document.xpath('//p[contains(text(), "Signer Name")]')) == 1
+            assert len(document.xpath('//p[contains(text(), "Ace Developer")]')) == 1
+            # Uploader details
+            assert len(document.xpath('//p[contains(text(), "Uploader Name")]')) == 1
+            assert len(document.xpath('//span[contains(text(), "uploader@email.com")]')) == 1
 
     def test_should_embed_for_pdf_file(self, s3, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
@@ -1101,13 +1158,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
             'supplier_framework_response'
         )
-        s3.S3.return_value.list.return_value = [
-            {'size': 441902,
-             'path': 'g-cloud-8/agreements/1234/1234-signed-framework-agreement.pdf',
-             'ext': 'pdf',
-             'last_modified': '2016-08-25T15:23:59.000000Z',
-             'filename': '700005-signed-framework-agreement'}
-        ]
+
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
             mock_get_url.return_value = "http://example.com/document/1234.pdf"
             response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
@@ -1119,16 +1170,12 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
     def test_should_img_for_image_file(self, s3, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
         data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
-        data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
+        supplier_framework_info = self.load_example_listing(
             'supplier_framework_response'
         )
-        s3.S3.return_value.list.return_value = [
-            {'size': 441902,
-             'path': 'g-cloud-8/agreements/1234/1234-signed-framework-agreement.png',
-             'ext': 'png',
-             'last_modified': '2016-08-25T15:23:59.000000Z',
-             'filename': '700005-signed-framework-agreement'}
-        ]
+        supplier_framework_info['frameworkInterest']['agreementPath'] = 'path/to/img.jpg'
+        data_api_client.get_supplier_framework_info.return_value = supplier_framework_info
+
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
             mock_get_url.return_value = "http://example.com/document/1234.png"
             response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
@@ -1203,6 +1250,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
                 'agreementStatus': kwargs['agreement_status'],
                 'declaration': '',
                 'agreementDetails': {},
+                'agreementPath': 'g-cloud-8/1234/1234-file.pdf',
                 'countersignedDetails': {}
             }
         }

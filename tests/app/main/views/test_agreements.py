@@ -19,12 +19,14 @@ class TestListAgreements(LoggedInApplicationTest):
                     'supplierId': 11111,
                     'agreementReturned': True,
                     'agreementReturnedAt': '2015-11-01T01:01:01.000000Z',
+                    'agreementPath': 'path/11111-agreement.pdf',
                 },
                 {
                     'supplierName': 'My other supplier',
                     'supplierId': 11112,
                     'agreementReturned': True,
                     'agreementReturnedAt': '2015-10-30T01:01:01.000000Z',
+                    'agreementPath': 'path/11112-agreement.pdf',
                 },
             ]
         }

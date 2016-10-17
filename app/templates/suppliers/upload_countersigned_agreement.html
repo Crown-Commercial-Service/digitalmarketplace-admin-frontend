@@ -85,7 +85,7 @@
       {{ summary.field_name("{} countersigned agreement".format(framework.name)) }}
       {{ summary.text(countersigned_agreement.last_modified) }}
       {% call summary.field(wide=True) %}
-        <a href="{{ url_for('.download_agreement_file', supplier_id=supplier.id, framework_slug=framework.slug, document_name=countersigned_agreement_filename) }}" download>Download agreement</a>
+        <a href="{{ url_for('.download_agreement_file', supplier_id=supplier.id, framework_slug=framework.slug, document_name=countersigned_agreement.document_name) }}" download>Download agreement</a>
       {% endcall %}
       {{ summary.remove_link("Remove", url_for('.remove_countersigned_agreement_file', supplier_id=supplier.id, framework_slug=framework.slug) ) }}
     {% endcall %}

@@ -12,11 +12,15 @@ from dmapiclient import HTTPError, APIError
 from dmapiclient.audit import AuditTypes
 from dmutils.email import send_email, generate_token, MandrillException
 from dmutils.documents import (
-    get_signed_url, get_agreement_document_path, file_is_pdf,
-    AGREEMENT_FILENAME, SIGNED_AGREEMENT_PREFIX, COUNTERSIGNED_AGREEMENT_FILENAME,
+    AGREEMENT_FILENAME, COUNTERSIGNED_AGREEMENT_FILENAME,
+    file_is_pdf, get_document_path, get_extension, get_signed_url,
+    generate_timestamped_document_upload_path, degenerate_document_path_and_return_doc_name
 )
 from dmutils import s3
 from dmutils.formats import datetimeformat
+
+
+FRAMEWORKS_IN_SUPPLIERS_PAGE = ('g-cloud-7', 'digital-outcomes-and-specialists')
 
 
 @main.route('/suppliers', methods=['GET'])
@@ -31,11 +35,27 @@ def find_suppliers():
             duns_number=request.args.get("supplier_duns_number")
         )['suppliers']
 
+    supplier_and_framework_info = [{"id": supplier["id"], "name": supplier['name']} for supplier in suppliers]
+    for supplier in supplier_and_framework_info:
+        for framework_slug in FRAMEWORKS_IN_SUPPLIERS_PAGE:
+            try:
+                supplier_framework = data_api_client.get_supplier_framework_info(
+                    supplier['id'], framework_slug
+                )['frameworkInterest']
+                if supplier_framework['agreementPath']:
+                    supplier['{}-signed-agreement-document-name'.format(framework_slug)] = \
+                        degenerate_document_path_and_return_doc_name(supplier_framework['agreementPath'])
+            except HTTPError as e:
+                # Supplier might not be on all frameworks
+                if e.status_code == 404:
+                    continue
+                else:
+                    raise e
+
     return render_template(
         "view_suppliers.html",
-        suppliers=suppliers,
-        signed_agreement_prefix=SIGNED_AGREEMENT_PREFIX,
-        agreement_prefix=AGREEMENT_FILENAME
+        supplier_and_framework_info=supplier_and_framework_info,
+        agreement_filename=AGREEMENT_FILENAME
     )
 
 
@@ -100,11 +120,7 @@ def view_signed_agreement(supplier_id, framework_slug):
     )
 
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
-    prefix = get_agreement_document_path(framework_slug, supplier_id, SIGNED_AGREEMENT_PREFIX)
-    agreement_documents = agreements_bucket.list(prefix=prefix)
-    if not len(agreement_documents):
-        abort(404)
-    path = agreement_documents[-1]['path']
+    path = supplier_framework['agreementPath']
     url = get_signed_url(agreements_bucket, path, current_app.config['DM_ASSETS_URL'])
     if not url:
         abort(404)
@@ -115,7 +131,7 @@ def view_signed_agreement(supplier_id, framework_slug):
         supplier_framework=supplier_framework,
         lot_slugs_names=lot_slugs_names,
         agreement_url=url,
-        agreement_ext=agreement_documents[-1]['ext']
+        agreement_ext=get_extension(path)
     )
 
 
@@ -156,14 +172,11 @@ def approve_agreement_for_countersignature(agreement_id):
 @role_required('admin', 'admin-ccs-sourcing')
 def download_agreement_file(supplier_id, framework_slug, document_name):
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
-    if not supplier_framework.get('declaration'):
+    if supplier_framework is None or not supplier_framework.get("declaration"):
         abort(404)
+
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
-    prefix = get_agreement_document_path(framework_slug, supplier_id, document_name)
-    agreement_documents = agreements_bucket.list(prefix=prefix)
-    if not len(agreement_documents):
-        abort(404)
-    path = agreement_documents[-1]['path']
+    path = get_document_path(framework_slug, supplier_id, 'agreements', document_name)
     url = get_signed_url(agreements_bucket, path, current_app.config['DM_ASSETS_URL'])
     if not url:
         abort(404)
@@ -171,30 +184,29 @@ def download_agreement_file(supplier_id, framework_slug, document_name):
     return redirect(url)
 
 
-@main.route('/suppliers/<supplier_id>/countersigned-agreements/<framework_slug>',
-            methods=['GET'])
+@main.route('/suppliers/<supplier_id>/countersigned-agreements/<framework_slug>', methods=['GET'])
 @login_required
 @role_required('admin-ccs-sourcing')
 def list_countersigned_agreement_file(supplier_id, framework_slug):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
+    supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
+    if not supplier_framework['onFramework'] or supplier_framework['agreementStatus'] in (None, 'draft'):
+        abort(404)
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
-    path = get_agreement_document_path(framework_slug, supplier_id, COUNTERSIGNED_AGREEMENT_FILENAME)
-    countersigned_agreement_document = agreements_bucket.get_key(path)
+    countersigned_agreement_document = agreements_bucket.get_key(supplier_framework.get('countersignedPath'))
+
+    countersigned_agreement = []
     if countersigned_agreement_document:
-        countersigned_agreement = countersigned_agreement_document
-        countersigned_agreement['last_modified'] = datetimeformat(parse_date(
-            countersigned_agreement['last_modified']))
-        countersigned_agreement = [countersigned_agreement]
-    else:
-        countersigned_agreement = []
+        last_modified = datetimeformat(parse_date(countersigned_agreement_document['last_modified']))
+        document_name = degenerate_document_path_and_return_doc_name(supplier_framework.get('countersignedPath'))
+        countersigned_agreement = [{"last_modified": last_modified, "document_name": document_name}]
 
     return render_template(
         "suppliers/upload_countersigned_agreement.html",
         supplier=supplier,
         framework=framework,
-        countersigned_agreement=countersigned_agreement,
-        countersigned_agreement_filename=COUNTERSIGNED_AGREEMENT_FILENAME
+        countersigned_agreement=countersigned_agreement
     )
 
 
@@ -202,6 +214,10 @@ def list_countersigned_agreement_file(supplier_id, framework_slug):
 @login_required
 @role_required('admin-ccs-sourcing')
 def upload_countersigned_agreement_file(supplier_id, framework_slug):
+    supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
+    if not supplier_framework['onFramework'] or supplier_framework['agreementStatus'] in (None, 'draft'):
+        abort(404)
+    agreement_id = supplier_framework['agreementId']
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
     errors = {}
 
@@ -211,15 +227,30 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
             errors['countersigned_agreement'] = 'not_pdf'
 
         if 'countersigned_agreement' not in errors.keys():
-            filename = get_agreement_document_path(framework_slug, supplier_id, COUNTERSIGNED_AGREEMENT_FILENAME)
-            agreements_bucket.save(filename, the_file)
+            if supplier_framework['agreementStatus'] not in ['approved', 'countersigned']:
+                data_api_client.approve_agreement_for_countersignature(
+                    agreement_id,
+                    current_user.email_address,
+                    current_user.id
+                )
+
+            path = generate_timestamped_document_upload_path(
+                framework_slug, supplier_id, 'agreements', COUNTERSIGNED_AGREEMENT_FILENAME
+            )
+            agreements_bucket.save(path, the_file)
+
+            data_api_client.update_framework_agreement(
+                agreement_id,
+                {"countersignedAgreementPath": path},
+                current_user.email_address
+            )
 
             data_api_client.create_audit_event(
                 audit_type=AuditTypes.upload_countersigned_agreement,
                 user=current_user.email_address,
                 object_type='suppliers',
                 object_id=supplier_id,
-                data={'upload_countersigned_agreement': filename})
+                data={'upload_countersigned_agreement': path})
 
             flash('countersigned_agreement', 'upload_countersigned_agreement')
 
@@ -239,13 +270,21 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
 @login_required
 @role_required('admin-ccs-sourcing')
 def remove_countersigned_agreement_file(supplier_id, framework_slug):
+    supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
+    document = supplier_framework.get('countersignedPath')
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
-    document = get_agreement_document_path(framework_slug, supplier_id, COUNTERSIGNED_AGREEMENT_FILENAME)
 
     if request.method == 'GET':
         flash('countersigned_agreement', 'remove_countersigned_agreement')
 
     if request.method == 'POST':
+        # Remove path first - as we don't want path to exist in DB with no corresponding file in S3
+        # But an orphaned file in S3 wouldn't be so bad
+        data_api_client.update_framework_agreement(
+            supplier_framework['agreementId'],
+            {"countersignedAgreementPath": None},
+            current_user.email_address
+        )
         agreements_bucket.delete_key(document)
 
         data_api_client.create_audit_event(
@@ -505,8 +544,8 @@ def invite_user(supplier_id):
                 "Invitation email failed to send error {} to {} supplier {} supplier id {} ".format(
                     str(e),
                     invite_form.email_address.data,
-                    current_user.supplier_name,
-                    current_user.supplier_id)
+                    suppliers['suppliers']['name'],
+                    supplier_id)
             )
             abort(503, "Failed to send user invite reset")
 

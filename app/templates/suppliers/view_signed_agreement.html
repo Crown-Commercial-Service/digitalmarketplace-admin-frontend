@@ -126,12 +126,10 @@ Countersign {{ framework.name }} agreement for {{ supplier_framework.declaration
           </form>
         {% endif %}
       {% endif %}
-
-
   </div>
 
   <div class="column-two-thirds">
-      {% if agreement_ext == 'pdf' %}
+      {% if agreement_ext == '.pdf' %}
           <embed src="{{ agreement_url }}" class="border-image" height="930" type="application/pdf">
       {% else %}
           <img src="{{ agreement_url }}" class="border-image" >
