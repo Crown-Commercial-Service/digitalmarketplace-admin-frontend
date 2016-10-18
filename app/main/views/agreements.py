@@ -13,11 +13,11 @@ from ..auth import role_required
 from ... import data_api_client
 
 
-_status_labels = OrderedDict((
+status_labels = OrderedDict((
     ("signed", "Waiting for countersigning"),
     ("on-hold", "On hold"),
-    ("approved,countersigned", "Countersigned"),  # ugly, but i don't want to start inventing new status values - much
-                                                  # easier to just act as a filter
+    ("approved,countersigned", "Countersigned"),  # ugly key, but i don't want to start inventing new status values -
+                                                  # much easier to just act as a filter
 ))
 
 
@@ -39,7 +39,7 @@ def list_agreements(framework_slug):
     framework = data_api_client.get_framework(framework_slug)['frameworks']
 
     status = request.args.get("status")
-    if status and status not in _status_labels:
+    if status and status not in status_labels:
         abort(400)
 
     supplier_frameworks = _get_ordered_supplier_frameworks(framework_slug, status=status)
@@ -54,7 +54,7 @@ def list_agreements(framework_slug):
         supplier_frameworks=supplier_frameworks,
         degenerate_document_path_and_return_doc_name=lambda x: degenerate_document_path_and_return_doc_name(x),
         status=status,
-        status_labels=_status_labels,
+        status_labels=status_labels,
     )
 
 
