@@ -16,10 +16,7 @@ def _get_ordered_supplier_frameworks(framework_slug):
         framework_slug, agreement_returned=True
     )['supplierFrameworks']
 
-    # API returns SupplierFrameworks by agreementReturnedAt descending (newest first)
-    # We want it ascending (oldest first)
-    supplier_frameworks.reverse()
-
+    # API now returns SupplierFrameworks by agreementReturnedAt ascending (oldest first)
     return supplier_frameworks
 
 
