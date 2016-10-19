@@ -4,7 +4,7 @@ import mock
 from lxml import html
 from nose.tools import eq_
 from six import iteritems, iterkeys
-from six.moves.urllib.parse import urlparse, urlunparse, parse_qs
+from six.moves.urllib.parse import urlparse, parse_qs
 
 from app.main.views.agreements import status_labels
 from ...helpers import LoggedInApplicationTest
@@ -72,8 +72,10 @@ class TestListAgreements(LoggedInApplicationTest):
         assert len(a_elems) == 1
         mi_elems = elem.cssselect(".search-result-metadata-item")
         assert len(mi_elems) == 1
+        parsed_href = urlparse(a_elems[0].attrib["href"])
         return (
-            urlunparse(("", "",) + urlparse(a_elems[0].attrib["href"])[2:]),
+            parsed_href.path,
+            parse_qs(parsed_href.query),
             a_elems[0].xpath("normalize-space(string())"),
             mi_elems[0].xpath("normalize-space(string())"),
         )
@@ -98,11 +100,13 @@ class TestListAgreements(LoggedInApplicationTest):
         assert tuple(self._unpack_search_result(result) for result in page.cssselect('.search-result')) == (
             (
                 "/admin/suppliers/11112/agreements/g-cloud-8",
+                {},
                 "My other supplier",
                 "Submitted: Friday 30 October 2015 at 01:01",
             ),
             (
                 "/admin/suppliers/11111/agreements/g-cloud-8",
+                {},
                 "My Supplier",
                 "Submitted: Sunday 1 November 2015 at 01:01",
             ),
@@ -141,11 +145,13 @@ class TestListAgreements(LoggedInApplicationTest):
         assert tuple(self._unpack_search_result(result) for result in page.cssselect('.search-result')) == (
             (
                 "/admin/suppliers/11112/agreements/g-cloud-8",
+                {"next_status": [chosen_status_key]},
                 "My other supplier",
                 "Submitted: Friday 30 October 2015 at 01:01",
             ),
             (
                 "/admin/suppliers/11111/agreements/g-cloud-8",
+                {"next_status": [chosen_status_key]},
                 "My Supplier",
                 "Submitted: Sunday 1 November 2015 at 01:01",
             ),
