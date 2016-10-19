@@ -126,6 +126,15 @@ Countersign {{ framework.name }} agreement for {{ supplier_framework.declaration
           </form>
         {% endif %}
       {% endif %}
+      <p class="padding-bottom-small">
+        {%
+          with
+          url = url_for(".next_agreement", framework_slug=framework.slug, supplier_id=supplier.id),
+          text = "Next agreement"
+        %}
+          {% include "toolkit/secondary-action-link.html" %}
+        {% endwith %}
+      </p>
   </div>
 
   <div class="column-two-thirds">
