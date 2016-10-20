@@ -10,5 +10,5 @@ unicodecsv==0.14.1
 boto==2.36.0
 
 git+https://github.com/AusDTO/dto-digitalmarketplace-content-loader.git@1.5.1#egg=dto-digitalmarketplace-content-loader==1.5.1
-git+https://github.com/AusDTO/dto-digitalmarketplace-utils.git@25.18.6#egg=dto-digitalmarketplace-utils==25.18.6
+git+https://github.com/AusDTO/dto-digitalmarketplace-utils.git@25.18.6-hotfix#egg=dto-digitalmarketplace-utils==25.18.6-hotfix
 git+https://github.com/AusDTO/dto-digitalmarketplace-apiclient.git@6.10.0#egg=dto-digitalmarketplace-apiclient==6.10.0
