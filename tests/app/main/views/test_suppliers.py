@@ -1420,7 +1420,7 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
         data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
         res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8/next')
         assert res.status_code == 302
-        assert res.location == "http://localhost/admin/suppliers/4321/agreements/g-cloud-8"
+        assert res.location == "http://localhost/admin/suppliers/31415/agreements/g-cloud-8"
 
     def test_unknown_supplier_returns_404(self, data_api_client):
         data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
@@ -1429,6 +1429,6 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
 
     def test_final_supplier_redirects_to_list(self, data_api_client):
         data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
-        res = self.client.get('/admin/suppliers/4321/agreements/g-cloud-8/next')
+        res = self.client.get('/admin/suppliers/141/agreements/g-cloud-8/next')
         assert res.status_code == 302
         assert res.location == "http://localhost/admin/agreements/g-cloud-8"

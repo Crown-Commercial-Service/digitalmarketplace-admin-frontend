@@ -48,17 +48,17 @@ class TestListAgreements(LoggedInApplicationTest):
         data_api_client.find_framework_suppliers.return_value = {
             'supplierFrameworks': [
                 {
-                    'supplierName': 'My Supplier',
-                    'supplierId': 11111,
-                    'agreementReturned': True,
-                    'agreementReturnedAt': '2015-11-01T01:01:01.000000Z',
-                    'frameworkSlug': 'g-cloud-8',
-                },
-                {
                     'supplierName': 'My other supplier',
                     'supplierId': 11112,
                     'agreementReturned': True,
                     'agreementReturnedAt': '2015-10-30T01:01:01.000000Z',
+                    'frameworkSlug': 'g-cloud-8',
+                },
+                {
+                    'supplierName': 'My Supplier',
+                    'supplierId': 11111,
+                    'agreementReturned': True,
+                    'agreementReturnedAt': '2015-11-01T01:01:01.000000Z',
                     'frameworkSlug': 'g-cloud-8',
                 },
             ],
