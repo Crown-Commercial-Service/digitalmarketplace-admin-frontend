@@ -1,10 +1,5 @@
-import io
-try:
-    from urlparse import urlsplit
-    from StringIO import StringIO
-except ImportError:
-    from urllib.parse import urlsplit
-    from io import BytesIO as StringIO
+from six import BytesIO
+from six.moves.urllib.parse import urlsplit
 import mock
 from freezegun import freeze_time
 from lxml import html
@@ -916,7 +911,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
 
         response = self.client.post('/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
                                     data=dict(
-                                        countersigned_agreement=(io.BytesIO(b"this is a test"),
+                                        countersigned_agreement=(BytesIO(b"this is a test"),
                                                                  'test.odt'), ), follow_redirects=True)
 
         self.assertIn(
@@ -942,7 +937,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             }}
         response = self.client.post('/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
                                     data=dict(
-                                        countersigned_agreement=(io.BytesIO(b"this is a test"),
+                                        countersigned_agreement=(BytesIO(b"this is a test"),
                                                                  'countersigned_agreement.pdf'),
                                     ))
 
@@ -991,7 +986,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             }}
         response = self.client.post('/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
                                     data=dict(
-                                        countersigned_agreement=(io.BytesIO(b"this is a test"),
+                                        countersigned_agreement=(BytesIO(b"this is a test"),
                                                                  'countersigned_agreement.pdf'),
                                     ))
 
