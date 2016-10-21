@@ -1,5 +1,7 @@
+from collections import OrderedDict
+
 from dmutils.documents import degenerate_document_path_and_return_doc_name
-from flask import render_template, redirect, url_for, abort
+from flask import render_template, redirect, url_for, abort, request
 from flask_login import login_required
 from dateutil.parser import parse as parse_date
 from six import next
@@ -11,9 +13,19 @@ from ..auth import role_required
 from ... import data_api_client
 
 
-def _get_ordered_supplier_frameworks(framework_slug):
+status_labels = OrderedDict((
+    ("signed", "Waiting for countersigning"),
+    ("on-hold", "On hold"),
+    ("approved,countersigned", "Countersigned"),  # ugly key, but i don't want to start inventing new status values -
+                                                  # much easier to just act as a filter
+))
+
+
+def _get_ordered_supplier_frameworks(framework_slug, status=None):
     supplier_frameworks = data_api_client.find_framework_suppliers(
-        framework_slug, agreement_returned=True
+        framework_slug,
+        agreement_returned=True,
+        **({"statuses": status} if status else {})
     )['supplierFrameworks']
 
     # API now returns SupplierFrameworks by agreementReturnedAt ascending (oldest first)
@@ -25,7 +37,12 @@ def _get_ordered_supplier_frameworks(framework_slug):
 @role_required('admin', 'admin-ccs-sourcing')
 def list_agreements(framework_slug):
     framework = data_api_client.get_framework(framework_slug)['frameworks']
-    supplier_frameworks = _get_ordered_supplier_frameworks(framework_slug)
+
+    status = request.args.get("status")
+    if status and status not in status_labels:
+        abort(400)
+
+    supplier_frameworks = _get_ordered_supplier_frameworks(framework_slug, status=status)
 
     for supplier_framework in supplier_frameworks:
         supplier_framework['agreementReturnedAt'] = datetimeformat(
@@ -35,7 +52,9 @@ def list_agreements(framework_slug):
         "view_agreements_g8.html" if framework_slug == "g-cloud-8" else 'view_agreements.html',
         framework=framework,
         supplier_frameworks=supplier_frameworks,
-        degenerate_document_path_and_return_doc_name=lambda x: degenerate_document_path_and_return_doc_name(x)
+        degenerate_document_path_and_return_doc_name=lambda x: degenerate_document_path_and_return_doc_name(x),
+        status=status,
+        status_labels=status_labels,
     )
 
 
