@@ -2,7 +2,7 @@
 {% set content %}
   <em class="search-summary-count">{{ supplier_frameworks|length }}</em>
   {{ pluralize(supplier_frameworks|length, "agreement", "agreements") }}
-  <em>waiting for countersigning</em>
+  <em>{{ status_labels.get(status)|lower if status else "returned" }}</em>
 {% endset %}
 {% include "toolkit/search-summary.html" %}
 {% endif %}

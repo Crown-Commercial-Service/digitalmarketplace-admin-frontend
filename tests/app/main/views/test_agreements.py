@@ -122,6 +122,9 @@ class TestListAgreements(LoggedInApplicationTest):
             for status_key, status_label in iteritems(status_labels)
         )
 
+        summary_elem = page.xpath("//p[@class='search-summary']")[0]
+        assert summary_elem.xpath("normalize-space(string())") == '2 agreements returned'
+
     def test_happy_path_notall_g8(self, data_api_client):
         data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
         data_api_client.find_framework_suppliers.return_value = self.find_framework_suppliers_return_value_g8
@@ -176,6 +179,11 @@ class TestListAgreements(LoggedInApplicationTest):
                 for status_key, status_label in iteritems(status_labels) if status_key != chosen_status_key
             ),
         ))
+
+        summary_elem = page.xpath("//p[@class='search-summary']")[0]
+        assert summary_elem.xpath("normalize-space(string())") == '2 agreements {}'.format(
+            status_labels[chosen_status_key].lower()
+        )
 
     def test_unauthorised_roles_are_rejected_access(self, data_api_client):
         self.user_role = 'admin-ccs-category'
