@@ -101,6 +101,9 @@ def view_supplier_declaration(supplier_id, framework_slug):
 @login_required
 @role_required('admin', 'admin-ccs-sourcing')
 def view_signed_agreement(supplier_id, framework_slug):
+    # not properly validating this - all we do is pass it through
+    next_status = request.args.get("next_status")
+
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
     if not framework.get('frameworkAgreementVersion'):
@@ -131,7 +134,8 @@ def view_signed_agreement(supplier_id, framework_slug):
         supplier_framework=supplier_framework,
         lot_slugs_names=lot_slugs_names,
         agreement_url=url,
-        agreement_ext=get_extension(path)
+        agreement_ext=get_extension(path),
+        next_status=next_status,
     )
 
 

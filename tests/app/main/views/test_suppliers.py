@@ -1333,6 +1333,15 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
              'ext': 'pdf'}
         ]
 
+    @staticmethod
+    def _parsed_url_matches(url, path_matches=None, qd_matches=None):
+        parsed_url = urlparse(url)
+        return (
+            path_matches is None or parsed_url.path == path_matches
+        ) and (
+            qd_matches is None or parse_qs(parsed_url.query) == qd_matches
+        )
+
     def test_none_shown_if_user_not_ccs_admin(self, s3, get_signed_url, data_api_client):
         self.user_role = 'admin'
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
@@ -1345,10 +1354,16 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
 
         assert "Accept and continue" not in data
         assert "Put on hold and continue" not in data
+
         assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
-        assert len(document.xpath(
-            "//a[@href='/admin/suppliers/1234/agreements/g-cloud-8/next'][normalize-space(string())='Next agreement']"
-        )) == 1
+
+        next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
+        assert len(next_a_elems) == 1
+        assert self._parsed_url_matches(
+            next_a_elems[0].attrib["href"],
+            "/admin/suppliers/1234/agreements/g-cloud-8/next",
+            {},
+        )
 
     def test_both_shown_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
@@ -1359,18 +1374,74 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         data = res.get_data(as_text=True)
         document = html.fromstring(data)
 
-        assert len(document.xpath(
-            "//form[@action='/admin/suppliers/agreements/4321/approve']"
-            "//input[@type='submit'][@value='Accept and continue']"
-        )) == 1
-        assert len(document.xpath(
-            "//form[@action='/admin/suppliers/agreements/4321/on-hold']"
-            "//input[@type='submit'][@value='Put on hold and continue']"
-        )) == 1
+        accept_input_elems = document.xpath("//form//input[@type='submit'][@value='Accept and continue']")
+        assert len(accept_input_elems) == 1
+        accept_form_elem = accept_input_elems[0].xpath("ancestor::form")[0]
+        assert self._parsed_url_matches(
+            accept_form_elem.attrib["action"],
+            "/admin/suppliers/agreements/4321/approve",
+            {},
+        )
+        assert accept_form_elem.attrib["method"].lower() == "post"
+
+        hold_input_elems = document.xpath("//form//input[@type='submit'][@value='Put on hold and continue']")
+        assert len(hold_input_elems) == 1
+        hold_form_elem = hold_input_elems[0].xpath("ancestor::form")[0]
+        assert self._parsed_url_matches(
+            hold_form_elem.attrib["action"],
+            "/admin/suppliers/agreements/4321/on-hold",
+            {},
+        )
+        assert hold_form_elem.attrib["method"].lower() == "post"
+
         assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
-        assert len(document.xpath(
-            "//a[@href='/admin/suppliers/1234/agreements/g-cloud-8/next'][normalize-space(string())='Next agreement']"
-        )) == 1
+
+        next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
+        assert len(next_a_elems) == 1
+        assert self._parsed_url_matches(
+            next_a_elems[0].attrib["href"],
+            "/admin/suppliers/1234/agreements/g-cloud-8/next",
+            {},
+        )
+
+    def test_both_shown_with_status_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client):
+        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
+
+        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8?next_status=approved,countersigned')
+        assert res.status_code == 200
+
+        data = res.get_data(as_text=True)
+        document = html.fromstring(data)
+
+        accept_input_elems = document.xpath("//form//input[@type='submit'][@value='Accept and continue']")
+        assert len(accept_input_elems) == 1
+        accept_form_elem = accept_input_elems[0].xpath("ancestor::form")[0]
+        assert self._parsed_url_matches(
+            accept_form_elem.attrib["action"],
+            "/admin/suppliers/agreements/4321/approve",
+            {"next_status": ["approved,countersigned"]},
+        )
+        assert accept_form_elem.attrib["method"].lower() == "post"
+
+        hold_input_elems = document.xpath("//form//input[@type='submit'][@value='Put on hold and continue']")
+        assert len(hold_input_elems) == 1
+        hold_form_elem = hold_input_elems[0].xpath("ancestor::form")[0]
+        assert self._parsed_url_matches(
+            hold_form_elem.attrib["action"],
+            "/admin/suppliers/agreements/4321/on-hold",
+            {"next_status": ["approved,countersigned"]},
+        )
+        assert hold_form_elem.attrib["method"].lower() == "post"
+
+        assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
+
+        next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
+        assert len(next_a_elems) == 1
+        assert self._parsed_url_matches(
+            next_a_elems[0].attrib["href"],
+            "/admin/suppliers/1234/agreements/g-cloud-8/next",
+            {"status": ["approved,countersigned"]},
+        )
 
     def test_only_counter_sign_shown_if_agreement_on_hold(self, s3, get_signed_url, data_api_client):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='on-hold')
@@ -1381,15 +1452,26 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         data = res.get_data(as_text=True)
         document = html.fromstring(data)
 
-        assert len(document.xpath(
-            "//form[@action='/admin/suppliers/agreements/4321/approve']"
-            "//input[@type='submit'][@value='Accept and continue']"
-        )) == 1
+        accept_input_elems = document.xpath("//form//input[@type='submit'][@value='Accept and continue']")
+        assert len(accept_input_elems) == 1
+        accept_form_elem = accept_input_elems[0].xpath("ancestor::form")[0]
+        assert self._parsed_url_matches(
+            accept_form_elem.attrib["action"],
+            "/admin/suppliers/agreements/4321/approve",
+            {},
+        )
+        assert accept_form_elem.attrib["method"].lower() == "post"
+
         assert "Put on hold and continue" not in data
         assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
-        assert len(document.xpath(
-            "//a[@href='/admin/suppliers/1234/agreements/g-cloud-8/next'][normalize-space(string())='Next agreement']"
-        )) == 1
+
+        next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
+        assert len(next_a_elems) == 1
+        assert self._parsed_url_matches(
+            next_a_elems[0].attrib["href"],
+            "/admin/suppliers/1234/agreements/g-cloud-8/next",
+            {},
+        )
 
     def test_none_shown_if_agreement_approved(self, s3, get_signed_url, data_api_client):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='approved')
@@ -1403,9 +1485,14 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert "Accept and continue" not in data
         assert "Put on hold and continue" not in data
         assert len(document.xpath("//h2[normalize-space(string())='Accepted by']")) == 1
-        assert len(document.xpath(
-            "//a[@href='/admin/suppliers/1234/agreements/g-cloud-8/next'][normalize-space(string())='Next agreement']"
-        )) == 1
+
+        next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
+        assert len(next_a_elems) == 1
+        assert self._parsed_url_matches(
+            next_a_elems[0].attrib["href"],
+            "/admin/suppliers/1234/agreements/g-cloud-8/next",
+            {},
+        )
 
     def test_none_shown_if_agreement_countersigned(self, s3, get_signed_url, data_api_client):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='countersigned')
@@ -1419,6 +1506,11 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert "Accept and continue" not in data
         assert "Put on hold and continue" not in data
         assert len(document.xpath("//h2[normalize-space(string())='Accepted by']")) == 1
-        assert len(document.xpath(
-            "//a[@href='/admin/suppliers/1234/agreements/g-cloud-8/next'][normalize-space(string())='Next agreement']"
-        )) == 1
+
+        next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
+        assert len(next_a_elems) == 1
+        assert self._parsed_url_matches(
+            next_a_elems[0].attrib["href"],
+            "/admin/suppliers/1234/agreements/g-cloud-8/next",
+            {},
+        )
