@@ -139,6 +139,9 @@ def view_signed_agreement(supplier_id, framework_slug):
 @login_required
 @role_required('admin-ccs-sourcing')
 def put_signed_agreement_on_hold(agreement_id):
+    # not properly validating this - all we do is pass it through
+    next_status = request.args.get("next_status")
+
     agreement = data_api_client.put_signed_agreement_on_hold(agreement_id, current_user.email_address)["agreement"]
 
     organisation = request.form['nameOfOrganisation']
@@ -148,6 +151,7 @@ def put_signed_agreement_on_hold(agreement_id):
         '.next_agreement',
         framework_slug=agreement["frameworkSlug"],
         supplier_id=agreement["supplierId"],
+        status=next_status,
     ))
 
 
@@ -155,6 +159,9 @@ def put_signed_agreement_on_hold(agreement_id):
 @login_required
 @role_required('admin-ccs-sourcing')
 def approve_agreement_for_countersignature(agreement_id):
+    # not properly validating this - all we do is pass it through
+    next_status = request.args.get("next_status")
+
     agreement = data_api_client.approve_agreement_for_countersignature(
         agreement_id,
         current_user.email_address,
@@ -168,6 +175,7 @@ def approve_agreement_for_countersignature(agreement_id):
         '.next_agreement',
         framework_slug=agreement["frameworkSlug"],
         supplier_id=agreement["supplierId"],
+        status=next_status,
     ))
 
 

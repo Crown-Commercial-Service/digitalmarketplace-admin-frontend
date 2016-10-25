@@ -1,5 +1,5 @@
 from six import BytesIO
-from six.moves.urllib.parse import urlsplit
+from six.moves.urllib.parse import urlsplit, urlparse, parse_qs
 import mock
 from freezegun import freeze_time
 from lxml import html
@@ -1205,12 +1205,33 @@ class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
 
     def test_happy_path(self, data_api_client):
         data_api_client.put_signed_agreement_on_hold.return_value = self.put_signed_agreement_on_hold_return_value
-        res = self.client.post('/admin/suppliers/agreements/123/on-hold', data={"nameOfOrganisation": "Test"})
+        res = self.client.post(
+            "/admin/suppliers/agreements/123/on-hold",
+            data={"nameOfOrganisation": "Test"},
+        )
 
         data_api_client.put_signed_agreement_on_hold.assert_called_once_with('123', 'test@example.com')
         assert_flashes(self, "The agreement for Test was put on hold.")
         assert res.status_code == 302
-        assert res.location == "http://localhost/admin/suppliers/4321/agreements/g-cloud-99-flake/next"
+
+        parsed_location = urlparse(res.location)
+        assert parsed_location.path == "/admin/suppliers/4321/agreements/g-cloud-99-flake/next"
+        assert parse_qs(parsed_location.query) == {}
+
+    def test_happy_path_with_next_status(self, data_api_client):
+        data_api_client.put_signed_agreement_on_hold.return_value = self.put_signed_agreement_on_hold_return_value
+        res = self.client.post(
+            "/admin/suppliers/agreements/123/on-hold?next_status=on-hold",
+            data={"nameOfOrganisation": "Test"},
+        )
+
+        data_api_client.put_signed_agreement_on_hold.assert_called_once_with('123', 'test@example.com')
+        assert_flashes(self, "The agreement for Test was put on hold.")
+        assert res.status_code == 302
+
+        parsed_location = urlparse(res.location)
+        assert parsed_location.path == "/admin/suppliers/4321/agreements/g-cloud-99-flake/next"
+        assert parse_qs(parsed_location.query) == {"status": ["on-hold"]}
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
@@ -1240,14 +1261,38 @@ class TestApproveAgreement(LoggedInApplicationTest):
     def test_happy_path(self, data_api_client):
         data_api_client.approve_agreement_for_countersignature.return_value = \
             self.put_signed_agreement_on_hold_return_value
-        res = self.client.post('/admin/suppliers/agreements/123/approve', data={"nameOfOrganisation": "Test"})
+        res = self.client.post(
+            "/admin/suppliers/agreements/123/approve",
+            data={"nameOfOrganisation": "Test"},
+        )
 
         data_api_client.approve_agreement_for_countersignature.assert_called_once_with('123',
                                                                                        'test@example.com',
                                                                                        '1234')
         assert_flashes(self, "The agreement for Test was approved. They will receive a countersigned version soon.")
         assert res.status_code == 302
-        assert res.location == "http://localhost/admin/suppliers/4321/agreements/g-cloud-99p-world/next"
+
+        parsed_location = urlparse(res.location)
+        assert parsed_location.path == "/admin/suppliers/4321/agreements/g-cloud-99p-world/next"
+        assert parse_qs(parsed_location.query) == {}
+
+    def test_happy_path_with_next_status(self, data_api_client):
+        data_api_client.approve_agreement_for_countersignature.return_value = \
+            self.put_signed_agreement_on_hold_return_value
+        res = self.client.post(
+            "/admin/suppliers/agreements/123/approve?next_status=on-hold",
+            data={"nameOfOrganisation": "Test"},
+        )
+
+        data_api_client.approve_agreement_for_countersignature.assert_called_once_with('123',
+                                                                                       'test@example.com',
+                                                                                       '1234')
+        assert_flashes(self, "The agreement for Test was approved. They will receive a countersigned version soon.")
+        assert res.status_code == 302
+
+        parsed_location = urlparse(res.location)
+        assert parsed_location.path == "/admin/suppliers/4321/agreements/g-cloud-99p-world/next"
+        assert parse_qs(parsed_location.query) == {"status": ["on-hold"]}
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
