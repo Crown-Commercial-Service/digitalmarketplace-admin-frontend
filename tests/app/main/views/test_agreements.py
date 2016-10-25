@@ -4,7 +4,7 @@ import mock
 from lxml import html
 from nose.tools import eq_
 from six import iteritems, iterkeys
-from six.moves.urllib.parse import urlparse, urlunparse, parse_qs
+from six.moves.urllib.parse import urlparse, parse_qs
 
 from app.main.views.agreements import status_labels
 from ...helpers import LoggedInApplicationTest
@@ -72,8 +72,10 @@ class TestListAgreements(LoggedInApplicationTest):
         assert len(a_elems) == 1
         mi_elems = elem.cssselect(".search-result-metadata-item")
         assert len(mi_elems) == 1
+        parsed_href = urlparse(a_elems[0].attrib["href"])
         return (
-            urlunparse(("", "",) + urlparse(a_elems[0].attrib["href"])[2:]),
+            parsed_href.path,
+            parse_qs(parsed_href.query),
             a_elems[0].xpath("normalize-space(string())"),
             mi_elems[0].xpath("normalize-space(string())"),
         )
@@ -98,11 +100,13 @@ class TestListAgreements(LoggedInApplicationTest):
         assert tuple(self._unpack_search_result(result) for result in page.cssselect('.search-result')) == (
             (
                 "/admin/suppliers/11112/agreements/g-cloud-8",
+                {},
                 "My other supplier",
                 "Submitted: Friday 30 October 2015 at 01:01",
             ),
             (
                 "/admin/suppliers/11111/agreements/g-cloud-8",
+                {},
                 "My Supplier",
                 "Submitted: Sunday 1 November 2015 at 01:01",
             ),
@@ -141,11 +145,13 @@ class TestListAgreements(LoggedInApplicationTest):
         assert tuple(self._unpack_search_result(result) for result in page.cssselect('.search-result')) == (
             (
                 "/admin/suppliers/11112/agreements/g-cloud-8",
+                {"next_status": [chosen_status_key]},
                 "My other supplier",
                 "Submitted: Friday 30 October 2015 at 01:01",
             ),
             (
                 "/admin/suppliers/11111/agreements/g-cloud-8",
+                {"next_status": [chosen_status_key]},
                 "My Supplier",
                 "Submitted: Sunday 1 November 2015 at 01:01",
             ),
@@ -177,3 +183,138 @@ class TestListAgreements(LoggedInApplicationTest):
         response = self.client.get('/admin/agreements/g-cloud-7')
 
         eq_(response.status_code, 403)
+
+
+@mock.patch('app.main.views.agreements.data_api_client')
+class TestNextAgreementRedirect(LoggedInApplicationTest):
+    user_role = 'admin'
+
+    @property
+    def dummy_supplier_frameworks(self):
+        # a property so we ensure we get a new clone every time we request it
+        return {
+            "supplierFrameworks": [
+                {
+                    "supplierId": 4321,
+                    "frameworkSlug": "g-cloud-8",
+                    "agreementStatus": "signed",
+                },
+                {
+                    "supplierId": 1234,
+                    "frameworkSlug": "g-cloud-8",
+                    "agreementStatus": "on-hold",
+                },
+                {
+                    "supplierId": 31415,
+                    "frameworkSlug": "g-cloud-8",
+                    "agreementStatus": "signed",
+                },
+                {
+                    "supplierId": 27,
+                    "frameworkSlug": "g-cloud-8",
+                    "agreementStatus": "signed",
+                },
+                {
+                    "supplierId": 141,
+                    "frameworkSlug": "g-cloud-8",
+                    "agreementStatus": "countersigned",
+                },
+                {
+                    "supplierId": 151,
+                    "frameworkSlug": "g-cloud-8",
+                    "agreementStatus": "on-hold",
+                },
+                {
+                    "supplierId": 99,
+                    "frameworkSlug": "g-cloud-8",
+                    "agreementStatus": "approved",
+                },
+            ],
+        }
+
+    def test_happy_path(self, data_api_client):
+        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8/next')
+        assert res.status_code == 302
+
+        parsed_location = urlparse(res.location)
+        assert parsed_location.path == "/admin/suppliers/31415/agreements/g-cloud-8"
+        assert parse_qs(parsed_location.query) == {}
+
+    def test_unknown_supplier_returns_404(self, data_api_client):
+        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+        res = self.client.get('/admin/suppliers/999/agreements/g-cloud-8/next')
+        assert res.status_code == 404
+
+    def test_final_supplier_redirects_to_list(self, data_api_client):
+        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+        res = self.client.get('/admin/suppliers/99/agreements/g-cloud-8/next')
+        assert res.status_code == 302
+
+        parsed_location = urlparse(res.location)
+        assert parsed_location.path == "/admin/agreements/g-cloud-8"
+        assert parse_qs(parsed_location.query) == {}
+
+    def test_status_filtered_simple_status(self, data_api_client):
+        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8/next?status=on-hold')
+        assert res.status_code == 302
+
+        parsed_location = urlparse(res.location)
+        assert parsed_location.path == "/admin/suppliers/151/agreements/g-cloud-8"
+        assert parse_qs(parsed_location.query) == {"next_status": ["on-hold"]}
+
+        # if there weren't any non-status-filtering find_framework_suppliers calls, the view won't have been able to
+        # get it right
+        assert any(
+            (not ca_kwargs.get("status"))
+            for ca_args, ca_kwargs in data_api_client.find_framework_suppliers.call_args_list
+        )
+
+    def test_status_filtered_compound_status(self, data_api_client):
+        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+        res = self.client.get('/admin/suppliers/141/agreements/g-cloud-8/next?status=approved,countersigned')
+        assert res.status_code == 302
+
+        parsed_location = urlparse(res.location)
+        assert parsed_location.path == "/admin/suppliers/99/agreements/g-cloud-8"
+        assert parse_qs(parsed_location.query) == {"next_status": ["approved,countersigned"]}
+
+        # if there weren't any non-status-filtering find_framework_suppliers calls, the view won't have been able to
+        # get it right
+        assert any(
+            (not ca_kwargs.get("status"))
+            for ca_args, ca_kwargs in data_api_client.find_framework_suppliers.call_args_list
+        )
+
+    def test_status_filtered_different_status_supplier(self, data_api_client):
+        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8/next?status=signed')
+        assert res.status_code == 302
+
+        parsed_location = urlparse(res.location)
+        assert parsed_location.path == "/admin/suppliers/31415/agreements/g-cloud-8"
+        assert parse_qs(parsed_location.query) == {"next_status": ["signed"]}
+
+        # if there weren't any non-status-filtering find_framework_suppliers calls, the view won't have been able to
+        # get it right
+        assert any(
+            (not ca_kwargs.get("status"))
+            for ca_args, ca_kwargs in data_api_client.find_framework_suppliers.call_args_list
+        )
+
+    def test_status_filtered_final_with_status_redirects_to_list(self, data_api_client):
+        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+        res = self.client.get('/admin/suppliers/151/agreements/g-cloud-8/next?status=on-hold')
+        assert res.status_code == 302
+
+        parsed_location = urlparse(res.location)
+        assert parsed_location.path == "/admin/agreements/g-cloud-8"
+        assert parse_qs(parsed_location.query) == {"status": ["on-hold"]}
+
+        # if there weren't any non-status-filtering find_framework_suppliers calls, the view won't have been able to
+        # get it right
+        assert any(
+            (not ca_kwargs.get("status"))
+            for ca_args, ca_kwargs in data_api_client.find_framework_suppliers.call_args_list
+        )

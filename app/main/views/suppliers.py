@@ -101,6 +101,9 @@ def view_supplier_declaration(supplier_id, framework_slug):
 @login_required
 @role_required('admin', 'admin-ccs-sourcing')
 def view_signed_agreement(supplier_id, framework_slug):
+    # not properly validating this - all we do is pass it through
+    next_status = request.args.get("next_status")
+
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
     if not framework.get('frameworkAgreementVersion'):
@@ -131,7 +134,8 @@ def view_signed_agreement(supplier_id, framework_slug):
         supplier_framework=supplier_framework,
         lot_slugs_names=lot_slugs_names,
         agreement_url=url,
-        agreement_ext=get_extension(path)
+        agreement_ext=get_extension(path),
+        next_status=next_status,
     )
 
 
@@ -139,6 +143,9 @@ def view_signed_agreement(supplier_id, framework_slug):
 @login_required
 @role_required('admin-ccs-sourcing')
 def put_signed_agreement_on_hold(agreement_id):
+    # not properly validating this - all we do is pass it through
+    next_status = request.args.get("next_status")
+
     agreement = data_api_client.put_signed_agreement_on_hold(agreement_id, current_user.email_address)["agreement"]
 
     organisation = request.form['nameOfOrganisation']
@@ -148,6 +155,7 @@ def put_signed_agreement_on_hold(agreement_id):
         '.next_agreement',
         framework_slug=agreement["frameworkSlug"],
         supplier_id=agreement["supplierId"],
+        status=next_status,
     ))
 
 
@@ -155,6 +163,9 @@ def put_signed_agreement_on_hold(agreement_id):
 @login_required
 @role_required('admin-ccs-sourcing')
 def approve_agreement_for_countersignature(agreement_id):
+    # not properly validating this - all we do is pass it through
+    next_status = request.args.get("next_status")
+
     agreement = data_api_client.approve_agreement_for_countersignature(
         agreement_id,
         current_user.email_address,
@@ -168,6 +179,7 @@ def approve_agreement_for_countersignature(agreement_id):
         '.next_agreement',
         framework_slug=agreement["frameworkSlug"],
         supplier_id=agreement["supplierId"],
+        status=next_status,
     ))
 
 

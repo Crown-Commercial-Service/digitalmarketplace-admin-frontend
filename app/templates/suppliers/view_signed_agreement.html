@@ -101,7 +101,7 @@ Countersign {{ framework.name }} agreement for {{ supplier_framework.declaration
         </p>
 
       {% elif current_user.role == 'admin-ccs-sourcing' %}
-        <form action="{{ url_for('.approve_agreement_for_countersignature', agreement_id=supplier_framework.agreementId) }}" method="post">
+        <form action="{{ url_for('.approve_agreement_for_countersignature', agreement_id=supplier_framework.agreementId, next_status=next_status) }}" method="post">
           <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
           <input name="nameOfOrganisation" value="{{ supplier_framework.declaration.nameOfOrganisation }}" type="hidden">
           {%
@@ -113,7 +113,7 @@ Countersign {{ framework.name }} agreement for {{ supplier_framework.declaration
           {% endwith %}
         </form>
         {% if supplier_framework.agreementStatus != 'on-hold' %}
-          <form action="{{ url_for('.put_signed_agreement_on_hold', agreement_id=supplier_framework.agreementId) }}" method="post">
+          <form action="{{ url_for('.put_signed_agreement_on_hold', agreement_id=supplier_framework.agreementId, next_status=next_status) }}" method="post">
             <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
             <input name="nameOfOrganisation" value="{{ supplier_framework.declaration.nameOfOrganisation }}" type="hidden">
             {%
@@ -129,7 +129,7 @@ Countersign {{ framework.name }} agreement for {{ supplier_framework.declaration
       <p class="padding-bottom-small">
         {%
           with
-          url = url_for(".next_agreement", framework_slug=framework.slug, supplier_id=supplier.id),
+          url = url_for(".next_agreement", framework_slug=framework.slug, supplier_id=supplier.id, status=next_status),
           text = "Next agreement"
         %}
           {% include "toolkit/secondary-action-link.html" %}
