@@ -391,7 +391,7 @@ def update_supplier_name(supplier_id):
         supplier['suppliers']['id'], {'name': new_supplier_name}, current_user.email_address
     )
 
-    return redirect(url_for('.find_suppliers', supplier_name_prefix=new_supplier_name[:1]))
+    return redirect(url_for('.find_suppliers', supplier_id=supplier_id))
 
 
 @main.route('/suppliers/users', methods=['GET'])
