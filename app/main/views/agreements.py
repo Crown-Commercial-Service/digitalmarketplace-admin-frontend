@@ -52,7 +52,8 @@ def list_agreements(framework_slug):
             parse_date(supplier_framework['agreementReturnedAt']))
 
     return render_template(
-        "view_agreements_g8.html" if framework_slug == "g-cloud-8" else 'view_agreements.html',
+        # G-Cloud 8 and newer frameworks have a frameworkAgreementVersion and use the new countersigning flow
+        "view_agreements_list.html" if framework.get("frameworkAgreementVersion") else 'view_agreements.html',
         framework=framework,
         supplier_frameworks=supplier_frameworks,
         degenerate_document_path_and_return_doc_name=lambda x: degenerate_document_path_and_return_doc_name(x),
