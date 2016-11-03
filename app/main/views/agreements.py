@@ -28,7 +28,10 @@ def _get_ordered_supplier_frameworks(framework_slug, status=None):
         **({"statuses": status} if status else {})
     )['supplierFrameworks']
 
-    # API now returns SupplierFrameworks by agreementReturnedAt ascending (oldest first)
+    # Timestamps in our API responses are formatted using dmutils DATETIME_FORMAT which sorts in lexicographical order
+    # i.e. "%Y-%m-%dT%H:%M:%S.%fZ" - we want the newest things at the bottom of the list so this ordering is correct
+    supplier_frameworks = sorted(supplier_frameworks, key=lambda k: k.get("agreementReturnedAt", "2000-01-01"))
+
     return supplier_frameworks
 
 
