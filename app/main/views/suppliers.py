@@ -36,6 +36,7 @@ def find_suppliers():
         )['suppliers']
 
     supplier_and_framework_info = [{"id": supplier["id"], "name": supplier['name']} for supplier in suppliers]
+    # TODO: DON'T MAKE ALL THESE CALLS TO THE API AND FIX TEMPLATE TO SHOW ALL LINKS
     for supplier in supplier_and_framework_info:
         for framework_slug in FRAMEWORKS_IN_SUPPLIERS_PAGE:
             try:
@@ -181,6 +182,16 @@ def approve_agreement_for_countersignature(agreement_id):
         supplier_id=agreement["supplierId"],
         status=next_status,
     ))
+
+
+@main.route('/suppliers/<supplier_id>/agreement/<framework_slug>', methods=['GET'])
+@login_required
+@role_required('admin', 'admin-ccs-sourcing')
+def download_signed_agreement_file(supplier_id, framework_slug):
+    # This route is used for pre-G-Cloud-8 agreement document downloads
+    supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
+    document_name = degenerate_document_path_and_return_doc_name(supplier_framework['agreementPath'])
+    return download_agreement_file(supplier_id, framework_slug, document_name)
 
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>/<document_name>', methods=['GET'])
