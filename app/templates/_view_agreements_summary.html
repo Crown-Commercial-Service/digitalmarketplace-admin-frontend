@@ -1,7 +1,5 @@
-{% if supplier_frameworks %}
 <p class="search-summary">
   <em class="search-summary-count">{{ supplier_frameworks|length }}</em>
   {{ pluralize(supplier_frameworks|length, "agreement", "agreements") }}
   <em>{{ status_labels.get(status)|lower if status else "returned" }}</em>
 </p>
-{% endif %}
