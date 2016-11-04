@@ -22,9 +22,7 @@
               {% if category == 'upload_communication' %}
                 <div class="banner-success-without-action">
                   <p class="banner-message">
-                  {% if message == 'itt_pack' %}
-                    ITT pack was uploaded.
-                  {% elif message == 'clarification' %}
+                  {% if message == 'clarification' %}
                     New clarification was uploaded.
                   {% elif message == 'communication' %}
                     New communication was uploaded.
@@ -38,8 +36,6 @@
                         Communication file is not a PDF or CSV.
                     {% elif category == 'not_pdf' and message == 'clarification' %}
                         Clarification file is not a PDF.
-                    {% elif category == 'not_zip' and message == 'itt_pack' %}
-                        ITT pack is not a zip file.
                     {% endif %}
                   </p>
                 </div>
@@ -76,17 +72,6 @@
     {% endwith %}
     {% endif %}
 
-    {% if framework.status in ['open', 'closed'] %}
-    {% with
-       question="ITT pack",
-       hint="This must be ZIP",
-       name="itt_pack",
-       value="Last modified {}".format(itt_pack.last_modified),
-       error=itt_pack_error
-    %}
-      {% include "toolkit/forms/upload.html" %}
-    {% endwith %}
-    {% endif %}
     {%
       with
       type = "save",
