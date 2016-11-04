@@ -20,9 +20,6 @@ from dmutils import s3
 from dmutils.formats import datetimeformat
 
 
-FRAMEWORKS_IN_SUPPLIERS_PAGE = ('g-cloud-7', 'digital-outcomes-and-specialists')
-
-
 @main.route('/suppliers', methods=['GET'])
 @login_required
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
@@ -35,27 +32,9 @@ def find_suppliers():
             duns_number=request.args.get("supplier_duns_number")
         )['suppliers']
 
-    supplier_and_framework_info = [{"id": supplier["id"], "name": supplier['name']} for supplier in suppliers]
-    # TODO: DON'T MAKE ALL THESE CALLS TO THE API AND FIX TEMPLATE TO SHOW ALL LINKS
-    for supplier in supplier_and_framework_info:
-        for framework_slug in FRAMEWORKS_IN_SUPPLIERS_PAGE:
-            try:
-                supplier_framework = data_api_client.get_supplier_framework_info(
-                    supplier['id'], framework_slug
-                )['frameworkInterest']
-                if supplier_framework['agreementPath']:
-                    supplier['{}-signed-agreement-document-name'.format(framework_slug)] = \
-                        degenerate_document_path_and_return_doc_name(supplier_framework['agreementPath'])
-            except HTTPError as e:
-                # Supplier might not be on all frameworks
-                if e.status_code == 404:
-                    continue
-                else:
-                    raise e
-
     return render_template(
         "view_suppliers.html",
-        supplier_and_framework_info=supplier_and_framework_info,
+        suppliers=suppliers,
         agreement_filename=AGREEMENT_FILENAME
     )
 
