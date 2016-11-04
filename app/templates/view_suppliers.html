@@ -71,6 +71,7 @@
           {% endcall %}
           {% call summary.field() %}
             <div><a href="{{ url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="g-cloud-8") }}">Edit declaration</a></div>
+            <div><a href="{{ url_for(".view_signed_agreement", supplier_id=item.id, framework_slug="g-cloud-8") }}">View agreement</a></div>
           {% endcall %}
         {% endif %}
         {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
