@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 VIRTUALENV_ROOT := $(shell [ -z $$VIRTUAL_ENV ] && echo $$(pwd)/venv || echo $$VIRTUAL_ENV)
 
-run_all: requirements frontend_build run_app
+run_all: requirements npm_install frontend_build run_app
 
 run_app: show_environment virtualenv
 	python application.py runserver
