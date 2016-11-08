@@ -1,2 +1,3 @@
 #!/bin/bash
-make run_app
+
+make frontend_build run_app
