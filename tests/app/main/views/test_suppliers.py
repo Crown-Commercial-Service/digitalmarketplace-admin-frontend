@@ -810,6 +810,21 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.download_agreement_file')
+class TestDownloadSignedAgreementFile(LoggedInApplicationTest):
+    user_role = 'admin-ccs-sourcing'
+
+    def test_download_agreement_is_called_with_the_right_parameters(self, download_agreement_file, data_api_client):
+        data_api_client.get_supplier_framework_info.return_value = {
+            'frameworkInterest': {'agreementPath': '/path/to/file/in/s3/1234-signed-agreement-file.pdf'}
+        }
+        # Mock out a response from download_agreement_file() - we don't care what it is
+        download_agreement_file.side_effect = HTTPError(Response(404))
+        self.client.get('/admin/suppliers/1234/agreement/g-cloud-7')
+        download_agreement_file.assert_called_once_with('1234', 'g-cloud-7', 'signed-agreement-file.pdf')
+
+
+@mock.patch('app.main.views.suppliers.data_api_client')
 @mock.patch('app.main.views.suppliers.s3')
 class TestDownloadAgreementFile(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'

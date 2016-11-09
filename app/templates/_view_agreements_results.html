@@ -10,3 +10,6 @@
   </ul>
 </div>
 {% endfor %}
+{% if not supplier_frameworks and status == 'signed' %}
+  <img src="/admin/static/images/cat_disappearing.gif" />
+{% endif %}

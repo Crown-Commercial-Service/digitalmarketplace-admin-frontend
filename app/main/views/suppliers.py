@@ -20,9 +20,6 @@ from dmutils import s3
 from dmutils.formats import datetimeformat
 
 
-FRAMEWORKS_IN_SUPPLIERS_PAGE = ('g-cloud-7', 'digital-outcomes-and-specialists')
-
-
 @main.route('/suppliers', methods=['GET'])
 @login_required
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
@@ -35,26 +32,9 @@ def find_suppliers():
             duns_number=request.args.get("supplier_duns_number")
         )['suppliers']
 
-    supplier_and_framework_info = [{"id": supplier["id"], "name": supplier['name']} for supplier in suppliers]
-    for supplier in supplier_and_framework_info:
-        for framework_slug in FRAMEWORKS_IN_SUPPLIERS_PAGE:
-            try:
-                supplier_framework = data_api_client.get_supplier_framework_info(
-                    supplier['id'], framework_slug
-                )['frameworkInterest']
-                if supplier_framework['agreementPath']:
-                    supplier['{}-signed-agreement-document-name'.format(framework_slug)] = \
-                        degenerate_document_path_and_return_doc_name(supplier_framework['agreementPath'])
-            except HTTPError as e:
-                # Supplier might not be on all frameworks
-                if e.status_code == 404:
-                    continue
-                else:
-                    raise e
-
     return render_template(
         "view_suppliers.html",
-        supplier_and_framework_info=supplier_and_framework_info,
+        suppliers=suppliers,
         agreement_filename=AGREEMENT_FILENAME
     )
 
@@ -181,6 +161,16 @@ def approve_agreement_for_countersignature(agreement_id):
         supplier_id=agreement["supplierId"],
         status=next_status,
     ))
+
+
+@main.route('/suppliers/<supplier_id>/agreement/<framework_slug>', methods=['GET'])
+@login_required
+@role_required('admin', 'admin-ccs-sourcing')
+def download_signed_agreement_file(supplier_id, framework_slug):
+    # This route is used for pre-G-Cloud-8 agreement document downloads
+    supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
+    document_name = degenerate_document_path_and_return_doc_name(supplier_framework['agreementPath'])
+    return download_agreement_file(supplier_id, framework_slug, document_name)
 
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>/<document_name>', methods=['GET'])

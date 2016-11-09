@@ -28,7 +28,9 @@ def _get_ordered_supplier_frameworks(framework_slug, status=None):
         **({"statuses": status} if status else {})
     )['supplierFrameworks']
 
-    # API now returns SupplierFrameworks by agreementReturnedAt ascending (oldest first)
+    # Timestamps in our API responses are formatted using dmutils DATETIME_FORMAT which sorts in lexicographical order
+    # i.e. "%Y-%m-%dT%H:%M:%S.%fZ" - we want the newest things at the bottom of the list so this ordering is correct
+    supplier_frameworks = sorted(supplier_frameworks, key=lambda k: k.get("agreementReturnedAt", "2000-01-01"))
     return supplier_frameworks
 
 
@@ -49,7 +51,8 @@ def list_agreements(framework_slug):
             parse_date(supplier_framework['agreementReturnedAt']))
 
     return render_template(
-        "view_agreements_g8.html" if framework_slug == "g-cloud-8" else 'view_agreements.html',
+        # G-Cloud 8 and newer frameworks have a frameworkAgreementVersion and use the new countersigning flow
+        "view_agreements_list.html" if framework.get("frameworkAgreementVersion") else 'view_agreements.html',
         framework=framework,
         supplier_frameworks=supplier_frameworks,
         degenerate_document_path_and_return_doc_name=lambda x: degenerate_document_path_and_return_doc_name(x),

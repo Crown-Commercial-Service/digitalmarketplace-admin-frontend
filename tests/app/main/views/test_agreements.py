@@ -39,7 +39,15 @@ class TestListAgreements(LoggedInApplicationTest):
         }
 
     def test_happy_path(self, data_api_client):
-        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        data_api_client.get_framework.return_value = {
+            "frameworks": {
+                "status": "live",
+                "name": "G-Cloud 7",
+                "slug": "g-cloud-7",
+                "framework": "g-cloud",
+            }
+        }
+
         data_api_client.find_framework_suppliers.return_value = {
             'supplierFrameworks': [
                 {
@@ -61,7 +69,6 @@ class TestListAgreements(LoggedInApplicationTest):
 
         response = self.client.get('/admin/agreements/g-cloud-7')
         page = html.fromstring(response.get_data(as_text=True))
-
         eq_(response.status_code, 200)
         rows = page.cssselect('.summary-item-row')
         eq_(len(rows), 2)
