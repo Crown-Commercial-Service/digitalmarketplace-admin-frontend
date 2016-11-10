@@ -43,9 +43,17 @@ source ./venv/bin/activate
 
 ### Upgrade dependencies
 
-Install new Python and frontend dependencies with pip and npm/gulp
+Install new Python dependencies with pip
 
-```make requirements_for_test```
+```
+make requirements_for_test
+```
+
+Install frontend dependencies with npm and gulp
+
+```
+npm install
+```
 
 ### Compile the front-end code
 
