@@ -11,9 +11,11 @@ virtualenv:
 
 requirements: virtualenv requirements.txt
 	${VIRTUALENV_ROOT}/bin/pip install -r requirements.txt
+	npm install
 
 requirements_for_test: virtualenv requirements_for_test.txt
 	${VIRTUALENV_ROOT}/bin/pip install -r requirements_for_test.txt
+	npm install
 
 frontend_build:
 	npm run --silent frontend-build:production
