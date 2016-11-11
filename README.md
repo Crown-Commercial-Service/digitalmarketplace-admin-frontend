@@ -12,7 +12,7 @@ Frontend administration application for the digital marketplace.
 
 System requirements include a working node.js and npm.
 
-- note that on macOS, a `brew install` of the latest node/npm results in `Error: Cannot find module 'internal/fs'` - use nodejs.org instead
+- note that on macOS, a `brew install` of the latest node/npm may result in `Error: Cannot find module 'internal/fs'` - try installing node v6.x instead.
 
 Install [Virtualenv](https://virtualenv.pypa.io/en/latest/)
 ```
