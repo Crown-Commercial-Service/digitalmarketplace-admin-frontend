@@ -1,8 +1,8 @@
 {% macro text(question_content, service_data, errors, question_number=None) -%}
   {%
     with
-    question=question_content.question|markdown,
-    hint=(question_content.hint or '')|markdown,
+    question=question_content.question,
+    hint=(question_content.hint or ''),
     name=question_content.id,
     value=service_data[question_content.id],
     error=errors.get(question_content.id)['message']
@@ -14,8 +14,8 @@
 {% macro textbox_large(question_content, service_data, errors, question_number=None) -%}
   {%
     with
-    question=question_content.question|markdown,
-    hint=(question_content.hint or '')|markdown,
+    question=question_content.question,
+    hint=(question_content.hint or ''),
     name=question_content.id,
     value=service_data[question_content.id],
     large=True,
@@ -31,8 +31,8 @@
     with
     name=question_content.id,
     number_of_items=10,
-    question=question_content.question|markdown,
-    hint=(question_content.hint or '')|markdown,
+    question=question_content.question,
+    hint=(question_content.hint or ''),
     values=service_data[question_content.id],
     id=question_content.id,
     error=errors.get(question_content.id)['message']
@@ -45,8 +45,8 @@
   {%
     with
     name=question_content.id,
-    question=question_content.question|markdown,
-    hint=(question_content.hint or '')|markdown,
+    question=question_content.question,
+    hint=(question_content.hint or ''),
     value=service_data[question_content.id],
     id=question_content.id,
     options=question_content.options,
@@ -62,8 +62,8 @@
   {%
     with
     name=question_content.id,
-    question=question_content.question|markdown,
-    hint=(question_content.hint or '')|markdown,
+    question=question_content.question,
+    hint=(question_content.hint or ''),
     hint_underneath=(question_content.hint_underneath or False),
     value=service_data[question_content.id],
     id=question_content.id,
@@ -80,8 +80,8 @@
   {%
     with
     name=question_content.id,
-    question=question_content.question|markdown,
-    hint=(question_content.hint or '')|markdown,
+    question=question_content.question,
+    hint=(question_content.hint or ''),
     value=service_data[question_content.id],
     id=question_content.id,
     type='boolean',
@@ -95,8 +95,8 @@
 {% macro upload(question_content, service_data, errors, question_number=None) -%}
   {%
     with
-    question=question_content.question|markdown,
-    hint=(question_content.hint or '')|markdown,
+    question=question_content.question,
+    hint=(question_content.hint or ''),
     name=question_content.id,
     value="Document uploaded {}".format(
       service_data[question_content.id]
@@ -120,7 +120,7 @@
     price_unit=service_data.get(question_content.fields.price_unit),
     price_interval=service_data.get(question_content.fields.price_interval),
     hours_for_price=service_data.get(question_content.fields.hours_for_price),
-    hint=(question_content.hint or '')|markdown,
+    hint=(question_content.hint or ''),
     id=question_content.id,
     error=errors.get(question_content.id)['message'],
     question_number=question_number
@@ -135,8 +135,8 @@
     unit_in_full="percent",
     unit_position="after",
     unit="%",
-    question=question_content.question|markdown,
-    hint=(question_content.hint or '')|markdown,
+    question=question_content.question,
+    hint=(question_content.hint or ''),
     name=question_content.id,
     value=service_data[question_content.id],
     error=errors.get(question_content.id)['message'],
