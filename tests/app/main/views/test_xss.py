@@ -25,7 +25,6 @@ class TestXSS(LoggedInApplicationTest):
             b'Error trying to retrieve service with ID: ' + evil_service_id.encode('utf8'),
             response2.data)
 
-
     @mock.patch('app.main.views.services.data_api_client')
     def test_brief_not_found_flash_message_injection(self, data_api_client):
         """
