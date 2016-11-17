@@ -21,9 +21,7 @@ class TestXSS(LoggedInApplicationTest):
         evil_service_id = "1<img src=a onerror=alert(1)>"
         response1 = self.client.get('/admin/services/' + urllib.quote(evil_service_id))
         response2 = self.client.get(response1.location)
-        self.assertNotIn(
-            b'Error trying to retrieve service with ID: ' + evil_service_id.encode('utf8'),
-            response2.data)
+        self.assertNotIn(evil_service_id, response2.get_data(as_text=True))
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_brief_not_found_flash_message_injection(self, data_api_client):
@@ -34,6 +32,4 @@ class TestXSS(LoggedInApplicationTest):
         data_api_client.get_brief.return_value = None
         evil_brief_id = "1<img src=a onerror=alert(1)>"
         response = self.client.get('admin/buyers?brief_id=' + urllib.quote(evil_brief_id))
-        self.assertNotIn(
-            b'There are no opportunities with ID ' + evil_brief_id.encode('utf8'),
-            response.data)
+        self.assertNotIn(evil_brief_id, response.get_data(as_text=True))
