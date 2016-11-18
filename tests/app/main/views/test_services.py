@@ -47,6 +47,24 @@ class TestServiceView(LoggedInApplicationTest):
                       response2.data)
 
     @mock.patch('app.main.views.services.data_api_client')
+    def test_service_not_found_flash_message_injection(self, data_api_client):
+        """
+        Asserts that raw HTML in a bad service ID cannot be injected into a flash message.
+        """
+        # impl copied from test_redirect_with_flash_for_api_client_404
+        api_response = mock.Mock()
+        api_response.status_code = 404
+        data_api_client.get_service.side_effect = HTTPError(api_response)
+
+        response1 = self.client.get('/admin/services/1%3Cimg%20src%3Da%20onerror%3Dalert%281%29%3E')
+        response2 = self.client.get(response1.location)
+        self.assertEqual(response2.status_code, 200)
+
+        html_response = response2.get_data(as_text=True)
+        self.assertNotIn("1<img src=a onerror=alert(1)>", html_response)
+        self.assertIn("1&lt;img src=a onerror=alert(1)&gt;", html_response)
+
+    @mock.patch('app.main.views.services.data_api_client')
     def test_independence_of_viewing_services(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'SCS',
