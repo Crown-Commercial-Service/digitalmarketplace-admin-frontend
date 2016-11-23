@@ -25,7 +25,6 @@ def start_seller_signup():
 
     return render_template(
         '_react.html',
-        applications=applications[0],
         component=rendered_component
     )
 
