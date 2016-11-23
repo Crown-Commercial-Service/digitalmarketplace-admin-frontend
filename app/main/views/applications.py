@@ -29,6 +29,7 @@ def start_seller_signup():
         component=rendered_component
     )
 
+
 @main.route('/applications/convert_to_seller', methods=['POST'])
 def convert_to_seller():
     application_id = request.json['id']

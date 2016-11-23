@@ -92,6 +92,7 @@ class Test(Config):
     REACT_RENDER_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/render'
     REACT_RENDER = False
 
+
 class Development(Config):
     DEBUG = True
     SESSION_COOKIE_SECURE = False
@@ -122,6 +123,7 @@ class Live(Config):
     REACT_BUNDLE_URL = 'https://dm-frontend.apps.platform.digital.gov.au/bundle/'
     REACT_RENDER_URL = 'https://dm-frontend.apps.platform.digital.gov.au/render'
     REACT_RENDER = True
+
 
 class Staging(Config):
     DEBUG = False
