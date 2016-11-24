@@ -64,6 +64,10 @@ class Config(object):
     INVITE_EMAIL_SUBJECT = 'Your Digital Marketplace invitation'
     CREATE_USER_PATH = 'sellers/create-user'
 
+    REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/bundle/'
+    REACT_RENDER_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/render'
+    REACT_RENDER = not DEBUG
+
 
 class Test(Config):
     DEBUG = True
@@ -84,6 +88,10 @@ class Test(Config):
     DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-communications-dev-dev'
     DM_AGREEMENTS_BUCKET = 'digitalmarketplace-documents-dev-dev'
 
+    REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/bundle/'
+    REACT_RENDER_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/render'
+    REACT_RENDER = False
+
 
 class Development(Config):
     DEBUG = True
@@ -101,6 +109,9 @@ class Development(Config):
     DM_AGREEMENTS_BUCKET = "digitalmarketplace-agreements-dev-dev"
     DM_COMMUNICATIONS_BUCKET = "digitalmarketplace-communications-dev-dev"
 
+    REACT_BUNDLE_URL = 'http://localhost:63578/bundle/'
+    REACT_RENDER_URL = 'http://localhost:63578/render'
+
 
 class Live(Config):
     DEBUG = False
@@ -108,6 +119,10 @@ class Live(Config):
     DM_HTTP_PROTO = 'https'
     DM_DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
     DM_MAIN_SERVER_NAME = 'marketplace.service.gov.au'
+
+    REACT_BUNDLE_URL = 'https://dm-frontend.apps.platform.digital.gov.au/bundle/'
+    REACT_RENDER_URL = 'https://dm-frontend.apps.platform.digital.gov.au/render'
+    REACT_RENDER = True
 
 
 class Staging(Config):

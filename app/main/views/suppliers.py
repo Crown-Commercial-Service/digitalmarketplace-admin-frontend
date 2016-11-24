@@ -1,5 +1,6 @@
 from flask import render_template, request, redirect, url_for, abort, current_app
-from flask_login import login_required, current_user, flash
+from flask_login import login_required, current_user
+from flask import flash
 from dateutil.parser import parse as parse_date
 
 from .. import main

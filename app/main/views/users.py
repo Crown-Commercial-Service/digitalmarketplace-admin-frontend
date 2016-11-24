@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from flask import render_template, request, Response
-from flask_login import login_required, flash
+from flask_login import login_required
+from flask import flash
 
 from dmutils.forms import render_template_with_csrf
 
