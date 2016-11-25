@@ -90,7 +90,7 @@ class Test(Config):
 
     REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/bundle/'
     REACT_RENDER_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/render'
-    REACT_RENDER = True
+    REACT_RENDER = False
 
 
 class Development(Config):
@@ -130,8 +130,8 @@ class Staging(Config):
     DEBUG = False
     AUTHENTICATION = True
     DM_DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
-    REACT_BUNDLE_URL = 'https://dm-frontend.apps.platform.digital.gov.au/bundle/'
-    REACT_RENDER_URL = 'https://dm-frontend.apps.platform.digital.gov.au/render'
+    REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/bundle/'
+    REACT_RENDER_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/render'
     REACT_RENDER = True
 
 configs = {
