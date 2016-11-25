@@ -13,12 +13,15 @@ def start_seller_signup():
 
     applications = data_api_client.find_applications()['applications']
 
+    SCHEME = request.url.split(':', 1)[0]
+    convert_url = url_for('main.convert_to_seller', _external=True, _scheme=SCHEME)
+
     rendered_component = render_component(
         'bundles/ApplicationsAdmin/ApplicationsAdminWidget.js',
         {
             'applications': applications,
             'meta': {
-                'url_convert_to_seller': url_for('main.convert_to_seller', _external=True),
+                'url_convert_to_seller': convert_url,
                 'heading': 'List of Applications',
             }
         }
