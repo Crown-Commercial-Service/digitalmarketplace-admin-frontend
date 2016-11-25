@@ -1,4 +1,9 @@
--r requirements.txt
+-e git+https://github.com/AusDTO/dto-digitalmarketplace-content-loader.git@1.5.1#egg=dto-digitalmarketplace-content-loader==1.5.1
+-e git+https://github.com/AusDTO/dto-digitalmarketplace-utils.git@master#egg=dto-digitalmarketplace-utils
+-e git+https://github.com/AusDTO/dto-digitalmarketplace-apiclient.git@6.12.3#egg=dto-digitalmarketplace-apiclient
+
+-e .
+
 pytest==2.8.2
 pep8==1.5.7
 nose==1.3.4
