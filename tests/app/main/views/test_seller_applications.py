@@ -9,6 +9,6 @@ class TestApplicationAdmin(LoggedInApplicationTest):
         render_component.return_value.get_props.return_value = {}
         render_component.return_value.get_slug.return_value = 'slug'
 
-        response = self.client.get('/admin/applications/approval')
+        response = self.client.get('/admin/applications')
         assert response.status_code == 200
         data_api_client.find_applications.assert_called()
