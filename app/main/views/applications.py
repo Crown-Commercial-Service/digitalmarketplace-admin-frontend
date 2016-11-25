@@ -8,8 +8,9 @@ from ..auth import role_required
 from react.render import render_component
 
 
-@main.route('/applications/approval')
+@main.route('/applications')
 def start_seller_signup():
+
     applications = data_api_client.find_applications()['applications']
 
     rendered_component = render_component(

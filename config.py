@@ -111,6 +111,7 @@ class Development(Config):
 
     REACT_BUNDLE_URL = 'http://localhost:63578/bundle/'
     REACT_RENDER_URL = 'http://localhost:63578/render'
+    REACT_RENDER = True
 
 
 class Live(Config):
@@ -129,7 +130,9 @@ class Staging(Config):
     DEBUG = False
     AUTHENTICATION = True
     DM_DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
-
+    REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/bundle/'
+    REACT_RENDER_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/render'
+    REACT_RENDER = True
 
 configs = {
     'development': Development,
