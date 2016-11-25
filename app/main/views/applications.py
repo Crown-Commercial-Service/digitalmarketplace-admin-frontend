@@ -7,8 +7,6 @@ from ..auth import role_required
 
 from react.render import render_component
 
-import werkzeug
-
 
 @main.route('/applications')
 def start_seller_signup():
