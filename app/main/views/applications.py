@@ -1,4 +1,4 @@
-from flask import render_template, request, flash, url_for, jsonify
+from flask import render_template, request, flash, url_for, jsonify, request
 from flask_login import login_required
 
 from .. import main
@@ -13,7 +13,7 @@ def start_seller_signup():
 
     applications = data_api_client.find_applications()['applications']
 
-    SCHEME = request.url.split(':', 1)[0]
+    SCHEME = request.environ['wsgi.url_scheme']
     convert_url = url_for('main.convert_to_seller', _external=True, _scheme=SCHEME)
 
     rendered_component = render_component(
