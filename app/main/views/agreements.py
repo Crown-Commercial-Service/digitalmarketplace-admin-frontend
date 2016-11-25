@@ -21,17 +21,12 @@ status_labels = OrderedDict((
 ))
 
 
-def _get_ordered_supplier_frameworks(framework_slug, status=None):
-    supplier_frameworks = data_api_client.find_framework_suppliers(
+def _get_supplier_frameworks(framework_slug, status=None):
+    return data_api_client.find_framework_suppliers(
         framework_slug,
         agreement_returned=True,
         **({"statuses": status} if status else {})
     )['supplierFrameworks']
-
-    # Timestamps in our API responses are formatted using dmutils DATETIME_FORMAT which sorts in lexicographical order
-    # i.e. "%Y-%m-%dT%H:%M:%S.%fZ" - we want the newest things at the bottom of the list so this ordering is correct
-    supplier_frameworks = sorted(supplier_frameworks, key=lambda k: k.get("agreementReturnedAt", "2000-01-01"))
-    return supplier_frameworks
 
 
 @main.route('/agreements/<framework_slug>', methods=['GET'])
@@ -44,7 +39,7 @@ def list_agreements(framework_slug):
     if status and status not in status_labels:
         abort(400)
 
-    supplier_frameworks = _get_ordered_supplier_frameworks(framework_slug, status=status)
+    supplier_frameworks = _get_supplier_frameworks(framework_slug, status=status)
 
     for supplier_framework in supplier_frameworks:
         supplier_framework['agreementReturnedAt'] = datetimeformat(
@@ -72,7 +67,7 @@ def next_agreement(supplier_id, framework_slug):
     # note we are NOT requesting the status-filtered supplier_framework list - we can't be sure our requested supplier
     # will *be* in the filtered set (though it may have been at the time the url was generated) so for this view at
     # least, any status "filtering" we do must be here in python.
-    supplier_frameworks = _get_ordered_supplier_frameworks(framework_slug)
+    supplier_frameworks = _get_supplier_frameworks(framework_slug)
     supplier_frameworks_iter = iter(supplier_frameworks)
 
     # first advance supplier_frameworks_iter to the requested supplier in the list, disregarding any status filter

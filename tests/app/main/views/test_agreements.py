@@ -51,18 +51,18 @@ class TestListAgreements(LoggedInApplicationTest):
         data_api_client.find_framework_suppliers.return_value = {
             'supplierFrameworks': [
                 {
-                    'supplierName': 'My Supplier',
-                    'supplierId': 11111,
-                    'agreementReturned': True,
-                    'agreementReturnedAt': '2015-11-01T01:01:01.000000Z',
-                    'agreementPath': 'path/11111-agreement.pdf',
-                },
-                {
                     'supplierName': 'My other supplier',
                     'supplierId': 11112,
                     'agreementReturned': True,
                     'agreementReturnedAt': '2015-10-30T01:01:01.000000Z',
                     'agreementPath': 'path/11112-agreement.pdf',
+                },
+                {
+                    'supplierName': 'My Supplier',
+                    'supplierId': 11111,
+                    'agreementReturned': True,
+                    'agreementReturnedAt': '2015-11-01T01:01:01.000000Z',
+                    'agreementPath': 'path/11111-agreement.pdf',
                 },
             ]
         }
@@ -134,7 +134,10 @@ class TestListAgreements(LoggedInApplicationTest):
 
     def test_happy_path_notall_g8(self, data_api_client):
         data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
-        data_api_client.find_framework_suppliers.return_value = self.find_framework_suppliers_return_value_g8
+        find_framework_suppliers_return_value_g8 = self.find_framework_suppliers_return_value_g8
+        # deliberately returning supplierFrameworks this time in "wrong" order to test view isn't doing any re-sorting
+        find_framework_suppliers_return_value_g8["supplierFrameworks"].reverse()
+        data_api_client.find_framework_suppliers.return_value = find_framework_suppliers_return_value_g8
 
         # choose the second status (if there is one, otherwise first)
         chosen_status_key = tuple(iterkeys(status_labels))[:2][-1]
@@ -154,16 +157,16 @@ class TestListAgreements(LoggedInApplicationTest):
 
         assert tuple(self._unpack_search_result(result) for result in page.cssselect('.search-result')) == (
             (
-                "/admin/suppliers/11112/agreements/g-cloud-8",
-                {"next_status": [chosen_status_key]},
-                "My other supplier",
-                "Submitted: Friday 30 October 2015 at 01:01",
-            ),
-            (
                 "/admin/suppliers/11111/agreements/g-cloud-8",
                 {"next_status": [chosen_status_key]},
                 "My Supplier",
                 "Submitted: Sunday 1 November 2015 at 01:01",
+            ),
+            (
+                "/admin/suppliers/11112/agreements/g-cloud-8",
+                {"next_status": [chosen_status_key]},
+                "My other supplier",
+                "Submitted: Friday 30 October 2015 at 01:01",
             ),
         )
 
