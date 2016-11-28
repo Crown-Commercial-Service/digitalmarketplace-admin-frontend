@@ -34,7 +34,9 @@ def start_seller_signup():
 
 
 @main.route('/applications/convert_to_seller', methods=['POST'])
+@login_required
+@role_required('admin')
 def convert_to_seller():
     application_id = request.json['id']
-    result = data_api_client.convert_application_to_supplier(application_id)
+    result = data_api_client.approve_application(application_id)
     return jsonify(result)
