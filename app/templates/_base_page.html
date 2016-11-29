@@ -1,4 +1,4 @@
-{% extends "govuk/govuk_template.html" %}
+{% extends "main_template.html" %}
 
 {% block head %}
   {% include "_stylesheets.html" %}
@@ -15,12 +15,7 @@
 {% endblock %}
 
 {% block content %}
-  {% block breadcrumb %}{% endblock %}
-  <div id="wrapper">
-    <main id="content" role="main">
       {% block main_content %}{% endblock %}
-    </main>
-  </div>
 {% endblock %}
 
 {% block footer_top %}
