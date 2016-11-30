@@ -10,6 +10,10 @@ Frontend administration application for the digital marketplace.
 
 ## Quickstart
 
+System requirements include a working node.js and npm.
+
+- note that on macOS, a `brew install` of the latest node/npm may result in `Error: Cannot find module 'internal/fs'` - try installing node v6.x instead.
+
 Install [Virtualenv](https://virtualenv.pypa.io/en/latest/)
 ```
 sudo easy_install virtualenv
@@ -41,7 +45,9 @@ source ./venv/bin/activate
 
 Install new Python dependencies with pip
 
-```make requirements_for_test```
+```
+make requirements_for_test
+```
 
 Install frontend dependencies with npm and gulp
 
