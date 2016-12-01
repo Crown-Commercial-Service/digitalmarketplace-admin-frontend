@@ -12,10 +12,10 @@ from dmapiclient import HTTPError, APIError
 from dmapiclient.audit import AuditTypes
 from dmutils.email import send_email, generate_token, MandrillException
 from dmutils.documents import (
-    AGREEMENT_FILENAME, COUNTERSIGNED_AGREEMENT_FILENAME,
+    AGREEMENT_FILENAME, COUNTERPART_FILENAME,
     file_is_pdf, get_document_path, get_extension, get_signed_url,
-    generate_timestamped_document_upload_path, degenerate_document_path_and_return_doc_name
-)
+    generate_timestamped_document_upload_path, degenerate_document_path_and_return_doc_name,
+    generate_download_filename)
 from dmutils import s3
 from dmutils.formats import datetimeformat
 
@@ -233,6 +233,9 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
             errors['countersigned_agreement'] = 'not_pdf'
 
         if 'countersigned_agreement' not in errors.keys():
+            supplier_name = supplier_framework.get('declaration', {}).get('nameOfOrganisation')
+            if not supplier_name:
+                supplier_name = data_api_client.get_supplier(supplier_id)['suppliers']['name']
             if supplier_framework['agreementStatus'] not in ['approved', 'countersigned']:
                 data_api_client.approve_agreement_for_countersignature(
                     agreement_id,
@@ -241,9 +244,10 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
                 )
 
             path = generate_timestamped_document_upload_path(
-                framework_slug, supplier_id, 'agreements', COUNTERSIGNED_AGREEMENT_FILENAME
+                framework_slug, supplier_id, 'agreements', COUNTERPART_FILENAME
             )
-            agreements_bucket.save(path, the_file)
+            download_filename = generate_download_filename(supplier_id, COUNTERPART_FILENAME, supplier_name)
+            agreements_bucket.save(path, the_file, acl='private', move_prefix=None, download_filename=download_filename)
 
             data_api_client.update_framework_agreement(
                 agreement_id,
