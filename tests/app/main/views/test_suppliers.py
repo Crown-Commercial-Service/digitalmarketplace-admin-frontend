@@ -971,7 +971,8 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
                 "onFramework": True,
                 "agreementStatus": "signed",
                 "agreementId": 1212,
-                "countersignedPath": None
+                "countersignedPath": None,
+                "declaration": {"nameOfOrganisation": "Supplier Mc Supply Face"},
             }}
         response = self.client.post('/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
                                     data=dict(
@@ -986,13 +987,16 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
         )
 
         s3.S3.return_value.save.assert_called_once_with(
-            "g-cloud-7/agreements/1234/1234-countersigned-framework-agreement-2016-12-25-063001.pdf",
-            mock.ANY
+            "g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf",
+            mock.ANY,
+            acl='private',
+            move_prefix=None,
+            download_filename='Supplier_Mc_Supply_Face-1234-agreement-countersignature.pdf'
         )
 
         data_api_client.update_framework_agreement.assert_called_once_with(
             1212,
-            {"countersignedAgreementPath": "g-cloud-7/agreements/1234/1234-countersigned-framework-agreement-2016-12-25-063001.pdf"},  # noqa
+            {"countersignedAgreementPath": "g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf"},  # noqa
             'test@example.com'
         )
 
@@ -1001,8 +1005,11 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             user='test@example.com',
             object_type='suppliers',
             object_id=u'1234',
-            data={'upload_countersigned_agreement': 'g-cloud-7/agreements/1234/1234-countersigned-'
-                  'framework-agreement-2016-12-25-063001.pdf'})
+            data={
+                'upload_countersigned_agreement':
+                    'g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf'
+                }
+        )
 
         assert response.status_code == 302
         assert response.location == 'http://localhost/admin/suppliers/1234/countersigned-agreements/g-cloud-7'
@@ -1020,7 +1027,8 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
                 "onFramework": True,
                 "agreementStatus": "countersigned",
                 "agreementId": 1212,
-                "countersignedPath": "g-cloud-7/agreements/1234/1234-countersigned-framework-agreement-2016-12-25-063001.pdf"  # noqa
+                "countersignedPath": "g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf",  # noqa
+                "declaration": {"nameOfOrganisation": "Supplier Mc Supply Face"},
             }}
         response = self.client.post('/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
                                     data=dict(
@@ -1031,13 +1039,16 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
         data_api_client.approve_agreement_for_countersignature.assert_not_called()
 
         s3.S3.return_value.save.assert_called_once_with(
-            "g-cloud-7/agreements/1234/1234-countersigned-framework-agreement-2016-12-25-063001.pdf",
-            mock.ANY
+            "g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf",
+            mock.ANY,
+            acl='private',
+            move_prefix=None,
+            download_filename='Supplier_Mc_Supply_Face-1234-agreement-countersignature.pdf'
         )
 
         data_api_client.update_framework_agreement.assert_called_once_with(
             1212,
-            {"countersignedAgreementPath": "g-cloud-7/agreements/1234/1234-countersigned-framework-agreement-2016-12-25-063001.pdf"},  # noqa
+            {"countersignedAgreementPath": "g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf"},  # noqa
             'test@example.com'
         )
 
@@ -1046,11 +1057,72 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             user='test@example.com',
             object_type='suppliers',
             object_id=u'1234',
-            data={'upload_countersigned_agreement': 'g-cloud-7/agreements/1234/1234-countersigned-'
-                  'framework-agreement-2016-12-25-063001.pdf'})
+            data={
+                'upload_countersigned_agreement':
+                    'g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf'}
+        )
 
         assert response.status_code == 302
         assert response.location == 'http://localhost/admin/suppliers/1234/countersigned-agreements/g-cloud-7'
+
+    def test_can_upload_countersigned_agreement_for_framework_without_declaration(self, s3, data_api_client):
+        s3.S3.return_value.get_key.return_value = {
+            'size': '7050',
+            'path': u'g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf',
+            'ext': u'pdf',
+            'last_modified': u'2016-01-15T12:58:08.000000Z',
+            'filename': u'1234-countersigned-framework-agreement'
+        }
+        data_api_client.get_supplier_framework_info.return_value = \
+            {"frameworkInterest": {
+                "onFramework": True,
+                "agreementStatus": "signed",
+                "agreementId": 1212,
+                "countersignedPath": None
+            }}
+        data_api_client.get_supplier.return_value = \
+            {"suppliers": {
+                "name": "DM Supplier Name"
+            }}
+        response = self.client.post('/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
+                                    data=dict(
+                                        countersigned_agreement=(BytesIO(b"this is a test"),
+                                                                 'countersigned_agreement.pdf'),
+                                    ))
+
+        data_api_client.approve_agreement_for_countersignature.assert_called_once_with(
+            1212,
+            'test@example.com',
+            '1234'
+        )
+
+        s3.S3.return_value.save.assert_called_once_with(
+            "g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf",
+            mock.ANY,
+            acl='private',
+            move_prefix=None,
+            download_filename='DM_Supplier_Name-1234-agreement-countersignature.pdf'
+        )
+
+        data_api_client.update_framework_agreement.assert_called_once_with(
+            1212,
+            {
+                "countersignedAgreementPath": "g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf"},  # noqa
+            'test@example.com'
+        )
+
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/suppliers/1234/countersigned-agreements/g-cloud-7'
+        data_api_client.create_audit_event.assert_called_once_with(
+            audit_type=AuditTypes.upload_countersigned_agreement,
+            user='test@example.com',
+            object_type='suppliers',
+            object_id=u'1234',
+            data={
+                'upload_countersigned_agreement':
+                    'g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf'
+            }
+        )
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
