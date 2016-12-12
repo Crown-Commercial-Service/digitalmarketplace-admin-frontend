@@ -68,6 +68,7 @@ class Config(object):
     REACT_RENDER_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/render'
     REACT_RENDER = not DEBUG
 
+    ROLLBAR_TOKEN = None
 
 class Test(Config):
     DEBUG = True
