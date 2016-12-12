@@ -1,0 +1,41 @@
+#casestudy__view {
+  .sidebar {
+    float: left;
+    margin: 0 2.04556% 0 0;
+  }
+
+  .actions {
+    text-align: right;
+    @include link-colours($non-black, $light-aqua, $non-black);
+
+    @include media(max-width $screen-sm) {
+      text-align: left;
+    }
+
+    a {
+      display: inline-block;
+
+      &:first-of-type {
+        margin-right: 1em;
+      }
+    }
+  }
+
+  header {
+    border-bottom: 1px solid #cecece;
+
+    h2 {
+      margin-bottom: 0;
+    }
+  }
+
+  .casestudy__actions {
+    margin-top: 3rem;
+  }
+
+  .project ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+}

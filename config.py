@@ -133,6 +133,7 @@ class Staging(Config):
     REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/bundle/'
     REACT_RENDER_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/render'
     REACT_RENDER = True
+    DM_MAIN_SERVER_NAME = "dm-dev.apps.staging.digital.gov.au"
 
 configs = {
     'development': Development,

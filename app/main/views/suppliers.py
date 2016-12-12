@@ -326,8 +326,12 @@ def reset_password(user_id):
         current_app.config['SECRET_KEY'],
         current_app.config['RESET_PASSWORD_SALT']
     )
-
-    url = '/reset-password/'+token
+    url = '{}://{}/{}/{}'.format(
+        current_app.config['DM_HTTP_PROTO'],
+        current_app.config['DM_MAIN_SERVER_NAME'],
+        '/reset-password/',
+        format(token)
+    )
 
     return redirect(url)
 

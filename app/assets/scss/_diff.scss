@@ -1,15 +1,15 @@
 .diff {
-  margin-bottom: $gutter;
+  //margin-bottom: $gutter;
 
   .diff-title {
-    @include heading-27;
+   //@include heading-27;
     font-weight: bold;
-    margin-bottom: $gutter-half;
+   // margin-bottom: $gutter-half;
   }
 
   .revision-dates {
-    @extend %contain-floats;
-    margin-bottom: $gutter-half;
+    //@extend %contain-floats;
+    //margin-bottom: $gutter-half;
 
     p {
       float: none;
@@ -21,15 +21,15 @@
 
       .revision-date-type {
         font-weight: bold;
-        margin-right: $gutter-half;
+      //  margin-right: $gutter-half;
       }
     }
   }
 
   table {
-    @include core-14;
+    //@include core-14;
     @include media(tablet) {
-      @include core-19;
+     // @include core-19;
     }
 
     width: 100%;
@@ -37,7 +37,7 @@
     caption {
       font-weight: bold;
       text-align: left;
-      padding: $gutter 0 10px;
+     // padding: $gutter 0 10px;
     }
 
     tbody tr {
@@ -71,7 +71,7 @@
       }
 
       &.line-number {
-        @include core-14($tabular-numbers: true);
+       // @include core-14($tabular-numbers: true);
         text-align: right;
         float: left;
         clear: both;
@@ -81,7 +81,7 @@
         border-right: none;
 
         @include media(tablet) {
-          @include core-19($tabular-numbers: true);
+         // @include core-19($tabular-numbers: true);
           float: none;
         }
       }
