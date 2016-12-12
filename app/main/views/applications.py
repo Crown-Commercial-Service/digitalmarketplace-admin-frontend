@@ -67,6 +67,6 @@ def preview_application(id=None):
 @login_required
 @role_required('admin')
 def convert_to_seller():
-    application_id = request.json['id']
+    application_id = request.get_json(force=True)['id']
     result = data_api_client.approve_application(application_id)
     return jsonify(result)
