@@ -1,0 +1,17 @@
+<nav class="breadcrumbs" aria-label="breadcrumb">
+  <div class="wrapper">
+    <ul>
+      {%- for item in items -%}
+        {% if item.label %}
+        <li>
+          {%- if item.link -%}
+            <a href="{{ item.link }}">{{ item.label }}</a>
+          {%- else -%}
+            {{ item.label }}
+          {%- endif -%}
+        </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+</nav>

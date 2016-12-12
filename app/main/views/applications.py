@@ -1,4 +1,4 @@
-from flask import render_template, request, flash, url_for, jsonify, request
+from flask import render_template, request, flash, url_for, jsonify, request, current_app
 from flask_login import login_required
 
 from .. import main
@@ -40,11 +40,19 @@ def start_seller_signup():
 def preview_application(id=None):
     application = data_api_client.get_application(id)
 
+    app_documents_url = '{}://{}/sellers/application/{}/documents/'.format(
+        current_app.config['DM_HTTP_PROTO'],
+        current_app.config['DM_MAIN_SERVER_NAME'],
+        id
+    )
+
     props = dict(application)
     props['basename'] = url_for('.preview_application', id=id)
+    props['application']['documents_url'] = app_documents_url
     props['form_options'] = {
         'action': url_for('.preview_application', id=id),
-        'submit_url': url_for('.preview_application', id=id)
+        'submit_url': url_for('.preview_application', id=id),
+
     }
 
     rendered_component = render_component('bundles/SellerRegistration/ApplicationPreviewWidget.js', props)

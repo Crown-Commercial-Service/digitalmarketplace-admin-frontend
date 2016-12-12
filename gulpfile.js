@@ -12,6 +12,7 @@ var repoRoot = __dirname + '/';
 var bowerRoot = repoRoot + 'bower_components';
 var npmRoot = repoRoot + 'node_modules';
 var govukToolkitRoot = npmRoot + '/govuk_frontend_toolkit';
+var govauUIkitRoot = npmRoot + '/gov-au-ui-kit/assets';
 var dmToolkitRoot = bowerRoot + '/digitalmarketplace-frontend-toolkit/toolkit';
 var sspContentRoot = bowerRoot + '/digitalmarketplace-frameworks';
 var assetsFolder = repoRoot + 'app/assets';
@@ -38,6 +39,7 @@ var sassOptions = {
       assetsFolder + '/scss',
       dmToolkitRoot + '/scss',
       govukToolkitRoot + '/stylesheets',
+        govauUIkitRoot + '/sass'
     ],
     sourceComments: true,
     errLogToConsole: true
@@ -49,6 +51,7 @@ var sassOptions = {
       assetsFolder + '/scss',
       dmToolkitRoot + '/scss',
       govukToolkitRoot + '/stylesheets',
+        govauUIkitRoot + '/sass'
     ],
   },
 };
@@ -266,12 +269,7 @@ gulp.task(
     'copy:template_assets:images',
     'copy:template_assets:stylesheets',
     'copy:template_assets:javascripts',
-    'copy:govuk_toolkit_assets:images',
-    'copy:dm_toolkit_assets:stylesheets',
-    'copy:dm_toolkit_assets:images',
     'copy:dm_toolkit_assets:templates',
-    'copy:images',
-    'copy:govuk_template'
   ]
 );
 

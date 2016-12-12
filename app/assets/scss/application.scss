@@ -1,42 +1,18 @@
 $path: "/admin/static/images/";
 
-// Digital Marketplace front end toolkit components
-@import "forms/_option-select.scss";
-@import "forms/_keyword-search.scss";
+@import "ui-kit";
 
-// Digital Marketplace Front-end toolkit styles
-@import "toolkit/grids";
-@import "toolkit/breadcrumb";
-@import "toolkit/browse-list";
-@import "toolkit/buttons";
-@import "toolkit/forms/hint";
-@import "toolkit/forms/list-entry";
-@import "toolkit/forms/questions";
-@import "toolkit/forms/selection-buttons";
-@import "toolkit/forms/summary";
-@import "toolkit/forms/textboxes";
-@import "toolkit/forms/validation";
-@import "toolkit/forms/word-counter";
-@import "toolkit/link-button";
-@import "toolkit/notification-banners";
-@import "toolkit/page-headings";
-@import "toolkit/previous-next-navigation";
-@import "toolkit/secondary-action-link";
+// grid + profiles
+@import 'neat-grid';
 
-/* Blocks shared between multiple selectors */
-@import "shared_placeholders/_temporary-messages.scss";
+@import 'progress-bar';
+@import 'case-study';
+@import 'navigation';
+@import 'profile';
 
-// Admin app styles
-@import "_reset";
-@import "_footer";
-@import "_layout";
-@import "_grids";
 
 @import "patterns/service-id";
 @import "patterns/pricing";
-
-// Blocks shared between multiple selectors
-@import "shared_placeholders/_temporary-messages.scss";
 
 // Layout of specific views
 @import "views/view_service";
