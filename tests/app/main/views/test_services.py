@@ -14,10 +14,11 @@ from ...helpers import LoggedInApplicationTest
 
 class TestServiceView(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
-    def test_service_view_with_no_features_or_benefits(self, data_api_client):
+    def test_service_view_no_features_or_benefits_status_disabled(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
             'id': "314159265",
+            "status": "disabled",
         }}
         response = self.client.get('/admin/services/314159265')
 
@@ -30,6 +31,61 @@ class TestServiceView(LoggedInApplicationTest):
         assert document.xpath(
             "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
         ) == "314159265"
+
+        assert frozenset(document.xpath("//input[@type='radio'][@name='service_status']/@value")) == frozenset((
+            "removed",
+            "private",
+        ))
+        assert document.xpath("//input[@type='radio'][@name='service_status'][@checked]/@value") == ["removed"]
+
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_service_view_no_features_or_benefits_status_enabled(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-7',
+            'id': "1412",
+            "status": "enabled",
+        }}
+        response = self.client.get('/admin/services/1412')
+
+        assert data_api_client.get_service.call_args_list == [
+            (("1412",), {}),
+        ]
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert document.xpath(
+            "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
+        ) == "1412"
+
+        assert frozenset(document.xpath("//input[@type='radio'][@name='service_status']/@value")) == frozenset((
+            "removed",
+            "private",
+            "public",
+        ))
+        assert document.xpath("//input[@type='radio'][@name='service_status'][@checked]/@value") == ["private"]
+
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_service_view_no_features_or_benefits_not_service_status_authorized(self, data_api_client):
+        self.user_role = "admin-ccs-category"
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-7',
+            'id': "271828",
+            "status": "published",
+        }}
+        response = self.client.get('/admin/services/271828')
+
+        assert data_api_client.get_service.call_args_list == [
+            (("271828",), {}),
+        ]
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert document.xpath(
+            "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
+        ) == "271828"
+
+        # shouldn't be able to see this
+        assert not document.xpath("//input[@name='service_status']")
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_redirect_with_flash_for_api_client_404(self, data_api_client):
@@ -67,6 +123,7 @@ class TestServiceView(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'SCS',
             'frameworkSlug': 'g-cloud-8',
+            'id': "1",
         }}
         response = self.client.get('/admin/services/1')
         self.assertIn(b'Termination cost', response.data)
@@ -74,6 +131,7 @@ class TestServiceView(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'SaaS',
             'frameworkSlug': 'g-cloud-8',
+            'id': "1",
         }}
         response = self.client.get('/admin/services/1')
         self.assertNotIn(b'Termination cost', response.data)
@@ -81,6 +139,17 @@ class TestServiceView(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'SCS',
             'frameworkSlug': 'g-cloud-8',
+            'id': "1",
+        }}
+        response = self.client.get('/admin/services/1')
+        self.assertIn(b'Termination cost', response.data)
+
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_service_status_update_widgets_not_visible_when_not_permitted(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'lot': 'paas',
+            'frameworkSlug': 'g-cloud-8',
+            'id': "1",
         }}
         response = self.client.get('/admin/services/1')
         self.assertIn(b'Termination cost', response.data)
