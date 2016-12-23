@@ -95,7 +95,7 @@ def update_service_status(service_id):
 
 @main.route('/services/<service_id>/edit/<section>', methods=['GET'])
 @login_required
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def edit(service_id, section):
     service_data = data_api_client.get_service(service_id)['services']
 
@@ -179,7 +179,7 @@ def compare(old_archived_service_id, new_archived_service_id):
 
 @main.route('/services/<service_id>/edit/<section_id>', methods=['POST'])
 @login_required
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def update(service_id, section_id):
     service = data_api_client.get_service(service_id)
     if service is None:

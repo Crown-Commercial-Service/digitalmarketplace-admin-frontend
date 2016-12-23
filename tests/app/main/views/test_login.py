@@ -223,14 +223,6 @@ class TestRoleRequired(LoggedInApplicationTest):
         response = self.client.get('/admin')
         assert_equal(200, response.status_code)
 
-    def test_admin_role_required_service_section_view(self):
-        response = self.client.get('/admin/services/1/edit/documents')
-        assert_equal(403, response.status_code)
-
-    def test_admin_role_required_service_section_edit(self):
-        response = self.client.post('/admin/services/1/edit/documents')
-        assert_equal(403, response.status_code)
-
     def test_admin_role_required_service_status_edit(self):
         response = self.client.post('/admin/services/status/1')
         assert_equal(403, response.status_code)
