@@ -6,32 +6,30 @@ except ImportError:
     from io import BytesIO as StringIO
 import mock
 
+from lxml import html
+
 from dmapiclient import HTTPError, REQUEST_ERROR_MESSAGE
 from ...helpers import LoggedInApplicationTest
 
 
 class TestServiceView(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
-    def test_service_response(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {
-            'frameworkSlug': 'g-cloud-8'
-        }}
-        response = self.client.get('/admin/services/1')
-
-        data_api_client.get_service.assert_called_with('1')
-
-        self.assertEquals(200, response.status_code)
-
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_view_with_no_features_or_benefits(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
-            'frameworkSlug': 'g-cloud-8'
+            'frameworkSlug': 'g-cloud-8',
+            'id': "314159265",
         }}
-        response = self.client.get('/admin/services/1')
+        response = self.client.get('/admin/services/314159265')
 
-        data_api_client.get_service.assert_called_with('1')
+        assert data_api_client.get_service.call_args_list == [
+            (("314159265",), {}),
+        ]
+        assert response.status_code == 200
 
-        self.assertEquals(200, response.status_code)
+        document = html.fromstring(response.get_data(as_text=True))
+        assert document.xpath(
+            "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
+        ) == "314159265"
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_redirect_with_flash_for_api_client_404(self, data_api_client):
