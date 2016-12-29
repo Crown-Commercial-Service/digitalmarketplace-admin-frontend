@@ -553,7 +553,7 @@ class TestUpdatintSupplierName(LoggedInApplicationTest):
                 data={'new_supplier_name': 'Something New'}
             )
             assert response.status_code == 403
-            data_api_client.update_supplier.assert_not_called()
+            assert data_api_client.update_supplier.called is False
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
@@ -574,7 +574,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
 
         assert response.status_code == 404
         data_api_client.get_supplier.assert_called_with('1234')
-        assert not data_api_client.get_framework.called
+        assert data_api_client.get_framework.called is False
 
     def test_should_404_if_framework_does_not_exist(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
@@ -650,7 +650,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
 
         assert response.status_code == 404
         data_api_client.get_supplier.assert_called_with('1234')
-        assert not data_api_client.get_framework.called
+        assert data_api_client.get_framework.called is False
 
     def test_should_404_if_framework_does_not_exist(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
@@ -934,7 +934,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
                                                                  'countersigned_agreement.pdf'),
                                     ))
 
-        data_api_client.approve_agreement_for_countersignature.assert_not_called()
+        assert data_api_client.approve_agreement_for_countersignature.called is False
 
         s3.S3.return_value.save.assert_called_once_with(
             "g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf",
@@ -1075,7 +1075,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
 
         assert response.status_code == 404
         data_api_client.get_supplier.assert_called_with('1234')
-        assert not data_api_client.get_framework.called
+        assert data_api_client.get_framework.called is False
 
     def test_should_404_if_framework_does_not_exist(self, s3, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
@@ -1205,7 +1205,7 @@ class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
         data_api_client.put_signed_agreement_on_hold.return_value = self.put_signed_agreement_on_hold_return_value
         res = self.client.post('/admin/suppliers/agreements/123/on-hold', data={"nameOfOrganisation": "Test"})
 
-        assert not data_api_client.put_signed_agreement_on_hold.called
+        assert data_api_client.put_signed_agreement_on_hold.called is False
         assert res.status_code == 403
 
     def test_happy_path(self, data_api_client):
@@ -1260,7 +1260,7 @@ class TestApproveAgreement(LoggedInApplicationTest):
             self.put_signed_agreement_on_hold_return_value
         res = self.client.post('/admin/suppliers/agreements/123/approve', data={"nameOfOrganisation": "Test"})
 
-        assert not data_api_client.approve_agreement_for_countersignature.called
+        assert data_api_client.approve_agreement_for_countersignature.called is False
         assert res.status_code == 403
 
     def test_happy_path(self, data_api_client):

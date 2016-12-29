@@ -26,7 +26,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         assert self._replace_whitespace(date_header) in self._replace_whitespace(response.get_data(as_text=True))
 
-        data_api_client.find_audit_events.assert_called()
+        assert data_api_client.find_audit_events.called is True
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_render_correct_form_defaults(self, data_api_client):
@@ -40,7 +40,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             '<input name="acknowledged" value="false" id="acknowledged-3" type="radio" aria-controls="" checked>'
         ) in self._replace_whitespace(response.get_data(as_text=True))
 
-        data_api_client.find_audit_events.assert_called()
+        assert data_api_client.find_audit_events.called is True
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_not_allow_invalid_dates(self, data_api_client):
@@ -53,10 +53,10 @@ class TestServiceUpdates(LoggedInApplicationTest):
         assert '<div class="validation-masthead" aria-labelledby="validation-masthead-heading">' in \
             response.get_data(as_text=True)
 
-        data_api_client.find_audit_events.assert_not_called()
         assert self._replace_whitespace(
             '<a href="#example-textbox" class="validation-masthead-link"><label for="audit_date">Audit Date</label></a>'
         ) in self._replace_whitespace(response.get_data(as_text=True))
+        assert data_api_client.find_audit_events.called is False
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_not_allow_invalid_acknowledges(self, data_api_client):
@@ -65,11 +65,11 @@ class TestServiceUpdates(LoggedInApplicationTest):
         )
         assert response.status_code == 400
 
-        data_api_client.find_audit_events.assert_not_called()
         assert self._replace_whitespace(
             '<a href="#example-textbox" class="validation-masthead-link"><label for="acknowledged">acknowledged' +
             '</label></a>'
         ) in self._replace_whitespace(response.get_data(as_text=True))
+        assert data_api_client.find_audit_events.called is False
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_allow_valid_submission_all(self, data_api_client):
@@ -80,10 +80,10 @@ class TestServiceUpdates(LoggedInApplicationTest):
         assert '<input class="filter-field-text" id="audit_date" name="audit_date" placeholder="eg, 2015-07-23" type='\
             '"text" value="2006-01-01">' in response.get_data(as_text=True)
 
-        data_api_client.find_audit_events.assert_called()
         assert self._replace_whitespace(
             '<inputname="acknowledged"value="all"id="acknowledged-1"type="radio"aria-controls=""checked>'
         ) in self._replace_whitespace(response.get_data(as_text=True))
+        assert data_api_client.find_audit_events.called
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_allow_valid_submission_date_fields(self, data_api_client):
@@ -168,7 +168,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         assert self._replace_whitespace(date_header) in self._replace_whitespace(response.get_data(as_text=True))
 
-        data_api_client.find_audit_events.assert_called()
+        assert data_api_client.find_audit_events.called
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_redirect_to_update_page(self, data_api_client):
@@ -180,14 +180,12 @@ class TestServiceUpdates(LoggedInApplicationTest):
             }
         )
 
-        data_api_client.acknowledge_audit_event.assert_called(
-            audit_event_id=123,
-            user='test@example.com'
-        )
         assert response.status_code == 302
         assert 'http://localhost/admin/service-updates' in response.location
         assert 'acknowledged=false' in response.location
         assert 'audit_date=2010-01-05' in response.location
+
+        data_api_client.acknowledge_audit_event.assert_called_with("123", 'test@example.com')
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_not_call_api_when_form_errors(self, data_api_client):
@@ -199,8 +197,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
             }
         )
 
-        data_api_client.acknowledge_audit_event.assert_not_called()
         assert response.status_code == 400
+        assert data_api_client.acknowledge_audit_event.called is False
         assert self._replace_whitespace(
             '<inputname="acknowledged"value="false"id="acknowledged-3"type="radio"aria-controls=""checked>'
         ) in self._replace_whitespace(response.get_data(as_text=True))
@@ -232,7 +230,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
         assert self._replace_whitespace('Noauditeventsfound') in self._replace_whitespace(
             response.get_data(as_text=True)
         )
-        data_api_client.find_audit_events.assert_not_called()
+
+        assert data_api_client.find_audit_events.called is False
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_show_updates_if_valid_search(self, data_api_client):
@@ -309,7 +308,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         response = self.client.get('/admin/service-updates?page=invalid')
         assert response.status_code == 400
 
-        data_api_client.find_audit_events.assert_not_called()
+        assert data_api_client.find_audit_events.called is False
 
 
 @mock.patch('app.main.views.service_updates.data_api_client')
