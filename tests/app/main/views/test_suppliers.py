@@ -3,8 +3,6 @@ from six.moves.urllib.parse import urlsplit, urlparse, parse_qs
 import mock
 from freezegun import freeze_time
 from lxml import html
-from nose.tools import eq_
-from nose.tools import assert_equals
 from dmapiclient import HTTPError, APIError
 from dmutils.email import MandrillException
 from dmapiclient.audit import AuditTypes
@@ -18,7 +16,7 @@ class TestSuppliersListView(LoggedInApplicationTest):
     def test_should_raise_http_error_from_api(self, data_api_client):
         data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers')
-        assert_equals(response.status_code, 404)
+        assert response.status_code == 404
 
     def test_should_list_suppliers(self, data_api_client):
         data_api_client.find_suppliers.return_value = {
@@ -36,8 +34,8 @@ class TestSuppliersListView(LoggedInApplicationTest):
         response = self.client.get("/admin/suppliers")
         document = html.fromstring(response.get_data(as_text=True))
 
-        assert_equals(response.status_code, 200)
-        assert_equals(len(document.cssselect('.summary-item-row')), 2)
+        assert response.status_code == 200
+        assert len(document.cssselect('.summary-item-row')) == 2
 
     def test_should_search_by_prefix(self, data_api_client):
         data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
@@ -64,18 +62,18 @@ class TestSupplierUsersView(LoggedInApplicationTest):
     def test_should_404_if_no_supplier_does_not_exist(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers/users?supplier_id=999')
-        self.assertEquals(404, response.status_code)
+        assert response.status_code == 404
 
     def test_should_404_if_no_supplier_id(self):
         response = self.client.get('/admin/suppliers/users')
-        self.assertEquals(404, response.status_code)
+        assert response.status_code == 404
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_apis_with_supplier_id(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
 
-        self.assertEquals(200, response.status_code)
+        assert response.status_code == 200
 
         data_api_client.get_supplier.assert_called_with('1000')
         data_api_client.find_users.assert_called_with('1000')
@@ -85,11 +83,8 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
 
-        self.assertEquals(200, response.status_code)
-        self.assertIn(
-            "Supplier Name",
-            response.get_data(as_text=True)
-        )
+        assert response.status_code == 200
+        assert "Supplier Name" in response.get_data(as_text=True)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_indicate_if_there_are_no_users(self, data_api_client):
@@ -98,11 +93,8 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
 
-        self.assertEquals(200, response.status_code)
-        self.assertIn(
-            "This supplier has no users on the Digital Marketplace",
-            response.get_data(as_text=True)
-        )
+        assert response.status_code == 200
+        assert "This supplier has no users on the Digital Marketplace" in response.get_data(as_text=True)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_user_details_on_page(self, data_api_client):
@@ -111,55 +103,21 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
 
-        self.assertEquals(200, response.status_code)
-        self.assertIn(
-            "Test User",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "test.user@sme.com",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "10:33:53",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "23 July",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "13:46:01",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "29 June",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "No",
-            response.get_data(as_text=True)
-        )
+        assert response.status_code == 200
+        assert "Test User" in response.get_data(as_text=True)
+        assert "test.user@sme.com" in response.get_data(as_text=True)
+        assert "10:33:53" in response.get_data(as_text=True)
+        assert "23 July" in response.get_data(as_text=True)
+        assert "13:46:01" in response.get_data(as_text=True)
+        assert "29 June" in response.get_data(as_text=True)
+        assert "No" in response.get_data(as_text=True)
 
-        self.assertIn(
-            '<input type="submit" class="button-destructive"  value="Deactivate" />',
+        assert '<input type="submit" class="button-destructive"  value="Deactivate" />' in \
             response.get_data(as_text=True)
-        )
-
-        self.assertIn(
-            '<form action="/admin/suppliers/users/999/deactivate" method="post">',
+        assert '<form action="/admin/suppliers/users/999/deactivate" method="post">' in response.get_data(as_text=True)
+        assert '<button class="button-save">Move user to this supplier</button>' in response.get_data(as_text=True)
+        assert '<form action="/admin/suppliers/1234/move-existing-user" method="post">' in \
             response.get_data(as_text=True)
-        )
-
-        self.assertIn(
-            '<button class="button-save">Move user to this supplier</button>',
-            response.get_data(as_text=True)
-        )
-
-        self.assertIn(
-            '<form action="/admin/suppliers/1234/move-existing-user" method="post">',
-            response.get_data(as_text=True)
-        )
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_unlock_button_if_user_locked(self, data_api_client):
@@ -171,15 +129,9 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
 
-        self.assertEquals(200, response.status_code)
-        self.assertIn(
-            '<form action="/admin/suppliers/users/999/unlock" method="post">',
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            '<input type="submit" class="button-secondary"  value="Unlock" />',
-            response.get_data(as_text=True)
-        )
+        assert response.status_code == 200
+        assert '<form action="/admin/suppliers/users/999/unlock" method="post">' in response.get_data(as_text=True)
+        assert '<input type="submit" class="button-secondary"  value="Unlock" />' in response.get_data(as_text=True)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_activate_button_if_user_deactivated(self, data_api_client):
@@ -191,15 +143,9 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
 
-        self.assertEquals(200, response.status_code)
-        self.assertIn(
-            '<form action="/admin/suppliers/users/999/activate" method="post">',
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            '<input type="submit" class="button-secondary"  value="Activate" />',
-            response.get_data(as_text=True)
-        )
+        assert response.status_code == 200
+        assert '<form action="/admin/suppliers/users/999/activate" method="post">' in response.get_data(as_text=True)
+        assert '<input type="submit" class="button-secondary"  value="Activate" />' in response.get_data(as_text=True)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_unlock_user(self, data_api_client):
@@ -210,8 +156,8 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         data_api_client.update_user.assert_called_with(999, locked=False, updater="test@example.com")
 
-        self.assertEquals(302, response.status_code)
-        self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
+        assert response.status_code == 302
+        assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_activate_user(self, data_api_client):
@@ -222,8 +168,8 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         data_api_client.update_user.assert_called_with(999, active=True, updater="test@example.com")
 
-        self.assertEquals(302, response.status_code)
-        self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
+        assert response.status_code == 302
+        assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_deactivate_user(self, data_api_client):
@@ -237,8 +183,8 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         data_api_client.update_user.assert_called_with(999, active=False, updater="test@example.com")
 
-        self.assertEquals(302, response.status_code)
-        self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
+        assert response.status_code == 302
+        assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_move_user_to_another_supplier(self, data_api_client):
@@ -255,8 +201,8 @@ class TestSupplierUsersView(LoggedInApplicationTest):
             999, role='supplier', supplier_id=1000, active=True, updater="test@example.com"
         )
 
-        self.assertEquals(302, response.status_code)
-        self.assertEquals("http://localhost/admin/suppliers/users?supplier_id=1000", response.location)
+        assert response.status_code == 302
+        assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
 
 class TestSupplierServicesView(LoggedInApplicationTest):
@@ -265,18 +211,18 @@ class TestSupplierServicesView(LoggedInApplicationTest):
     def test_should_404_if_supplier_does_not_exist_on_services(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers/services?supplier_id=999')
-        self.assertEquals(404, response.status_code)
+        assert response.status_code == 404
 
     def test_should_404_if_no_supplier_id_on_services(self):
         response = self.client.get('/admin/suppliers/users')
-        self.assertEquals(404, response.status_code)
+        assert response.status_code == 404
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_service_apis_with_supplier_id(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         response = self.client.get('/admin/suppliers/services?supplier_id=1000')
 
-        self.assertEquals(200, response.status_code)
+        assert response.status_code == 200
 
         data_api_client.get_supplier.assert_called_with('1000')
         data_api_client.find_services.assert_called_with('1000')
@@ -287,11 +233,8 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         data_api_client.find_services.return_value = {'services': []}
         response = self.client.get('/admin/suppliers/services?supplier_id=1000')
 
-        self.assertEquals(200, response.status_code)
-        self.assertIn(
-            "This supplier has no services on the Digital Marketplace",
-            response.get_data(as_text=True)
-        )
+        assert response.status_code == 200
+        assert "This supplier has no services on the Digital Marketplace" in response.get_data(as_text=True)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_have_supplier_name_on_services_page(self, data_api_client):
@@ -300,11 +243,8 @@ class TestSupplierServicesView(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/services?supplier_id=1000')
 
-        self.assertEquals(200, response.status_code)
-        self.assertIn(
-            "Supplier Name",
-            response.get_data(as_text=True)
-        )
+        assert response.status_code == 200
+        assert "Supplier Name" in response.get_data(as_text=True)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_service_details_on_page(self, data_api_client):
@@ -313,39 +253,15 @@ class TestSupplierServicesView(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/services?supplier_id=1000')
 
-        self.assertEquals(200, response.status_code)
-        self.assertIn(
-            "Contract Management",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            '<a href="/g-cloud/services/5687123785023488">',
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "5687123785023488",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "G-Cloud 6",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "Software as a Service",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "Public",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            '<a href="/admin/services/5687123785023488">',
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "Edit",
-            response.get_data(as_text=True)
-        )
+        assert response.status_code == 200
+        assert "Contract Management" in response.get_data(as_text=True)
+        assert '<a href="/g-cloud/services/5687123785023488">' in response.get_data(as_text=True)
+        assert "5687123785023488" in response.get_data(as_text=True)
+        assert "G-Cloud 6" in response.get_data(as_text=True)
+        assert "Software as a Service" in response.get_data(as_text=True)
+        assert "Public" in response.get_data(as_text=True)
+        assert '<a href="/admin/services/5687123785023488">' in response.get_data(as_text=True)
+        assert "Edit" in response.get_data(as_text=True)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_correct_fields_for_disabled_service(self, data_api_client):
@@ -357,15 +273,9 @@ class TestSupplierServicesView(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/services?supplier_id=1000')
 
-        self.assertEquals(200, response.status_code)
-        self.assertIn(
-            "Removed",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "Details",
-            response.get_data(as_text=True)
-        )
+        assert response.status_code == 200
+        assert "Removed" in response.get_data(as_text=True)
+        assert "Details" in response.get_data(as_text=True)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_correct_fields_for_enabled_service(self, data_api_client):
@@ -377,15 +287,9 @@ class TestSupplierServicesView(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/services?supplier_id=1000')
 
-        self.assertEquals(200, response.status_code)
-        self.assertIn(
-            "Private",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "Edit",
-            response.get_data(as_text=True)
-        )
+        assert response.status_code == 200
+        assert "Private" in response.get_data(as_text=True)
+        assert "Edit" in response.get_data(as_text=True)
 
 
 class TestSupplierInviteUserView(LoggedInApplicationTest):
@@ -401,8 +305,8 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             follow_redirects=True
         )
 
-        self.assertEquals(400, response.status_code)
-        self.assertTrue("Please enter a valid email address" in response.get_data(as_text=True))
+        assert response.status_code == 400
+        assert "Please enter a valid email address" in response.get_data(as_text=True)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_not_allow_missing_email_on_invite_user(self, data_api_client):
@@ -415,8 +319,8 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             follow_redirects=True
         )
 
-        self.assertEquals(400, response.status_code)
-        self.assertTrue("Email can not be empty" in response.get_data(as_text=True))
+        assert response.status_code == 400
+        assert "Email can not be empty" in response.get_data(as_text=True)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_be_a_404_if_non_int_supplier_id(self, data_api_client):
@@ -427,8 +331,8 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             follow_redirects=True
         )
 
-        self.assertEquals(404, response.status_code)
-        self.assertFalse(data_api_client.called)
+        assert response.status_code == 404
+        assert data_api_client.called is False
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_be_a_404_if_supplier_id_not_found(self, data_api_client):
@@ -442,8 +346,8 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         )
 
         data_api_client.get_supplier.assert_called_with(1234)
-        self.assertFalse(data_api_client.find_users.called)
-        self.assertEquals(404, response.status_code)
+        assert data_api_client.find_users.called is False
+        assert response.status_code == 404
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_be_a_404_if_supplier_users_not_found(self, data_api_client):
@@ -458,7 +362,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
 
         data_api_client.get_supplier.assert_called_with(1234)
         data_api_client.find_users.assert_called_with(1234)
-        self.assertEquals(404, response.status_code)
+        assert response.status_code == 404
 
     @mock.patch('app.main.views.suppliers.generate_token')
     @mock.patch('app.main.views.suppliers.send_email')
@@ -484,8 +388,8 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             'SALT'
         )
 
-        self.assertEqual(res.status_code, 302)
-        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_id=1234')
+        assert res.status_code == 302
+        assert res.location == 'http://localhost/admin/suppliers/users?supplier_id=1234'
 
     @mock.patch('app.main.views.suppliers.generate_token')
     @mock.patch('app.main.views.suppliers.send_email')
@@ -507,8 +411,8 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             object_id=1234,
             data={'invitedEmail': 'email@example.com'})
 
-        self.assertEqual(res.status_code, 302)
-        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_id=1234')
+        assert res.status_code == 302
+        assert res.location == 'http://localhost/admin/suppliers/users?supplier_id=1234'
 
     @mock.patch('app.main.views.suppliers.generate_token')
     @mock.patch('app.main.views.suppliers.send_email')
@@ -523,10 +427,10 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
                 'email_address': 'this@isvalid.com',
             })
 
-        self.assertFalse(data_api_client.find_users.called)
-        self.assertFalse(send_email.called)
-        self.assertFalse(generate_token.called)
-        self.assertEqual(res.status_code, 404)
+        assert data_api_client.find_users.called is False
+        assert send_email.called is False
+        assert generate_token.called is False
+        assert res.status_code == 404
 
     @mock.patch('app.main.views.suppliers.send_email')
     @mock.patch('app.main.views.suppliers.data_api_client')
@@ -551,8 +455,8 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             ["user-invite"]
         )
 
-        self.assertEqual(res.status_code, 302)
-        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_id=1234')
+        assert res.status_code == 302
+        assert res.location == 'http://localhost/admin/suppliers/users?supplier_id=1234'
 
     @mock.patch('app.main.views.suppliers.send_email')
     @mock.patch('app.main.views.suppliers.data_api_client')
@@ -601,8 +505,8 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             supplier="Supplier Name"
         )
 
-        self.assertEqual(res.status_code, 302)
-        self.assertEqual(res.location, 'http://localhost/admin/suppliers/users?supplier_id=1234')
+        assert res.status_code == 302
+        assert res.location == 'http://localhost/admin/suppliers/users?supplier_id=1234'
 
     @mock.patch('app.main.views.suppliers.send_email')
     @mock.patch('app.main.views.suppliers.data_api_client')
@@ -626,7 +530,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             ["user-invite"]
         )
 
-        self.assertEqual(res.status_code, 503)
+        assert res.status_code == 503
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
@@ -661,14 +565,14 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
-        eq_(response.status_code, 403)
+        assert response.status_code == 403
 
     def test_should_404_if_supplier_does_not_exist(self, data_api_client):
         data_api_client.get_supplier.side_effect = APIError(Response(404))
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
-        eq_(response.status_code, 404)
+        assert response.status_code == 404
         data_api_client.get_supplier.assert_called_with('1234')
         assert not data_api_client.get_framework.called
 
@@ -678,7 +582,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
-        eq_(response.status_code, 404)
+        assert response.status_code == 404
         data_api_client.get_supplier.assert_called_with('1234')
         data_api_client.get_framework.assert_called_with('g-cloud-7')
 
@@ -689,7 +593,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
-        eq_(response.status_code, 200)
+        assert response.status_code == 200
         data_api_client.get_supplier.assert_called_with('1234')
         data_api_client.get_framework.assert_called_with('g-cloud-7')
         data_api_client.get_supplier_declaration.assert_called_with('1234', 'g-cloud-7')
@@ -702,9 +606,9 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
         document = html.fromstring(response.get_data(as_text=True))
 
-        eq_(response.status_code, 200)
+        assert response.status_code == 200
         data = document.cssselect('.summary-item-row td.summary-item-field')
-        eq_(data[0].text_content().strip(), "Yes")
+        assert data[0].text_content().strip() == "Yes"
 
     def test_should_show_dos_declaration(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
@@ -714,9 +618,9 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/digital-outcomes-and-specialists')
         document = html.fromstring(response.get_data(as_text=True))
 
-        eq_(response.status_code, 200)
+        assert response.status_code == 200
         data = document.cssselect('.summary-item-row td.summary-item-field')
-        eq_(data[0].text_content().strip(), "Yes")
+        assert data[0].text_content().strip() == "Yes"
 
     def test_should_403_if_framework_is_open(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
@@ -725,7 +629,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         data_api_client.get_supplier_declaration.return_value = self.load_example_listing('declaration_response')
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/digital-outcomes-and-specialists')
-        eq_(response.status_code, 403)
+        assert response.status_code == 403
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
@@ -737,14 +641,14 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/section')
 
-        eq_(response.status_code, 403)
+        assert response.status_code == 403
 
     def test_should_404_if_supplier_does_not_exist(self, data_api_client):
         data_api_client.get_supplier.side_effect = APIError(Response(404))
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
 
-        eq_(response.status_code, 404)
+        assert response.status_code == 404
         data_api_client.get_supplier.assert_called_with('1234')
         assert not data_api_client.get_framework.called
 
@@ -754,7 +658,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
 
-        eq_(response.status_code, 404)
+        assert response.status_code == 404
         data_api_client.get_supplier.assert_called_with('1234')
         data_api_client.get_framework.assert_called_with('g-cloud-7')
 
@@ -765,7 +669,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/not_a_section')
 
-        eq_(response.status_code, 404)
+        assert response.status_code == 404
 
     def test_should_not_404_if_declaration_does_not_exist(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
@@ -774,7 +678,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
 
-        eq_(response.status_code, 200)
+        assert response.status_code == 200
         data_api_client.get_supplier.assert_called_with('1234')
         data_api_client.get_framework.assert_called_with('g-cloud-7')
         data_api_client.get_supplier_declaration.assert_called_with('1234', 'g-cloud-7')
@@ -787,7 +691,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
         document = html.fromstring(response.get_data(as_text=True))
 
-        eq_(response.status_code, 200)
+        assert response.status_code == 200
         assert document.cssselect('#input-PR1-yes')[0].checked
         assert not document.cssselect('#input-PR1-no')[0].checked
 
@@ -834,7 +738,7 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
 
-        eq_(response.status_code, 403)
+        assert response.status_code == 403
 
     def test_should_404_if_document_does_not_exist(self, s3, data_api_client):
         data_api_client.get_supplier_framework_info.return_value = {
@@ -845,7 +749,7 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
 
         s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/1234-foo.pdf')
-        eq_(response.status_code, 404)
+        assert response.status_code == 404
 
     def test_should_redirect(self, s3, data_api_client):
         data_api_client.get_supplier_framework_info.return_value = {
@@ -858,8 +762,8 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
 
         s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/1234-foo.pdf')
-        eq_(response.status_code, 302)
-        eq_(response.location, 'https://example/blah?extra')
+        assert response.status_code == 302
+        assert response.location == 'https://example/blah?extra'
 
     def test_admin_should_be_able_to_download_countersigned_agreement(self, s3, data_api_client):
         data_api_client.get_supplier_framework_info.return_value = {
@@ -875,7 +779,7 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
         s3.S3.return_value.get_signed_url.assert_called_with(
             'g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf'
         )
-        eq_(response.status_code, 302)
+        assert response.status_code == 302
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
@@ -888,7 +792,7 @@ class TestListCountersignedAgreementFile(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/countersigned-agreements/g-cloud-7')
 
-        eq_(response.status_code, 403)
+        assert response.status_code == 403
 
     def test_should_be_visible_to_admin_sourcing_users(self, s3, data_api_client):
         s3.S3.return_value.get_key.return_value = {
@@ -906,7 +810,7 @@ class TestListCountersignedAgreementFile(LoggedInApplicationTest):
             }}
 
         response = self.client.get('/admin/suppliers/1234/countersigned-agreements/g-cloud-7')
-        eq_(response.status_code, 200)
+        assert response.status_code == 200
 
     def test_should_display_no_documents_if_no_documents_listed(self, s3, data_api_client):
         s3.S3.return_value.get_key.return_value = []
@@ -919,10 +823,7 @@ class TestListCountersignedAgreementFile(LoggedInApplicationTest):
         }
 
         response = self.client.get('/admin/suppliers/1234/countersigned-agreements/g-cloud-7')
-        self.assertIn(
-            'No agreements have been uploaded',
-            response.get_data(as_text=True)
-        )
+        assert 'No agreements have been uploaded' in response.get_data(as_text=True)
 
 
 @freeze_time('2016-12-25 06:30:01')
@@ -952,11 +853,8 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
                                         countersigned_agreement=(BytesIO(b"this is a test"),
                                                                  'test.odt'), ), follow_redirects=True)
 
-        self.assertIn(
-            'This must be a pdf',
-            response.get_data(as_text=True)
-        )
-        eq_(response.status_code, 200)
+        assert 'This must be a pdf' in response.get_data(as_text=True)
+        assert response.status_code == 200
 
     def test_can_upload_countersigned_agreement_for_signed_agreement(self, s3, data_api_client):
         s3.S3.return_value.get_key.return_value = {
@@ -1135,7 +1033,7 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
                                                       ',g-cloud-7/agreements/93495/93495-'
                                                       'countersigned-framework-agreement.pdf'}
         response = self.client.post('/admin/suppliers/1234/countersigned-agreements-remove/g-cloud-7')
-        eq_(response.status_code, 302)
+        assert response.status_code == 302
 
     def test_admin_should_not_be_able_to_remove_countersigned_agreement(self, s3, data_api_client):
         self.user_role = 'admin'
@@ -1143,7 +1041,7 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
                                                       ',g-cloud-7/agreements/93495/93495-'
                                                       'countersigned-framework-agreement.pdf'}
         response = self.client.post('/admin/suppliers/1234/countersigned-agreements-remove/g-cloud-7')
-        eq_(response.status_code, 403)
+        assert response.status_code == 403
 
     def test_should_display_remove_countersigned_agreement_message(self, s3, data_api_client):
         s3.S3.return_value.get_key.return_value = {
@@ -1161,11 +1059,8 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
             }}
         response = self.client.get('/admin/suppliers/1234/countersigned-agreements-remove/g-cloud-7',
                                    follow_redirects=True)
-        self.assertIn(
-            'Do you want to remove the countersigned agreement?',
-            response.get_data(as_text=True)
-        )
-        eq_(response.status_code, 200)
+        assert 'Do you want to remove the countersigned agreement?' in response.get_data(as_text=True)
+        assert response.status_code == 200
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
@@ -1178,7 +1073,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
 
-        eq_(response.status_code, 404)
+        assert response.status_code == 404
         data_api_client.get_supplier.assert_called_with('1234')
         assert not data_api_client.get_framework.called
 
@@ -1188,7 +1083,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
 
-        eq_(response.status_code, 404)
+        assert response.status_code == 404
         data_api_client.get_supplier.assert_called_with('1234')
         data_api_client.get_framework.assert_called_with('g-cloud-8')
 
@@ -1200,7 +1095,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         data_api_client.get_supplier_framework_info.return_value = not_returned
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
 
-        eq_(response.status_code, 404)
+        assert response.status_code == 404
         data_api_client.get_supplier.assert_called_with('1234')
         data_api_client.get_framework.assert_called_with('g-cloud-8')
         data_api_client.get_supplier_framework_info.assert_called_with('1234', 'g-cloud-8')
@@ -1240,7 +1135,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
 
             response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
             document = html.fromstring(response.get_data(as_text=True))
-            eq_(response.status_code, 200)
+            assert response.status_code == 200
             # Registered Address
             assert len(document.xpath('//li[contains(text(), "Corsewall Lighthouse")]')) == 1
             assert len(document.xpath('//li[contains(text(), "Stranraer")]')) == 1
@@ -1268,7 +1163,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
             mock_get_url.return_value = "http://example.com/document/1234.pdf"
             response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
             document = html.fromstring(response.get_data(as_text=True))
-            eq_(response.status_code, 200)
+            assert response.status_code == 200
             assert len(document.xpath('//embed[@src="http://example.com/document/1234.pdf"]')) == 1
             assert len(document.xpath('//img[@src="http://example.com/document/1234.pdf"]')) == 0
 
@@ -1285,7 +1180,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
             mock_get_url.return_value = "http://example.com/document/1234.png"
             response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
             document = html.fromstring(response.get_data(as_text=True))
-            eq_(response.status_code, 200)
+            assert response.status_code == 200
             assert len(document.xpath('//img[@src="http://example.com/document/1234.png"]')) == 1
             assert len(document.xpath('//embed[@src="http://example.com/document/1234.png"]')) == 0
 

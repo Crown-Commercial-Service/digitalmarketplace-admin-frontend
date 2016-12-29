@@ -2,7 +2,6 @@ from itertools import chain
 
 import mock
 from lxml import html
-from nose.tools import eq_
 from six import iteritems, iterkeys
 from six.moves.urllib.parse import urlparse, parse_qs
 
@@ -69,9 +68,9 @@ class TestListAgreements(LoggedInApplicationTest):
 
         response = self.client.get('/admin/agreements/g-cloud-7')
         page = html.fromstring(response.get_data(as_text=True))
-        eq_(response.status_code, 200)
+        assert response.status_code == 200
         rows = page.cssselect('.summary-item-row')
-        eq_(len(rows), 2)
+        assert len(rows) == 2
 
     @staticmethod
     def _unpack_search_result(elem):
@@ -200,7 +199,7 @@ class TestListAgreements(LoggedInApplicationTest):
 
         response = self.client.get('/admin/agreements/g-cloud-7')
 
-        eq_(response.status_code, 403)
+        assert response.status_code == 403
 
 
 @mock.patch('app.main.views.agreements.data_api_client')

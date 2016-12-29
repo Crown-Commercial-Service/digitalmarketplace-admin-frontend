@@ -1,6 +1,5 @@
 from functools import wraps
 from lxml import html
-from nose.tools import assert_equal, assert_in
 import mock
 try:
     from urlparse import urlsplit
@@ -28,13 +27,13 @@ def user_data(role='admin'):
 class TestLogin(BaseApplicationTest):
     def test_should_be_redirected_to_login_page(self):
         res = self.client.get('/admin')
-        assert_equal(res.status_code, 302)
-        assert_equal(urlsplit(res.location).path, '/admin/login')
+        assert res.status_code == 302
+        assert urlsplit(res.location).path == '/admin/login'
 
     def test_should_show_login_page(self):
         res = self.client.get("/admin/login")
-        assert_equal(res.status_code, 200)
-        assert_in("Administrator login", res.get_data(as_text=True))
+        assert res.status_code == 200
+        assert "Administrator login" in res.get_data(as_text=True)
 
     @mock.patch('app.data_api_client')
     @mock.patch('app.main.views.login.data_api_client')
@@ -45,10 +44,10 @@ class TestLogin(BaseApplicationTest):
             'email_address': 'valid@email.com',
             'password': '1234567890'
         })
-        assert_equal(res.status_code, 302)
+        assert res.status_code == 302
 
         res = self.client.get('/admin')
-        assert_equal(res.status_code, 200)
+        assert res.status_code == 200
 
     @mock.patch('app.main.views.login.data_api_client')
     def test_should_strip_whitespace_surrounding_login_email_address_field(self, data_api_client):
@@ -75,8 +74,8 @@ class TestLogin(BaseApplicationTest):
             'email_address': 'valid@example.com',
             'password': '1234567890',
         })
-        assert_equal(res.status_code, 302)
-        assert_equal(urlsplit(res.location).path, '/admin/safe')
+        assert res.status_code == 302
+        assert urlsplit(res.location).path == '/admin/safe'
 
     @mock.patch('app.main.views.login.data_api_client')
     def test_bad_next_url_takes_user_to_dashboard(self, data_api_client):
@@ -85,8 +84,8 @@ class TestLogin(BaseApplicationTest):
             'email_address': 'valid@example.com',
             'password': '1234567890',
         })
-        assert_equal(res.status_code, 302)
-        assert_equal(urlsplit(res.location).path, '/admin')
+        assert res.status_code == 302
+        assert urlsplit(res.location).path == '/admin'
 
     @mock.patch('app.main.views.login.data_api_client')
     def test_should_have_cookie_on_redirect(self, data_api_client):
@@ -99,9 +98,9 @@ class TestLogin(BaseApplicationTest):
                 'password': '1234567890',
             })
             cookie_parts = res.headers['Set-Cookie'].split('; ')
-            assert_in('Secure', cookie_parts)
-            assert_in('HttpOnly', cookie_parts)
-            assert_in('Path=/admin', cookie_parts)
+            assert 'Secure' in cookie_parts
+            assert 'HttpOnly' in cookie_parts
+            assert 'Path=/admin' in cookie_parts
 
     @mock.patch('app.data_api_client')
     @mock.patch('app.main.views.login.data_api_client')
@@ -113,8 +112,8 @@ class TestLogin(BaseApplicationTest):
             'password': '1234567890',
         })
         res = self.client.get('/admin/logout')
-        assert_equal(res.status_code, 302)
-        assert_equal(urlsplit(res.location).path, '/admin/login')
+        assert res.status_code == 302
+        assert urlsplit(res.location).path == '/admin/login'
 
     @mock.patch('app.data_api_client')
     @mock.patch('app.main.views.login.data_api_client')
@@ -127,8 +126,8 @@ class TestLogin(BaseApplicationTest):
         })
         self.client.get('/admin/logout')
         res = self.client.get('/admin')
-        assert_equal(res.status_code, 302)
-        assert_equal(urlsplit(res.location).path, '/admin/login')
+        assert res.status_code == 302
+        assert urlsplit(res.location).path == '/admin/login'
 
     @mock.patch('app.main.views.login.data_api_client')
     def test_should_return_a_403_for_invalid_login(self, data_api_client):
@@ -139,7 +138,7 @@ class TestLogin(BaseApplicationTest):
             'password': '1234567890',
         })
 
-        assert_equal(res.status_code, 403)
+        assert res.status_code == 403
 
     @mock.patch('app.main.views.login.data_api_client')
     def test_should_return_a_403_if_invalid_role(self, data_api_client):
@@ -150,7 +149,7 @@ class TestLogin(BaseApplicationTest):
             'password': '1234567890',
         })
 
-        assert_equal(res.status_code, 403)
+        assert res.status_code == 403
 
     @mock.patch('app.main.views.login.data_api_client')
     def test_can_login_with_admin_ccs_role(self, data_api_client):
@@ -161,25 +160,25 @@ class TestLogin(BaseApplicationTest):
             'password': '1234567890',
         })
 
-        assert_equal(res.status_code, 302)
+        assert res.status_code == 302
 
     def test_should_be_validation_error_if_no_email_or_password(self):
         res = self.client.post('/admin/login', data={})
-        assert_equal(res.status_code, 400)
+        assert res.status_code == 400
 
     def test_should_be_validation_error_if_invalid_email(self):
         res = self.client.post('/admin/login', data={
             'email_address': 'invalid',
             'password': '1234567890',
         })
-        assert_equal(res.status_code, 400)
+        assert res.status_code == 400
 
 
 class TestSession(BaseApplicationTest):
     def test_url_with_non_canonical_trailing_slash(self):
         response = self.client.get('/admin/')
-        self.assertEquals(301, response.status_code)
-        self.assertEquals("http://localhost/admin", response.location)
+        assert response.status_code == 301
+        assert response.location == "http://localhost/admin"
 
 
 class TestLoginFormsNotAutofillable(BaseApplicationTest):
@@ -188,22 +187,22 @@ class TestLoginFormsNotAutofillable(BaseApplicationTest):
             self, url, expected_title
     ):
         response = self.client.get(url)
-        self.assertEqual(200, response.status_code)
+        assert response.status_code == 200
 
         document = html.fromstring(response.get_data(as_text=True))
 
         page_title = document.xpath(
             '//h1/text()')[0].strip()
-        self.assertEqual(expected_title, page_title)
+        assert page_title == expected_title
 
         forms = document.xpath('//div[@class="page-container"]//form')
 
         for form in forms:
-            self.assertEqual("off", form.get('autocomplete'))
+            assert form.get('autocomplete') == "off"
             non_hidden_inputs = form.xpath('//input[@type!="hidden"]')
 
             for input in non_hidden_inputs:
-                self.assertEqual("off", input.get('autocomplete'))
+                assert input.get('autocomplete') == "off"
 
     def test_login_form_and_inputs_not_autofillable(self):
         self._forms_and_inputs_not_autofillable(
@@ -221,28 +220,28 @@ class TestRoleRequired(LoggedInApplicationTest):
 
     def test_admin_ccs_can_view_admin_dashboard(self):
         response = self.client.get('/admin')
-        assert_equal(200, response.status_code)
+        assert response.status_code == 200
 
     def test_admin_role_required_service_status_edit(self):
         response = self.client.post('/admin/services/status/1')
-        assert_equal(403, response.status_code)
+        assert response.status_code == 403
 
     def test_admin_role_required_audit_acknowledge(self):
         response = self.client.post('/admin/service-updates/1/acknowledge')
-        assert_equal(403, response.status_code)
+        assert response.status_code == 403
 
     def test_admin_role_required_unlock_user(self):
         response = self.client.post('/admin/suppliers/users/1/unlock')
-        assert_equal(403, response.status_code)
+        assert response.status_code == 403
 
     def test_admin_role_required_activate_user(self):
         response = self.client.post('/admin/suppliers/users/1/activate')
-        assert_equal(403, response.status_code)
+        assert response.status_code == 403
 
     def test_admin_role_required_deactivate_user(self):
         response = self.client.post('/admin/suppliers/users/1/deactivate')
-        assert_equal(403, response.status_code)
+        assert response.status_code == 403
 
     def test_admin_role_required_invite_user(self):
         response = self.client.post('/admin/suppliers/1/invite-user')
-        assert_equal(403, response.status_code)
+        assert response.status_code == 403
