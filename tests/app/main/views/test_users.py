@@ -262,7 +262,7 @@ class TestUsersExport(LoggedInApplicationTest):
             "declaration_status": "unstarted",
             "framework_agreement": False,
             "supplier_id": 1,
-            "user_email": "test.user@sme.com",
+            "email address": "test.user@sme.com",
             "user_name": "Test User",
             "variations_agreed": "var1"
         }]
@@ -278,7 +278,7 @@ class TestUsersExport(LoggedInApplicationTest):
             "declaration_status": "unstarted",
             "framework_agreement": False,
             "supplier_id": 1,
-            "user_email": "test.user@sme.com",
+            "email address": "test.user@sme.com",
             "user_name": "Test User",
             "variations_agreed": "var1"
         }]

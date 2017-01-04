@@ -64,7 +64,7 @@ def list_frameworks_with_users(errors=None):
 def download_users(framework_slug):
     supplier_rows = data_api_client.export_users(framework_slug).get('users', [])
     supplier_headers = [
-        "user_email",
+        "email address",
         "user_name",
         "supplier_id",
         "declaration_status",
