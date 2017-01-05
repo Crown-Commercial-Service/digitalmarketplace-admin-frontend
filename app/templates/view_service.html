@@ -66,7 +66,7 @@
 
     {% for section in sections %}
       {{ summary.heading(section.name) }}
-      {% if section.editable and current_user.has_role('admin') %}
+      {% if section.editable and current_user.has_any_role('admin', 'admin-ccs-category') %}
         {{ summary.top_link("Edit", url_for('.edit', service_id=service_id, section=section.id)) }}
       {% endif %}
       {% call(item) summary.list_table(
