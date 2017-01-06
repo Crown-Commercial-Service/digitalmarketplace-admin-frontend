@@ -5,10 +5,10 @@ from flask import Markup
 
 class TestDiffToolsHelpers(unittest.TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         pass
 
-    def tearDown(self):
+    def teardown_method(self, method):
         pass
 
     def _get_original_line_from_revision(self, words):
@@ -18,7 +18,7 @@ class TestDiffToolsHelpers(unittest.TestCase):
     def _check_correct_number_of_lines_in_revisions(
             self, lines, expected_number_of_lines):
         for key in lines.keys():
-            self.assertEqual(len(lines[key]), expected_number_of_lines)
+            assert len(lines[key]) == expected_number_of_lines
 
     def test_correct_number_of_lines(self):
         revision_1 = """line one""".splitlines()
@@ -67,21 +67,15 @@ class TestDiffToolsHelpers(unittest.TestCase):
         revision_2 = """line one\nline two""".splitlines()
         rendered_lines = render_lines(revision_1, revision_2)
 
-        self.assertEqual(
-            rendered_lines['revision_1'][0],
-            Markup(
-                u"<td class='line-number line-number-empty'>2</td>"
-                u"<td class='line-content empty'></td>"
-            )
+        assert rendered_lines['revision_1'][0] == Markup(
+            u"<td class='line-number line-number-empty'>2</td>"
+            u"<td class='line-content empty'></td>"
         )
-        self.assertEqual(
-            rendered_lines['revision_2'][0],
-            Markup(
-                u"<td class='line-number line-number-addition'>2</td>"
-                u"<td class='line-content addition'>"
-                u"<strong>line two</strong>"
-                u"</td>"
-            )
+        assert rendered_lines['revision_2'][0] == Markup(
+            u"<td class='line-number line-number-addition'>2</td>"
+            u"<td class='line-content addition'>"
+            u"<strong>line two</strong>"
+            u"</td>"
         )
 
     def test_rendered_lines_work_for_removed_line(self):
@@ -89,42 +83,30 @@ class TestDiffToolsHelpers(unittest.TestCase):
         revision_2 = """line one""".splitlines()
         rendered_lines = render_lines(revision_1, revision_2)
 
-        self.assertEqual(
-            rendered_lines['revision_1'][0],
-            Markup(
-                u"<td class='line-number line-number-removal'>2</td>"
-                u"<td class='line-content removal'>"
-                u"<strong>line two</strong>"
-                u"</td>"
-            )
+        assert rendered_lines['revision_1'][0] == Markup(
+            u"<td class='line-number line-number-removal'>2</td>"
+            u"<td class='line-content removal'>"
+            u"<strong>line two</strong>"
+            u"</td>"
         )
-        self.assertEqual(
-            rendered_lines['revision_2'][0],
-            Markup(
-                u"<td class='line-number line-number-empty'>2</td>"
-                u"<td class='line-content empty'></td>"
-            )
+        assert rendered_lines['revision_2'][0] == Markup(
+            u"<td class='line-number line-number-empty'>2</td>"
+            u"<td class='line-content empty'></td>"
         )
 
     def test_rendered_lines_work_for_edited_line(self):
         revision_1 = """line number one has changed""".splitlines()
         revision_2 = """line one has actually changed""".splitlines()
         rendered_lines = render_lines(revision_1, revision_2)
-        self.assertEqual(
-            rendered_lines['revision_1'][0],
-            Markup(
-                u"<td class='line-number line-number-removal'>1</td>"
-                u"<td class='line-content removal'>"
-                u"line <strong>number</strong> one has changed"
-                u"</td>"
-            )
+        assert rendered_lines['revision_1'][0] == Markup(
+            u"<td class='line-number line-number-removal'>1</td>"
+            u"<td class='line-content removal'>"
+            u"line <strong>number</strong> one has changed"
+            u"</td>"
         )
-        self.assertEqual(
-            rendered_lines['revision_2'][0],
-            Markup(
-                u"<td class='line-number line-number-addition'>1</td>"
-                u"<td class='line-content addition'>"
-                u"line one has <strong>actually</strong> changed"
-                u"</td>"
-            )
+        assert rendered_lines['revision_2'][0] == Markup(
+            u"<td class='line-number line-number-addition'>1</td>"
+            u"<td class='line-content addition'>"
+            u"line one has <strong>actually</strong> changed"
+            u"</td>"
         )

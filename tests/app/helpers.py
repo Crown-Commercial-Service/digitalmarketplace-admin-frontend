@@ -7,11 +7,10 @@ from flask import json
 
 from app import create_app
 from app import login_manager
-from unittest import TestCase
 
 
-class BaseApplicationTest(TestCase):
-    def setUp(self):
+class BaseApplicationTest(object):
+    def setup_method(self, method):
         self.app = create_app('test')
         self.client = self.app.test_client()
 
@@ -27,7 +26,7 @@ class BaseApplicationTest(TestCase):
         )
         self._default_suffix_patch.start()
 
-    def tearDown(self):
+    def teardown_method(self, method):
         self._s3_patch.stop()
         self._default_suffix_patch.stop()
 
@@ -59,8 +58,8 @@ class Response:
 class LoggedInApplicationTest(BaseApplicationTest):
     user_role = 'admin'
 
-    def setUp(self):
-        super(LoggedInApplicationTest, self).setUp()
+    def setup_method(self, method):
+        super(LoggedInApplicationTest, self).setup_method(method)
 
         patch_config = {
             'authenticate_user.return_value': {
@@ -94,9 +93,10 @@ class LoggedInApplicationTest(BaseApplicationTest):
                 user_id, 'test@example.com', None, None, False, True, 'tester', self.user_role
             )
 
-    def tearDown(self):
+    def teardown_method(self, method):
         self._data_api_client.stop()
         login_manager.user_loader(self._user_callback)
+        super(LoggedInApplicationTest, self).teardown_method(method)
 
     def _replace_whitespace(self, string, replacement_substring=""):
             # Replace all runs of whitespace with replacement_substring

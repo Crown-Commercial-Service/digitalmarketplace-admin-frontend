@@ -94,11 +94,10 @@ class TestServiceView(LoggedInApplicationTest):
         data_api_client.get_service.side_effect = HTTPError(response)
 
         response1 = self.client.get('/admin/services/1')
-        self.assertEquals(302, response1.status_code)
-        self.assertEquals(response1.location, 'http://localhost/admin')
+        assert response1.status_code == 302
+        assert response1.location == 'http://localhost/admin'
         response2 = self.client.get(response1.location)
-        self.assertIn(b'Error trying to retrieve service with ID: 1',
-                      response2.data)
+        assert b'Error trying to retrieve service with ID: 1' in response2.data
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_not_found_flash_message_injection(self, data_api_client):
@@ -112,11 +111,11 @@ class TestServiceView(LoggedInApplicationTest):
 
         response1 = self.client.get('/admin/services/1%3Cimg%20src%3Da%20onerror%3Dalert%281%29%3E')
         response2 = self.client.get(response1.location)
-        self.assertEqual(response2.status_code, 200)
+        assert response2.status_code == 200
 
         html_response = response2.get_data(as_text=True)
-        self.assertNotIn("1<img src=a onerror=alert(1)>", html_response)
-        self.assertIn("1&lt;img src=a onerror=alert(1)&gt;", html_response)
+        assert "1<img src=a onerror=alert(1)>" not in html_response
+        assert "1&lt;img src=a onerror=alert(1)&gt;" in html_response
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_independence_of_viewing_services(self, data_api_client):
@@ -126,7 +125,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "1",
         }}
         response = self.client.get('/admin/services/1')
-        self.assertIn(b'Termination cost', response.data)
+        assert b'Termination cost' in response.data
 
         data_api_client.get_service.return_value = {'services': {
             'lot': 'SaaS',
@@ -134,7 +133,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "1",
         }}
         response = self.client.get('/admin/services/1')
-        self.assertNotIn(b'Termination cost', response.data)
+        assert b'Termination cost' not in response.data
 
         data_api_client.get_service.return_value = {'services': {
             'lot': 'SCS',
@@ -142,7 +141,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "1",
         }}
         response = self.client.get('/admin/services/1')
-        self.assertIn(b'Termination cost', response.data)
+        assert b'Termination cost' in response.data
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_status_update_widgets_not_visible_when_not_permitted(self, data_api_client):
@@ -152,7 +151,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "1",
         }}
         response = self.client.get('/admin/services/1')
-        self.assertIn(b'Termination cost', response.data)
+        assert b'Termination cost' in response.data
 
 
 class TestServiceEdit(LoggedInApplicationTest):
@@ -176,7 +175,7 @@ class TestServiceEdit(LoggedInApplicationTest):
 
         data_api_client.get_service.assert_called_with('1')
 
-        self.assertEquals(200, response.status_code)
+        assert response.status_code == 200
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_documents_empty_post(self, data_api_client):
@@ -196,12 +195,10 @@ class TestServiceEdit(LoggedInApplicationTest):
         )
 
         data_api_client.get_service.assert_called_with('1')
-        self.assertFalse(data_api_client.update_service.called)
+        assert data_api_client.update_service.called is False
 
-        self.assertEquals(302, response.status_code)
-        self.assertEquals(
-            "/admin/services/1", urlsplit(response.location).path
-        )
+        assert response.status_code == 302
+        assert urlsplit(response.location).path == "/admin/services/1"
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_documents_post(self, data_api_client):
@@ -231,7 +228,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             'sfiaRateDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/documents/2/1-sfia-rate-card-2015-01-01-1200.pdf',  # noqa
         }, 'test@example.com')
 
-        self.assertEquals(302, response.status_code)
+        assert response.status_code == 302
 
     @mock.patch("app.main.views.services.data_api_client")
     def test_service_edit_documents_post_with_validation_errors(
@@ -256,10 +253,10 @@ class TestServiceEdit(LoggedInApplicationTest):
         )
 
         data_api_client.get_service.assert_called_with('1')
-        self.assertFalse(data_api_client.update_service.called)
+        assert data_api_client.update_service.called is False
 
-        self.assertIn('Your document is not in an open format', response.get_data(as_text=True))
-        self.assertEquals(400, response.status_code)
+        assert 'Your document is not in an open format' in response.get_data(as_text=True)
+        assert response.status_code == 400
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_with_one_service_feature(self, data_api_client):
@@ -278,14 +275,10 @@ class TestServiceEdit(LoggedInApplicationTest):
         response = self.client.get(
             '/admin/services/1/edit/features-and-benefits'
         )
-        self.assertEquals(200, response.status_code)
+        assert response.status_code == 200
         stripped_page = self.strip_all_whitespace(response.get_data(as_text=True))
-        self.assertIn(
-            'id="input-serviceFeatures-0"class="text-box"value="bar"',
-            stripped_page)
-        self.assertIn(
-            'id="input-serviceFeatures-1"class="text-box"value=""',
-            stripped_page)
+        assert 'id="input-serviceFeatures-0"class="text-box"value="bar"' in stripped_page
+        assert 'id="input-serviceFeatures-1"class="text-box"value=""' in stripped_page
         response = self.client.post(
             '/admin/services/1/edit/features-and-benefits',
             data={
@@ -297,7 +290,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             'serviceFeatures': ['foo'],
             'serviceBenefits': ['foo'],
         }, 'test@example.com')
-        self.assertEquals(response.status_code, 302)
+        assert response.status_code == 302
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_with_no_features_or_benefits(self, data_api_client):
@@ -310,10 +303,10 @@ class TestServiceEdit(LoggedInApplicationTest):
 
         data_api_client.get_service.assert_called_with('1')
 
-        self.assertEquals(200, response.status_code)
-        self.assertIn(
-            'id="input-serviceFeatures-0"class="text-box"value=""',
-            self.strip_all_whitespace(response.get_data(as_text=True)))
+        assert response.status_code == 200
+        assert 'id="input-serviceFeatures-0"class="text-box"value=""' in self.strip_all_whitespace(
+            response.get_data(as_text=True)
+        )
 
     @mock.patch('app.main.views.services.data_api_client')
     @mock.patch('app.main.views.services.upload_service_documents')
@@ -337,8 +330,7 @@ class TestServiceEdit(LoggedInApplicationTest):
                 'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
             }
         )
-        self.assertIn('There was a problem with the answer to this question',
-                      response.get_data(as_text=True))
+        assert 'There was a problem with the answer to this question' in response.get_data(as_text=True)
 
 
 @mock.patch('app.main.views.services.data_api_client')
@@ -352,9 +344,9 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'status': 'disabled'
         }}
         response = self.client.get('/admin/services/1')
-        self.assertIn(b'<input type="radio" name="service_status" id="service_status_disabled" value="removed" checked="checked" />', response.data)  # noqa
-        self.assertIn(b'<input type="radio" name="service_status" id="service_status_private" value="private"  />', response.data)  # noqa
-        self.assertNotIn(b'<input type="radio" name="service_status" id="service_status_published" value="public"  />', response.data)  # noqa
+        assert b'<input type="radio" name="service_status" id="service_status_disabled" value="removed" checked="checked" />' in response.data  # noqa
+        assert b'<input type="radio" name="service_status" id="service_status_private" value="private"  />' in response.data  # noqa
+        assert b'<input type="radio" name="service_status" id="service_status_published" value="public"  />' not in response.data  # noqa
 
     def test_can_make_private_service_public_or_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -364,9 +356,9 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'status': 'enabled'
         }}
         response = self.client.get('/admin/services/1')
-        self.assertIn(b'<input type="radio" name="service_status" id="service_status_disabled" value="removed"  />', response.data)  # noqa
-        self.assertIn(b'<input type="radio" name="service_status" id="service_status_private" value="private" checked="checked" />', response.data)  # noqa
-        self.assertIn(b'<input type="radio" name="service_status" id="service_status_published" value="public"  />', response.data)  # noqa
+        assert b'<input type="radio" name="service_status" id="service_status_disabled" value="removed"  />' in response.data  # noqa
+        assert b'<input type="radio" name="service_status" id="service_status_private" value="private" checked="checked" />' in response.data  # noqa
+        assert b'<input type="radio" name="service_status" id="service_status_published" value="public"  />' in response.data  # noqa
 
     def test_can_make_public_service_private_or_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -376,9 +368,9 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'status': 'published'
         }}
         response = self.client.get('/admin/services/1')
-        self.assertIn(b'<input type="radio" name="service_status" id="service_status_disabled" value="removed"  />', response.data)  # noqa
-        self.assertIn(b'<input type="radio" name="service_status" id="service_status_private" value="private"  />', response.data)  # noqa
-        self.assertIn(b'<input type="radio" name="service_status" id="service_status_published" value="public" checked="checked" />', response.data)  # noqa
+        assert b'<input type="radio" name="service_status" id="service_status_disabled" value="removed"  />' in response.data  # noqa
+        assert b'<input type="radio" name="service_status" id="service_status_private" value="private"  />' in response.data  # noqa
+        assert b'<input type="radio" name="service_status" id="service_status_published" value="public" checked="checked" />' in response.data  # noqa
 
     def test_status_update_to_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -388,12 +380,10 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
                                      data={'service_status': 'removed'})
         data_api_client.update_service_status.assert_called_with(
             '1', 'disabled', 'test@example.com')
-        self.assertEquals(302, response1.status_code)
-        self.assertEquals(response1.location,
-                          'http://localhost/admin/services/1')
+        assert response1.status_code == 302
+        assert response1.location == 'http://localhost/admin/services/1'
         response2 = self.client.get(response1.location)
-        self.assertIn(b'Service status has been updated to: Removed',
-                      response2.data)
+        assert b'Service status has been updated to: Removed' in response2.data
 
     def test_status_update_to_private(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -403,12 +393,10 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
                                      data={'service_status': 'private'})
         data_api_client.update_service_status.assert_called_with(
             '1', 'enabled', 'test@example.com')
-        self.assertEquals(302, response1.status_code)
-        self.assertEquals(response1.location,
-                          'http://localhost/admin/services/1')
+        assert response1.status_code == 302
+        assert response1.location == 'http://localhost/admin/services/1'
         response2 = self.client.get(response1.location)
-        self.assertIn(b'Service status has been updated to: Private',
-                      response2.data)
+        assert b'Service status has been updated to: Private' in response2.data
 
     def test_status_update_to_published(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -418,12 +406,10 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
                                      data={'service_status': 'public'})
         data_api_client.update_service_status.assert_called_with(
             '1', 'published', 'test@example.com')
-        self.assertEquals(302, response1.status_code)
-        self.assertEquals(response1.location,
-                          'http://localhost/admin/services/1')
+        assert response1.status_code == 302
+        assert response1.location == 'http://localhost/admin/services/1'
         response2 = self.client.get(response1.location)
-        self.assertIn(b'Service status has been updated to: Public',
-                      response2.data)
+        assert b'Service status has been updated to: Public' in response2.data
 
     def test_bad_status_gives_error_message(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -431,22 +417,20 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         }}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'suspended'})
-        self.assertEquals(302, response1.status_code)
-        self.assertEquals(response1.location,
-                          'http://localhost/admin/services/1')
+        assert response1.status_code == 302
+        assert response1.location == 'http://localhost/admin/services/1'
         response2 = self.client.get(response1.location)
-        self.assertIn(b"Not a valid status: 'suspended'",
-                      response2.data)
+        assert b"Not a valid status: 'suspended'" in response2.data
 
     def test_services_with_missing_id(self, data_api_client):
         response = self.client.get('/admin/services')
-        self.assertEquals(404, response.status_code)
+        assert response.status_code == 404
 
 
 class TestCompareServiceArchives(LoggedInApplicationTest):
 
-    def setUp(self):
-        super(TestCompareServiceArchives, self).setUp()
+    def setup_method(self, method):
+        super(TestCompareServiceArchives, self).setup_method(method)
         self._services = {
             1: {'services': {
                 'id': 1,
@@ -500,7 +484,7 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
                      'try again.'
             }
 
-    class TestContent(object):
+    class _TestContent(object):
         def __init__(self):
             self.sections = [{
                 'editable': True,
@@ -549,30 +533,30 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
 
         # Both archived services don't exist
         response = self._get_archived_services_response('1', '2')
-        self.assertEqual(404, response.status_code)
+        assert response.status_code == 404
 
         # First archived service doesn't exist
         response = self._get_archived_services_response('1', '20')
-        self.assertEqual(404, response.status_code)
+        assert response.status_code == 404
 
         # Second archived service doesn't exist
         response = self._get_archived_services_response('10', '2')
-        self.assertEqual(404, response.status_code)
+        assert response.status_code == 404
 
     def test_cannot_get_same_archived_service(self):
 
         response = self._get_archived_services_response('10', '10')
-        self.assertEqual(404, response.status_code)
+        assert response.status_code == 404
 
     def test_cannot_get_archived_services_in_non_chronological_order(self):
 
         response = self._get_archived_services_response('20', '10')
-        self.assertEqual(404, response.status_code)
+        assert response.status_code == 404
 
     def test_cannot_get_archived_services_for_nonexistent_service_ids(self):
 
         response = self._get_archived_services_response('30', '40')
-        self.assertEqual(404, response.status_code)
+        assert response.status_code == 404
 
     @mock.patch('app.main.views.services.content_loader')
     def test_can_get_archived_services_with_dates_and_diffs(self, content_loader):
@@ -580,42 +564,39 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
         class TestBuilder(object):
             @staticmethod
             def filter(*args):
-                return self.TestContent()
+                return self._TestContent()
 
         content_loader.get_manifest.return_value = TestBuilder()
         response = self._get_archived_services_response('10', '20')
 
         # check title is there
-        self.assertIn(
-            self.strip_all_whitespace('<h1>&lt;h1&gt;Cloudy&lt;/h1&gt; Cloud Service</h1>'),
-            self.strip_all_whitespace(response.get_data(as_text=True))
-        )
+        assert self.strip_all_whitespace(
+            '<h1>&lt;h1&gt;Cloudy&lt;/h1&gt; Cloud Service</h1>'
+        ) in self.strip_all_whitespace(response.get_data(as_text=True))
 
         # check dates are right
-        self.assertIn(
-            self.strip_all_whitespace('Monday 1 December 2014 at 10:55'),
-            self.strip_all_whitespace(response.get_data(as_text=True))
-        )
-        self.assertIn(
-            self.strip_all_whitespace('Tuesday 2 December 2014 at 10:55'),
-            self.strip_all_whitespace(response.get_data(as_text=True))
-        )
+        assert self.strip_all_whitespace(
+            'Monday 1 December 2014 at 10:55'
+        ) in self.strip_all_whitespace(response.get_data(as_text=True))
+
+        assert self.strip_all_whitespace(
+            'Tuesday 2 December 2014 at 10:55'
+        ) in self.strip_all_whitespace(response.get_data(as_text=True))
 
         # check lines are there
-        self.assertIn(
-            self.strip_all_whitespace('<td class=\'line-content unchanged\'>Cloud Service</td>'),
-            self.strip_all_whitespace(response.get_data(as_text=True))
-        )
-        self.assertIn(
-            self.strip_all_whitespace('<td class=\'line-content addition\'><strong>&lt;h1&gt;Cloudy&lt;/h1&gt;</strong> Cloud Service</td>'),  # noqa
-            self.strip_all_whitespace(response.get_data(as_text=True))
-        )
+        assert self.strip_all_whitespace(
+            '<td class=\'line-content unchanged\'>Cloud Service</td>'
+        ) in self.strip_all_whitespace(response.get_data(as_text=True))
+
+        assert self.strip_all_whitespace(
+            '<td class=\'line-content addition\'><strong>&lt;h1&gt;Cloudy&lt;/h1&gt;</strong> Cloud Service</td>'
+        ) in self.strip_all_whitespace(response.get_data(as_text=True))
 
         # check status is right
-        self.assertIn(self.strip_all_whitespace(
-            '<input type="radio" name="service_status" id="service_status_published" value="public" checked="checked" />'),  # noqa
-            self.strip_all_whitespace(response.get_data(as_text=True))
-        )
+        assert self.strip_all_whitespace(
+            '<input type="radio" name="service_status" id="service_status_published" value="public" checked=' +
+            '"checked" />'
+        ) in self.strip_all_whitespace(response.get_data(as_text=True))
 
     @mock.patch('app.main.views.services.content_loader')
     def test_can_get_archived_services_with_differing_keys(self, content_loader):
@@ -623,8 +604,8 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
         class TestBuilder(object):
             @staticmethod
             def filter(*args):
-                return self.TestContent()
+                return self._TestContent()
 
         content_loader.get_manifest.return_value = TestBuilder()
         response = self._get_archived_services_response('10', '50')
-        self.assertEqual(200, response.status_code)
+        assert response.status_code == 200

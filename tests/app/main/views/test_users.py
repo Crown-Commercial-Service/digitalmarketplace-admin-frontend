@@ -16,47 +16,47 @@ class TestUsersView(LoggedInApplicationTest):
     def test_should_be_a_404_if_user_not_found(self, data_api_client):
         data_api_client.get_user.return_value = None
         response = self.client.get('/admin/users?email_address=some@email.com')
-        self.assertEquals(response.status_code, 404)
+        assert response.status_code == 404
 
         document = html.fromstring(response.get_data(as_text=True))
 
         page_title = document.xpath(
             '//p[@class="banner-message"]//text()')[0].strip()
-        self.assertEqual("Sorry, we couldn't find an account with that email address", page_title)
+        assert page_title == "Sorry, we couldn't find an account with that email address"
 
         page_title = document.xpath(
             '//p[@class="summary-item-no-content"]//text()')[0].strip()
-        self.assertEqual("No users to show", page_title)
+        assert page_title == "No users to show"
 
     def test_should_be_a_404_if_no_email_provided(self, data_api_client):
         data_api_client.get_user.return_value = None
         response = self.client.get('/admin/users?email_address=')
-        self.assertEquals(response.status_code, 404)
+        assert response.status_code == 404
 
         document = html.fromstring(response.get_data(as_text=True))
 
         page_title = document.xpath(
             '//p[@class="banner-message"]//text()')[0].strip()
-        self.assertEqual("Sorry, we couldn't find an account with that email address", page_title)
+        assert page_title == "Sorry, we couldn't find an account with that email address"
 
         page_title = document.xpath(
             '//p[@class="summary-item-no-content"]//text()')[0].strip()
-        self.assertEqual("No users to show", page_title)
+        assert page_title == "No users to show"
 
     def test_should_be_a_404_if_no_email_param_provided(self, data_api_client):
         data_api_client.get_user.return_value = None
         response = self.client.get('/admin/users')
-        self.assertEquals(response.status_code, 404)
+        assert response.status_code == 404
 
         document = html.fromstring(response.get_data(as_text=True))
 
         page_title = document.xpath(
             '//p[@class="banner-message"]//text()')[0].strip()
-        self.assertEqual("Sorry, we couldn't find an account with that email address", page_title)
+        assert page_title == "Sorry, we couldn't find an account with that email address"
 
         page_title = document.xpath(
             '//p[@class="summary-item-no-content"]//text()')[0].strip()
-        self.assertEqual("No users to show", page_title)
+        assert page_title == "No users to show"
 
     def test_should_show_buyer_user(self, data_api_client):
         buyer = self.load_example_listing("user_response")
@@ -64,73 +64,73 @@ class TestUsersView(LoggedInApplicationTest):
         buyer['users']['role'] = 'buyer'
         data_api_client.get_user.return_value = buyer
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
-        self.assertEquals(response.status_code, 200)
+        assert response.status_code == 200
 
         document = html.fromstring(response.get_data(as_text=True))
 
         email_address = document.xpath(
             '//header[@class="page-heading page-heading-without-breadcrumb"]//h1/text()')[0].strip()
-        self.assertEqual("test.user@sme.com", email_address)
+        assert email_address == "test.user@sme.com"
 
         name = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[0].strip()
-        self.assertEqual("Test User", name)
+        assert name == "Test User"
 
         role = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[1].strip()
-        self.assertEqual("buyer", role)
+        assert role == "buyer"
 
         supplier = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[2].strip()
-        self.assertEquals('', supplier)
+        assert supplier == ''
 
         last_login = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[3].strip()
-        self.assertEquals('10:33:53', last_login)
+        assert last_login == '10:33:53'
 
         last_login_day = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[4].strip()
-        self.assertEquals('23 July', last_login_day)
+        assert last_login_day == '23 July'
 
         last_password_changed = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[5].strip()
-        self.assertEquals('13:46:01', last_password_changed)
+        assert last_password_changed == '13:46:01'
 
         last_password_changed_day = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[6].strip()
-        self.assertEquals('29 June', last_password_changed_day)
+        assert last_password_changed_day == '29 June'
 
         locked = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[7].strip()
-        self.assertEquals('No', locked)
+        assert locked == 'No'
 
         button = document.xpath(
             '//input[@class="button-destructive"]')[0].value
-        self.assertEquals('Deactivate', button)
+        assert button == 'Deactivate'
 
     def test_should_show_supplier_user(self, data_api_client):
         buyer = self.load_example_listing("user_response")
         data_api_client.get_user.return_value = buyer
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
-        self.assertEquals(response.status_code, 200)
+        assert response.status_code == 200
 
         document = html.fromstring(response.get_data(as_text=True))
 
         email_address = document.xpath(
             '//header[@class="page-heading page-heading-without-breadcrumb"]//h1/text()')[0].strip()
-        self.assertEqual("test.user@sme.com", email_address)
+        assert email_address == "test.user@sme.com"
 
         role = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[1].strip()
-        self.assertEqual("supplier", role)
+        assert role == "supplier"
 
         supplier = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/a/text()')[0].strip()
-        self.assertEquals('SME Corp UK Limited', supplier)
+        assert supplier == 'SME Corp UK Limited'
 
         supplier_link = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/a')[0]
-        self.assertEquals('/admin/suppliers?supplier_id=1000', supplier_link.attrib['href'])
+        assert supplier_link.attrib['href'] == '/admin/suppliers?supplier_id=1000'
 
     def test_should_show_unlock_button(self, data_api_client):
         buyer = self.load_example_listing("user_response")
@@ -138,7 +138,7 @@ class TestUsersView(LoggedInApplicationTest):
 
         data_api_client.get_user.return_value = buyer
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
-        self.assertEquals(response.status_code, 200)
+        assert response.status_code == 200
 
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -148,16 +148,16 @@ class TestUsersView(LoggedInApplicationTest):
             '//tr[@class="summary-item-row"]//td/span/form')[0]
         return_link = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/form/input')[1]
-        self.assertEquals('/admin/suppliers/users/999/unlock', unlock_link.attrib['action'])
-        self.assertEquals('Unlock', unlock_button)
-        self.assertEquals('/admin/users?email_address=test.user%40sme.com', return_link.attrib['value'])
+        assert unlock_link.attrib['action'] == '/admin/suppliers/users/999/unlock'
+        assert unlock_button == 'Unlock'
+        assert return_link.attrib['value'] == '/admin/users?email_address=test.user%40sme.com'
 
     def test_should_show_deactivate_button(self, data_api_client):
         buyer = self.load_example_listing("user_response")
 
         data_api_client.get_user.return_value = buyer
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
-        self.assertEquals(response.status_code, 200)
+        assert response.status_code == 200
 
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -167,9 +167,9 @@ class TestUsersView(LoggedInApplicationTest):
             '//tr[@class="summary-item-row"]//td/span/form')[0]
         return_link = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/form/input')[1]
-        self.assertEquals('/admin/suppliers/users/999/deactivate', deactivate_link.attrib['action'])
-        self.assertEquals('Deactivate', deactivate_button)
-        self.assertEquals('/admin/users?email_address=test.user%40sme.com', return_link.attrib['value'])
+        assert deactivate_link.attrib['action'] == '/admin/suppliers/users/999/deactivate'
+        assert deactivate_button == 'Deactivate'
+        assert return_link.attrib['value'] == '/admin/users?email_address=test.user%40sme.com'
 
 
 @mock.patch('app.main.views.users.data_api_client')
