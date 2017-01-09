@@ -69,6 +69,7 @@ class Config(object):
     REACT_RENDER = not DEBUG
 
     ROLLBAR_TOKEN = None
+    S3_BUCKET_NAME = None
 
 
 class Test(Config):
