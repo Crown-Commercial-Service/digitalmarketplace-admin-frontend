@@ -1,4 +1,4 @@
-from flask import render_template, request, flash, url_for, jsonify, request, current_app, abort
+from flask import render_template, request, flash, url_for, jsonify, request, current_app, abort, Response
 from flask_login import login_required
 
 from .. import main
@@ -6,6 +6,9 @@ from ... import data_api_client
 from ..auth import role_required
 
 from react.render import render_component
+from dmutils.file import s3_download_file
+import os
+import mimetypes
 
 
 @main.route('/applications', methods=['GET'])
@@ -43,15 +46,9 @@ def start_seller_signup():
 def preview_application(id=None):
     application = data_api_client.get_application(id)
 
-    app_documents_url = '{}://{}/sellers/application/{}/documents/'.format(
-        current_app.config['DM_HTTP_PROTO'],
-        current_app.config['DM_MAIN_SERVER_NAME'],
-        id
-    )
-
     props = dict(application)
     props['basename'] = url_for('.preview_application', id=id)
-    props['application']['documents_url'] = app_documents_url
+    props['application']['documents_url'] = url_for('.download_single_file', id=id, slug='')
     props['application']['case_study_url'] = url_for('.preview_application_casestudy', application_id=id),
     props['form_options'] = {
         'action': url_for('.preview_application', id=id),
@@ -94,3 +91,13 @@ def convert_to_seller():
     application_id = request.get_json(force=True)['id']
     result = data_api_client.approve_application(application_id)
     return jsonify(result)
+
+
+@main.route('/application/<int:id>/documents/<slug>', methods=['GET'])
+@login_required
+@role_required('admin')
+def download_single_file(id, slug):
+    file = s3_download_file(slug, os.path.join('applications', str(id)))
+
+    mimetype = mimetypes.guess_type(slug)[0] or 'binary/octet-stream'
+    return Response(file, mimetype=mimetype)
