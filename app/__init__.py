@@ -28,8 +28,8 @@ content_loader.load_manifest('digital-outcomes-and-specialists', 'services', 'ed
 
 content_loader.load_manifest('g-cloud-7', 'declaration', 'declaration')
 content_loader.load_manifest('g-cloud-8', 'declaration', 'declaration')
-
 content_loader.load_manifest('digital-outcomes-and-specialists', 'declaration', 'declaration')
+content_loader.load_manifest('digital-outcomes-and-specialists-2', 'declaration', 'declaration')
 
 from app.main.helpers.service import parse_document_upload_time
 
