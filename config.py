@@ -84,6 +84,7 @@ class Test(Config):
 
     DM_MAIN_SERVER_NAME = 'localhost'
 
+    DM_DATA_API_URL = "http://baseurl"
     DM_LOG_LEVEL = 'CRITICAL'
     DM_LOG_PATH = None
     SHARED_EMAIL_KEY = SECRET_KEY

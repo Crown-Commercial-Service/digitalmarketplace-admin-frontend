@@ -7,21 +7,32 @@ from dmutils.forms import FakeCsrf
 from ...helpers import LoggedInApplicationTest
 import json
 
+import responses
+
+from app import data_api_client
+
 
 class TestApplication(LoggedInApplicationTest):
-    @mock.patch('app.main.views.applications.data_api_client')
-    def test_convert_to_seller(self, data_api_client):
+    @responses.activate
+    def test_convert_to_seller(self):
+        BASE_URL = data_api_client.base_url
+
         csrf = 'abc123'
 
         with self.client.session_transaction() as sess:
             sess['_csrf_token'] = csrf
 
-        data_api_client.approve_application.return_value = \
-            {
-                'application': {
-                    'id': 99
-                }
+        expected_from_api = {
+            'application': {
+                'id': 99
             }
+        }
+
+        responses.add(
+            responses.POST, BASE_URL + '/applications/99/approve',
+            body=json.dumps(expected_from_api),
+            content_type='application/json',
+        )
 
         res = self.client.post(
             '/admin/applications/convert_to_seller',
@@ -34,4 +45,3 @@ class TestApplication(LoggedInApplicationTest):
             }
         )
         assert res.status_code < 400
-        data_api_client.approve_application.assert_called_with(99)

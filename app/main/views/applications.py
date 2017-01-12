@@ -19,6 +19,7 @@ def start_seller_signup():
 
     SCHEME = request.environ['wsgi.url_scheme']
     convert_url = url_for('main.convert_to_seller', _external=True, _scheme=SCHEME)
+    reject_url = url_for('main.reject_application', _external=True, _scheme=SCHEME)
     preview_url = url_for('main.preview_application',  _external=True, _scheme=SCHEME)
 
     rendered_component = render_component(
@@ -27,6 +28,7 @@ def start_seller_signup():
             'applications': applications,
             'meta': {
                 'url_convert_to_seller': convert_url,
+                'url_reject_application': reject_url,
                 'url_preview': preview_url,
                 'heading': 'List of Applications',
             }
@@ -84,15 +86,6 @@ def preview_application_casestudy(application_id, case_study_id):
     return abort(404, "Case study not found")
 
 
-@main.route('/applications/convert_to_seller', methods=['POST'])
-@login_required
-@role_required('admin')
-def convert_to_seller():
-    application_id = request.get_json(force=True)['id']
-    result = data_api_client.approve_application(application_id)
-    return jsonify(result)
-
-
 @main.route('/application/<int:id>/documents/<slug>', methods=['GET'])
 @login_required
 @role_required('admin')
@@ -101,3 +94,21 @@ def download_single_file(id, slug):
 
     mimetype = mimetypes.guess_type(slug)[0] or 'binary/octet-stream'
     return Response(file, mimetype=mimetype)
+
+
+@main.route('/applications/convert_to_seller', methods=['POST'])
+@login_required
+@role_required('admin')
+def convert_to_seller():
+    application_id = request.get_json(force=True)['id']
+    result = data_api_client.req.applications(application_id).approve().post({})
+    return jsonify(result)
+
+
+@main.route('/applications/reject_application', methods=['POST'])
+@login_required
+@role_required('admin')
+def reject_application():
+    application_id = request.get_json(force=True)['id']
+    result = data_api_client.req.applications(application_id).reject().post({})
+    return jsonify(result)
