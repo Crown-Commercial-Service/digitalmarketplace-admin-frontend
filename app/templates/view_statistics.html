@@ -43,7 +43,53 @@
       </div>
     </div>
 
-    {{ summary.heading("Services by status") }}
+    {{ summary.heading("Applications by status") }}
+    {% call(item) summary.list_table(
+      applications_by_status,
+      empty_message="Data not available",
+      caption="Applications by status",
+      field_headings=[
+      summary.hidden_field_heading("Date and time"),
+      "Created",
+      "Submitted",
+      "Reverted",
+      "Approved"
+      ],
+      field_headings_visible=True
+      ) %}
+      {% call summary.row() %}
+        {% call summary.field(first=True) %}
+          {{ item.created_at[:19]|replace('T', ' ')|replace('-', '/') }}
+        {% endcall %}
+        {{ summary.text(item.create_application_count) }}
+        {{ summary.text(item.submit_application_count) }}
+        {{ summary.text(item.revert_application_count) }}
+        {{ summary.text(item.approve_application_count) }}
+      {% endcall %}
+    {% endcall %}
+
+ {{ summary.heading("Domains by status") }}
+    {% call(item) summary.list_table(
+      applications_by_status,
+      empty_message="Data not available",
+      caption="Domains by status",
+      field_headings=[
+      summary.hidden_field_heading("Date and time"),
+      "Unassessed",
+      "Assessed"
+      ],
+      field_headings_visible=True
+      ) %}
+      {% call summary.row() %}
+        {% call summary.field(first=True) %}
+          {{ item.created_at[:19]|replace('T', ' ')|replace('-', '/') }}
+        {% endcall %}
+        {{ summary.text(item.unassessed_domain_count) }}
+        {{ summary.text(item.assessed_domain_count) }}
+      {% endcall %}
+    {% endcall %}
+    <!--
+ {{ summary.heading("Services by status") }}
     {% call(item) summary.list_table(
       services_by_status,
       empty_message="Data not available",
@@ -130,7 +176,7 @@
         {{ summary.text(item.not_logged_in_recently) }}
         {{ summary.text(item.logged_in_recently) }}
       {% endcall %}
-    {% endcall %}
+    {% endcall %}-->
 
   </div>
 {% endblock %}
