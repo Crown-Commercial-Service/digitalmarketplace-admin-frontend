@@ -6,7 +6,7 @@ from flask_login import login_required
 from dmapiclient.audit import AuditTypes
 from dmutils.formats import DATETIME_FORMAT
 
-from ..helpers.sum_counts import format_snapshots
+from ..helpers.sum_counts import format_snapshots, format_metrics
 from .. import main
 from ... import data_api_client
 from ..auth import role_required
@@ -23,6 +23,9 @@ def view_statistics(framework_slug):
         object_id=framework_slug,
         per_page=1260
     )['auditEvents']
+
+    applications = format_metrics(data_api_client.req.metrics().applications().history().get())
+
     framework = data_api_client.get_framework(framework_slug)['frameworks']
     if framework['status'] == 'open':
         snapshots.append(
@@ -36,6 +39,8 @@ def view_statistics(framework_slug):
         "view_statistics.html",
         framework=framework,
         big_screen_mode=(request.args.get('big_screen_mode') == 'yes'),
+        applications_by_status=applications,
+        domains_by_status=applications,
         services_by_status=format_snapshots(snapshots, 'services', {
             'draft': {
                 'status': 'not-submitted'

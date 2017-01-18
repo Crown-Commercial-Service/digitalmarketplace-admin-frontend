@@ -1,10 +1,15 @@
+
 #framework-statistics-big-screen {
 
-  position: relative;
-  background: $link-colour;
+  position: absolute;
+  background: $navy;
   box-shadow: 0 0 0 100em $link-colour;
   padding-bottom: 100em;
   z-index: 1000;
+  width: 100%;
+  left: 0;
+  padding-left: 30px;
+  padding-right: 30px;
 
   .summary-item-body,
   .summary-item-heading {
@@ -48,6 +53,7 @@
 
   table.summary-item-body {
     border-bottom: 3px solid $grey;
+    width:100%;
   }
 
   table.summary-item-body tbody td {
@@ -64,7 +70,8 @@
 
     td {
       position: relative;
-      left: -25px;
+      font-size: 4em;
+      font-weight: bolder;
     }
 
   }
@@ -73,7 +80,7 @@
 
     th {
       position: relative;
-      left: -25px;
+
     }
 
   }
@@ -82,4 +89,11 @@
 
 .statistics-chart {
   margin: 0 -10px -8px -12px;
+}
+
+table.summary-item-body {
+  width:100%;
+  td, th {
+    padding: 5px;
+  }
 }

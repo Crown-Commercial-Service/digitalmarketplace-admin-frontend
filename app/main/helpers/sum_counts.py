@@ -1,6 +1,24 @@
 from datetime import datetime
 
 
+def format_metrics(metrics):
+    output = []
+    dates = set()
+    for metric in metrics:
+        for val in metrics[metric]:
+            dates.add(val['ts'])
+
+    for date in sorted(list(dates)):
+        result = {'created_at': date}
+        for metric in metrics:
+            for val in metrics[metric]:
+                if val['ts'] == date:
+                    result[metric] = val['value']
+        output.append(result)
+
+    return output
+
+
 def format_snapshots(snapshots, category, groupings):
     return [
         _label_and_count(
