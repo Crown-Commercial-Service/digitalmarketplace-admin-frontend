@@ -4,6 +4,7 @@ try:
 except ImportError:
     from urllib.parse import urlsplit
     from io import BytesIO as StringIO
+from itertools import chain
 import mock
 
 from lxml import html
@@ -82,6 +83,13 @@ class TestServiceView(LoggedInApplicationTest):
             "serviceBenefits": [
                 "Mentioned in court and fashionable intelligence",
             ],
+            "deviceAccessMethod": {
+                "value": [
+                    "Corporate/enterprise devices",
+                    "Unknown devices",
+                ],
+                "assurance": "Independent validation of assertion",
+            },
         }
         data_api_client.get_service.return_value = {'services': service}
         response = self.client.get('/admin/services/151')
@@ -118,6 +126,21 @@ class TestServiceView(LoggedInApplicationTest):
         assert document.xpath(
             "//*[@class='summary-item-field'][not(.//li)][normalize-space(string())=$s]",
             s=service["serviceBenefits"][0],
+        )
+
+        xpath_kwargs = {"a{}".format(i): term for i, term in enumerate(service["deviceAccessMethod"]["value"])}
+        xpath_preds = "".join(
+            "[./li[normalize-space(string())=$a{}]]".format(i)
+            for i in range(len(service["deviceAccessMethod"]["value"]))
+        )
+        assert document.xpath(
+            "//*[normalize-space(string())=$fullstr]/ul[count(./li)=$n_lis]{}".format(xpath_preds),
+            fullstr=" ".join(chain(
+                service["deviceAccessMethod"]["value"],
+                ("Assured by", service["deviceAccessMethod"]["assurance"],),
+            )),
+            n_lis=len(service["deviceAccessMethod"]),
+            **xpath_kwargs
         )
 
     @mock.patch('app.main.views.services.data_api_client')
@@ -296,6 +319,33 @@ class TestServiceEdit(LoggedInApplicationTest):
         assert 'id="input-serviceFeatures-0"class="text-box"value="bar"' in stripped_page
         assert 'id="input-serviceFeatures-1"class="text-box"value=""' in stripped_page
 
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_service_edit_assurance_questions(self, data_api_client):
+        service = {
+            'frameworkSlug': 'g-cloud-8',
+            'lot': 'saas',
+            'serviceAvailabilityPercentage': {
+                "value": "31.415",
+                "assurance": "Contractual commitment",
+            },
+        }
+        data_api_client.get_service.return_value = {'services': service}
+        response = self.client.get('/admin/services/432/edit/asset-protection-and-resilience')
+        document = html.fromstring(response.get_data(as_text=True))
+
+        data_api_client.get_service.assert_called_with('432')
+
+        assert response.status_code == 200
+        assert document.xpath(
+            "//input[@name='serviceAvailabilityPercentage']/@value"
+        ) == [service["serviceAvailabilityPercentage"]["value"]]
+        assert document.xpath(
+            "//input[@type='radio'][@name='serviceAvailabilityPercentage--assurance'][@checked]/@value"
+        ) == ["Contractual commitment"]
+        # ensure a field that data doesn't yet exist for is shown
+        assert document.xpath("//input[@name='dataManagementLocations']")
+        assert document.xpath("//input[@name='dataManagementLocations--assurance']")
+
 
 class TestServiceUpdate(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
@@ -412,6 +462,49 @@ class TestServiceUpdate(LoggedInApplicationTest):
             {},
         )]
         assert response.status_code == 302
+
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_service_update_with_assurance_questions(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'id': 567,
+            'supplierId': 987,
+            'frameworkSlug': 'g-cloud-8',
+            'lot': 'IaaS',
+            'onboardingGuidance': {
+                "value": False,
+                "assurance": "Independent validation of assertion",
+            },
+            'interconnectionMethods': {
+                "value": ["PSN assured service", "Private WAN"],
+                "assurance": "Service provider assertion",
+            },
+        }}
+        response = self.client.post(
+            '/admin/services/567/edit/external-interface-protection',
+            data={
+                'onboardingGuidance': 'false',
+                'onboardingGuidance--assurance': "Service provider assertion",
+                'interconnectionMethods': ["Private WAN"],
+                'interconnectionMethods--assurance': "Service provider assertion",
+            },
+        )
+        assert data_api_client.update_service.call_args_list == [(
+            (
+                '567',
+                {
+                    'onboardingGuidance': {
+                        "value": False,
+                        "assurance": "Service provider assertion",
+                    },
+                    'interconnectionMethods': {
+                        "value": ["Private WAN"],
+                        "assurance": "Service provider assertion",
+                    },
+                },
+                'test@example.com',
+            ),
+            {},
+        )]
         assert response.status_code == 302
 
     @mock.patch('app.main.views.services.data_api_client')
