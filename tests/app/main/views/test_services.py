@@ -158,7 +158,9 @@ class TestServiceEdit(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
     def test_edit_dos_service_title(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
-            'frameworkSlug': 'digital-outcomes-and-specialists'
+            "frameworkSlug": "digital-outcomes-and-specialists",
+            "serviceName": "Larry O'Rourke's",
+            "lot": "user-research-studios",
         }}
         response = self.client.get('/admin/services/1/edit/description')
 
@@ -169,7 +171,9 @@ class TestServiceEdit(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_documents_get_response(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
-            'frameworkSlug': 'g-cloud-8'
+            'frameworkSlug': 'g-cloud-8',
+            "serviceName": "Boylan the billsticker",
+            "lot": "scs",
         }}
         response = self.client.get('/admin/services/1/edit/documents')
 
@@ -178,7 +182,47 @@ class TestServiceEdit(LoggedInApplicationTest):
         assert response.status_code == 200
 
     @mock.patch('app.main.views.services.data_api_client')
-    def test_service_edit_documents_empty_post(self, data_api_client):
+    def test_service_edit_with_no_features_or_benefits(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'lot': 'SaaS',
+            'frameworkSlug': 'g-cloud-8',
+        }}
+        response = self.client.get(
+            '/admin/services/1/edit/features-and-benefits')
+
+        data_api_client.get_service.assert_called_with('1')
+
+        assert response.status_code == 200
+        assert 'id="input-serviceFeatures-0"class="text-box"value=""' in self.strip_all_whitespace(
+            response.get_data(as_text=True)
+        )
+
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_service_edit_with_one_service_feature(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'id': 1,
+            'supplierId': 2,
+            'frameworkSlug': 'g-cloud-8',
+            'lot': 'IaaS',
+            'serviceFeatures': [
+                "bar",
+            ],
+            'serviceBenefits': [
+                "foo",
+            ],
+        }}
+        response = self.client.get(
+            '/admin/services/1/edit/features-and-benefits'
+        )
+        assert response.status_code == 200
+        stripped_page = self.strip_all_whitespace(response.get_data(as_text=True))
+        assert 'id="input-serviceFeatures-0"class="text-box"value="bar"' in stripped_page
+        assert 'id="input-serviceFeatures-1"class="text-box"value=""' in stripped_page
+
+
+class TestServiceUpdate(LoggedInApplicationTest):
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_service_update_documents_empty_post(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,
@@ -201,7 +245,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         assert urlsplit(response.location).path == "/admin/services/1"
 
     @mock.patch('app.main.views.services.data_api_client')
-    def test_service_edit_documents_post(self, data_api_client):
+    def test_service_update_documents(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,
@@ -231,7 +275,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         assert response.status_code == 302
 
     @mock.patch("app.main.views.services.data_api_client")
-    def test_service_edit_documents_post_with_validation_errors(
+    def test_service_update_documents_with_validation_errors(
             self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -259,7 +303,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         assert response.status_code == 400
 
     @mock.patch('app.main.views.services.data_api_client')
-    def test_service_edit_with_one_service_feature(self, data_api_client):
+    def test_service_update_with_one_service_feature(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,
@@ -272,13 +316,6 @@ class TestServiceEdit(LoggedInApplicationTest):
                 "foo",
             ],
         }}
-        response = self.client.get(
-            '/admin/services/1/edit/features-and-benefits'
-        )
-        assert response.status_code == 200
-        stripped_page = self.strip_all_whitespace(response.get_data(as_text=True))
-        assert 'id="input-serviceFeatures-0"class="text-box"value="bar"' in stripped_page
-        assert 'id="input-serviceFeatures-1"class="text-box"value=""' in stripped_page
         response = self.client.post(
             '/admin/services/1/edit/features-and-benefits',
             data={
@@ -293,24 +330,8 @@ class TestServiceEdit(LoggedInApplicationTest):
         assert response.status_code == 302
 
     @mock.patch('app.main.views.services.data_api_client')
-    def test_service_edit_with_no_features_or_benefits(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {
-            'lot': 'SaaS',
-            'frameworkSlug': 'g-cloud-8',
-        }}
-        response = self.client.get(
-            '/admin/services/1/edit/features-and-benefits')
-
-        data_api_client.get_service.assert_called_with('1')
-
-        assert response.status_code == 200
-        assert 'id="input-serviceFeatures-0"class="text-box"value=""' in self.strip_all_whitespace(
-            response.get_data(as_text=True)
-        )
-
-    @mock.patch('app.main.views.services.data_api_client')
     @mock.patch('app.main.views.services.upload_service_documents')
-    def test_service_edit_when_API_returns_error(self, upload_service_documents, data_api_client):
+    def test_service_update_when_API_returns_error(self, upload_service_documents, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,
