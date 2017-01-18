@@ -17,6 +17,7 @@ class TestServiceView(LoggedInApplicationTest):
     def test_service_view_no_features_or_benefits_status_disabled(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
+            'lot': 'iaas',
             'id': "314159265",
             "status": "disabled",
         }}
@@ -42,6 +43,7 @@ class TestServiceView(LoggedInApplicationTest):
     def test_service_view_no_features_or_benefits_status_enabled(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-7',
+            'lot': 'iaas',
             'id': "1412",
             "status": "enabled",
         }}
@@ -63,6 +65,60 @@ class TestServiceView(LoggedInApplicationTest):
             "public",
         ))
         assert document.xpath("//input[@type='radio'][@name='service_status'][@checked]/@value") == ["private"]
+
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_service_view_with_data(self, data_api_client):
+        service = {
+            'frameworkSlug': 'g-cloud-8',
+            'lot': 'iaas',
+            'id': "151",
+            "status": "published",
+            "serviceName": "Saint Leopold's",
+            "serviceFeatures": [
+                "Rabbitry and fowlrun",
+                "Dovecote",
+                "Botanical conservatory",
+            ],
+            "serviceBenefits": [
+                "Mentioned in court and fashionable intelligence",
+            ],
+        }
+        data_api_client.get_service.return_value = {'services': service}
+        response = self.client.get('/admin/services/151')
+
+        assert data_api_client.get_service.call_args_list == [
+            (("151",), {}),
+        ]
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert document.xpath(
+            "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
+        ) == "151"
+
+        assert frozenset(document.xpath("//input[@type='radio'][@name='service_status']/@value")) == frozenset((
+            "removed",
+            "private",
+            "public",
+        ))
+        assert document.xpath("//input[@type='radio'][@name='service_status'][@checked]/@value") == ["public"]
+
+        # check all serviceFeatures appear in an ul
+        xpath_kwargs = {"a{}".format(i): term for i, term in enumerate(service["serviceFeatures"])}
+        xpath_preds = "".join(
+            "[./li[normalize-space(string())=$a{}]]".format(i) for i in range(len(service["serviceFeatures"]))
+        )
+        assert document.xpath(
+            "//ul[count(./li)=$n_lis]{}".format(xpath_preds),
+            n_lis=len(service["serviceFeatures"]),
+            **xpath_kwargs
+        )
+
+        # ensure serviceBenefits is shown in a non-list-form
+        assert document.xpath(
+            "//*[@class='summary-item-field'][not(.//li)][normalize-space(string())=$s]",
+            s=service["serviceBenefits"][0],
+        )
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_view_no_features_or_benefits_not_service_status_authorized(self, data_api_client):
@@ -157,40 +213,61 @@ class TestServiceView(LoggedInApplicationTest):
 class TestServiceEdit(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
     def test_edit_dos_service_title(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {
+        service = {
+            "id": 123,
             "frameworkSlug": "digital-outcomes-and-specialists",
             "serviceName": "Larry O'Rourke's",
             "lot": "user-research-studios",
-        }}
-        response = self.client.get('/admin/services/1/edit/description')
+        }
+        data_api_client.get_service.return_value = {'services': service}
+        response = self.client.get('/admin/services/123/edit/description')
+        document = html.fromstring(response.get_data(as_text=True))
 
-        data_api_client.get_service.assert_called_with('1')
+        data_api_client.get_service.assert_called_with('123')
 
         assert response.status_code == 200
+        assert document.xpath(
+            "normalize-space(string(//input[@name='serviceName']/@value))"
+        ) == service["serviceName"]
+        assert document.xpath(
+            "//nav//a[@href='/admin/services/123'][normalize-space(string())=$t]",
+            t=service["serviceName"],
+        )
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_documents_get_response(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {
+        service = {
+            "id": 321,
             'frameworkSlug': 'g-cloud-8',
             "serviceName": "Boylan the billsticker",
             "lot": "scs",
-        }}
-        response = self.client.get('/admin/services/1/edit/documents')
+            "termsAndConditionsDocumentURL": "http://boylan.example.com/concert-tours",
+        }
+        data_api_client.get_service.return_value = {'services': service}
+        response = self.client.get('/admin/services/321/edit/documents')
+        document = html.fromstring(response.get_data(as_text=True))
 
-        data_api_client.get_service.assert_called_with('1')
+        data_api_client.get_service.assert_called_with('321')
 
         assert response.status_code == 200
+        assert document.xpath("//input[@name='termsAndConditionsDocumentURL']")  # file inputs are complex, yeah?
+        # ensure a field that data doesn't yet exist for is shown
+        assert document.xpath("//input[@name='sfiaRateDocumentURL']")
+        assert document.xpath(
+            "//nav//a[@href='/admin/services/321'][normalize-space(string())=$t]",
+            t=service["serviceName"],
+        )
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_with_no_features_or_benefits(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
-            'lot': 'SaaS',
+            'lot': 'saas',
             'frameworkSlug': 'g-cloud-8',
         }}
         response = self.client.get(
-            '/admin/services/1/edit/features-and-benefits')
+            '/admin/services/234/edit/features-and-benefits')
 
-        data_api_client.get_service.assert_called_with('1')
+        data_api_client.get_service.assert_called_with('234')
 
         assert response.status_code == 200
         assert 'id="input-serviceFeatures-0"class="text-box"value=""' in self.strip_all_whitespace(
@@ -319,14 +396,22 @@ class TestServiceUpdate(LoggedInApplicationTest):
         response = self.client.post(
             '/admin/services/1/edit/features-and-benefits',
             data={
-                'serviceFeatures': 'foo',
+                'serviceFeatures': 'baz',
                 'serviceBenefits': 'foo',
             }
         )
-        data_api_client.update_service.assert_called_with('1', {
-            'serviceFeatures': ['foo'],
-            'serviceBenefits': ['foo'],
-        }, 'test@example.com')
+        assert data_api_client.update_service.call_args_list == [(
+            (
+                '1',
+                {
+                    'serviceFeatures': ['baz'],
+                    'serviceBenefits': ['foo'],
+                },
+                'test@example.com',
+            ),
+            {},
+        )]
+        assert response.status_code == 302
         assert response.status_code == 302
 
     @mock.patch('app.main.views.services.data_api_client')
