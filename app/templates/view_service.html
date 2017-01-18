@@ -67,9 +67,9 @@
     {% for section in sections %}
       {{ summary.heading(section.name) }}
       {% if section.editable and current_user.has_any_role('admin', 'admin-ccs-category') %}
-        {{ summary.top_link("Edit", url_for('.edit', service_id=service_id, section=section.id)) }}
+        {{ summary.top_link("Edit", url_for('.edit', service_id=service_id, section_id=section.id)) }}
       {% endif %}
-      {% call(item) summary.list_table(
+      {% call(question) summary.list_table(
         section.questions,
         caption="Services",
         empty_message="This supplier has no services on the Digital Marketplace",
@@ -80,8 +80,8 @@
         field_headings_visible=False
       ) %}
         {% call summary.row() %}
-          {{ summary.field_name(item.question) }}
-          {{ summary[item.type](service_data[item.id]) }}
+          {{ summary.field_name(question.label) }}
+          {{ summary[question.type](question.value, question.assurance) }}
         {% endcall %}
       {% endcall %}
     {% endfor %}

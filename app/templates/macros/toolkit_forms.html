@@ -165,3 +165,23 @@
   {% endfor %}
 </fieldset>
 {%- endmacro %}
+
+{% macro number(question_content, data, errors) -%}
+  {%
+    with
+    unit_in_full=question_content.unit_in_full,
+    unit_position=question_content.unit_position,
+    unit=question_content.unit,
+    smaller=True,
+    question=question_content.question,
+    question_advice=question_content.question_advice,
+    hint=question_content.hint,
+    optional=question_content.optional,
+    name=question_content.id,
+    value=data[question_content.id],
+    error=errors.get(question_content.id)['message'],
+    question_number=question_number
+  %}
+    {% include "toolkit/forms/textbox.html" %}
+  {% endwith %}
+{%- endmacro %}
