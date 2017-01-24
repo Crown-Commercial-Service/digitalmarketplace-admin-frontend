@@ -12,4 +12,4 @@ boto==2.36.0
 
 git+https://github.com/alphagov/digitalmarketplace-content-loader.git@2.1.0#egg=digitalmarketplace-content-loader==2.1.0
 git+https://github.com/alphagov/digitalmarketplace-utils.git@23.1.0#egg=digitalmarketplace-utils==23.1.0
-git+https://github.com/alphagov/digitalmarketplace-apiclient.git@7.4.0#egg=digitalmarketplace-apiclient==7.4.0
+git+https://github.com/alphagov/digitalmarketplace-apiclient.git@7.13.0#egg=digitalmarketplace-apiclient==7.13.0
