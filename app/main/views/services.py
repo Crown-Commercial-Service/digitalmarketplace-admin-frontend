@@ -21,7 +21,12 @@ from ..helpers.diff_tools import get_diffs_from_service_data, get_revision_dates
 @login_required
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
 def index():
-    return render_template("index.html")
+    frameworks = data_api_client.find_frameworks()
+    frameworks = [fw for fw in frameworks['frameworks'] if fw['status'] in ('standstill', 'live')]
+    frameworks = sorted(frameworks, key=lambda x: x['id'], reverse=True)
+
+    return render_template("index.html",
+                           frameworks_for_countersigning=frameworks)
 
 
 @main.route('/services', methods=['GET'])
