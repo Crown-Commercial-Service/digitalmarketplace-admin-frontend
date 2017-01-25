@@ -1,16 +1,55 @@
 #react-bundle-applications-admin {
-    max-width: 960px;
-    margin: 0 auto;
     * h2 {
         font-size: 2rem;
         margin: 1rem 0rem;
     }
     * table {
         margin-left: 0;
-        border-spacing: 0.3rem 0.7rem;
+        border-collapse: collapse;
+        border-spacing: 0;
+
         tr {
-            td, th { padding: 0.1rem 2rem 0.1rem 0;  }
+            line-height: 2.5rem;
+            td, th { padding: 0.1rem 0 0.1rem 0; margin: 0; white-space: nowrap; }
             th { text-align: left }
         }
+
+        a {
+          margin: 0 0.1rem;
+          padding: 0 0.1rem;
+          border: none;
+        }
     }
+
+    * button {
+      display: inline-block;
+      font-size: 1.1rem;
+      margin: 0 0.1rem;
+      padding: 0 0.1rem;
+      border: none;
+    }
+
+    * button:first-of-type {
+      background: red;
+    }
+
+    .to-do, .in-progress, .done {
+      color: white;
+      font-size: 0.8rem;
+    }
+
+    .to-do {
+      background: #FF6961;
+      display: inline-block;
+      padding: 0.1rem 0.5rem;
+    }
+
+    .in-progress {
+      background: #FFB347;
+    }
+
+    .done {
+      background: #77DD77;
+    }
+
 }

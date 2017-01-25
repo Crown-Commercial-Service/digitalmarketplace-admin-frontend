@@ -115,6 +115,7 @@ class Development(Config):
 
     REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/bundle/'
     REACT_RENDER_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/render'
+
     REACT_RENDER = True
 
 

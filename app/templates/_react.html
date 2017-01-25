@@ -5,10 +5,7 @@
    <script type="text/javascript" src="{{ component.get_bundle() }}" defer></script>
 {% endblock %}
 
-{% block main_content %}
-<main>
+{% block wrapper_content %}
     <div id="react-bundle-{{component.get_slug()}}-state" style="display:none;">{{component.get_props()|tojson|forceescape}}</div>
     <div id="react-bundle-{{component.get_slug()}}">{{component|safe}}</div>
-</main>
 {% endblock %}
-
