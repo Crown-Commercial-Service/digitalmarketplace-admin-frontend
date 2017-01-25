@@ -36,12 +36,12 @@
     .to-do, .in-progress, .done {
       color: white;
       font-size: 0.8rem;
+      display: inline-block;
+      padding: 0.1rem 0.5rem;
     }
 
     .to-do {
       background: #FF6961;
-      display: inline-block;
-      padding: 0.1rem 0.5rem;
     }
 
     .in-progress {
