@@ -25,7 +25,7 @@ def view_statistics(framework_slug):
     )['auditEvents']
 
     applications = format_metrics(data_api_client.req.metrics().applications().history().get())
-
+    domains = data_api_client.req.metrics().domains().get()
     framework = data_api_client.get_framework(framework_slug)['frameworks']
     if framework['status'] == 'open':
         snapshots.append(
@@ -41,6 +41,7 @@ def view_statistics(framework_slug):
         big_screen_mode=(request.args.get('big_screen_mode') == 'yes'),
         applications_by_status=applications,
         domains_by_status=applications,
+        domains=domains,
         services_by_status=format_snapshots(snapshots, 'services', {
             'draft': {
                 'status': 'not-submitted'

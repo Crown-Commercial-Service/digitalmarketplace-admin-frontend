@@ -68,7 +68,7 @@
       {% endcall %}
     {% endcall %}
 
- {{ summary.heading("Domains by status") }}
+ {{ summary.heading("Total domains by status") }}
     {% call(item) summary.list_table(
       applications_by_status,
       empty_message="Data not available",
@@ -86,6 +86,26 @@
         {% endcall %}
         {{ summary.text(item.unassessed_domain_count) }}
         {{ summary.text(item.assessed_domain_count) }}
+      {% endcall %}
+    {% endcall %}
+
+    {{ summary.heading("Individual domains by status") }}
+    {% call(item) summary.list_table(
+      domains,
+      empty_message="Data not available",
+      caption="Domains by status",
+      field_headings=[
+      summary.hidden_field_heading("Domain"),
+      "Assessed","Unassessed"
+      ],
+      field_headings_visible=True
+      ) %}
+      {% call summary.row() %}
+        {% call summary.field(first=True) %}
+          {{ item.domain }}
+        {% endcall %}
+        {{ summary.text(item.assessed) }}
+        {{ summary.text(item.unassessed) }}
       {% endcall %}
     {% endcall %}
     <!--

@@ -10,7 +10,10 @@
   left: 0;
   padding-left: 30px;
   padding-right: 30px;
-
+  .statistics-chart {
+    fill: white;
+    color: white;
+  }
   .summary-item-body,
   .summary-item-heading {
     color: $white;
