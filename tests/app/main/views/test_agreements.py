@@ -101,6 +101,7 @@ class TestListAgreements(LoggedInApplicationTest):
         assert all(call_args[1].get(key) == value for key, value in (
             ("agreement_returned", True),
             ("statuses", None),
+            ("with_declarations", False),
         ))
 
         assert tuple(self._unpack_search_result(result) for result in page.cssselect('.search-result')) == (
@@ -152,6 +153,7 @@ class TestListAgreements(LoggedInApplicationTest):
         assert all(call_args[1].get(key) == value for key, value in (
             ("agreement_returned", True),
             ("statuses", chosen_status_key),
+            ("with_declarations", False),
         ))
 
         assert tuple(self._unpack_search_result(result) for result in page.cssselect('.search-result')) == (
@@ -282,9 +284,9 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
         assert parse_qs(parsed_location.query) == {"next_status": ["on-hold"]}
 
         # if there weren't any non-status-filtering find_framework_suppliers calls, the view won't have been able to
-        # get it right
+        # get it right. should also be conserving bandwidth by omitting declarations.
         assert any(
-            (not ca_kwargs.get("status"))
+            (ca_kwargs.get("with_declarations") is False and not ca_kwargs.get("status"))
             for ca_args, ca_kwargs in data_api_client.find_framework_suppliers.call_args_list
         )
 
@@ -298,9 +300,9 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
         assert parse_qs(parsed_location.query) == {"next_status": ["approved,countersigned"]}
 
         # if there weren't any non-status-filtering find_framework_suppliers calls, the view won't have been able to
-        # get it right
+        # get it right. should also be conserving bandwidth by omitting declarations.
         assert any(
-            (not ca_kwargs.get("status"))
+            (ca_kwargs.get("with_declarations") is False and not ca_kwargs.get("status"))
             for ca_args, ca_kwargs in data_api_client.find_framework_suppliers.call_args_list
         )
 
@@ -314,9 +316,9 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
         assert parse_qs(parsed_location.query) == {"next_status": ["signed"]}
 
         # if there weren't any non-status-filtering find_framework_suppliers calls, the view won't have been able to
-        # get it right
+        # get it right. should also be conserving bandwidth by omitting declarations.
         assert any(
-            (not ca_kwargs.get("status"))
+            (ca_kwargs.get("with_declarations") is False and not ca_kwargs.get("status"))
             for ca_args, ca_kwargs in data_api_client.find_framework_suppliers.call_args_list
         )
 
@@ -330,8 +332,8 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
         assert parse_qs(parsed_location.query) == {"status": ["on-hold"]}
 
         # if there weren't any non-status-filtering find_framework_suppliers calls, the view won't have been able to
-        # get it right
+        # get it right. should also be conserving bandwidth by omitting declarations.
         assert any(
-            (not ca_kwargs.get("status"))
+            (ca_kwargs.get("with_declarations") is False and not ca_kwargs.get("status"))
             for ca_args, ca_kwargs in data_api_client.find_framework_suppliers.call_args_list
         )
