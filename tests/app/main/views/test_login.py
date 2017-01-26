@@ -35,11 +35,14 @@ class TestLogin(BaseApplicationTest):
         assert res.status_code == 200
         assert "Administrator login" in res.get_data(as_text=True)
 
+    @mock.patch('app.main.views.services.data_api_client')
     @mock.patch('app.data_api_client')
     @mock.patch('app.main.views.login.data_api_client')
-    def test_valid_login(self, login_data_api_client, init_data_api_client):
+    def test_valid_login(self, login_data_api_client, init_data_api_client, services_data_api_client):
         login_data_api_client.authenticate_user.return_value = user_data()
         init_data_api_client.get_user.return_value = user_data()
+        services_data_api_client.get_frameworks.return_value = {"frameworks": []}
+
         res = self.client.post('/admin/login', data={
             'email_address': 'valid@email.com',
             'password': '1234567890'
@@ -218,7 +221,9 @@ class TestRoleRequired(LoggedInApplicationTest):
                 user_id, 'test@example.com', None, None, False, True, 'tester', 'admin-ccs-category'
             )
 
-    def test_admin_ccs_can_view_admin_dashboard(self):
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_admin_ccs_can_view_admin_dashboard(self, data_api_client):
+        data_api_client.get_frameworks.return_value = {"frameworks": []}
         response = self.client.get('/admin')
         assert response.status_code == 200
 

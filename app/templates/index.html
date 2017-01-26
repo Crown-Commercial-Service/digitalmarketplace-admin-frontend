@@ -110,26 +110,20 @@
     %}
       {% include "toolkit/page-heading.html" %}
     {% endwith %}
-    {% with items = [
+    {% for framework in frameworks_for_countersigning %}
+      {% with items = [
         {
-            "body": "Download G-Cloud 7 agreements",
-            "link": "/admin/agreements/g-cloud-7",
-            "title": "G-Cloud 7 agreements"
-        },
-        {
-            "body": "Download Digital Outcomes and Specialists agreements",
-            "link": "/admin/agreements/digital-outcomes-and-specialists",
-            "title": "Digital Outcomes and Specialists agreements"
-        },
-        {
-            "body": "Approve G-Cloud 8 agreements for countersigning",
-            "link": "/admin/agreements/g-cloud-8?status=signed",
-            "title": "G-Cloud 8 agreements"
-        },
+          "body": "Approve " + framework.name + " agreements for countersigning"
+                  if framework['frameworkAgreementVersion'] else
+                  "Download " + framework.name + " agreements",
+          "title": framework.name + " agreements",
+          "link": url_for('.list_agreements', framework_slug=framework['slug'], status='signed')
+        }
       ]
-    %}
-      {% include "toolkit/browse-list.html" %}
-    {% endwith %}
+      %}
+        {% include "toolkit/browse-list.html" %}
+      {% endwith %}
+    {% endfor %}
   {% endif %}
 
   {% if current_user.has_any_role('admin') %}
