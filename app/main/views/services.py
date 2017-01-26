@@ -53,7 +53,7 @@ def view(service_id):
 
     return render_template(
         "view_service.html",
-        sections=content,
+        sections=content.summary(service_data),
         service_data=service_data,
         service_id=service_id
     )
@@ -93,18 +93,24 @@ def update_service_status(service_id):
     return redirect(url_for('.view', service_id=service_id))
 
 
-@main.route('/services/<service_id>/edit/<section>', methods=['GET'])
+@main.route('/services/<service_id>/edit/<section_id>', methods=['GET'])
 @login_required
 @role_required('admin', 'admin-ccs-category')
-def edit(service_id, section):
+def edit(service_id, section_id):
     service_data = data_api_client.get_service(service_id)['services']
 
     content = content_loader.get_manifest(service_data['frameworkSlug'], 'edit_service_as_admin').filter(service_data)
 
+    section = content.get_section(section_id)
+    if section is None:
+        abort(404)
+    # handle sections with assurance fields
+    service_data = section.unformat_data(service_data)
+
     return render_template(
         "edit_section.html",
-        section=content.get_section(section),
-        service_data=service_data
+        section=section,
+        service_data=service_data,
     )
 
 
