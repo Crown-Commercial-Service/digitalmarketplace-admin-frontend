@@ -14,8 +14,10 @@ import mimetypes
 @main.route('/applications', methods=['GET'])
 @login_required
 @role_required('admin')
-def start_seller_signup():
-    applications = data_api_client.find_applications()['applications']
+def applications_review():
+    applications = data_api_client.req.applications().tasks().get(
+        params=dict(order_by='application.status desc')
+    )['applications']
 
     SCHEME = request.environ['wsgi.url_scheme']
     convert_url = url_for('main.convert_to_seller', _external=True, _scheme=SCHEME)
@@ -30,7 +32,7 @@ def start_seller_signup():
                 'url_convert_to_seller': convert_url,
                 'url_reject_application': reject_url,
                 'url_preview': preview_url,
-                'heading': 'List of Applications',
+                'heading': 'Applications for approval',
             }
         }
     )

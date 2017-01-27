@@ -1,7 +1,7 @@
 from datetime import timedelta, datetime
 
 from flask import Flask, request, redirect
-from flask.ext.bootstrap import Bootstrap
+from flask_bootstrap import Bootstrap
 from flask_login import LoginManager
 
 import dmapiclient

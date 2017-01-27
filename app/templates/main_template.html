@@ -70,6 +70,7 @@
 {% block content_super %}{% endblock %}
 
 <main role="main" class="{% block main_class %}{% endblock %}">
+  {% block wrapper_content %}
   {% block content_summary %}{% endblock %}
   <aside class="sidebar" id="nav">
   {% block sidebar %}{% endblock %}
@@ -77,6 +78,7 @@
   <article id="content" class="content-main">
   {% block content %}{% endblock %}
   </article>
+  {% endblock %}
 </main>
 
 {% block content_sub %}{% endblock %}
