@@ -93,14 +93,24 @@ def view_signed_agreement(supplier_id, framework_slug):
         abort(404)
 
     # build an OrderedDict of applied-for lotSlug against lotName, ordered by lotSlug
-    lot_slugs_names = OrderedDict(sorted(
-        (service["lotSlug"], service["lotName"],)
-        for service in data_api_client.find_services_iter(
-            supplier_id=supplier_id,
-            framework=framework_slug,
+    if framework["status"] in ("live", "expired"):
+        lot_slugs_names = OrderedDict(sorted(
+            (service["lotSlug"], service["lotName"],)
+            for service in data_api_client.find_services_iter(
+                supplier_id=supplier_id,
+                framework=framework_slug,
+                )
             )
         )
-    )
+    else:
+        lot_slugs_names = OrderedDict(sorted(
+            (service["lotSlug"], service["lotName"],)
+            for service in data_api_client.find_draft_services_iter(
+                supplier_id=supplier_id,
+                framework=framework_slug,
+                ) if service["status"] == "submitted"
+            )
+        )
 
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
     path = supplier_framework['agreementPath']

@@ -1315,7 +1315,9 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         data_api_client.get_framework.return_value = {
             'frameworks': {
                 'frameworkAgreementVersion': 'v1.0',
-                "slug": "g-cloud-8",
+                'slug': 'g-cloud-8',
+                'status': 'live'
+
             },
         }
         data_api_client.get_supplier_framework_info.return_value = {
