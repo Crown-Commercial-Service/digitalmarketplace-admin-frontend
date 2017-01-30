@@ -16,7 +16,7 @@ import mimetypes
 @role_required('admin')
 def applications_review():
     applications = data_api_client.req.applications().tasks().get(
-        params=dict(order_by='application.status desc')
+        params=dict(order_by='application.status desc, created_at desc')
     )['applications']
 
     SCHEME = request.environ['wsgi.url_scheme']
