@@ -225,14 +225,12 @@ def update(service_id, section_id):
             errors = section.get_error_messages(e.message)
 
     if errors:
-        if not posted_data.get('serviceName', None):
-            posted_data['serviceName'] = service.get('serviceName', '')
         return render_template(
             "edit_section.html",
             section=section,
-            service_data=posted_data,
+            service_data=dict(service, **posted_data),
             service_id=service_id,
-            errors=errors
+            errors=errors,
         ), 400
 
     return redirect(url_for(".view", service_id=service_id))

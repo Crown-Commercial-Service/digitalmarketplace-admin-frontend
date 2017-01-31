@@ -431,16 +431,16 @@ class TestServiceUpdate(LoggedInApplicationTest):
     def test_service_update_documents_with_validation_errors(
             self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
-            'id': 1,
+            'id': 7654,
             'supplierId': 2,
             'frameworkSlug': 'g-cloud-7',
             'lot': 'SCS',
-            'serviceDefinitionDocumentURL': "http://assets/documents/1/2-service-definition.pdf",  # noqa
-            'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
+            'serviceDefinitionDocumentURL': "http://assets/documents/7654/2-service-definition.pdf",  # noqa
+            'pricingDocumentURL': "http://assets/documents/7654/2-pricing.pdf",
             'sfiaRateDocumentURL': None
         }}
         response = self.client.post(
-            '/admin/services/1/edit/documents',
+            '/admin/services/7654/edit/documents',
             data={
                 'serviceDefinitionDocumentURL': (StringIO(), ''),
                 'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
@@ -448,12 +448,20 @@ class TestServiceUpdate(LoggedInApplicationTest):
                 'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
             }
         )
+        document = html.fromstring(response.get_data(as_text=True))
 
-        data_api_client.get_service.assert_called_with('1')
+        data_api_client.get_service.assert_called_with('7654')
         assert data_api_client.update_service.called is False
-
-        assert 'Your document is not in an open format' in response.get_data(as_text=True)
         assert response.status_code == 400
+
+        assert document.xpath(
+            "//*[contains(@class,'validation-message')][contains(normalize-space(string()), $t)]",
+            t="Your document is not in an open format",
+        )
+        assert document.xpath(
+            "//a[normalize-space(string())=$t]/@href",
+            t="Return without saving",
+        ) == ["/admin/services/7654"]
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_update_with_one_service_feature(self, data_api_client):
