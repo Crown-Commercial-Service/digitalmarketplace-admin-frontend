@@ -27,8 +27,8 @@ class TestSuppliersListView(LoggedInApplicationTest):
         }
         data_api_client.get_supplier_framework_info.side_effect = [
             {"frameworkInterest": {"agreementPath": "path/the/first/1234-g7-agreement.pdf"}},
-            {"frameworkInterest": {"agreementPath": None}},  # Supplier 1234 hasn't returned their DOS agreement yet
-            HTTPError(Response(404)),                        # Supplier 1235 isn't on G-Cloud 7
+            {"frameworkInterest": {"agreementPath": None}},  # Supplier 1234 has not returned their DOS agreement yet
+            HTTPError(Response(404)),                        # Supplier 1235 is not on G-Cloud 7
             {"frameworkInterest": {"agreementPath": "path/the/third/1235-dos-agreement.jpg"}},
         ]
         response = self.client.get("/admin/suppliers")
