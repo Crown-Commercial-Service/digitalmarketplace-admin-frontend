@@ -228,7 +228,7 @@ def update(service_id, section_id):
         return render_template(
             "edit_section.html",
             section=section,
-            service_data=dict(service, **posted_data),
+            service_data=section.unformat_data(dict(service, **posted_data)),
             service_id=service_id,
             errors=errors,
         ), 400
