@@ -431,16 +431,16 @@ class TestServiceUpdate(LoggedInApplicationTest):
     def test_service_update_documents_with_validation_errors(
             self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
-            'id': 1,
+            'id': 7654,
             'supplierId': 2,
             'frameworkSlug': 'g-cloud-7',
             'lot': 'SCS',
-            'serviceDefinitionDocumentURL': "http://assets/documents/1/2-service-definition.pdf",  # noqa
-            'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
+            'serviceDefinitionDocumentURL': "http://assets/documents/7654/2-service-definition.pdf",  # noqa
+            'pricingDocumentURL': "http://assets/documents/7654/2-pricing.pdf",
             'sfiaRateDocumentURL': None
         }}
         response = self.client.post(
-            '/admin/services/1/edit/documents',
+            '/admin/services/7654/edit/documents',
             data={
                 'serviceDefinitionDocumentURL': (StringIO(), ''),
                 'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
@@ -448,12 +448,92 @@ class TestServiceUpdate(LoggedInApplicationTest):
                 'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
             }
         )
+        document = html.fromstring(response.get_data(as_text=True))
 
-        data_api_client.get_service.assert_called_with('1')
+        data_api_client.get_service.assert_called_with('7654')
         assert data_api_client.update_service.called is False
-
-        assert 'Your document is not in an open format' in response.get_data(as_text=True)
         assert response.status_code == 400
+
+        assert document.xpath(
+            "//*[contains(@class,'validation-message')][contains(normalize-space(string()), $t)]",
+            t="Your document is not in an open format",
+        )
+        assert document.xpath(
+            "//a[normalize-space(string())=$t]/@href",
+            t="Return without saving",
+        ) == ["/admin/services/7654"]
+
+    @mock.patch("app.main.views.services.data_api_client")
+    def test_service_update_assurance_questions_when_API_returns_error(
+            self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'id': "7654",
+            'supplierId': 2,
+            'frameworkSlug': 'g-cloud-8',
+            'lot': 'paas',
+        }}
+        data_api_client.update_service.side_effect = HTTPError(None, {'dataProtectionWithinService': 'answer_required'})
+        posted_values = {
+            "dataProtectionBetweenUserAndService": ["PSN assured service"],
+            # dataProtectionWithinService deliberately omitted
+            "dataProtectionBetweenServices": [
+                "TLS (HTTPS or VPN) version 1.2 or later",
+                "Legacy SSL or TLS (HTTPS or VPN)",
+            ],
+        }
+        posted_assurances = {
+            "dataProtectionBetweenUserAndService--assurance": "Independent testing of implementation",
+            "dataProtectionWithinService--assurance": "CESG-assured components",
+            "dataProtectionBetweenServices--assurance": "Service provider assertion",
+        }
+
+        response = self.client.post(
+            "/admin/services/7654/edit/data-in-transit-protection",
+            data=dict(posted_values, **posted_assurances),
+        )
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert response.status_code == 400
+        data_api_client.get_service.assert_called_with('7654')
+        assert data_api_client.update_service.call_args_list == [
+            (
+                (
+                    "7654",
+                    {
+                        "dataProtectionBetweenUserAndService": {
+                            "value": posted_values["dataProtectionBetweenUserAndService"],
+                            "assurance": posted_assurances["dataProtectionBetweenUserAndService--assurance"],
+                        },
+                        "dataProtectionWithinService": {
+                            "assurance": posted_assurances["dataProtectionWithinService--assurance"],
+                        },
+                        "dataProtectionBetweenServices": {
+                            "value": posted_values["dataProtectionBetweenServices"],
+                            "assurance": posted_assurances["dataProtectionBetweenServices--assurance"],
+                        },
+                    },
+                    "test@example.com",
+                ),
+                {},
+            )
+        ]
+
+        for key, values in posted_values.items():
+            assert sorted(document.xpath("//form//input[@type='checkbox'][@name=$n][@checked]/@value", n=key)) == \
+                sorted(values)
+
+        for key, value in posted_assurances.items():
+            assert sorted(document.xpath("//form//input[@type='radio'][@name=$n][@checked]/@value", n=key)) == \
+                [value]
+
+        assert document.xpath(
+            "//*[contains(@class,'validation-message')][contains(normalize-space(string()), $t)]",
+            t="You need to answer this question",
+        )
+        assert document.xpath(
+            "//a[normalize-space(string())=$t]/@href",
+            t="Return without saving",
+        ) == ["/admin/services/7654"]
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_update_with_one_service_feature(self, data_api_client):
