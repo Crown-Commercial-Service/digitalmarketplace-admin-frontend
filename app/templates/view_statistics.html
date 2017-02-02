@@ -2,7 +2,7 @@
 
 {% extends "_base_page.html" %}
 {% block page_title %}
-  {{ framework.name }} Statistics – Digital Marketplace admin
+  Application Statistics – Digital Marketplace admin
 {% endblock %}
 
 {% block breadcrumb %}
@@ -24,14 +24,14 @@
       <div class="column-two-thirds">
         {%
           with
-          context = framework.name,
+          context = "Application",
           heading = "Statistics"
         %}
           {% include "toolkit/page-heading.html" %}
         {% endwith %}
       </div>
       <div class="column-one-third">
-        {% if not big_screen_mode %}
+        {% if not big_screen_mode %}q
           {%
             with
             url = '?big_screen_mode=yes',
@@ -108,95 +108,6 @@
         {{ summary.text(item.unassessed) }}
       {% endcall %}
     {% endcall %}
-    <!--
- {{ summary.heading("Services by status") }}
-    {% call(item) summary.list_table(
-      services_by_status,
-      empty_message="Data not available",
-      caption="Services by status",
-      field_headings=[
-        summary.hidden_field_heading("Date and time"),
-        "Draft",
-        "Complete",
-        "Submitted",
-      ],
-      field_headings_visible=True
-    ) %}
-      {% call summary.row() %}
-        {% call summary.field(first=True) %}
-          {{ item.created_at[:19]|replace('T', ' ')|replace('-', '/') }}
-        {% endcall %}
-        {{ summary.text(item.draft) }}
-        {{ summary.text(item.complete) }}
-        {{ summary.text(item.submitted) }}
-      {% endcall %}
-    {% endcall %}
-
-    {{ summary.heading("Complete services by lot") }}
-    {% call(item) summary.list_table(
-      services_by_lot,
-      empty_message="Data not available",
-      caption="Services by lot",
-      field_headings=lot_table_headings,
-      field_headings_visible=True
-    ) %}
-      {% call summary.row() %}
-        {% call summary.field(first=True) %}
-          {{ item.created_at[:19]|replace('T', ' ')|replace('-', '/') }}
-        {% endcall %}
-        {% for lot in lots %}
-          {{ summary.text(item[lot.slug]) }}
-        {% endfor %}
-      {% endcall %}
-    {% endcall %}
-
-    {{ summary.heading("Suppliers") }}
-    {% call(item) summary.list_table(
-      interested_suppliers,
-      empty_message="Data not available",
-      caption="Suppliers",
-      field_headings=[
-        summary.hidden_field_heading("Date and time"),
-        "Interested",
-        "Only made declaration",
-        "Only completed services",
-        "Eligible",
-      ],
-      field_headings_visible=True
-    ) %}
-      {% call summary.row() %}
-        {% call summary.field(first=True) %}
-          {{ item.created_at[:19]|replace('T', ' ')|replace('-', '/') }}
-        {% endcall %}
-        {{ summary.text(item.interested_only) }}
-        {{ summary.text(item.declaration_only) }}
-        {{ summary.text(item.completed_services_only) }}
-        {{ summary.text(item.valid_submission) }}
-      {% endcall %}
-    {% endcall %}
-
-    {{ summary.heading("Users by last login time") }}
-    {% call(item) summary.list_table(
-      users,
-      empty_message="Data not available",
-      caption="Users",
-      field_headings=[
-        summary.hidden_field_heading("Date and time"),
-        "Never",
-        "Over a week ago",
-        "In the last week",
-      ],
-      field_headings_visible=True
-    ) %}
-      {% call summary.row() %}
-        {% call summary.field(first=True) %}
-          {{ item.created_at[:19]|replace('T', ' ')|replace('-', '/') }}
-        {% endcall %}
-        {{ summary.text(item.never_logged_in) }}
-        {{ summary.text(item.not_logged_in_recently) }}
-        {{ summary.text(item.logged_in_recently) }}
-      {% endcall %}
-    {% endcall %}-->
 
   </div>
 {% endblock %}
