@@ -4,7 +4,7 @@ import mock
 from freezegun import freeze_time
 from lxml import html
 from dmapiclient import HTTPError, APIError
-from dmutils.email import MandrillException
+from dmutils.email.exceptions import EmailError
 from dmapiclient.audit import AuditTypes
 from ...helpers import LoggedInApplicationTest, Response
 from ..helpers.flash_tester import assert_flashes
@@ -513,7 +513,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
     def test_should_be_a_503_if_email_fails(self, data_api_client, send_email):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_users.return_value = self.load_example_listing("users_response")
-        send_email.side_effect = MandrillException("Arrrgh")
+        send_email.side_effect = EmailError("Arrrgh")
         res = self.client.post(
             "/admin/suppliers/1234/invite-user",
             data={
