@@ -140,7 +140,7 @@ def put_signed_agreement_on_hold(agreement_id):
     agreement = data_api_client.put_signed_agreement_on_hold(agreement_id, current_user.email_address)["agreement"]
 
     organisation = request.form['nameOfOrganisation']
-    flash('The agreement for {} was put on hold.'.format(organisation), 'message')
+    flash(u'The agreement for {} was put on hold.'.format(organisation), 'message')
 
     return redirect(url_for(
         '.next_agreement',
@@ -163,7 +163,7 @@ def approve_agreement_for_countersignature(agreement_id):
         current_user.id,
     )["agreement"]
     organisation = request.form['nameOfOrganisation']
-    flash('The agreement for {} was approved. They will receive a countersigned version soon.'
+    flash(u'The agreement for {} was approved. They will receive a countersigned version soon.'
           .format(organisation), 'message')
 
     return redirect(url_for(
