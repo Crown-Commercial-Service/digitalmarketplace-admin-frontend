@@ -10,7 +10,8 @@ from ..forms import EmailAddressForm, MoveUserForm
 from ..auth import role_required
 from dmapiclient import HTTPError, APIError
 from dmapiclient.audit import AuditTypes
-from dmutils.email import send_email, generate_token, MandrillException
+from dmutils.email import send_email, generate_token
+from dmutils.email.exceptions import EmailError
 from dmutils.documents import (
     AGREEMENT_FILENAME, COUNTERPART_FILENAME,
     file_is_pdf, get_document_path, get_extension, get_signed_url,
@@ -559,7 +560,7 @@ def invite_user(supplier_id):
                 current_app.config['INVITE_EMAIL_NAME'],
                 ["user-invite"]
             )
-        except MandrillException as e:
+        except EmailError as e:
             current_app.logger.error(
                 "Invitation email failed to send error {} to {} supplier {} supplier id {} ".format(
                     str(e),
