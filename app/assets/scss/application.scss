@@ -1,5 +1,10 @@
 $path: "/admin/static/images/";
 
+/* Blocks shared between multiple selectors */
+@import "toolkit/shared_placeholders/_dm-typography.scss";
+@import "toolkit/shared_placeholders/_placeholders.scss";
+@import "toolkit/shared_placeholders/_temporary-messages.scss";
+
 // Digital Marketplace front end toolkit components
 @import "forms/_option-select.scss";
 @import "forms/_keyword-search.scss";
@@ -22,10 +27,6 @@ $path: "/admin/static/images/";
 @import "toolkit/page-headings";
 @import "toolkit/previous-next-navigation";
 @import "toolkit/secondary-action-link";
-
-/* Blocks shared between multiple selectors */
-@import "shared_placeholders/_temporary-messages.scss";
-@import "shared_placeholders/_dm-typography.scss";
 
 // Admin app styles
 @import "_reset";
