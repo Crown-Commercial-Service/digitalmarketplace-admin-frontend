@@ -1281,18 +1281,19 @@ class TestApproveAgreement(LoggedInApplicationTest):
         assert parsed_location.path == "/admin/suppliers/4321/agreements/g-cloud-99p-world/next"
         assert parse_qs(parsed_location.query) == {}
 
-    def test_happy_path_with_next_status(self, data_api_client):
+    def test_happy_path_with_next_status_and_unicode_supplier_name(self, data_api_client):
         data_api_client.approve_agreement_for_countersignature.return_value = \
             self.put_signed_agreement_on_hold_return_value
         res = self.client.post(
             "/admin/suppliers/agreements/123/approve?next_status=on-hold",
-            data={"nameOfOrganisation": "Test"},
+            data={"nameOfOrganisation": u"Test O\u2019Connor"},
         )
 
         data_api_client.approve_agreement_for_countersignature.assert_called_once_with('123',
                                                                                        'test@example.com',
                                                                                        '1234')
-        assert_flashes(self, "The agreement for Test was approved. They will receive a countersigned version soon.")
+        assert_flashes(self, u"The agreement for Test O\u2019Connor was approved. They will receive a countersigned "
+                             "version soon.")
         assert res.status_code == 302
 
         parsed_location = urlparse(res.location)
