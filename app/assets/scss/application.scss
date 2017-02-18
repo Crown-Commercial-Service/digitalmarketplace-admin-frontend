@@ -82,3 +82,8 @@ $path: "/admin/static/images/";
 .break-email {
   word-break: break-all;
 }
+
+.question + .secondary-action-link {
+  margin-top: -36px;
+  margin-bottom: 40px;
+}
