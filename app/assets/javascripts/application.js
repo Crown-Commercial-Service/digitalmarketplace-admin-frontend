@@ -12,7 +12,12 @@
 //= include ../../../bower_components/digitalmarketplace-frontend-toolkit/toolkit/javascripts/list-entry.js
 //= include ../../../bower_components/digitalmarketplace-frontend-toolkit/toolkit/javascripts/word-counter.js
 //= include ../../../node_modules/govuk_frontend_toolkit/javascripts/govuk/selection-buttons.js
-//= include _selection-buttons.js
+//= include ../../../node_modules/govuk_frontend_toolkit/javascripts/govuk/shim-links-with-button-role.js
+
+; // JavaScript in the govuk_frontend_toolkit doesn't have trailing semicolons
+
 //= include _scroll-through-statistics.js
+//= include _selection-buttons.js
+//= include _shim-links-with-button-role.js
 //= include _tables-to-charts.js
 //= include ../../../bower_components/digitalmarketplace-frontend-toolkit/toolkit/javascripts/module-loader.js
