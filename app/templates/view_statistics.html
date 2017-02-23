@@ -31,7 +31,7 @@
         {% endwith %}
       </div>
       <div class="column-one-third">
-        {% if not big_screen_mode %}q
+        {% if not big_screen_mode %}
           {%
             with
             url = '?big_screen_mode=yes',
@@ -67,7 +67,7 @@
         {{ summary.text(item.approve_application_count) }}
       {% endcall %}
     {% endcall %}
-
+<!--
  {{ summary.heading("Total domains by status") }}
     {% call(item) summary.list_table(
       applications_by_status,
@@ -108,6 +108,6 @@
         {{ summary.text(item.unassessed) }}
       {% endcall %}
     {% endcall %}
-
+-->
   </div>
 {% endblock %}
