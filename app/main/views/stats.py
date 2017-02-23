@@ -19,6 +19,8 @@ def view_application_statistics():
 
     applications = format_metrics(data_api_client.req.metrics().applications().history().get())
     domains = data_api_client.req.metrics().domains().get()
+    seller_types = data_api_client.req.metrics().applications().seller_types().get()
+    steps = data_api_client.req.metrics().applications().steps().get()
 
     return render_template(
         "view_statistics.html",
@@ -26,4 +28,6 @@ def view_application_statistics():
         applications_by_status=applications,
         domains_by_status=applications,
         domains=domains,
+        seller_types=seller_types,
+        steps=steps
     )
