@@ -88,7 +88,7 @@
         {{ summary.text(item.assessed_domain_count) }}
       {% endcall %}
     {% endcall %}
-
+-->
     {{ summary.heading("Individual domains by status") }}
     {% call(item) summary.list_table(
       domains,
@@ -96,7 +96,9 @@
       caption="Domains by status",
       field_headings=[
       summary.hidden_field_heading("Domain"),
-      "Assessed","Unassessed"
+      "Not yet submitted",
+      "Unassessed",
+      "Assessed"
       ],
       field_headings_visible=True
       ) %}
@@ -104,10 +106,52 @@
         {% call summary.field(first=True) %}
           {{ item.domain }}
         {% endcall %}
-        {{ summary.text(item.assessed) }}
         {{ summary.text(item.unassessed) }}
+
+        {{ summary.text(item.unsubmitted) }}
+        {{ summary.text(item.assessed) }}
+
       {% endcall %}
     {% endcall %}
--->
+  
+    {{ summary.heading("Seller Types in Applications") }}
+    {% call(item) summary.list_table(
+      seller_types,
+      empty_message="Data not available",
+      caption="Seller Types in Applications",
+      field_headings=[
+      summary.hidden_field_heading("Seller Type"),
+      "Count"
+      ],
+      field_headings_visible=True
+      ) %}
+      {% call summary.row() %}
+        {% call summary.field(first=True) %}
+          {{ item.seller_type }}
+        {% endcall %}
+        {{ summary.text(item.count) }}
+
+      {% endcall %}
+    {% endcall %}
+
+    {{ summary.heading("Steps completed in Applications") }}
+    {% call(item) summary.list_table(
+      steps,
+      empty_message="Data not available",
+      caption="Steps completed in Applications",
+      field_headings=[
+      summary.hidden_field_heading("Step"),
+      "Count"
+      ],
+      field_headings_visible=True
+      ) %}
+      {% call summary.row() %}
+        {% call summary.field(first=True) %}
+          {{ item.step }}
+        {% endcall %}
+        {{ summary.text(item.count) }}
+
+      {% endcall %}
+    {% endcall %}
   </div>
 {% endblock %}

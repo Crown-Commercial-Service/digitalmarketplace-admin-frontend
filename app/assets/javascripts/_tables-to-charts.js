@@ -8,7 +8,7 @@
                 :
                 ['#D53880', '#2B8CC4', '#6F72AF', '#F47738'],
             typeSequence = [
-                "area", "area", "bar"
+                "area", "bar", "bar", "bar"
             ];
 
         $(".framework-statistics table")
@@ -28,11 +28,12 @@
                         show: !isBigScreen
                     }
                 };
-                var columns = [], groups = [], types = {}, chartType = '';
+                var columns = [], columnHeadings =[], groups = [], types = {}, chartType = '';
 
                 $("thead th", this).each(function (colIndex) {
 
                     var columnHeading = $.trim($(this).text());
+                    columnHeadings.push(columnHeading);
 
                     chartType = typeSequence[tableIndex];
 
@@ -46,9 +47,6 @@
 
                     if (colIndex) {
                         if ("area" == chartType) {
-                            groups.push(columnHeading);
-                        }
-                        if ("bar" == chartType && colIndex != 0) {
                             groups.push(columnHeading);
                         }
                         types[columnHeading] = chartType;
@@ -74,9 +72,10 @@
 
                 if (chartType == 'bar') {
                     console.log(groups);
+                    console.log(columns);
                     chartConfig['data'] = {
                         columns: columns,
-                        groups: [groups],
+                        groups: [columnHeadings],
                         type: 'bar'
                     };
                     chartConfig['axis'] = {
