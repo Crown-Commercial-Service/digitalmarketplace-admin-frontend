@@ -22,6 +22,7 @@ def applications_review():
     SCHEME = request.environ['wsgi.url_scheme']
     convert_url = url_for('main.convert_to_seller', _external=True, _scheme=SCHEME)
     reject_url = url_for('main.reject_application', _external=True, _scheme=SCHEME)
+    revert_url = url_for('main.revert_application', _external=True, _scheme=SCHEME)
     preview_url = url_for('main.preview_application',  _external=True, _scheme=SCHEME)
 
     rendered_component = render_component(
@@ -31,6 +32,7 @@ def applications_review():
             'meta': {
                 'url_convert_to_seller': convert_url,
                 'url_reject_application': reject_url,
+                'url_revert_application': revert_url,
                 'url_preview': preview_url,
                 'heading': 'Applications for approval',
             }
@@ -113,4 +115,13 @@ def convert_to_seller():
 def reject_application():
     application_id = request.get_json(force=True)['id']
     result = data_api_client.req.applications(application_id).reject().post({})
+    return jsonify(result)
+
+
+@main.route('/applications/revert_application', methods=['POST'])
+@login_required
+@role_required('admin')
+def revert_application():
+    application_id = request.get_json(force=True)['id']
+    result = data_api_client.req.applications(application_id).revert().post({})
     return jsonify(result)
