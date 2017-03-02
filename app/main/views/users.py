@@ -47,7 +47,9 @@ def find_user_by_email_address():
 def list_frameworks_with_users(errors=None):
     bad_statuses = ['coming', 'expired']
     frameworks = [framework for framework in data_api_client.find_frameworks()['frameworks']
-                  if framework['status'] not in bad_statuses]
+                  if framework['status'] not in bad_statuses
+                  #  TODO: remove this temporary hack once we have implemented new status that covers the DOS case
+                  or framework['slug'] == 'digital-outcomes-and-specialists']
     framework_options = [{'value': framework['slug'], 'label': framework['name']} for framework
                          in sorted(frameworks, key=lambda framework: framework['name'])]
 
