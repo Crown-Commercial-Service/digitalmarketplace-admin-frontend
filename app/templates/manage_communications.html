@@ -32,8 +32,8 @@
               {% else %}
                 <div class="banner-destructive-without-action">
                     <p class="banner-message">
-                    {% if category == 'not_pdf_or_csv' and message == 'communication' %}
-                        Communication file is not a PDF or CSV.
+                    {% if category == 'not_open_document_format_or_csv' and message == 'communication' %}
+                        Communication file is not an open document format or a CSV.
                     {% elif category == 'not_pdf' and message == 'clarification' %}
                         Clarification file is not a PDF.
                     {% endif %}
@@ -52,7 +52,7 @@
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     {% with
        question="Communication",
-       hint="This must be PDF or CSV",
+       hint="This must be an open document format (pdf, pda, odt, ods, odp) or CSV",
        name="communication",
        value="Last modified {}".format(communication.last_modified),
        error=communication_error
