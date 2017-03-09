@@ -1065,7 +1065,7 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
 
 @mock.patch('app.main.views.suppliers.data_api_client')
 @mock.patch('app.main.views.suppliers.s3')
-class TestViewingASupplierDeclaration(LoggedInApplicationTest):
+class TestViewingSignedAgreement(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
     def test_should_404_if_supplier_does_not_exist(self, s3, data_api_client):
@@ -1362,8 +1362,11 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
 
         assert "Accept and continue" not in data
         assert "Put on hold and continue" not in data
+        assert "Cancel approval" not in data
 
         assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
+
+        assert not document.xpath("//form//input[@type='submit']")
 
         next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
         assert len(next_a_elems) == 1
@@ -1373,7 +1376,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             {},
         )
 
-    def test_both_shown_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client):
+    def test_buttons_shown_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
 
         res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
@@ -1381,6 +1384,8 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
 
         data = res.get_data(as_text=True)
         document = html.fromstring(data)
+
+        assert "Cancel approval" not in data
 
         accept_input_elems = document.xpath("//form//input[@type='submit'][@value='Accept and continue']")
         assert len(accept_input_elems) == 1
@@ -1412,7 +1417,10 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             {},
         )
 
-    def test_both_shown_with_status_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client):
+        assert not document.xpath("//input[@type='submit'][contains(@value, 'Cancel')]")
+        assert not document.xpath("//form[contains(@action, 'unapprove')]")
+
+    def test_buttons_shown_with_status_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
 
         res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8?next_status=approved,countersigned')
@@ -1420,6 +1428,8 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
 
         data = res.get_data(as_text=True)
         document = html.fromstring(data)
+
+        assert "Cancel approval" not in data
 
         accept_input_elems = document.xpath("//form//input[@type='submit'][@value='Accept and continue']")
         assert len(accept_input_elems) == 1
@@ -1451,6 +1461,9 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             {"status": ["approved,countersigned"]},
         )
 
+        assert not document.xpath("//input[@type='submit'][contains(@value, 'Cancel')]")
+        assert not document.xpath("//form[contains(@action, 'unapprove')]")
+
     def test_only_counter_sign_shown_if_agreement_on_hold(self, s3, get_signed_url, data_api_client):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='on-hold')
 
@@ -1459,6 +1472,8 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
 
         data = res.get_data(as_text=True)
         document = html.fromstring(data)
+
+        assert "Cancel approval" not in data
 
         accept_input_elems = document.xpath("//form//input[@type='submit'][@value='Accept and continue']")
         assert len(accept_input_elems) == 1
@@ -1481,7 +1496,10 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             {},
         )
 
-    def test_none_shown_if_agreement_approved(self, s3, get_signed_url, data_api_client):
+        assert not document.xpath("//input[@type='submit'][contains(@value, 'Cancel')]")
+        assert not document.xpath("//form[contains(@action, 'unapprove')]")
+
+    def test_cancel_shown_if_agreement_approved(self, s3, get_signed_url, data_api_client):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='approved')
 
         res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
@@ -1493,6 +1511,16 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert "Accept and continue" not in data
         assert "Put on hold and continue" not in data
         assert len(document.xpath("//h2[normalize-space(string())='Accepted by']")) == 1
+
+        cancel_input_elems = document.xpath("//form//input[@type='submit'][@value='Cancel approval']")
+        assert len(cancel_input_elems) == 1
+        accept_form_elem = cancel_input_elems[0].xpath("ancestor::form")[0]
+        assert self._parsed_url_matches(
+            accept_form_elem.attrib["action"],
+            "/admin/suppliers/agreements/4321/unapprove",
+            {},
+        )
+        assert accept_form_elem.attrib["method"].lower() == "post"
 
         next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
         assert len(next_a_elems) == 1
@@ -1513,6 +1541,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
 
         assert "Accept and continue" not in data
         assert "Put on hold and continue" not in data
+        assert "Cancel approval" not in data
         assert len(document.xpath("//h2[normalize-space(string())='Accepted by']")) == 1
 
         next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
@@ -1522,3 +1551,6 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             "/admin/suppliers/1234/agreements/g-cloud-8/next",
             {},
         )
+
+        assert not document.xpath("//input[@type='submit'][contains(@value, 'Cancel')]")
+        assert not document.xpath("//form[contains(@action, 'unapprove')]")
