@@ -1244,7 +1244,7 @@ class TestApproveAgreement(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
     @property
-    def put_signed_agreement_on_hold_return_value(self):
+    def approve_agreement_for_countersignature_return_value(self):
         # a property so we always get a clean *copy* of this to work with
         return {
             "agreement": {
@@ -1257,7 +1257,7 @@ class TestApproveAgreement(LoggedInApplicationTest):
     def test_it_fails_if_not_ccs_admin(self, data_api_client):
         self.user_role = 'admin'
         data_api_client.approve_agreement_for_countersignature.return_value = \
-            self.put_signed_agreement_on_hold_return_value
+            self.approve_agreement_for_countersignature_return_value
         res = self.client.post('/admin/suppliers/agreements/123/approve', data={"nameOfOrganisation": "Test"})
 
         assert data_api_client.approve_agreement_for_countersignature.called is False
@@ -1265,7 +1265,7 @@ class TestApproveAgreement(LoggedInApplicationTest):
 
     def test_happy_path(self, data_api_client):
         data_api_client.approve_agreement_for_countersignature.return_value = \
-            self.put_signed_agreement_on_hold_return_value
+            self.approve_agreement_for_countersignature_return_value
         res = self.client.post(
             "/admin/suppliers/agreements/123/approve",
             data={"nameOfOrganisation": "Test"},
@@ -1283,7 +1283,7 @@ class TestApproveAgreement(LoggedInApplicationTest):
 
     def test_happy_path_with_next_status_and_unicode_supplier_name(self, data_api_client):
         data_api_client.approve_agreement_for_countersignature.return_value = \
-            self.put_signed_agreement_on_hold_return_value
+            self.approve_agreement_for_countersignature_return_value
         res = self.client.post(
             "/admin/suppliers/agreements/123/approve?next_status=on-hold",
             data={"nameOfOrganisation": u"Test O\u2019Connor"},
