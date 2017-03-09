@@ -1301,7 +1301,52 @@ class TestApproveAgreement(LoggedInApplicationTest):
         assert parse_qs(parsed_location.query) == {"status": ["on-hold"]}
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+class TestUnapproveAgreement(LoggedInApplicationTest):
+    user_role = 'admin-ccs-sourcing'
+
+    @property
+    def unapprove_agreement_for_countersignature_return_value(self):
+        # a property so we always get a clean *copy* of this to work with
+        return {
+            "agreement": {
+                "id": 123,
+                "supplierId": 4321,
+                "frameworkSlug": "g-cloud-99p-world",
+            },
+        }
+
+    def test_it_fails_if_not_ccs_admin(self, data_api_client):
+        self.user_role = 'admin'
+        data_api_client.unapprove_agreement_for_countersignature.return_value = \
+            self.unapprove_agreement_for_countersignature_return_value
+        res = self.client.post('/admin/suppliers/agreements/123/unapprove', data={"nameOfOrganisation": "Test"})
+
+        assert data_api_client.unapprove_agreement_for_countersignature.called is False
+        assert res.status_code == 403
+
+    def test_happy_path(self, data_api_client):
+        data_api_client.unapprove_agreement_for_countersignature.return_value = \
+            self.unapprove_agreement_for_countersignature_return_value
+        res = self.client.post(
+            "/admin/suppliers/agreements/123/unapprove",
+            data={"nameOfOrganisation": "Test"},
+        )
+
+        data_api_client.unapprove_agreement_for_countersignature.assert_called_once_with(
+            '123',
+            'test@example.com',
+            '1234',
+        )
+        assert_flashes(self, "The agreement for Test had its approval cancelled. You can approve it again at any time.")
+        assert res.status_code == 302
+
+        parsed_location = urlparse(res.location)
+        assert parsed_location.path == "/admin/suppliers/4321/agreements/g-cloud-99p-world"
+        assert parse_qs(parsed_location.query) == {}
+
+
+@mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
 @mock.patch('app.main.views.suppliers.get_signed_url')
 @mock.patch('app.main.views.suppliers.s3')
 class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
