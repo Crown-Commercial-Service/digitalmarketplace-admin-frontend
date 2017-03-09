@@ -1063,7 +1063,7 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
         assert response.status_code == 200
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
 @mock.patch('app.main.views.suppliers.s3')
 class TestViewingSignedAgreement(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
@@ -1185,7 +1185,7 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
             assert len(document.xpath('//embed[@src="http://example.com/document/1234.png"]')) == 0
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
 class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
@@ -1239,7 +1239,7 @@ class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
         assert parse_qs(parsed_location.query) == {"status": ["on-hold"]}
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
 class TestApproveAgreement(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
