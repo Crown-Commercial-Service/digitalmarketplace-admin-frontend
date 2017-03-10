@@ -1438,7 +1438,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
 
         assert "Accept and continue" not in data
         assert "Put on hold and continue" not in data
-        assert "Cancel approval" not in data
+        assert "Cancel acceptance" not in data
 
         assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
 
@@ -1464,7 +1464,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         data = res.get_data(as_text=True)
         document = html.fromstring(data)
 
-        assert "Cancel approval" not in data
+        assert "Cancel acceptance" not in data
 
         accept_input_elems = document.xpath("//form//input[@type='submit'][@value='Accept and continue']")
         assert len(accept_input_elems) == 1
@@ -1515,7 +1515,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         data = res.get_data(as_text=True)
         document = html.fromstring(data)
 
-        assert "Cancel approval" not in data
+        assert "Cancel acceptance" not in data
 
         accept_input_elems = document.xpath("//form//input[@type='submit'][@value='Accept and continue']")
         assert len(accept_input_elems) == 1
@@ -1559,7 +1559,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert "Put on hold and continue" not in data
         assert len(document.xpath("//h2[normalize-space(string())='Accepted by']")) == 1
 
-        cancel_input_elems = document.xpath("//form//input[@type='submit'][@value='Cancel approval']")
+        cancel_input_elems = document.xpath("//form//input[@type='submit'][@value='Cancel acceptance']")
         assert len(cancel_input_elems) == 1
         cancel_form_elem = cancel_input_elems[0].xpath("ancestor::form")[0]
         assert self._parsed_url_matches(
@@ -1593,7 +1593,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
 
         assert "Accept and continue" not in data
         assert "Put on hold and continue" not in data
-        assert "Cancel approval" not in data
+        assert "Cancel acceptance" not in data
         assert len(document.xpath("//h2[normalize-space(string())='Accepted by']")) == 1
 
         next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
