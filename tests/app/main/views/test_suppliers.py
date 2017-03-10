@@ -1377,6 +1377,8 @@ class TestUnapproveAgreement(LoggedInApplicationTest):
 class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
+    decl_nameOfOrganization = u"\u00a3\u00a3\u00a3 4 greengrocer's"
+
     def set_mocks(self, s3, get_signed_url, data_api_client, **kwargs):
         data_api_client.get_supplier.return_value = {
             'suppliers': {
@@ -1387,8 +1389,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             'frameworks': {
                 'frameworkAgreementVersion': 'v1.0',
                 'slug': 'g-cloud-8',
-                'status': 'live'
-
+                'status': 'live',
             },
         }
         data_api_client.get_supplier_framework_info.return_value = {
@@ -1396,7 +1397,9 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
                 'agreementReturned': True,
                 'agreementStatus': kwargs['agreement_status'],
                 'agreementId': 4321,
-                'declaration': '',
+                'declaration': {
+                    "nameOfOrganisation": self.decl_nameOfOrganization,
+                },
                 'agreementDetails': {},
                 'agreementPath': 'g-cloud-8/1234/1234-file.pdf',
                 'countersignedDetails': {},
@@ -1473,6 +1476,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         )
         assert accept_form_elem.attrib["method"].lower() == "post"
         assert accept_form_elem.xpath("input[@name='csrf_token']")
+        assert accept_form_elem.xpath("input[@name='nameOfOrganisation'][@value=$n]", n=self.decl_nameOfOrganization)
 
         hold_input_elems = document.xpath("//form//input[@type='submit'][@value='Put on hold and continue']")
         assert len(hold_input_elems) == 1
@@ -1484,6 +1488,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         )
         assert hold_form_elem.attrib["method"].lower() == "post"
         assert hold_form_elem.xpath("input[@name='csrf_token']")
+        assert hold_form_elem.xpath("input[@name='nameOfOrganisation'][@value=$n]", n=self.decl_nameOfOrganization)
 
         assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
 
@@ -1522,6 +1527,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         )
         assert accept_form_elem.attrib["method"].lower() == "post"
         assert accept_form_elem.xpath("input[@name='csrf_token']")
+        assert accept_form_elem.xpath("input[@name='nameOfOrganisation'][@value=$n]", n=self.decl_nameOfOrganization)
 
         assert "Put on hold and continue" not in data
         assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
@@ -1563,6 +1569,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         )
         assert cancel_form_elem.attrib["method"].lower() == "post"
         assert cancel_form_elem.xpath("input[@name='csrf_token']")
+        assert cancel_form_elem.xpath("input[@name='nameOfOrganisation'][@value=$n]", n=self.decl_nameOfOrganization)
 
         next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
         assert len(next_a_elems) == 1
