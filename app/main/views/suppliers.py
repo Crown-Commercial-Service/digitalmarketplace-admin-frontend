@@ -178,6 +178,9 @@ def approve_agreement_for_countersignature(agreement_id):
 @login_required
 @role_required('admin-ccs-sourcing')
 def unapprove_agreement_for_countersignature(agreement_id):
+    # not properly validating this - all we do is pass it through
+    next_status = request.args.get("next_status")
+
     agreement = data_api_client.unapprove_agreement_for_countersignature(
         agreement_id,
         current_user.email_address,
@@ -191,6 +194,7 @@ def unapprove_agreement_for_countersignature(agreement_id):
         '.view_signed_agreement',
         framework_slug=agreement["frameworkSlug"],
         supplier_id=agreement["supplierId"],
+        next_status=next_status,
     ))
 
 

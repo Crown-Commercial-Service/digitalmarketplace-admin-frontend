@@ -1345,6 +1345,29 @@ class TestUnapproveAgreement(LoggedInApplicationTest):
         assert parsed_location.path == "/admin/suppliers/4321/agreements/g-cloud-99p-world"
         assert parse_qs(parsed_location.query) == {}
 
+    def test_happy_path_with_next_status_and_unicode_supplier_name(self, data_api_client):
+        data_api_client.unapprove_agreement_for_countersignature.return_value = \
+            self.unapprove_agreement_for_countersignature_return_value
+        res = self.client.post(
+            "/admin/suppliers/agreements/123/unapprove?next_status=on-hold",
+            data={"nameOfOrganisation": u"Test O\u2019Connor"},
+        )
+
+        data_api_client.unapprove_agreement_for_countersignature.assert_called_once_with(
+            '123',
+            'test@example.com',
+            '1234',
+        )
+        assert_flashes(
+            self,
+            u"The agreement for Test O\u2019Connor had its approval cancelled. You can approve it again at any time.",
+        )
+        assert res.status_code == 302
+
+        parsed_location = urlparse(res.location)
+        assert parsed_location.path == "/admin/suppliers/4321/agreements/g-cloud-99p-world"
+        assert parse_qs(parsed_location.query) == {"next_status": ["on-hold"]}
+
 
 @mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
 @mock.patch('app.main.views.suppliers.get_signed_url')
