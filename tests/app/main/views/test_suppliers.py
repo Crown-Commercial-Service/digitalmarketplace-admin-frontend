@@ -1472,6 +1472,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             {} if next_status is None else {"next_status": [next_status]},
         )
         assert accept_form_elem.attrib["method"].lower() == "post"
+        assert accept_form_elem.xpath("input[@name='csrf_token']")
 
         hold_input_elems = document.xpath("//form//input[@type='submit'][@value='Put on hold and continue']")
         assert len(hold_input_elems) == 1
@@ -1482,6 +1483,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             {} if next_status is None else {"next_status": [next_status]},
         )
         assert hold_form_elem.attrib["method"].lower() == "post"
+        assert hold_form_elem.xpath("input[@name='csrf_token']")
 
         assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
 
@@ -1519,6 +1521,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             {} if next_status is None else {"next_status": [next_status]},
         )
         assert accept_form_elem.attrib["method"].lower() == "post"
+        assert accept_form_elem.xpath("input[@name='csrf_token']")
 
         assert "Put on hold and continue" not in data
         assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
@@ -1552,13 +1555,14 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
 
         cancel_input_elems = document.xpath("//form//input[@type='submit'][@value='Cancel approval']")
         assert len(cancel_input_elems) == 1
-        accept_form_elem = cancel_input_elems[0].xpath("ancestor::form")[0]
+        cancel_form_elem = cancel_input_elems[0].xpath("ancestor::form")[0]
         assert self._parsed_url_matches(
-            accept_form_elem.attrib["action"],
+            cancel_form_elem.attrib["action"],
             "/admin/suppliers/agreements/4321/unapprove",
             {} if next_status is None else {"next_status": [next_status]},
         )
-        assert accept_form_elem.attrib["method"].lower() == "post"
+        assert cancel_form_elem.attrib["method"].lower() == "post"
+        assert cancel_form_elem.xpath("input[@name='csrf_token']")
 
         next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
         assert len(next_a_elems) == 1
