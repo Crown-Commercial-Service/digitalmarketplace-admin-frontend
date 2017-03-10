@@ -105,7 +105,7 @@ Countersign {{ framework.name }} agreement for {{ supplier_framework.declaration
           <input name="nameOfOrganisation" value="{{ supplier_framework.declaration.nameOfOrganisation }}" type="hidden">
           {%
             with
-            type = "save",
+            type = "destructive",
             label = "Cancel acceptance"
           %}
             {% include "toolkit/button.html" %}
