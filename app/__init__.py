@@ -25,6 +25,7 @@ content_loader.load_manifest('g-cloud-6', 'services', 'edit_service_as_admin')
 content_loader.load_manifest('g-cloud-7', 'services', 'edit_service_as_admin')
 content_loader.load_manifest('g-cloud-8', 'services', 'edit_service_as_admin')
 content_loader.load_manifest('digital-outcomes-and-specialists', 'services', 'edit_service_as_admin')
+content_loader.load_manifest('digital-outcomes-and-specialists-2', 'services', 'edit_service_as_admin')
 
 content_loader.load_manifest('g-cloud-7', 'declaration', 'declaration')
 content_loader.load_manifest('g-cloud-8', 'declaration', 'declaration')
