@@ -41,15 +41,18 @@ Countersign {{ framework.name }} agreement for {{ supplier_framework.declaration
 
 
 <div class='grid-row'>
+  <div class="column-one-whole">
+    {%
+        with
+        heading = supplier_framework.declaration.nameOfOrganisation,
+        smaller = True
+    %}
+    {% include "toolkit/page-heading.html" %}
+    {% endwith %}
+  </div>
+</div>
+<div class='grid-row'>
   <div class="column-one-third">
-      {%
-          with
-          heading = supplier_framework.declaration.nameOfOrganisation,
-          smaller = True
-      %}
-      {% include "toolkit/page-heading.html" %}
-      {% endwith %}
-
       <h2>Registered address</h2>
       <ul class="padding-bottom-small">
           <li>{{ supplier_framework.declaration.registeredAddressBuilding }}</li>
