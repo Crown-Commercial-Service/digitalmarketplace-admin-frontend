@@ -14,6 +14,13 @@ def _get_path(framework_slug, path):
     return '{}/communications/{}'.format(framework_slug, path)
 
 
+def _save_file(bucket, framework_slug, path, the_file, flash_message):
+    path = "{}/{}".format(_get_path(framework_slug, path), the_file.filename)
+    download_filename = "{}-{}".format(framework_slug, the_file.filename)
+    bucket.save(path, the_file, download_filename=download_filename)
+    flash(flash_message, 'upload_communication')
+
+
 @main.route('/communications/<framework_slug>', methods=['GET'])
 @login_required
 @role_required('admin')
@@ -45,9 +52,7 @@ def upload_communication(framework_slug):
             errors['communication'] = 'not_open_document_format_or_csv'
 
         if 'communication' not in errors.keys():
-            filename = _get_path(framework_slug, 'updates/communications') + '/' + the_file.filename
-            communications_bucket.save(filename, the_file)
-            flash('communication', 'upload_communication')
+            _save_file(communications_bucket, framework_slug, 'updates/communications', the_file, 'communication')
 
     if request.files.get('clarification'):
         the_file = request.files['clarification']
@@ -55,9 +60,7 @@ def upload_communication(framework_slug):
             errors['clarification'] = 'not_pdf'
 
         if 'clarification' not in errors.keys():
-            filename = _get_path(framework_slug, 'updates/clarifications') + '/' + the_file.filename
-            communications_bucket.save(filename, the_file)
-            flash('clarification', 'upload_communication')
+            _save_file(communications_bucket, framework_slug, 'updates/clarifications', the_file, 'clarification')
 
     if len(errors) > 0:
         for category, message in errors.items():
