@@ -4,6 +4,7 @@ import os
 
 from dmutils.user import User
 from flask import json
+from werkzeug.datastructures import MultiDict
 
 from app import create_app
 from app import login_manager
@@ -39,6 +40,10 @@ class BaseApplicationTest(object):
     def strip_all_whitespace(content):
         pattern = re.compile(r'\s+')
         return re.sub(pattern, '', content)
+
+    def _get_flash_messages(self):
+        with self.client.session_transaction() as session:
+            return MultiDict(session['_flashes'])
 
 
 class Response:
