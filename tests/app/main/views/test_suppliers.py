@@ -1424,9 +1424,10 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         )
 
     @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
-    def test_none_shown_if_user_not_ccs_admin(self, s3, get_signed_url, data_api_client, next_status):
+    @pytest.mark.parametrize("agreement_status", ("signed", "on-hold", "approved", "countersigned",))
+    def test_none_shown_if_user_not_ccs_admin(self, s3, get_signed_url, data_api_client, next_status, agreement_status):
         self.user_role = 'admin'
-        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
+        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status=agreement_status)
 
         res = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8{}".format(
             "" if next_status is None else "?next_status={}".format(next_status)
@@ -1436,13 +1437,17 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         data = res.get_data(as_text=True)
         document = html.fromstring(data)
 
+        # none of the action buttons should be shown for the 'admin' user in any agreement_status
+
         assert "Accept and continue" not in data
         assert "Put on hold and continue" not in data
         assert "Cancel acceptance" not in data
 
-        assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
-
         assert not document.xpath("//form//input[@type='submit']")
+
+        assert bool(document.xpath("//h2[normalize-space(string())='Accepted by']")) == (
+            agreement_status in ("approved", "countersigned",)
+        )
 
         next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
         assert len(next_a_elems) == 1
