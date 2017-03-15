@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import mock
 from ...helpers import LoggedInApplicationTest
 from io import BytesIO
+from dmutils import s3
 
 
 @mock.patch('app.main.views.communications.data_api_client')
@@ -18,6 +19,9 @@ class TestCommunicationsView(LoggedInApplicationTest):
         assert response.status_code == 200
 
     def test_post_documents_for_framework(self, data_api_client):
+        # check we are mocking s3 as we must not actually post there!
+        assert isinstance(s3.S3, mock.Mock)
+
         data_api_client.get_frameworks.return_value = {"frameworks": []}
 
         framework_slug = self.load_example_listing('framework_response')['frameworks']['slug']
@@ -31,6 +35,8 @@ class TestCommunicationsView(LoggedInApplicationTest):
             }
         )
 
+        # check that we did actually mock-send two files
+        self.s3.return_value.save.call_count == 2
         flash_messages = self._get_flash_messages()
         # arguably a misunderstanding here about what an appropriate 'message category' looks like
         assert set(flash_messages.getlist('upload_communication')) == set(('clarification', 'communication',))

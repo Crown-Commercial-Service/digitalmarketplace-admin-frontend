@@ -6,7 +6,7 @@ from .. import main
 from ..auth import role_required
 from ... import data_api_client
 
-from dmutils import s3
+from dmutils import s3  # this style of import so we only have to mock once
 from dmutils.documents import file_is_pdf, file_is_csv, file_is_open_document_format
 
 
