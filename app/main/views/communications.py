@@ -16,8 +16,8 @@ def _get_path(framework_slug, path):
 
 def _save_file(bucket, framework_slug, path, the_file, flash_message):
     path = "{}/{}".format(_get_path(framework_slug, path), the_file.filename)
-    download_filename = "{}-{}".format(framework_slug, the_file.filename)
-    bucket.save(path, the_file, download_filename=download_filename)
+    # setting download_filename ensures Content-Disposition: attachment
+    bucket.save(path, the_file, download_filename=the_file.filename)
     flash(flash_message, 'upload_communication')
 
 
