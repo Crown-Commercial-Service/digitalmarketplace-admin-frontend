@@ -174,6 +174,30 @@ def approve_agreement_for_countersignature(agreement_id):
     ))
 
 
+@main.route('/suppliers/agreements/<agreement_id>/unapprove', methods=['POST'])
+@login_required
+@role_required('admin-ccs-sourcing')
+def unapprove_agreement_for_countersignature(agreement_id):
+    # not properly validating this - all we do is pass it through
+    next_status = request.args.get("next_status")
+
+    agreement = data_api_client.unapprove_agreement_for_countersignature(
+        agreement_id,
+        current_user.email_address,
+        current_user.id,
+    )["agreement"]
+    organisation = request.form['nameOfOrganisation']
+    flash(u'The agreement for {} had its approval cancelled. You can approve it again at any time.'
+          .format(organisation), 'message')
+
+    return redirect(url_for(
+        '.view_signed_agreement',
+        framework_slug=agreement["frameworkSlug"],
+        supplier_id=agreement["supplierId"],
+        next_status=next_status,
+    ))
+
+
 @main.route('/suppliers/<supplier_id>/agreement/<framework_slug>', methods=['GET'])
 @login_required
 @role_required('admin', 'admin-ccs-sourcing')

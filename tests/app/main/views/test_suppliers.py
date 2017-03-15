@@ -9,6 +9,8 @@ from dmapiclient.audit import AuditTypes
 from ...helpers import LoggedInApplicationTest, Response
 from ..helpers.flash_tester import assert_flashes
 
+import pytest
+
 
 @mock.patch('app.main.views.suppliers.data_api_client')
 class TestSuppliersListView(LoggedInApplicationTest):
@@ -1063,9 +1065,9 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
         assert response.status_code == 200
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
 @mock.patch('app.main.views.suppliers.s3')
-class TestViewingASupplierDeclaration(LoggedInApplicationTest):
+class TestViewingSignedAgreement(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
     def test_should_404_if_supplier_does_not_exist(self, s3, data_api_client):
@@ -1185,7 +1187,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
             assert len(document.xpath('//embed[@src="http://example.com/document/1234.png"]')) == 0
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
 class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
@@ -1239,12 +1241,12 @@ class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
         assert parse_qs(parsed_location.query) == {"status": ["on-hold"]}
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
 class TestApproveAgreement(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
     @property
-    def put_signed_agreement_on_hold_return_value(self):
+    def approve_agreement_for_countersignature_return_value(self):
         # a property so we always get a clean *copy* of this to work with
         return {
             "agreement": {
@@ -1257,7 +1259,7 @@ class TestApproveAgreement(LoggedInApplicationTest):
     def test_it_fails_if_not_ccs_admin(self, data_api_client):
         self.user_role = 'admin'
         data_api_client.approve_agreement_for_countersignature.return_value = \
-            self.put_signed_agreement_on_hold_return_value
+            self.approve_agreement_for_countersignature_return_value
         res = self.client.post('/admin/suppliers/agreements/123/approve', data={"nameOfOrganisation": "Test"})
 
         assert data_api_client.approve_agreement_for_countersignature.called is False
@@ -1265,7 +1267,7 @@ class TestApproveAgreement(LoggedInApplicationTest):
 
     def test_happy_path(self, data_api_client):
         data_api_client.approve_agreement_for_countersignature.return_value = \
-            self.put_signed_agreement_on_hold_return_value
+            self.approve_agreement_for_countersignature_return_value
         res = self.client.post(
             "/admin/suppliers/agreements/123/approve",
             data={"nameOfOrganisation": "Test"},
@@ -1283,7 +1285,7 @@ class TestApproveAgreement(LoggedInApplicationTest):
 
     def test_happy_path_with_next_status_and_unicode_supplier_name(self, data_api_client):
         data_api_client.approve_agreement_for_countersignature.return_value = \
-            self.put_signed_agreement_on_hold_return_value
+            self.approve_agreement_for_countersignature_return_value
         res = self.client.post(
             "/admin/suppliers/agreements/123/approve?next_status=on-hold",
             data={"nameOfOrganisation": u"Test O\u2019Connor"},
@@ -1301,11 +1303,81 @@ class TestApproveAgreement(LoggedInApplicationTest):
         assert parse_qs(parsed_location.query) == {"status": ["on-hold"]}
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
+@mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+class TestUnapproveAgreement(LoggedInApplicationTest):
+    user_role = 'admin-ccs-sourcing'
+
+    @property
+    def unapprove_agreement_for_countersignature_return_value(self):
+        # a property so we always get a clean *copy* of this to work with
+        return {
+            "agreement": {
+                "id": 123,
+                "supplierId": 4321,
+                "frameworkSlug": "g-cloud-99p-world",
+            },
+        }
+
+    def test_it_fails_if_not_ccs_admin(self, data_api_client):
+        self.user_role = 'admin'
+        data_api_client.unapprove_agreement_for_countersignature.return_value = \
+            self.unapprove_agreement_for_countersignature_return_value
+        res = self.client.post('/admin/suppliers/agreements/123/unapprove', data={"nameOfOrganisation": "Test"})
+
+        assert data_api_client.unapprove_agreement_for_countersignature.called is False
+        assert res.status_code == 403
+
+    def test_happy_path(self, data_api_client):
+        data_api_client.unapprove_agreement_for_countersignature.return_value = \
+            self.unapprove_agreement_for_countersignature_return_value
+        res = self.client.post(
+            "/admin/suppliers/agreements/123/unapprove",
+            data={"nameOfOrganisation": "Test"},
+        )
+
+        data_api_client.unapprove_agreement_for_countersignature.assert_called_once_with(
+            '123',
+            'test@example.com',
+            '1234',
+        )
+        assert_flashes(self, "The agreement for Test had its approval cancelled. You can approve it again at any time.")
+        assert res.status_code == 302
+
+        parsed_location = urlparse(res.location)
+        assert parsed_location.path == "/admin/suppliers/4321/agreements/g-cloud-99p-world"
+        assert parse_qs(parsed_location.query) == {}
+
+    def test_happy_path_with_next_status_and_unicode_supplier_name(self, data_api_client):
+        data_api_client.unapprove_agreement_for_countersignature.return_value = \
+            self.unapprove_agreement_for_countersignature_return_value
+        res = self.client.post(
+            "/admin/suppliers/agreements/123/unapprove?next_status=on-hold",
+            data={"nameOfOrganisation": u"Test O\u2019Connor"},
+        )
+
+        data_api_client.unapprove_agreement_for_countersignature.assert_called_once_with(
+            '123',
+            'test@example.com',
+            '1234',
+        )
+        assert_flashes(
+            self,
+            u"The agreement for Test O\u2019Connor had its approval cancelled. You can approve it again at any time.",
+        )
+        assert res.status_code == 302
+
+        parsed_location = urlparse(res.location)
+        assert parsed_location.path == "/admin/suppliers/4321/agreements/g-cloud-99p-world"
+        assert parse_qs(parsed_location.query) == {"next_status": ["on-hold"]}
+
+
+@mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
 @mock.patch('app.main.views.suppliers.get_signed_url')
 @mock.patch('app.main.views.suppliers.s3')
 class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
+
+    decl_nameOfOrganization = u"\u00a3\u00a3\u00a3 4 greengrocer's"
 
     def set_mocks(self, s3, get_signed_url, data_api_client, **kwargs):
         data_api_client.get_supplier.return_value = {
@@ -1317,8 +1389,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             'frameworks': {
                 'frameworkAgreementVersion': 'v1.0',
                 'slug': 'g-cloud-8',
-                'status': 'live'
-
+                'status': 'live',
             },
         }
         data_api_client.get_supplier_framework_info.return_value = {
@@ -1326,7 +1397,9 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
                 'agreementReturned': True,
                 'agreementStatus': kwargs['agreement_status'],
                 'agreementId': 4321,
-                'declaration': '',
+                'declaration': {
+                    "nameOfOrganisation": self.decl_nameOfOrganization,
+                },
                 'agreementDetails': {},
                 'agreementPath': 'g-cloud-8/1234/1234-file.pdf',
                 'countersignedDetails': {},
@@ -1350,37 +1423,53 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             qd_matches is None or parse_qs(parsed_url.query) == qd_matches
         )
 
-    def test_none_shown_if_user_not_ccs_admin(self, s3, get_signed_url, data_api_client):
+    @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
+    @pytest.mark.parametrize("agreement_status", ("signed", "on-hold", "approved", "countersigned",))
+    def test_none_shown_if_user_not_ccs_admin(self, s3, get_signed_url, data_api_client, next_status, agreement_status):
         self.user_role = 'admin'
-        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
+        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status=agreement_status)
 
-        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+        res = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8{}".format(
+            "" if next_status is None else "?next_status={}".format(next_status)
+        ))
         assert res.status_code == 200
 
         data = res.get_data(as_text=True)
         document = html.fromstring(data)
+
+        # none of the action buttons should be shown for the 'admin' user in any agreement_status
 
         assert "Accept and continue" not in data
         assert "Put on hold and continue" not in data
+        assert "Cancel acceptance" not in data
 
-        assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
+        assert not document.xpath("//form//input[@type='submit']")
+
+        assert bool(document.xpath("//h2[normalize-space(string())='Accepted by']")) == (
+            agreement_status in ("approved", "countersigned",)
+        )
 
         next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
         assert len(next_a_elems) == 1
         assert self._parsed_url_matches(
             next_a_elems[0].attrib["href"],
             "/admin/suppliers/1234/agreements/g-cloud-8/next",
-            {},
+            {} if next_status is None else {"status": [next_status]},
         )
 
-    def test_both_shown_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client):
+    @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
+    def test_buttons_shown_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client, next_status):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
 
-        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+        res = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8{}".format(
+            "" if next_status is None else "?next_status={}".format(next_status)
+        ))
         assert res.status_code == 200
 
         data = res.get_data(as_text=True)
         document = html.fromstring(data)
+
+        assert "Cancel acceptance" not in data
 
         accept_input_elems = document.xpath("//form//input[@type='submit'][@value='Accept and continue']")
         assert len(accept_input_elems) == 1
@@ -1388,9 +1477,11 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert self._parsed_url_matches(
             accept_form_elem.attrib["action"],
             "/admin/suppliers/agreements/4321/approve",
-            {},
+            {} if next_status is None else {"next_status": [next_status]},
         )
         assert accept_form_elem.attrib["method"].lower() == "post"
+        assert accept_form_elem.xpath("input[@name='csrf_token']")
+        assert accept_form_elem.xpath("input[@name='nameOfOrganisation'][@value=$n]", n=self.decl_nameOfOrganization)
 
         hold_input_elems = document.xpath("//form//input[@type='submit'][@value='Put on hold and continue']")
         assert len(hold_input_elems) == 1
@@ -1398,9 +1489,11 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert self._parsed_url_matches(
             hold_form_elem.attrib["action"],
             "/admin/suppliers/agreements/4321/on-hold",
-            {},
+            {} if next_status is None else {"next_status": [next_status]},
         )
         assert hold_form_elem.attrib["method"].lower() == "post"
+        assert hold_form_elem.xpath("input[@name='csrf_token']")
+        assert hold_form_elem.xpath("input[@name='nameOfOrganisation'][@value=$n]", n=self.decl_nameOfOrganization)
 
         assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
 
@@ -1409,56 +1502,25 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert self._parsed_url_matches(
             next_a_elems[0].attrib["href"],
             "/admin/suppliers/1234/agreements/g-cloud-8/next",
-            {},
+            {} if next_status is None else {"status": [next_status]},
         )
 
-    def test_both_shown_with_status_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client):
-        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
+        assert not document.xpath("//input[@type='submit'][contains(@value, 'Cancel')]")
+        assert not document.xpath("//form[contains(@action, 'unapprove')]")
 
-        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8?next_status=approved,countersigned')
-        assert res.status_code == 200
-
-        data = res.get_data(as_text=True)
-        document = html.fromstring(data)
-
-        accept_input_elems = document.xpath("//form//input[@type='submit'][@value='Accept and continue']")
-        assert len(accept_input_elems) == 1
-        accept_form_elem = accept_input_elems[0].xpath("ancestor::form")[0]
-        assert self._parsed_url_matches(
-            accept_form_elem.attrib["action"],
-            "/admin/suppliers/agreements/4321/approve",
-            {"next_status": ["approved,countersigned"]},
-        )
-        assert accept_form_elem.attrib["method"].lower() == "post"
-
-        hold_input_elems = document.xpath("//form//input[@type='submit'][@value='Put on hold and continue']")
-        assert len(hold_input_elems) == 1
-        hold_form_elem = hold_input_elems[0].xpath("ancestor::form")[0]
-        assert self._parsed_url_matches(
-            hold_form_elem.attrib["action"],
-            "/admin/suppliers/agreements/4321/on-hold",
-            {"next_status": ["approved,countersigned"]},
-        )
-        assert hold_form_elem.attrib["method"].lower() == "post"
-
-        assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
-
-        next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
-        assert len(next_a_elems) == 1
-        assert self._parsed_url_matches(
-            next_a_elems[0].attrib["href"],
-            "/admin/suppliers/1234/agreements/g-cloud-8/next",
-            {"status": ["approved,countersigned"]},
-        )
-
-    def test_only_counter_sign_shown_if_agreement_on_hold(self, s3, get_signed_url, data_api_client):
+    @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
+    def test_only_counter_sign_shown_if_agreement_on_hold(self, s3, get_signed_url, data_api_client, next_status):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='on-hold')
 
-        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+        res = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8{}".format(
+            "" if next_status is None else "?next_status={}".format(next_status)
+        ))
         assert res.status_code == 200
 
         data = res.get_data(as_text=True)
         document = html.fromstring(data)
+
+        assert "Cancel acceptance" not in data
 
         accept_input_elems = document.xpath("//form//input[@type='submit'][@value='Accept and continue']")
         assert len(accept_input_elems) == 1
@@ -1466,9 +1528,11 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert self._parsed_url_matches(
             accept_form_elem.attrib["action"],
             "/admin/suppliers/agreements/4321/approve",
-            {},
+            {} if next_status is None else {"next_status": [next_status]},
         )
         assert accept_form_elem.attrib["method"].lower() == "post"
+        assert accept_form_elem.xpath("input[@name='csrf_token']")
+        assert accept_form_elem.xpath("input[@name='nameOfOrganisation'][@value=$n]", n=self.decl_nameOfOrganization)
 
         assert "Put on hold and continue" not in data
         assert not document.xpath("//h2[normalize-space(string())='Accepted by']")
@@ -1478,13 +1542,19 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert self._parsed_url_matches(
             next_a_elems[0].attrib["href"],
             "/admin/suppliers/1234/agreements/g-cloud-8/next",
-            {},
+            {} if next_status is None else {"status": [next_status]},
         )
 
-    def test_none_shown_if_agreement_approved(self, s3, get_signed_url, data_api_client):
+        assert not document.xpath("//input[@type='submit'][contains(@value, 'Cancel')]")
+        assert not document.xpath("//form[contains(@action, 'unapprove')]")
+
+    @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
+    def test_cancel_shown_if_agreement_approved(self, s3, get_signed_url, data_api_client, next_status):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='approved')
 
-        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+        res = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8{}".format(
+            "" if next_status is None else "?next_status={}".format(next_status)
+        ))
         assert res.status_code == 200
 
         data = res.get_data(as_text=True)
@@ -1494,18 +1564,33 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert "Put on hold and continue" not in data
         assert len(document.xpath("//h2[normalize-space(string())='Accepted by']")) == 1
 
+        cancel_input_elems = document.xpath("//form//input[@type='submit'][@value='Cancel acceptance']")
+        assert len(cancel_input_elems) == 1
+        cancel_form_elem = cancel_input_elems[0].xpath("ancestor::form")[0]
+        assert self._parsed_url_matches(
+            cancel_form_elem.attrib["action"],
+            "/admin/suppliers/agreements/4321/unapprove",
+            {} if next_status is None else {"next_status": [next_status]},
+        )
+        assert cancel_form_elem.attrib["method"].lower() == "post"
+        assert cancel_form_elem.xpath("input[@name='csrf_token']")
+        assert cancel_form_elem.xpath("input[@name='nameOfOrganisation'][@value=$n]", n=self.decl_nameOfOrganization)
+
         next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
         assert len(next_a_elems) == 1
         assert self._parsed_url_matches(
             next_a_elems[0].attrib["href"],
             "/admin/suppliers/1234/agreements/g-cloud-8/next",
-            {},
+            {} if next_status is None else {"status": [next_status]},
         )
 
-    def test_none_shown_if_agreement_countersigned(self, s3, get_signed_url, data_api_client):
+    @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
+    def test_none_shown_if_agreement_countersigned(self, s3, get_signed_url, data_api_client, next_status):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='countersigned')
 
-        res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+        res = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8{}".format(
+            "" if next_status is None else "?next_status={}".format(next_status)
+        ))
         assert res.status_code == 200
 
         data = res.get_data(as_text=True)
@@ -1513,6 +1598,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
 
         assert "Accept and continue" not in data
         assert "Put on hold and continue" not in data
+        assert "Cancel acceptance" not in data
         assert len(document.xpath("//h2[normalize-space(string())='Accepted by']")) == 1
 
         next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
@@ -1520,5 +1606,8 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert self._parsed_url_matches(
             next_a_elems[0].attrib["href"],
             "/admin/suppliers/1234/agreements/g-cloud-8/next",
-            {},
+            {} if next_status is None else {"status": [next_status]},
         )
+
+        assert not document.xpath("//input[@type='submit'][contains(@value, 'Cancel')]")
+        assert not document.xpath("//form[contains(@action, 'unapprove')]")
