@@ -207,6 +207,7 @@ def update(service_id, section_id):
 
     uploaded_documents, document_errors = upload_service_documents(
         s3.S3(current_app.config['DM_S3_DOCUMENT_BUCKET']),
+        'documents',
         current_app.config['DM_DOCUMENTS_URL'],
         service, request.files, section)
 

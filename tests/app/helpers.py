@@ -17,9 +17,7 @@ class BaseApplicationTest(object):
 
         self._s3_patch = mock.patch('dmutils.s3.S3')
         self.s3 = self._s3_patch.start()
-        self.s3.return_value = mock.Mock(
-            bucket_name="digitalmarketplace-documents-testing-testing",
-            bucket_short_name="documents")
+        self.s3.return_value = mock.Mock()
         self.s3.return_value.list.return_value = []
 
         self._default_suffix_patch = mock.patch(
