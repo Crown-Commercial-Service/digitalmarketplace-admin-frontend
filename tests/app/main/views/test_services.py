@@ -11,6 +11,7 @@ from lxml import html
 
 from dmapiclient import HTTPError, REQUEST_ERROR_MESSAGE
 from ...helpers import LoggedInApplicationTest
+from dmutils import s3
 
 
 class TestIndex(LoggedInApplicationTest):
@@ -616,6 +617,8 @@ class TestServiceUpdate(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
     @mock.patch('app.main.views.services.upload_service_documents')
     def test_service_update_when_API_returns_error(self, upload_service_documents, data_api_client):
+        assert isinstance(s3.S3, mock.Mock)
+
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,

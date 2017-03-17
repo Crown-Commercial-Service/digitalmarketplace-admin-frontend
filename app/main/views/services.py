@@ -6,7 +6,7 @@ from dmapiclient import HTTPError
 from dmutils.formats import DATETIME_FORMAT
 from dmcontent.formats import format_service_price
 from dmutils.documents import upload_service_documents
-from dmutils.s3 import S3
+from dmutils import s3  # this style of import so we only have to mock once
 
 
 from ... import data_api_client
@@ -206,7 +206,7 @@ def update(service_id, section_id):
     posted_data = section.get_data(request.form)
 
     uploaded_documents, document_errors = upload_service_documents(
-        S3(current_app.config['DM_S3_DOCUMENT_BUCKET']),
+        s3.S3(current_app.config['DM_S3_DOCUMENT_BUCKET']),
         current_app.config['DM_DOCUMENTS_URL'],
         service, request.files, section)
 

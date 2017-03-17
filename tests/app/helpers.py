@@ -4,6 +4,7 @@ import os
 
 from dmutils.user import User
 from flask import json
+from werkzeug.datastructures import MultiDict
 
 from app import create_app
 from app import login_manager
@@ -14,11 +15,12 @@ class BaseApplicationTest(object):
         self.app = create_app('test')
         self.client = self.app.test_client()
 
-        self._s3_patch = mock.patch('app.main.views.services.S3')
+        self._s3_patch = mock.patch('dmutils.s3.S3')
         self.s3 = self._s3_patch.start()
         self.s3.return_value = mock.Mock(
             bucket_name="digitalmarketplace-documents-testing-testing",
             bucket_short_name="documents")
+        self.s3.return_value.list.return_value = []
 
         self._default_suffix_patch = mock.patch(
             'dmutils.documents.default_file_suffix',
@@ -39,6 +41,10 @@ class BaseApplicationTest(object):
     def strip_all_whitespace(content):
         pattern = re.compile(r'\s+')
         return re.sub(pattern, '', content)
+
+    def _get_flash_messages(self):
+        with self.client.session_transaction() as session:
+            return MultiDict(session['_flashes'])
 
 
 class Response:
