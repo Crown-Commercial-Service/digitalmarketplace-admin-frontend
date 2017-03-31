@@ -5,7 +5,7 @@
   "private": true,
   "engine": "node >= 4.2",
   "dependencies": {
-    "bower": "1.7.1",
+    "bower": "1.8.0",
     "del": "1.1.1",
     "gov-au-ui-kit": "AusDTO/gov-au-ui-kit#1.10.3",
     "govuk_frontend_toolkit": "4.12.0",
