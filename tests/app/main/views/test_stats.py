@@ -10,10 +10,6 @@ from ...helpers import LoggedInApplicationTest
 class TestStats(LoggedInApplicationTest):
     def test_get_stats_page(self, data_api_client):
         response = self.client.get('/admin/statistics/applications')
-
-        data_api_client.req.metrics().applications().history().get().assert_called()
-        data_api_client.req.metrics().domains().get().assert_called()
-
         self.assertEquals(200, response.status_code)
 
     def test_supplier_counts_on_stats_page(self, data_api_client):

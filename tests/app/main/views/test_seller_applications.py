@@ -11,4 +11,3 @@ class TestApplicationAdmin(LoggedInApplicationTest):
 
         response = self.client.get('/admin/applications')
         assert response.status_code == 200
-        data_api_client.find_applications.assert_called()
