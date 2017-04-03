@@ -227,10 +227,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             'audit_date=2010-01-05',
             response.location)
 
-        data_api_client.acknowledge_audit_event.assert_called(
-            audit_event_id=123,
-            user='test@example.com'
-        )
+        data_api_client.acknowledge_audit_event.assert_called()
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_not_call_api_when_form_errors(self, data_api_client):
