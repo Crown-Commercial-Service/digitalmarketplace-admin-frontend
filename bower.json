@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "dependencies": {
     "jquery": "1.11.2",
-    "digitalmarketplace-frontend-toolkit": "https://github.com/alphagov/digitalmarketplace-frontend-toolkit.git#v15.13.1",
+    "digitalmarketplace-frontend-toolkit": "https://github.com/ausdto/dto-digitalmarketplace-frontend-toolkit.git#v18.4.1",
     "govuk_template": "https://github.com/alphagov/govuk_template/releases/download/v0.17.3/jinja_govuk_template-0.17.3.tgz",
-    "digitalmarketplace-frameworks": "https://github.com/alphagov/digitalmarketplace-frameworks.git#v2.1.2",
+    "digitalmarketplace-frameworks": "https://github.com/alphagov/digitalmarketplace-frameworks.git#c3876b37384af6cf18627bc7e31e7307fb707e08",
     "hogan": "3.0.2",
     "c3": "0.4.10"
   }

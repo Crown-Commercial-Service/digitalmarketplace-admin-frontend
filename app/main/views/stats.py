@@ -16,8 +16,8 @@ from ..auth import role_required
 @login_required
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
 def view_application_statistics():
-
-    applications = format_metrics(data_api_client.req.metrics().applications().history().get())
+    raw_applications = data_api_client.req.metrics().applications().history().get()
+    applications = format_metrics(raw_applications)
     domains = data_api_client.req.metrics().domains().get()
     seller_types = data_api_client.req.metrics().applications().seller_types().get()
     steps = data_api_client.req.metrics().applications().steps().get()
