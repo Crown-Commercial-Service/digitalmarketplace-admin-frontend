@@ -74,16 +74,14 @@ class Test(Config):
     SHARED_EMAIL_KEY = 'KEY'
     INVITE_EMAIL_SALT = 'SALT'
     DM_MANDRILL_API_KEY = "MANDRILL"
-    DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-communications-dev-dev'
-    DM_AGREEMENTS_BUCKET = 'digitalmarketplace-documents-dev-dev'
 
 
 class Development(Config):
     DEBUG = True
     SESSION_COOKIE_SECURE = False
     AUTHENTICATION = True
-    DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-communications-dev-dev'
-    DM_AGREEMENTS_BUCKET = 'digitalmarketplace-documents-dev-dev'
+    DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-dev-uploads'
+    DM_AGREEMENTS_BUCKET = 'digitalmarketplace-dev-uploads'
 
     DM_DATA_API_URL = "http://localhost:5000"
     DM_DATA_API_AUTH_TOKEN = "myToken"
