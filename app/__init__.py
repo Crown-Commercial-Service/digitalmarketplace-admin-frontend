@@ -29,6 +29,7 @@ content_loader.load_manifest('digital-outcomes-and-specialists-2', 'services', '
 
 content_loader.load_manifest('g-cloud-7', 'declaration', 'declaration')
 content_loader.load_manifest('g-cloud-8', 'declaration', 'declaration')
+content_loader.load_manifest('g-cloud-9', 'declaration', 'declaration')
 content_loader.load_manifest('digital-outcomes-and-specialists', 'declaration', 'declaration')
 content_loader.load_manifest('digital-outcomes-and-specialists-2', 'declaration', 'declaration')
 
