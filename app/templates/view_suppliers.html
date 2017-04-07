@@ -32,9 +32,11 @@
     {% elif current_user.has_role("admin-ccs-sourcing") %}
       {% set field_headings = [
         "Name",
+        "G-Cloud 7",
         "Digital Outcomes and Specialists",
         "G-Cloud 8",
         "Digital Outcomes and Specialists 2",
+        "G-Cloud 9"
       ] %}
     {% else %}
       {% set field_headings = [
