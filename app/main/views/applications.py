@@ -15,9 +15,25 @@ import mimetypes
 @login_required
 @role_required('admin')
 def applications_review():
-    applications = data_api_client.req.applications().tasks().get(
-        params=dict(order_by='application.status desc, created_at desc')
-    )['applications']
+    return applications_list(status='submitted')
+
+
+@main.route('/applications/all', methods=['GET'])
+@login_required
+@role_required('admin')
+def applications_review_all():
+    return applications_list()
+
+
+def applications_list(status=None):
+    if status:
+        applications = data_api_client.req.applications().status(status).get(
+            params=dict(order_by='application.status desc, created_at desc')
+        )['applications']
+    else:
+        applications = data_api_client.req.applications().get(
+            params=dict(order_by='application.status desc, created_at desc')
+        )['applications']
 
     SCHEME = request.environ['wsgi.url_scheme']
     convert_url = url_for('main.convert_to_seller', _external=True, _scheme=SCHEME)
