@@ -33,6 +33,7 @@
       <div class="grid-row">
           <div class="column-two-thirds">
           <a href="{{ url_for('main.applications_review') }}" role="button">View Seller Applications</a>
+          <a href="{{ url_for('main.assessments_review') }}" role="button">View Seller Assessments</a>
 
               {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
               <form action="{{ url_for('.find') }}" method="get" class="question">
