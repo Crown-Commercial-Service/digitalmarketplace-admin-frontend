@@ -329,7 +329,7 @@ def reset_password(user_id):
     url = '{}://{}/{}/{}'.format(
         current_app.config['DM_HTTP_PROTO'],
         current_app.config['DM_MAIN_SERVER_NAME'],
-        '/reset-password/',
+        'reset-password',
         format(token)
     )
 
