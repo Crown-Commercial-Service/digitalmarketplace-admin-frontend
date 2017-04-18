@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify, url_for
+from flask import current_app, render_template, request, jsonify, url_for
 from flask_login import login_required
 
 from .. import main
@@ -38,3 +38,31 @@ def assessments_approve():
     result = data_api_client.req.suppliers(assessment['supplier_domain']['supplier']['id']) \
         .domains(assessment['supplier_domain']['domain']['id']).assessed().post({})
     return jsonify(result)
+
+
+@main.route('/assessments/supplier', methods=['GET'])
+@main.route('/assessments/supplier/<int:id>', methods=['GET'])
+@login_required
+@role_required('admin')
+def assessments_supplier(id=None):
+    application = {'application': data_api_client.get_supplier(id)['supplier']}
+
+    props = dict(application)
+    props['basename'] = url_for('.assessments_supplier', id=id)
+    props['application']['documents_url'] = url_for('.download_single_file', id=id, slug='')
+    props['application']['case_study_url'] = '{}://{}/{}/'.format(
+        current_app.config['DM_HTTP_PROTO'],
+        current_app.config['DM_MAIN_SERVER_NAME'],
+        'case-study'
+    )
+    props['form_options'] = {
+        'action': url_for('.preview_application', id=id),
+        'submit_url': url_for('.preview_application', id=id),
+    }
+
+    rendered_component = render_component('bundles/SellerRegistration/ApplicationPreviewWidget.js', props)
+
+    return render_template(
+        '_react.html',
+        component=rendered_component
+    )
