@@ -55,7 +55,11 @@
     %}
 
       {% call summary.row() %}
-        {{ summary.field_name(item.name, rowspan=5) }}
+        {% if current_user.has_role('admin-ccs-sourcing') %}
+          {{ summary.field_name(item.name, rowspan=5) }}
+        {% else %}
+          {{ summary.field_name(item.name) }}
+        {% endif %}
         {% if current_user.has_role('admin') %}
           {{ summary.edit_link("Change name", url_for(".edit_supplier_name", supplier_id=item.id)) }}
         {% endif %}
