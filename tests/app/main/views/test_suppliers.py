@@ -694,8 +694,8 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
 
         assert response.status_code == 200
-        assert document.cssselect('#input-PR1-yes')[0].checked
-        assert not document.cssselect('#input-PR1-no')[0].checked
+        assert document.cssselect('#input-PR1-1')[0].checked
+        assert not document.cssselect('#input-PR1-2')[0].checked
 
     def test_should_set_declaration(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
