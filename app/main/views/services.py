@@ -139,7 +139,9 @@ def compare(old_archived_service_id, new_archived_service_id):
         new_updated_at = datetime.strptime(
             new_archived_service.get('updatedAt'), DATETIME_FORMAT)
 
-        if old_updated_at >= new_updated_at:
+        # For the first ever edit of a service the timestamps of the original and updated archive service are equal
+        # so old_updated_at=new_updated_at is OK
+        if old_updated_at > new_updated_at:
             return False
 
         return True
