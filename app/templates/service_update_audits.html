@@ -25,49 +25,38 @@
 {% block main_content %}
     {%
       with
-      smaller = true,
-      heading = today|dateformat,
-      context = "Activity for"
+      heading = "Check edited services"
     %}
       {% include "toolkit/page-heading.html" %}
     {% endwith %}
     <div class="grid-row">
-        {% if form.errors|length >= 1 %}
-          <div class="validation-masthead" aria-labelledby="validation-masthead-heading">
-              <h3 class="validation-masthead-heading" id="validation-masthead-heading">
-                  There was a problem with your answer to the following questions
-              </h3>
-              {% for field_name, field_errors in form.errors|dictsort if field_errors %}
-                {% for error in field_errors %}
-                  <a href="#example-textbox" class="validation-masthead-link">{{ form[field_name].label }}</a>
-                {% endfor %}
-              {% endfor %}
-          </div>
-        {% endif %}
-
         <div class="column-one-whole">
+        {% set content %}
+            <span class="search-summary-count">{{ audit_events|length }}</span> {{ pluralize(audit_events|length, "service", "services") }}
+        {% endset %}
+        {% include "toolkit/search-summary.html" %}
+
             {% call(item) summary.list_table(
               audit_events,
               caption="Audit events",
               empty_message="No audit events found",
               field_headings=[
                 'Supplier',
-                'Date',
                 'Service ID',
+                'Edited',
                 summary.hidden_field_heading("Changes"),
                 summary.hidden_field_heading("Action")
               ],
               field_headings_visible=True
             ) %}
               {% call summary.row() %}
-                {{ summary.field_name(item.data.supplierName) }}
-                {% call summary.field() %}
-                  {{ item.createdAt|timeformat }}
-                  <br/>
-                  {{ item.createdAt|shortdateformat }}
-                {% endcall %}
+                {{ summary.field_name(item.data.supplierName, wide=True) }}
                 {% call summary.field() %}
                   {{ item.data.serviceId }}
+                {% endcall %}
+                {% call summary.field() %}
+                  {{ item.createdAt|timeformat }}
+                  {{ item.createdAt|shortdateformat }}
                 {% endcall %}
                 {{ summary.edit_link(
                   "View changes",
@@ -77,25 +66,6 @@
                     new_archived_service_id=item.data.newArchivedServiceId
                   )
                 ) }}
-                {% call summary.field(action=True) %}
-
-                  {% if item.acknowledged %}
-                    {{ item.acknowledgedBy }}
-                    <br/>
-                    {{ item.createdAt|timeformat }}
-                    <br/>
-                    {{ item.createdAt|shortdateformat }}
-                  {% elif current_user.has_role('admin') %}
-                    <form action="{{ url_for('.submit_service_update_acknowledgment', audit_id=item.id) }}" method="post">
-                        <div style="display:none;">
-                            <input name="csrf_token" type="hidden" value="{{ csrf }}">
-                            <input name="acknowledged" type="hidden" value="{{ acknowledged }}">
-                            <input name="audit_date" type="hidden" value="{% if form.audit_date.data %}{{ form.audit_date.data }}{% endif %}">
-                        </div>
-                        <button class="button-secondary">Acknowledge</button>
-                    </form>
-                  {% endif %}
-                {% endcall %}
               {% endcall %}
             {% endcall %}
 
