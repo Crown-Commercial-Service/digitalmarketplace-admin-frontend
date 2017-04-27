@@ -129,6 +129,9 @@ def compare(old_archived_service_id, new_archived_service_id):
 
     def validate_archived_services(old_archived_service, new_archived_service):
 
+        if old_archived_service == new_archived_service:
+            abort(404)
+
         if old_archived_service.get('id', -1) \
                 != new_archived_service.get('id', -2):
             return False
@@ -162,7 +165,7 @@ def compare(old_archived_service_id, new_archived_service_id):
             service_data_revision_1['id'])['services']
 
     except (HTTPError, KeyError, ValueError):
-        return abort(404)
+        abort(404)
 
     content = content_loader.get_manifest('g-cloud-6', 'edit_service_as_admin').filter(service_data)
 
