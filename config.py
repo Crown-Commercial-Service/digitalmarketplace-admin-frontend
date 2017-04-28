@@ -80,18 +80,16 @@ class Development(Config):
     DEBUG = True
     SESSION_COOKIE_SECURE = False
     AUTHENTICATION = True
-    DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-dev-uploads'
     DM_AGREEMENTS_BUCKET = 'digitalmarketplace-dev-uploads'
+    DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-dev-uploads'
+    DM_S3_DOCUMENT_BUCKET = "digitalmarketplace-dev-uploads"
+    DM_DOCUMENTS_URL = "https://{}.s3-eu-west-1.amazonaws.com".format(DM_S3_DOCUMENT_BUCKET)
 
     DM_DATA_API_URL = "http://localhost:5000"
     DM_DATA_API_AUTH_TOKEN = "myToken"
     SECRET_KEY = "verySecretKey"
-    DM_S3_DOCUMENT_BUCKET = "digitalmarketplace-documents-dev-dev"
-    DM_DOCUMENTS_URL = "https://{}.s3-eu-west-1.amazonaws.com".format(DM_S3_DOCUMENT_BUCKET)
     DM_MANDRILL_API_KEY = "not_a_real_key"
     SHARED_EMAIL_KEY = "very_secret"
-    DM_AGREEMENTS_BUCKET = "digitalmarketplace-agreements-dev-dev"
-    DM_COMMUNICATIONS_BUCKET = "digitalmarketplace-communications-dev-dev"
 
 
 class Live(Config):
