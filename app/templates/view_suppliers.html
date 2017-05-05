@@ -96,7 +96,7 @@
             {% call summary.field(rowspan=3) %}
                 <a href="{{ url_for(".view_signed_agreement", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists-2") }}">View agreement</a>
             {% endcall %}
-            {% call summary.field() %}
+            {% call summary.field(rowspan=3) %}
               <a href="{{ url_for(".view_signed_agreement", supplier_id=item.id, framework_slug="g-cloud-9") }}">View agreement</a>
             {% endcall %}
           {% endcall %}
