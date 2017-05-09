@@ -37,8 +37,9 @@ class Config(object):
 
     # Logging
     DM_LOG_LEVEL = 'DEBUG'
-    DM_APP_NAME = 'admin-frontend'
+    DM_PLAIN_TEXT_LOGS = False
     DM_LOG_PATH = None
+    DM_APP_NAME = 'admin-frontend'
     DM_DOWNSTREAM_REQUEST_ID_HEADER = 'X-Amz-Cf-Id'
 
     # Feature Flags
@@ -65,6 +66,7 @@ class Config(object):
 
 class Test(Config):
     DEBUG = True
+    DM_PLAIN_TEXT_LOGS = True
     AUTHENTICATION = True
     WTF_CSRF_ENABLED = False
     DM_DOCUMENTS_URL = 'https://assets.test.digitalmarketplace.service.gov.uk'
@@ -78,6 +80,7 @@ class Test(Config):
 
 class Development(Config):
     DEBUG = True
+    DM_PLAIN_TEXT_LOGS = True
     SESSION_COOKIE_SECURE = False
     AUTHENTICATION = True
     DM_AGREEMENTS_BUCKET = 'digitalmarketplace-dev-uploads'
