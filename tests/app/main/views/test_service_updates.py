@@ -1,109 +1,100 @@
+# -*- coding: utf-8 -*-
 import mock
+import pytest
+from lxml import html
 
 from dmapiclient.audit import AuditTypes
 
 from ...helpers import LoggedInApplicationTest
 
 
+@mock.patch('app.main.views.service_updates.data_api_client', autospec=True)
 class TestServiceUpdates(LoggedInApplicationTest):
-    @mock.patch('app.main.views.service_updates.data_api_client')
-    def test_should_call_api_with_correct_params(self, data_api_client):
-        data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
-
-        response = self.client.get('/admin/service-updates?audit_date=2006-01-01&acknowledged=all')  # noqa
-        assert response.status_code == 200
-
-        data_api_client.find_audit_events.assert_called_with(
-            audit_type=AuditTypes.update_service,
-            audit_date='2006-01-01',
-            acknowledged='all',
-            page=1)
-
-    @mock.patch('app.main.views.service_updates.data_api_client')
-    def test_should_call_api_with_none_date(self, data_api_client):
-        data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
-
-        response = self.client.get('/admin/service-updates?acknowledged=all')  # noqa
-        assert response.status_code == 200
-
-        data_api_client.find_audit_events.assert_called_with(
-            audit_type=AuditTypes.update_service,
-            audit_date=None,
-            acknowledged='all',
-            page=1)
-
-    @mock.patch('app.main.views.service_updates.data_api_client')
-    def test_should_redirect_to_update_page(self, data_api_client):
-        response = self.client.post(
-            '/admin/service-updates/123/acknowledge',
-            data={
-                'acknowledged': 'false',
-                'audit_date': '2010-01-05'
-            }
+    @pytest.mark.parametrize('audit_events,expected_table_contents,expected_count', (
+        (
+            (
+                ('2017-04-25T14:43:46.061077Z', '597637931594387', u'Ideal Health £', '240701', '240684'),
+                ('2016-03-05T10:42:16.061077Z', '1123456789012348', u'Testing Limited', '240699', '240682'),
+                ('2012-07-15T18:03:43.061077Z', '1123456789012351', u'Company name', '240697', '240680'),
+            ),
+            (
+                ('Company name', '1123456789012351', '19:03:43 15 July', '/admin/services/compare/240697...240680'),
+                (u'Testing Limited', '1123456789012348', '10:42:16 5 March', '/admin/services/compare/240699...240682'),
+                (u'Ideal Health £', '597637931594387', '15:43:46 25 April', '/admin/services/compare/240701...240684'),
+            ),
+            '3 services',
+        ),
+        (
+            (
+                ('2017-04-25T14:43:46.061077Z', '597637931590001', 'Ideal Health', '240701', '240684'),
+                ('2016-03-05T10:42:16.061077Z', '597637931590001', 'Ideal Health', '240699', '240682'),
+                ('2012-07-15T18:03:43.061077Z', '597637931590002', 'Company name', '240697', '240680'),
+            ),
+            (
+                ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/compare/240697...240680'),
+                ('Ideal Health', '597637931590001', '10:42:16 5 March', '/admin/services/compare/240699...240682'),
+            ),
+            '2 services',
+        ),
+        (
+            (),
+            (),
+            '0 services',
+        ),
+        (
+            (
+                ('2012-07-15T18:03:43.061077Z', '597637931590002', 'Company name', '240697', '240680'),
+            ),
+            (
+                ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/compare/240697...240680'),
+            ),
+            '1 service',
+        ),
+    ))
+    def test_should_show_services(self, data_api_client, audit_events, expected_table_contents, expected_count):
+        data_api_client.find_audit_events_iter.return_value = (
+            {
+                "data": {
+                    "oldArchivedServiceId": old_archived_service_id,
+                    "newArchivedServiceId": new_archived_service_id,
+                    "serviceId": service_id,
+                    "supplierName": supplier_name,
+                },
+                "createdAt": date_string
+            } for (
+                date_string, service_id, supplier_name, old_archived_service_id, new_archived_service_id
+            ) in audit_events
         )
 
-        assert response.status_code == 302
-        assert 'http://localhost/admin/service-updates' in response.location
-        assert 'acknowledged=false' in response.location
-        assert 'audit_date=2010-01-05' in response.location
+        response = self.client.get('/admin/service-updates')
 
-        data_api_client.acknowledge_audit_event.assert_called_with("123", 'test@example.com')
+        assert response.status_code == 200
+        document = html.fromstring(response.get_data(as_text=True))
 
-    @mock.patch('app.main.views.service_updates.data_api_client')
+        assert tuple(
+            tuple(
+                td.xpath('normalize-space(string())') for td in tr.xpath('./td')[:-1]
+            ) + (tr.xpath('./td[last()]//a/@href')[0],)
+            for tr in document.xpath('//table[@class="summary-item-body"]/tbody/tr')
+        ) == expected_table_contents
+
+        assert document.xpath('normalize-space(string(//*[@class="search-summary"]))') == expected_count
+
+        if (audit_events != ()):
+            assert tuple(
+                tuple(th.xpath('normalize-space(string())') for th in tr.xpath('./th'))
+                for tr in document.xpath('//table[@class="summary-item-body"]/thead/tr')
+            ) == (('Supplier', 'Service ID', 'Edited', 'Changes', 'Action'),)
+
     def test_should_show_no_updates_if_none_returned(self, data_api_client):
         data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
-        response = self.client.get('/admin/service-updates?audit_date=2006-01-01')  # noqa
+        response = self.client.get('/admin/service-updates')  # noqa
         assert response.status_code == 200
 
         assert self._replace_whitespace('Noauditeventsfound') in self._replace_whitespace(
             response.get_data(as_text=True)
         )
-
-        data_api_client.find_audit_events.assert_called_with(
-            page=1,
-            audit_date='2006-01-01',
-            audit_type=AuditTypes.update_service,
-            acknowledged='false')
-
-    @mock.patch('app.main.views.service_updates.data_api_client')
-    def test_should_show_no_updates_if_invalid_search(self, data_api_client):
-        response = self.client.get('/admin/service-updates?audit_date=invalid')  # noqa
-        assert response.status_code == 400
-
-        assert self._replace_whitespace('Noauditeventsfound') in self._replace_whitespace(
-            response.get_data(as_text=True)
-        )
-
-        assert data_api_client.find_audit_events.called is False
-
-    @mock.patch('app.main.views.service_updates.data_api_client')
-    def test_should_call_api_ack_audit_event(self, data_api_client):
-        response = self.client.post('/admin/service-updates/123/acknowledge?audit_date=2010-01-01&acknowledged=all')  # noqa
-        assert response.status_code == 302
-
-        data_api_client.acknowledge_audit_event.assert_called_with(
-            '123', 'test@example.com'
-        )
-
-    @mock.patch('app.main.views.service_updates.data_api_client')
-    def test_should_pass_valid_page_argument_to_api(self, data_api_client):
-        response = self.client.get('/admin/service-updates?page=5')
-        assert response.status_code == 200
-
-        data_api_client.find_audit_events.assert_called_with(
-            page=5,
-            audit_type=AuditTypes.update_service,
-            acknowledged='false',
-            audit_date=None
-            )
-
-    @mock.patch('app.main.views.service_updates.data_api_client')
-    def test_should_not_pass_invalid_page_argument_to_api(self, data_api_client):
-        response = self.client.get('/admin/service-updates?page=invalid')
-        assert response.status_code == 400
-
-        assert data_api_client.find_audit_events.called is False
 
 
 @mock.patch('app.main.views.service_updates.data_api_client')

@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
+from itertools import groupby
 
 from flask import request, render_template, redirect, url_for, abort
 from flask_login import login_required, current_user
+from six import next
 
 from dmapiclient.audit import AuditTypes
 from dmutils.formats import DATETIME_FORMAT
@@ -54,33 +56,24 @@ def service_status_update_audits(day=None, page=1):
 @login_required
 @role_required('admin', 'admin-ccs-category')
 def service_update_audits():
-    form = ServiceUpdateAuditEventsForm(request.args, csrf_enabled=False)
-
-    if not form.validate():
-        return render_template(
-            "service_update_audits.html",
-            today=datetime.utcnow().strftime(DATETIME_FORMAT),
-            acknowledged=form.default_acknowledged(),
-            audit_events=[],
-            form=form
-        ), 400
-
-    audit_events = data_api_client.find_audit_events(
+    audit_events = list(data_api_client.find_audit_events_iter(
         audit_type=AuditTypes.update_service,
-        acknowledged=form.default_acknowledged(),
-        audit_date=form.format_date(),
-        page=form.page.data
+        acknowledged='false',
+    ))
+    audit_events.sort(key=lambda audit_event: (audit_event["data"]["serviceId"], audit_event["createdAt"]))
+
+    # Build a tuple of the first of the earliest unacknowledged audit events for each service id
+    earliest_unacknowledged_audit_events = sorted(
+        (next(group_iter) for key, group_iter in groupby(
+            audit_events,
+            lambda audit_event: audit_event["data"]["serviceId"]
+        )),
+        key=lambda audit_event: audit_event["createdAt"],
     )
 
     return render_template(
         "service_update_audits.html",
-        today=form.format_date_for_display().strftime(DATETIME_FORMAT),
-        acknowledged=form.default_acknowledged(),
-        audit_events=audit_events['auditEvents'],
-        current_page=form.page.data,
-        prev_page_exists=bool(audit_events['links'].get('prev')),
-        next_page_exists=bool(audit_events['links'].get('next')),
-        form=form
+        audit_events=earliest_unacknowledged_audit_events,
     )
 
 
