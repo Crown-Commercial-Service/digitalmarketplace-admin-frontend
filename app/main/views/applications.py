@@ -1,5 +1,5 @@
 from flask import render_template, request, flash, url_for, jsonify, request, current_app, abort, Response
-from flask_login import login_required
+from flask_login import login_required, current_user
 
 from .. import main
 from ... import data_api_client
@@ -121,7 +121,8 @@ def download_single_file(id, slug):
 @role_required('admin')
 def convert_to_seller():
     application_id = request.get_json(force=True)['id']
-    result = data_api_client.req.applications(application_id).approve().post({})
+    result = data_api_client.req.applications(application_id).approve()\
+        .post({'update_details': {'updated_by': current_user.email_address}})
     return jsonify(result)
 
 
@@ -130,7 +131,8 @@ def convert_to_seller():
 @role_required('admin')
 def reject_application():
     application_id = request.get_json(force=True)['id']
-    result = data_api_client.req.applications(application_id).reject().post({})
+    result = data_api_client.req.applications(application_id).reject()\
+        .post({'update_details': {'updated_by': current_user.email_address}})
     return jsonify(result)
 
 
@@ -139,5 +141,6 @@ def reject_application():
 @role_required('admin')
 def revert_application():
     application_id = request.get_json(force=True)['id']
-    result = data_api_client.req.applications(application_id).revert().post({})
+    result = data_api_client.req.applications(application_id).revert()\
+        .post({'update_details': {'updated_by': current_user.email_address}})
     return jsonify(result)

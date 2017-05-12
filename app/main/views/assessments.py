@@ -1,5 +1,5 @@
 from flask import current_app, render_template, request, jsonify, url_for
-from flask_login import login_required
+from flask_login import login_required, current_user
 
 from .. import main
 from ... import data_api_client
@@ -19,7 +19,8 @@ def assessments_review():
         'bundles/ApplicationsAdmin/AssessmentsAdminWidget.js',
         {
             'assessments': assessments,
-            'meta': {'url_approve': url_for('main.assessments_approve', _external=True, _scheme=SCHEME)}
+            'meta': {'url_approve': url_for('main.assessments_approve', _external=True, _scheme=SCHEME),
+                     'url_reject': url_for('main.assessments_reject', _external=True, _scheme=SCHEME)}
         }
     )
 
@@ -36,8 +37,19 @@ def assessments_approve():
     id = request.get_json(force=True)['id']
     assessment = data_api_client.req.assessments(id).get()
     result = data_api_client.req.suppliers(assessment['supplier_domain']['supplier']['id']) \
-        .domains(assessment['supplier_domain']['domain']['id']).assessed().post({})
+        .domains(assessment['supplier_domain']['domain']['id']).assessed()\
+        .post({'update_details': {'updated_by': current_user.email_address}})
     return jsonify(result)
+
+
+@main.route('/assessments/reject', methods=['POST'])
+@login_required
+@role_required('admin')
+def assessments_reject():
+    id = request.get_json(force=True)['id']
+    assessment = data_api_client.req.assessments(id).reject()\
+        .post({'update_details': {'updated_by': current_user.email_address}})
+    return jsonify(assessment)
 
 
 @main.route('/assessments/supplier', methods=['GET'])
