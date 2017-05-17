@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from itertools import groupby
+from itertools import groupby, islice
 
 from flask import request, render_template, redirect, url_for, abort
 from flask_login import login_required, current_user
@@ -52,14 +52,18 @@ def service_status_update_audits(day=None, page=1):
     )
 
 
-@main.route('/service-updates', methods=['GET'])
+_SERVICE_UPDATE_AUDITS_EVENT_LIMIT = 1000
+
+
+@main.route('/services/updates/unacknowledged', methods=['GET'])
 @login_required
 @role_required('admin', 'admin-ccs-category')
 def service_update_audits():
-    audit_events = list(data_api_client.find_audit_events_iter(
+    audit_events = list(islice(data_api_client.find_audit_events_iter(
         audit_type=AuditTypes.update_service,
         acknowledged='false',
-    ))
+        latest_first='false',
+    ), 0, _service_update_audits_event_limit))
     audit_events.sort(key=lambda audit_event: (audit_event["data"]["serviceId"], audit_event["createdAt"]))
 
     # Build a tuple of the first of the earliest unacknowledged audit events for each service id
@@ -74,6 +78,34 @@ def service_update_audits():
     return render_template(
         "service_update_audits.html",
         audit_events=earliest_unacknowledged_audit_events,
+        event_limit_reached=(len(audit_events) >= _service_update_audits_event_limit),
+    )
+
+
+@main.route('/services/updates', methods=['GET'])
+@login_required
+@role_required('admin', 'admin-ccs-category')
+def acknowledged_services():
+    audit_events = list(islice(data_api_client.find_audit_events_iter(
+        audit_type=AuditTypes.update_service,
+        acknowledged='true',
+        latest_first='false',
+    ), 0, _service_update_audits_event_limit))
+    audit_events.sort(
+        key=lambda audit_event: (audit_event["acknowledgedAt"], audit_event["acknowledgedBy"], audit_event["id"])
+    )
+
+    earliest_acknowledged_audit_events = tuple(
+        (next(group_iter) for key, group_iter in groupby(
+            audit_events,
+            lambda audit_event: audit_event["acknowledgedAt"]
+        ))
+    )
+
+    return render_template(
+        "acknowledged_services.html",
+        audit_events=earliest_acknowledged_audit_events,
+        event_limit_reached=(len(audit_events) >= _service_update_audits_event_limit),
     )
 
 

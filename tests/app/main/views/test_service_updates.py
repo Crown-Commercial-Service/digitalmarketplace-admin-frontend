@@ -51,7 +51,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
             '1 service',
         ),
     ))
-    def test_should_show_services(self, data_api_client, audit_events, expected_table_contents, expected_count):
+    def test_should_show_unacknowledged_services(
+            self, data_api_client, audit_events, expected_table_contents, expected_count):
         data_api_client.find_audit_events_iter.return_value = (
             {
                 "data": {
@@ -66,7 +67,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             ) in audit_events
         )
 
-        response = self.client.get('/admin/service-updates')
+        response = self.client.get('/admin/services/updates/unacknowledged')
 
         assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
@@ -84,12 +85,83 @@ class TestServiceUpdates(LoggedInApplicationTest):
             assert tuple(
                 tuple(th.xpath('normalize-space(string())') for th in tr.xpath('./th'))
                 for tr in document.xpath('//table[@class="summary-item-body"]/thead/tr')
-            ) == (('Supplier', 'Service ID', 'Edited', 'Changes', 'Action'),)
+            ) == (('Supplier', 'Service ID', 'Edited', 'Changes'),)
+
+    @pytest.mark.parametrize('audit_events,expected_table_contents,expected_count', (
+        (
+            (
+                (1234, '2017-04-25T14:43:46.061077Z', 'User 1', '597637931594387',
+                 u'Ideal Health £', '240701', '240684'),
+                (4321, '2016-03-05T10:42:16.061077Z', 'User 2', '1123456789012348',
+                 u'Testing Limited', '240699', '240682'),
+                (5678, '2012-07-15T18:03:43.061077Z', 'User 1', '1123456789012351',
+                 u'Company name', '240697', '240680'),
+            ),
+            (
+                (u'Company name', '1123456789012351', '19:03:43 15 July', '/admin/services/compare/240697...240680'),
+                (u'Testing Limited', '1123456789012348', '10:42:16 5 March', '/admin/services/compare/240699...240682'),
+                (u'Ideal Health £', '597637931594387', '15:43:46 25 April', '/admin/services/compare/240701...240684'),
+            ),
+            '3 services',
+        ),
+        (
+            (),
+            (),
+            '0 services',
+        ),
+        (
+            (
+                (3456, '2012-07-15T18:03:43.061077Z', 'user 1', '597637931590002', 'Company name', '240697', '240680'),
+            ),
+            (
+                ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/compare/240697...240680'),
+            ),
+            '1 service',
+        ),
+    ))
+    def test_should_show_acknowledged_services(
+            self, data_api_client, audit_events, expected_table_contents, expected_count):
+        data_api_client.find_audit_events_iter.return_value = (
+            {
+                "data": {
+                    "oldArchivedServiceId": old_archived_service_id,
+                    "newArchivedServiceId": new_archived_service_id,
+                    "supplierName": supplier_name,
+                    "serviceId": service_id
+                },
+                "id": id,
+                "acknowledgedAt": date_string,
+                "acknowledgedBy": acknowledged_by
+            } for (
+                id, date_string, acknowledged_by, service_id, supplier_name,
+                old_archived_service_id, new_archived_service_id
+            ) in audit_events
+        )
+
+        response = self.client.get('/admin/services/updates')
+
+        assert response.status_code == 200
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert tuple(
+            tuple(
+                td.xpath('normalize-space(string())') for td in tr.xpath('./td')[:-1]
+            ) + (tr.xpath('./td[last()]//a/@href')[0],)
+            for tr in document.xpath('//table[@class="summary-item-body"]/tbody/tr')
+        ) == expected_table_contents
+
+        assert document.xpath('normalize-space(string(//*[@class="search-summary"]))') == expected_count
+
+        if (audit_events != ()):
+            assert tuple(
+                tuple(th.xpath('normalize-space(string())') for th in tr.xpath('./th'))
+                for tr in document.xpath('//table[@class="summary-item-body"]/thead/tr')
+            ) == (('Supplier', 'Service ID', 'Acknowledged', 'Changes'),)
 
     def test_should_show_no_updates_if_none_returned(self, data_api_client):
         data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
-        response = self.client.get('/admin/service-updates')  # noqa
+        response = self.client.get('/admin/services/updates')  # noqa
         assert response.status_code == 200
 
         assert self._replace_whitespace('Noauditeventsfound') in self._replace_whitespace(
