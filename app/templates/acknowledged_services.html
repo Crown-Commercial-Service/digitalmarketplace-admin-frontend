@@ -25,7 +25,7 @@
 {% block main_content %}
     {%
       with
-      heading = "Unacknowledged service edits"
+      heading = "Acknowledged service edits"
     %}
       {% include "toolkit/page-heading.html" %}
     {% endwith %}
@@ -47,7 +47,7 @@
               field_headings=[
                 'Supplier',
                 'Service ID',
-                'Edited',
+                'Acknowledged',
                 summary.hidden_field_heading("Changes"),
               ],
               field_headings_visible=True
@@ -58,8 +58,8 @@
                   {{ item.data.serviceId }}
                 {% endcall %}
                 {% call summary.field() %}
-                  {{ item.createdAt|timeformat }}
-                  {{ item.createdAt|shortdateformat }}
+                  {{ item.acknowledgedAt|timeformat }}
+                  {{ item.acknowledgedAt|shortdateformat }}
                 {% endcall %}
                 {{ summary.edit_link(
                   "View changes",
