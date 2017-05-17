@@ -106,9 +106,9 @@
         {% call summary.field(first=True) %}
           {{ item.domain }}
         {% endcall %}
-        {{ summary.text(item.unassessed) }}
 
         {{ summary.text(item.unsubmitted) }}
+        {{ summary.text(item.unassessed) }}
         {{ summary.text(item.assessed) }}
 
       {% endcall %}
