@@ -141,6 +141,10 @@ def reject_application():
 @role_required('admin')
 def revert_application():
     application_id = request.get_json(force=True)['id']
-    result = data_api_client.req.applications(application_id).revert()\
-        .post({'update_details': {'updated_by': current_user.email_address}})
+    message = request.get_json(force=True)['msg']
+    result = data_api_client.req.applications(application_id).revert() \
+        .post({
+            'update_details': {'updated_by': current_user.email_address},
+            'message': message
+        })
     return jsonify(result)
