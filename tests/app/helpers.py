@@ -6,12 +6,20 @@ from dmutils.user import User
 from flask import json
 from werkzeug.datastructures import MultiDict
 
-from app import create_app
+from app import create_app, data_api_client
 from app import login_manager
 
 
 class BaseApplicationTest(object):
     def setup_method(self, method):
+
+        # We need to mock the API client in create_app, however we can't use patch the constructor,
+        # as the DataAPIClient instance has already been created; nor can we temporarily replace app.data_api_client
+        # with a mock, because then the shared instance won't have been configured (done in create_app). Instead,
+        # just mock the one function that would make an API call in this case.
+        data_api_client.find_frameworks = mock.Mock()
+        data_api_client.find_frameworks.return_value = self._get_frameworks_list_fixture_data()
+
         self.app = create_app('test')
         self.client = self.app.test_client()
 
@@ -43,6 +51,21 @@ class BaseApplicationTest(object):
     def _get_flash_messages(self):
         with self.client.session_transaction() as session:
             return MultiDict(session['_flashes'])
+
+    @staticmethod
+    def _get_fixture_data(fixture_filename):
+        test_root = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), ".")
+        )
+        fixture_path = os.path.join(
+            test_root, 'fixtures', fixture_filename
+        )
+        with open(fixture_path) as fixture_file:
+            return json.load(fixture_file)
+
+    @staticmethod
+    def _get_frameworks_list_fixture_data():
+        return BaseApplicationTest._get_fixture_data('frameworks.json')
 
 
 class Response:
