@@ -1,5 +1,6 @@
 from datetime import timedelta, datetime
 
+from dmcontent.errors import ContentNotFoundError
 from flask import Flask, request, redirect
 from flask.ext.bootstrap import Bootstrap
 from flask_login import LoginManager
@@ -21,17 +22,6 @@ login_manager = LoginManager()
 
 content_loader = ContentLoader('app/content')
 
-content_loader.load_manifest('g-cloud-6', 'services', 'edit_service_as_admin')
-content_loader.load_manifest('g-cloud-7', 'services', 'edit_service_as_admin')
-content_loader.load_manifest('g-cloud-8', 'services', 'edit_service_as_admin')
-content_loader.load_manifest('digital-outcomes-and-specialists', 'services', 'edit_service_as_admin')
-content_loader.load_manifest('digital-outcomes-and-specialists-2', 'services', 'edit_service_as_admin')
-
-content_loader.load_manifest('g-cloud-7', 'declaration', 'declaration')
-content_loader.load_manifest('g-cloud-8', 'declaration', 'declaration')
-content_loader.load_manifest('g-cloud-9', 'declaration', 'declaration')
-content_loader.load_manifest('digital-outcomes-and-specialists', 'declaration', 'declaration')
-content_loader.load_manifest('digital-outcomes-and-specialists-2', 'declaration', 'declaration')
 
 from app.main.helpers.service import parse_document_upload_time
 
@@ -50,6 +40,23 @@ def create_app(config_name):
         feature_flags=feature_flags,
         login_manager=login_manager
     )
+
+    for framework_data in data_api_client.find_frameworks().get('frameworks'):
+        try:
+            content_loader.load_manifest(framework_data['slug'], 'services', 'edit_service_as_admin')
+        except ContentNotFoundError:
+            # Not all frameworks have this, so no need to panic (e.g. G-Cloud 4, G-Cloud 5)
+            application.logger.info(
+                "Could not load edit_service_as_admin manifest for {}".format(framework_data['slug'])
+            )
+        try:
+            content_loader.load_manifest(framework_data['slug'], 'declaration', 'declaration')
+        except ContentNotFoundError:
+            # Not all frameworks have this, so no need to panic (e.g. G-Cloud 4, G-Cloud 5, G-Cloud-6)
+            application.logger.info(
+                "Could not load edit_service_as_admin manifest for {}".format(framework_data['slug'])
+            )
+
     # Should be incorporated into digitalmarketplace-utils as well
     csrf.init_app(application)
 
