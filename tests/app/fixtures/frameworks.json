@@ -1,0 +1,431 @@
+{
+  "frameworks": [
+    {
+      "allow_declaration_reuse": false,
+      "application_close_date": null,
+      "clarificationQuestionsOpen": false,
+      "countersignerName": null,
+      "framework": "g-cloud",
+      "frameworkAgreementDetails": {},
+      "frameworkAgreementVersion": null,
+      "id": 4,
+      "lots": [
+        {
+          "allowsBrief": false,
+          "id": 1,
+          "name": "Software as a Service",
+          "oneServiceLimit": false,
+          "slug": "saas",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 2,
+          "name": "Platform as a Service",
+          "oneServiceLimit": false,
+          "slug": "paas",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 3,
+          "name": "Infrastructure as a Service",
+          "oneServiceLimit": false,
+          "slug": "iaas",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 4,
+          "name": "Specialist Cloud Services",
+          "oneServiceLimit": false,
+          "slug": "scs",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        }
+      ],
+      "name": "G-Cloud 7",
+      "slug": "g-cloud-7",
+      "status": "live",
+      "variations": {}
+    },
+    {
+      "allow_declaration_reuse": false,
+      "application_close_date": null,
+      "clarificationQuestionsOpen": false,
+      "countersignerName": null,
+      "framework": "g-cloud",
+      "frameworkAgreementDetails": {},
+      "frameworkAgreementVersion": null,
+      "id": 1,
+      "lots": [
+        {
+          "allowsBrief": false,
+          "id": 1,
+          "name": "Software as a Service",
+          "oneServiceLimit": false,
+          "slug": "saas",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 2,
+          "name": "Platform as a Service",
+          "oneServiceLimit": false,
+          "slug": "paas",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 3,
+          "name": "Infrastructure as a Service",
+          "oneServiceLimit": false,
+          "slug": "iaas",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 4,
+          "name": "Specialist Cloud Services",
+          "oneServiceLimit": false,
+          "slug": "scs",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        }
+      ],
+      "name": "G-Cloud 6",
+      "slug": "g-cloud-6",
+      "status": "expired",
+      "variations": {}
+    },
+    {
+      "allow_declaration_reuse": true,
+      "application_close_date": "2016-06-01T17:00:00.000000Z",
+      "clarificationQuestionsOpen": false,
+      "countersignerName": null,
+      "framework": "g-cloud",
+      "frameworkAgreementDetails": {
+        "frameworkAgreementVersion": "v1.0",
+        "variations": {
+          "1": {
+            "countersignedAt": "2016-10-05T11:00:00.000000Z",
+            "countersignerName": "Dan Saxby",
+            "countersignerRole": "Category Director",
+            "createdAt": "2016-08-19T15:31:00.000000Z"
+          }
+        }
+      },
+      "frameworkAgreementVersion": "v1.0",
+      "id": 6,
+      "lots": [
+        {
+          "allowsBrief": false,
+          "id": 1,
+          "name": "Software as a Service",
+          "oneServiceLimit": false,
+          "slug": "saas",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 2,
+          "name": "Platform as a Service",
+          "oneServiceLimit": false,
+          "slug": "paas",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 3,
+          "name": "Infrastructure as a Service",
+          "oneServiceLimit": false,
+          "slug": "iaas",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 4,
+          "name": "Specialist Cloud Services",
+          "oneServiceLimit": false,
+          "slug": "scs",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        }
+      ],
+      "name": "G-Cloud 8",
+      "slug": "g-cloud-8",
+      "status": "live",
+      "variations": {
+        "1": {
+          "countersignedAt": "2016-10-05T11:00:00.000000Z",
+          "countersignerName": "Dan Saxby",
+          "countersignerRole": "Category Director",
+          "createdAt": "2016-08-19T15:31:00.000000Z"
+        }
+      }
+    },
+    {
+      "allow_declaration_reuse": false,
+      "application_close_date": null,
+      "clarificationQuestionsOpen": false,
+      "countersignerName": null,
+      "framework": "g-cloud",
+      "frameworkAgreementDetails": {},
+      "frameworkAgreementVersion": null,
+      "id": 3,
+      "lots": [
+        {
+          "allowsBrief": false,
+          "id": 1,
+          "name": "Software as a Service",
+          "oneServiceLimit": false,
+          "slug": "saas",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 2,
+          "name": "Platform as a Service",
+          "oneServiceLimit": false,
+          "slug": "paas",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 3,
+          "name": "Infrastructure as a Service",
+          "oneServiceLimit": false,
+          "slug": "iaas",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 4,
+          "name": "Specialist Cloud Services",
+          "oneServiceLimit": false,
+          "slug": "scs",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        }
+      ],
+      "name": "G-Cloud 5",
+      "slug": "g-cloud-5",
+      "status": "expired",
+      "variations": {}
+    },
+    {
+      "allow_declaration_reuse": false,
+      "application_close_date": null,
+      "clarificationQuestionsOpen": false,
+      "countersignerName": null,
+      "framework": "g-cloud",
+      "frameworkAgreementDetails": {},
+      "frameworkAgreementVersion": null,
+      "id": 2,
+      "lots": [
+        {
+          "allowsBrief": false,
+          "id": 1,
+          "name": "Software as a Service",
+          "oneServiceLimit": false,
+          "slug": "saas",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 2,
+          "name": "Platform as a Service",
+          "oneServiceLimit": false,
+          "slug": "paas",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 3,
+          "name": "Infrastructure as a Service",
+          "oneServiceLimit": false,
+          "slug": "iaas",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 4,
+          "name": "Specialist Cloud Services",
+          "oneServiceLimit": false,
+          "slug": "scs",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        }
+      ],
+      "name": "G-Cloud 4",
+      "slug": "g-cloud-4",
+      "status": "expired",
+      "variations": {}
+    },
+    {
+      "allow_declaration_reuse": true,
+      "application_close_date": "2017-01-16T17:00:00.000000Z",
+      "clarificationQuestionsOpen": false,
+      "countersignerName": null,
+      "framework": "digital-outcomes-and-specialists",
+      "frameworkAgreementDetails": {
+        "frameworkAgreementVersion": "v1.0",
+        "variations": {}
+      },
+      "frameworkAgreementVersion": "v1.0",
+      "id": 7,
+      "lots": [
+        {
+          "allowsBrief": true,
+          "id": 5,
+          "name": "Digital outcomes",
+          "oneServiceLimit": true,
+          "slug": "digital-outcomes",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": true,
+          "id": 6,
+          "name": "Digital specialists",
+          "oneServiceLimit": true,
+          "slug": "digital-specialists",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 7,
+          "name": "User research studios",
+          "oneServiceLimit": false,
+          "slug": "user-research-studios",
+          "unitPlural": "labs",
+          "unitSingular": "lab"
+        },
+        {
+          "allowsBrief": true,
+          "id": 8,
+          "name": "User research participants",
+          "oneServiceLimit": true,
+          "slug": "user-research-participants",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        }
+      ],
+      "name": "Digital Outcomes and Specialists 2",
+      "slug": "digital-outcomes-and-specialists-2",
+      "status": "live",
+      "variations": {}
+    },
+    {
+      "allow_declaration_reuse": true,
+      "application_close_date": "2016-01-01T15:00:00.000000Z",
+      "clarificationQuestionsOpen": false,
+      "countersignerName": null,
+      "framework": "digital-outcomes-and-specialists",
+      "frameworkAgreementDetails": {},
+      "frameworkAgreementVersion": null,
+      "id": 5,
+      "lots": [
+        {
+          "allowsBrief": true,
+          "id": 5,
+          "name": "Digital outcomes",
+          "oneServiceLimit": true,
+          "slug": "digital-outcomes",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": true,
+          "id": 6,
+          "name": "Digital specialists",
+          "oneServiceLimit": true,
+          "slug": "digital-specialists",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 7,
+          "name": "User research studios",
+          "oneServiceLimit": false,
+          "slug": "user-research-studios",
+          "unitPlural": "labs",
+          "unitSingular": "lab"
+        },
+        {
+          "allowsBrief": true,
+          "id": 8,
+          "name": "User research participants",
+          "oneServiceLimit": true,
+          "slug": "user-research-participants",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        }
+      ],
+      "name": "Digital Outcomes and Specialists",
+      "slug": "digital-outcomes-and-specialists",
+      "status": "live",
+      "variations": {}
+    },
+    {
+      "allow_declaration_reuse": false,
+      "application_close_date": null,
+      "clarificationQuestionsOpen": true,
+      "countersignerName": null,
+      "framework": "g-cloud",
+      "frameworkAgreementDetails": {},
+      "frameworkAgreementVersion": null,
+      "id": 8,
+      "lots": [
+        {
+          "allowsBrief": false,
+          "id": 9,
+          "name": "Cloud hosting",
+          "oneServiceLimit": false,
+          "slug": "cloud-hosting",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 10,
+          "name": "Cloud software",
+          "oneServiceLimit": false,
+          "slug": "cloud-software",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 11,
+          "name": "Cloud support",
+          "oneServiceLimit": false,
+          "slug": "cloud-support",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        }
+      ],
+      "name": "G-Cloud 9",
+      "slug": "g-cloud-9",
+      "status": "open",
+      "variations": {}
+    }
+  ]
+}
