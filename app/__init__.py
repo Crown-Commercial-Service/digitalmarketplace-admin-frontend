@@ -54,7 +54,7 @@ def create_app(config_name):
         except ContentNotFoundError:
             # Not all frameworks have this, so no need to panic (e.g. G-Cloud 4, G-Cloud 5, G-Cloud-6)
             application.logger.info(
-                "Could not load edit_service_as_admin manifest for {}".format(framework_data['slug'])
+                "Could not load declaration manifest for {}".format(framework_data['slug'])
             )
 
     # Should be incorporated into digitalmarketplace-utils as well
