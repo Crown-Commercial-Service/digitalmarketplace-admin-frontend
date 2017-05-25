@@ -6,6 +6,8 @@
 
     new GOVUK.SelectionButtons('.selection-button input');
 
+    new GOVUK.ShowHideContent().init();
+
   };
 
 }).apply(this, [GOVUK||{}, GOVUK.GDM||{}]);

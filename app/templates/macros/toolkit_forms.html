@@ -5,6 +5,7 @@
     hint=(question_content.hint or ''),
     name=question_content.id,
     value=service_data[question_content.id],
+    hidden=question_content.hidden,
     error=errors.get(question_content.id)['message']
   %}
     {% include "toolkit/forms/textbox.html" %}
@@ -20,6 +21,7 @@
     value=service_data[question_content.id],
     large=True,
     max_length_in_words=question_content.max_length_in_words,
+    hidden=question_content.hidden,
     error=errors.get(question_content.id)['message']
   %}
     {% include "toolkit/forms/textbox.html" %}
@@ -35,6 +37,7 @@
     hint=(question_content.hint or ''),
     values=service_data[question_content.id],
     id=question_content.id,
+    hidden=question_content.hidden,
     error=errors.get(question_content.id)['message']
   %}
     {% include "toolkit/forms/list-entry.html" %}
@@ -51,10 +54,32 @@
     id=question_content.id,
     options=question_content.options,
     type='checkbox',
+    hidden=question_content.hidden,
+    followup=question_content.values_followup,
     error=errors.get(question_content.id)['message'],
     question_number=question_number
   %}
     {% include "toolkit/forms/selection-buttons.html" %}
+  {% endwith %}
+{%- endmacro %}
+
+{% macro checkbox_tree(question_content, service_data, errors) -%}
+  {%
+    with
+    name=question_content.id,
+    question=question_content.question,
+    question_advice=question_content.question_advice,
+    hint=(question_content.hint or ''),
+    value=service_data[question_content.id],
+    id=question_content.id,
+    options=question_content.options,
+    type='checkbox_tree',
+    number_of_items=question_content.number_of_items,
+    question_number=kwargs.question_number,
+    hidden=question_content.hidden,
+    error=errors.get(question_content.id)['message']
+  %}
+    {% include "toolkit/forms/checkbox-tree.html" %}
   {% endwith %}
 {%- endmacro %}
 
@@ -69,6 +94,8 @@
     id=question_content.id,
     options=question_content.options,
     type='radio',
+    hidden=question_content.hidden,
+    followup=question_content.values_followup,
     error=errors.get(question_content.id)['message'],
     question_number=question_number
   %}
@@ -85,6 +112,8 @@
     value=service_data[question_content.id],
     id=question_content.id,
     type='boolean',
+    hidden=question_content.hidden,
+    followup=question_content.values_followup,
     error=errors.get(question_content.id)['message'],
     question_number=question_number
   %}
@@ -101,6 +130,7 @@
     value="Document uploaded {}".format(
       service_data[question_content.id]
     ) if service_data[question_content.id] else service_data[question_content.id],
+    hidden=question_content.hidden,
     error=errors.get(question_content.id)['message'],
     question_number=question_number
   %}
@@ -122,6 +152,7 @@
     hours_for_price=service_data.get(question_content.fields.hours_for_price),
     hint=(question_content.hint or ''),
     id=question_content.id,
+    hidden=question_content.hidden,
     error=errors.get(question_content.id)['message'],
     question_number=question_number
   %}
@@ -139,6 +170,7 @@
     hint=(question_content.hint or ''),
     name=question_content.id,
     value=service_data[question_content.id],
+    hidden=question_content.hidden,
     error=errors.get(question_content.id)['message'],
     question_number=question_number
   %}
@@ -156,12 +188,15 @@
       <strong>{{ question_content.name }}</strong>
   </span>
 
+  {% import "macros/toolkit_forms.html" as forms %}
+
   {% for child_question in question_content.questions %}
-    {% if errors and errors[child_question.id] %}
-      {{ text(child_question, service_data, errors) }}
-    {% else %}
-      {{ text(child_question, service_data, {}) }}
-    {% endif %}
+    {{ forms[child_question.type](
+          child_question,
+          service_data,
+          errors if errors and errors[child_question.id] else {}
+        )
+    }}
   {% endfor %}
 </fieldset>
 {%- endmacro %}
@@ -179,6 +214,7 @@
     optional=question_content.optional,
     name=question_content.id,
     value=data[question_content.id],
+    hidden=question_content.hidden,
     error=errors.get(question_content.id)['message'],
     question_number=question_number
   %}
