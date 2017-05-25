@@ -38,7 +38,6 @@ class Config(object):
     # Logging
     DM_LOG_LEVEL = 'DEBUG'
     DM_PLAIN_TEXT_LOGS = False
-    DM_LOG_PATH = None
     DM_APP_NAME = 'admin-frontend'
     DM_DOWNSTREAM_REQUEST_ID_HEADER = 'X-Amz-Cf-Id'
 
@@ -100,7 +99,6 @@ class Live(Config):
     AUTHENTICATION = True
     DM_HTTP_PROTO = 'https'
     DM_DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
-    DM_LOG_PATH = '/var/log/digitalmarketplace/application.log'
 
 
 configs = {
