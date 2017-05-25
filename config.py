@@ -103,18 +103,10 @@ class Live(Config):
     DM_LOG_PATH = '/var/log/digitalmarketplace/application.log'
 
 
-class Staging(Config):
-    DEBUG = False
-    AUTHENTICATION = True
-    WTF_CSRF_ENABLED = False
-    DM_DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
-    DM_LOG_PATH = '/var/log/digitalmarketplace/application.log'
-
-
 configs = {
     'development': Development,
     'preview': Live,
-    'staging': Staging,
+    'staging': Live,
     'production': Live,
     'test': Test,
 }
