@@ -140,8 +140,10 @@ def reject_application():
 @login_required
 @role_required('admin')
 def revert_application():
-    application_id = request.get_json(force=True)['id']
-    message = request.get_json(force=True)['msg']
+    json_payload = request.get_json()
+    application_id = json_payload.get('id')
+    message = json_payload.get('msg', '')
+
     result = data_api_client.req.applications(application_id).revert() \
         .post({
             'update_details': {'updated_by': current_user.email_address},
