@@ -18,7 +18,6 @@ class Config(object):
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = True
     DM_S3_DOCUMENT_BUCKET = None
-    DM_DOCUMENTS_URL = 'https://assets.dev.digitalmarketplace.service.gov.uk'
     DM_DATA_API_URL = None
     DM_DATA_API_AUTH_TOKEN = None
     SECRET_KEY = None
@@ -68,7 +67,7 @@ class Test(Config):
     DM_PLAIN_TEXT_LOGS = True
     AUTHENTICATION = True
     WTF_CSRF_ENABLED = False
-    DM_DOCUMENTS_URL = 'https://assets.test.digitalmarketplace.service.gov.uk'
+    DM_ASSETS_URL = 'https://assets.test.digitalmarketplace.service.gov.uk'
     SECRET_KEY = "test_secret"
 
     DM_LOG_LEVEL = 'CRITICAL'
@@ -85,7 +84,7 @@ class Development(Config):
     DM_AGREEMENTS_BUCKET = 'digitalmarketplace-dev-uploads'
     DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-dev-uploads'
     DM_S3_DOCUMENT_BUCKET = "digitalmarketplace-dev-uploads"
-    DM_DOCUMENTS_URL = "https://{}.s3-eu-west-1.amazonaws.com".format(DM_S3_DOCUMENT_BUCKET)
+    DM_ASSETS_URL = "https://{}.s3-eu-west-1.amazonaws.com".format(DM_S3_DOCUMENT_BUCKET)
 
     DM_DATA_API_URL = "http://localhost:5000"
     DM_DATA_API_AUTH_TOKEN = "myToken"
@@ -98,7 +97,6 @@ class Live(Config):
     DEBUG = False
     AUTHENTICATION = True
     DM_HTTP_PROTO = 'https'
-    DM_DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
 
 
 configs = {
