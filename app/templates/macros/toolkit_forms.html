@@ -63,7 +63,7 @@
   {% endwith %}
 {%- endmacro %}
 
-{% macro checkbox_tree(question_content, service_data, errors) -%}
+{% macro checkbox_tree(question_content, service_data, errors, question_number=None) -%}
   {%
     with
     name=question_content.id,
@@ -75,7 +75,7 @@
     options=question_content.options,
     type='checkbox_tree',
     number_of_items=question_content.number_of_items,
-    question_number=kwargs.question_number,
+    question_number=question_number,
     hidden=question_content.hidden,
     error=errors.get(question_content.id)['message']
   %}
