@@ -102,6 +102,14 @@
       <p>All changes were reverted.</p>
     {% endfor %}
     </div><!-- end of .diff -->
+    <form method="post" action="ACK_URL">
+      <div style="display:none;">
+        <input name="csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+      </div>
+      <button type="submit" class="button-save">
+        Acknowledge {{ pluralize(unack_update_events|length, "edit", "edits") }}
+      </button>
+    </form>
     {% endif %}
 
     <div class="grid-row">

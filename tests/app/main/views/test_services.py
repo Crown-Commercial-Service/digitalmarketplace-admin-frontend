@@ -11,6 +11,7 @@ import mock
 
 from flask import Markup
 from lxml import html
+from six import text_type
 
 from dmapiclient import HTTPError, REQUEST_ERROR_MESSAGE
 from dmapiclient.audit import AuditTypes
@@ -1041,12 +1042,33 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 },),
             ]
 
+            # in this case we want a strict assertion that *all* of the following are true about the ack_form
+            ack_forms = doc.xpath(
+                "//form[.//button[@type='submit'][normalize-space(string())=$ack_text]]",
+                ack_text="Acknowledge edit{}".format("" if len(fae_response) == 1 else "s"),
+            )
+            assert len(ack_forms) == 1
+            assert ack_forms[0].method == "POST"
+            #assert ack_forms[0].action == "/admin/services/151/updates/{}/acknowledge".format(
+            #    text_type(fae_response[0]["oldArchivedServiceId"])
+            #)
+            assert sorted(ack_forms[0].form_values()) == [
+                ("csrf_token", mock.ANY),
+            ]
+
             assert doc.xpath(
                 "normalize-space(string(//h3[normalize-space(string())=$oldver_title]/ancestor::" +
                 "*[contains(@class, 'column')]))",
                 oldver_title="Previously acknowledged version",
             ) == "Previously acknowledged version " + exp_oldver_ctxt_text
         else:
+            # in this case we want a loose assertion that nothing exists that has anything like any of these properties
+            assert not doc.xpath(
+                "//form[.//button[@type='submit'][contains(normalize-space(string()), $ack_text)]]",
+                ack_text="Acknowledge edit",
+            )
+            assert not any(form.action.endswith("acknowledge") for form in doc.xpath("//form"))
+
             assert not doc.xpath(
                 "//h3[normalize-space(string())=$oldver_title]",
                 oldver_title="Previously acknowledged version",
