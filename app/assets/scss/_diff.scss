@@ -56,7 +56,7 @@
       &.removal {
         background-color: #FEE5E5;
 
-        strong {
+        del {
           background-color: #FDABAB;
           font-weight: normal;
         }
@@ -64,9 +64,10 @@
       &.addition {
         background-color: #E5FEE5;
 
-        strong {
+        ins {
           background-color: #ABFDAB;
           font-weight: normal;
+          text-decoration: none;
         }
       }
 
@@ -99,6 +100,7 @@
         width: 95%;
         padding-left: 1%;
         float: right;
+        white-space: pre-wrap;
 
         @include media(tablet) {
           width: 41%;

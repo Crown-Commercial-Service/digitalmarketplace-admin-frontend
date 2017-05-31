@@ -1,3 +1,5 @@
+import pytest
+from functools import partial
 try:
     from urlparse import urlsplit
     from StringIO import StringIO
@@ -7,9 +9,11 @@ except ImportError:
 from itertools import chain
 import mock
 
+from flask import Markup
 from lxml import html
 
 from dmapiclient import HTTPError, REQUEST_ERROR_MESSAGE
+from dmapiclient.audit import AuditTypes
 from ...helpers import LoggedInApplicationTest
 from dmutils import s3
 
@@ -735,215 +739,344 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         assert response.status_code == 404
 
 
-class TestCompareServiceArchives(LoggedInApplicationTest):
+@mock.patch("app.main.views.services.html_diff_tables_from_sections_iter")
+@mock.patch('app.main.views.services.data_api_client', autospec=True)
+class TestServiceUpdates(LoggedInApplicationTest):
+    def test_nonexistent_service(self, data_api_client, html_diff_tables_from_sections_iter):
+        data_api_client.get_service.return_value = None
+        response = self.client.get('/admin/services/31415/updates')
+        assert response.status_code == 404
+        assert data_api_client.get_service.call_args_list == [(("31415",), {},)]
 
-    def setup_method(self, method):
-        super(TestCompareServiceArchives, self).setup_method(method)
-        self._services = {
-            1: {'services': {
-                'id': 1,
-                'supplierId': 2,
-                'updatedAt': '2014-12-10T10:55:25.00000Z',
-                'serviceName': '<h1>Cloudy</h1> Cloud Service',
-                'status': 'published',
-                'serviceSummary': 'Something',
-                'frameworkSlug': 'dummy-cloud-slug'
-            }}
-        }
+    @staticmethod
+    def _mock_get_service_side_effect(status, service_id):
+        return {"services": {
+            "151": {
+                "id": "151",
+                "frameworkSlug": "g-cloud-9",
+                "lot": "cloud-hosting",
+                "status": status,
+                "supplierId": 909090,
+                "supplierName": "Barrington's",
+                "serviceName": "Lemonflavoured soap",
+            },
+        }[service_id]}
 
-        self._archived_services = {
-            10: {'services': {
-                'id': 1,
-                'supplierId': 2,
-                'updatedAt': '2014-12-01T10:55:25.00000Z',
-                'serviceName': 'Cloud Service',
-                'serviceSummary': 'Something',
-                'frameworkSlug': 'dummy-cloud-slug'
-            }},
-            20: {'services': {
-                'id': 1,
-                'supplierId': 2,
-                'updatedAt': '2014-12-02T10:55:25.00000Z',
-                'serviceName': '<h1>Cloudy</h1> Cloud Service',
-                'serviceSummary': 'Something',
-                'frameworkSlug': 'dummy-cloud-slug'
-            }},
-            # Service id doesn't exist
-            30: {'services': {
-                'id': 2,
-                'supplierId': 2,
-                'updatedAt': '2014-12-03T10:55:25.00000Z',
-                'frameworkSlug': 'dummy-cloud-slug'
-            }},
-            # Service id doesn't exist
-            40: {'services': {
-                'id': 2,
-                'supplierId': 2,
-                'updatedAt': '2014-12-04T10:55:25.00000Z',
-                'frameworkSlug': 'dummy-cloud-slug'
-            }},
-            # missing the serviceSummary
-            50: {'services': {
-                'id': 1,
-                'supplierId': 2,
-                'updatedAt': '2014-12-03T10:55:25.00000Z',
-                'serviceName': '<h1>Cloudy</h1> Cloud Service',
-                'frameworkSlug': 'dummy-cloud-slug'
-            }}
-        }
+    @staticmethod
+    def _mock_get_archived_service_side_effect(available_archived_services, archived_service_id):
+        return {"services": available_archived_services[archived_service_id]}
 
-        self._service_not_found = {
-            'error': 'The requested URL was not found on the server.  If you '
-                     'entered the URL manually please check your spelling and '
-                     'try again.'
-            }
-
-    class _TestContent(object):
-        def __init__(self):
-            self.sections = [{
-                'editable': True,
-                'name': 'Description',
-                'questions': [
+    @staticmethod
+    def _mock_get_supplier_side_effect(supplier_id):
+        return {"suppliers": {
+            909090: {
+                "id": 909090,
+                "name": "Barrington's",
+                "contactInformation": [
                     {
-                        'question': 'Service name',
-                        'id': 'serviceName'
+                        "email": "sir.jonah.barrington@example.com",
                     },
-                    {
-                        'question': 'Service summary',
-                        'id': 'serviceSummary',
-                    }
                 ],
-                'id': 'description'
-            }]
+            },
+        }[supplier_id]}
 
-    def _get_archived_service(self, *args):
-        try:
-            return self._archived_services[int(args[0])]
-        except KeyError:
-            return self._service_not_found
+    _service_status_labels = {
+        "disabled": "Removed",
+        "enabled": "Private",
+        "published": "Public",
+    }
 
-    def _get_service(self, *args):
-        try:
-            return self._services[int(args[0])]
-        except KeyError:
-            return self._service_not_found
-
-    @mock.patch('app.main.views.services.data_api_client')
-    def _get_archived_services_response(
+    @pytest.mark.parametrize("fae_response,avail_arch_svcs,svc_status,exp_summ_text,exp_oldver_ctxt_text", (
+        (
+            # fae_response (find_audit_events response)
+            (
+                {
+                    "id": 567567,
+                    "type": "update_service",
+                    "acknowledged": False,
+                    "data": {
+                        "oldArchivedServiceId": "789",
+                        "newArchivedServiceId": "678",
+                    },
+                    "createdAt": "2010-02-03T10:11:12.345Z",
+                    "user": "someone@example.com",
+                },
+            ),
+            # avail_arch_svcs (available archived services)
+            {
+                "789": {
+                    "frameworkSlug": "g-cloud-9",
+                    "lot": "cloud-hosting",
+                    "supplierId": 909090,
+                    "supplierName": "Barrington's",
+                    "serviceName": "Melonflavoured soap",
+                },
+            },
+            # svc_status (service status)
+            "disabled",
+            # exp_summ_text (expected summary text)
+            "1 unacknowledged edit by someone@example.com on Wednesday 3 February 2010.",
+            # exp_oldver_ctxt_text (expected oldversion title context text)
+            "Changed on Wednesday 3 February 2010 at 10:11",
+        ),
+        (
+            (
+                {
+                    "id": 1928374,
+                    "type": "update_service",
+                    "acknowledged": False,
+                    "data": {
+                        "oldArchivedServiceId": "111",
+                        "newArchivedServiceId": "222",
+                    },
+                    "createdAt": "2015-02-03T20:11:12.345Z",
+                    "user": "lynch@example.com",
+                },
+                {
+                    "id": 293847,
+                    "type": "update_service",
+                    "acknowledged": False,
+                    "data": {
+                        "oldArchivedServiceId": "222",
+                        "newArchivedServiceId": "333",
+                    },
+                    "createdAt": "2015-03-22T12:55:12.345Z",
+                    "user": "lynch@example.com",
+                },
+                {
+                    "id": 948576,
+                    "type": "update_service",
+                    "acknowledged": False,
+                    "data": {
+                        "oldArchivedServiceId": "333",
+                        "newArchivedServiceId": "444",
+                    },
+                    "createdAt": "2015-03-22T12:57:12.345Z",
+                    "user": "florrie@example.com",
+                },
+            ),
+            {
+                "111": {
+                    "frameworkSlug": "g-cloud-9",
+                    "lot": "cloud-hosting",
+                    "supplierId": 909090,
+                    "supplierName": "Mr Lambe from London",
+                    "serviceName": "Lamb of London, who takest away the sins of our world.",
+                    "somethingIrrelevant": "Soiled personal linen, wrong side up with care.",
+                },
+            },
+            "published",
+            "3 unacknowledged edits by 2 users between Tuesday 3 February 2015 and Sunday 22 March 2015.",
+            "Changed on Tuesday 3 February 2015 at 20:11",
+        ),
+        (
+            (
+                {
+                    "id": 65432,
+                    "type": "update_service",
+                    "acknowledged": False,
+                    "data": {
+                        "oldArchivedServiceId": "4444",
+                        "newArchivedServiceId": "5555",
+                    },
+                    "createdAt": "2012-06-30T20:01:12.345Z",
+                    "user": "marion@example.com",
+                },
+                {
+                    "id": 76543,
+                    "type": "update_service",
+                    "acknowledged": False,
+                    "data": {
+                        "oldArchivedServiceId": "5555",
+                        "newArchivedServiceId": "6666",
+                    },
+                    "createdAt": "2012-06-30T22:55:12.345Z",
+                    "user": "marion@example.com",
+                },
+            ),
+            {
+                "4444": {
+                    "id": "151",
+                    "frameworkSlug": "g-cloud-9",
+                    "lot": "cloud-hosting",
+                    "supplierId": 909090,
+                    "supplierName": "Barrington's",
+                    "serviceName": "Lemonflavoured soap",
+                },
+            },
+            "enabled",
+            "2 unacknowledged edits by marion@example.com on Saturday 30 June 2012.",
+            "Changed on Saturday 30 June 2012 at 21:01",
+        ),
+        (
+            (
+                {
+                    "id": 556677,
+                    "type": "update_service",
+                    "acknowledged": False,
+                    "data": {
+                        "oldArchivedServiceId": "3535",
+                        "newArchivedServiceId": "6767",
+                    },
+                    "createdAt": "2005-11-12T15:01:12.345Z",
+                    "user": "private.carr@example.com",
+                },
+                {
+                    "id": 668833,
+                    "type": "update_service",
+                    "acknowledged": False,
+                    "data": {
+                        "oldArchivedServiceId": "6767",
+                        "newArchivedServiceId": "7373",
+                    },
+                    "createdAt": "2005-12-10T11:55:12.345Z",
+                    "user": "private.carr@example.com",
+                },
+                {
+                    "id": 449966,
+                    "type": "update_service",
+                    "acknowledged": False,
+                    "data": {
+                        "oldArchivedServiceId": "7373",
+                        "newArchivedServiceId": "4747",
+                    },
+                    "createdAt": "2005-12-11T12:55:12.345Z",
+                    "user": "cissy@example.com",
+                },
+                {
+                    "id": 221188,
+                    "type": "update_service",
+                    "acknowledged": False,
+                    "data": {
+                        "oldArchivedServiceId": "4747",
+                        "newArchivedServiceId": "9292",
+                    },
+                    "createdAt": "2005-12-17T09:22:12.345Z",
+                    "user": "private.carr@example.com",
+                },
+            ),
+            {
+                "3535": {
+                    "id": "151",
+                    "frameworkSlug": "g-cloud-9",
+                    "lot": "cloud-hosting",
+                    "supplierId": 909090,
+                    "supplierName": "Barrington's",
+                    "serviceName": "Lemonflavoured soup",
+                },
+            },
+            "enabled",
+            "4 unacknowledged edits by 2 users between Saturday 12 November 2005 and Saturday 17 December 2005.",
+            "Changed on Saturday 12 November 2005 at 15:01",
+        ),
+        (
+            (),
+            {},
+            "enabled",
+            "0 unacknowledged edits.",
+            None,
+        ),
+    ))
+    @pytest.mark.parametrize("resultant_diff", (False, True))
+    def test_unacknowledged_updates(
             self,
-            archived_service_id_1,
-            archived_service_id_2,
-            data_api_client
-    ):
-        data_api_client.get_archived_service.side_effect = \
-            self._get_archived_service
-        data_api_client.get_service.side_effect = self._get_service
+            data_api_client,
+            html_diff_tables_from_sections_iter,
+            fae_response,
+            avail_arch_svcs,
+            svc_status,
+            exp_summ_text,
+            exp_oldver_ctxt_text,
+            resultant_diff,
+            ):
+        data_api_client.get_service.side_effect = partial(self._mock_get_service_side_effect, svc_status)
+        data_api_client.find_audit_events_iter.side_effect = lambda *a, **ka: iter(fae_response)
+        data_api_client.get_archived_service.side_effect = partial(
+            self._mock_get_archived_service_side_effect,
+            avail_arch_svcs,
+        )
+        data_api_client.get_supplier.side_effect = self._mock_get_supplier_side_effect
+        html_diff_tables_from_sections_iter.side_effect = lambda *a, **ka: iter((
+            ("dummy_section", "dummy_question", Markup("<div class='dummy-diff-table'>dummy</div>")),
+        ) if resultant_diff else ())
 
-        data_api_client.get_audit_event.return_value = {
-            'auditEvents': {"id": 123, "acknowledgedAt": "2017-07-11T14:39:15.234477Z"}
-        }
+        response = self.client.get('/admin/services/151/updates')
 
-        return self.client.get('/admin/services/compare/{}...{}'.format(
-            archived_service_id_1, archived_service_id_2
-        ))
-
-    def test_cannot_get_nonexistent_archived_service(self):
-
-        # Both archived services don't exist
-        response = self._get_archived_services_response('1', '2')
-        assert response.status_code == 404
-
-        # First archived service doesn't exist
-        response = self._get_archived_services_response('1', '20')
-        assert response.status_code == 404
-
-        # Second archived service doesn't exist
-        response = self._get_archived_services_response('10', '2')
-        assert response.status_code == 404
-
-    def test_cannot_get_same_archived_service(self):
-
-        response = self._get_archived_services_response('10', '10')
-        assert response.status_code == 404
-
-    def test_cannot_get_archived_services_in_non_chronological_order(self):
-
-        response = self._get_archived_services_response('20', '10')
-        assert response.status_code == 404
-
-    def test_cannot_get_archived_services_for_nonexistent_service_ids(self):
-
-        response = self._get_archived_services_response('30', '40')
-        assert response.status_code == 404
-
-    @mock.patch('app.main.views.services.content_loader', autospec=True)
-    def test_can_get_archived_services_with_dates_and_diffs(self, content_loader):
-
-        class TestBuilder(object):
-            @staticmethod
-            def filter(*args):
-                return self._TestContent()
-
-        content_loader.get_manifest.return_value = TestBuilder()
-        response = self._get_archived_services_response('10', '20')
-
-        # check title is there
-        assert self.strip_all_whitespace(
-            '<h1>&lt;h1&gt;Cloudy&lt;/h1&gt; Cloud Service</h1>'
-        ) in self.strip_all_whitespace(response.get_data(as_text=True))
-
-        # check dates are right
-        assert self.strip_all_whitespace(
-            'Monday 1 December 2014 at 10:55'
-        ) in self.strip_all_whitespace(response.get_data(as_text=True))
-
-        assert self.strip_all_whitespace(
-            'Tuesday 2 December 2014 at 10:55'
-        ) in self.strip_all_whitespace(response.get_data(as_text=True))
-
-        # check lines are there
-        assert self.strip_all_whitespace(
-            '<td class=\'line-content unchanged\'>Cloud Service</td>'
-        ) in self.strip_all_whitespace(response.get_data(as_text=True))
-
-        assert self.strip_all_whitespace(
-            '<td class=\'line-content addition\'><strong>&lt;h1&gt;Cloudy&lt;/h1&gt;</strong> Cloud Service</td>'
-        ) in self.strip_all_whitespace(response.get_data(as_text=True))
-
-    @mock.patch('app.main.views.services.content_loader', autospec=True)
-    def test_can_get_archived_services_with_differing_keys(self, content_loader):
-
-        class TestBuilder(object):
-            @staticmethod
-            def filter(*args):
-                return self._TestContent()
-
-        content_loader.get_manifest.return_value = TestBuilder()
-        response = self._get_archived_services_response('10', '50')
         assert response.status_code == 200
+        doc = html.fromstring(response.get_data(as_text=True))
 
-    @mock.patch('app.main.views.services.content_loader', autospec=True)
-    def test_approval_button_only_visible_to_ccs_category(self, content_loader):
+        assert data_api_client.find_audit_events_iter.call_args_list == [
+            ((), {
+                "object_id": "151",
+                "object_type": "services",
+                "audit_type": AuditTypes.update_service,
+                "acknowledged": "false",
+                "latest_first": "false",
+            },),
+        ]
 
-        class TestBuilder(object):
-            @staticmethod
-            def filter(*args):
-                return self._TestContent()
+        assert doc.xpath("normalize-space(string(//header//*[@class='context']))") == "Barrington's"
+        assert doc.xpath("normalize-space(string(//header//h1))") == "Lemonflavoured soap"
 
-        content_loader.get_manifest.return_value = TestBuilder()
-        self.user_role = 'admin-ccs-category'
-        response = self._get_archived_services_response('10', '20')
+        assert doc.xpath("//p[normalize-space(string())=$expected_text]", expected_text=exp_summ_text)
 
-        assert self.strip_all_whitespace(
-            '<input type="submit" class="button-save"  value="Approve edits" />'
-        ) in self.strip_all_whitespace(response.get_data(as_text=True))
+        assert len(doc.xpath("//*[@class='dummy-diff-table']")) == (1 if fae_response and resultant_diff else 0)
+        assert len(doc.xpath(
+            # an element that has the textual contents $reverted_text but doesn't have any children that have *exactly*
+            # that text (this stops us getting multiple results for a single appearance of the text, because it includes
+            # some of that element's parents - this should therefore select the bottom-most element that completely
+            # contains the target text)
+            "//*[normalize-space(string())=$reverted_text][not(.//*[normalize-space(string())=$reverted_text])]",
+            reverted_text="All changes were reverted.",
+        )) == (1 if fae_response and not resultant_diff else 0)
+        
 
-        roles_not_allowed = ('admin', 'admin-ccs-sourcing', 'buyer', 'supplier')
+        if fae_response:
+            assert html_diff_tables_from_sections_iter.call_args_list == [
+                ((), {
+                    "sections": mock.ANY,  # test separately later?
+                    "revision_1": avail_arch_svcs[fae_response[0]["data"]["oldArchivedServiceId"]],
+                    "revision_2": self._mock_get_service_side_effect(svc_status, "151")["services"],
+                    "table_preamble_template": "diff_table/_table_preamble.html",
+                },),
+            ]
 
-        for role in roles_not_allowed:
-            self.user_role = role
-            response = self._get_archived_services_response('10', '20')
+            assert doc.xpath(
+                "normalize-space(string(//h3[normalize-space(string())=$oldver_title]/ancestor::" +
+                "*[contains(@class, 'column')]))",
+                oldver_title="Previously acknowledged version",
+            ) == "Previously acknowledged version " + exp_oldver_ctxt_text
+        else:
+            assert not doc.xpath(
+                "//h3[normalize-space(string())=$oldver_title]",
+                oldver_title="Previously acknowledged version",
+            )
 
-            assert self.strip_all_whitespace(
-                '<input type="submit" class="button-save"  value="Approve edits" />'
-            ) not in self.strip_all_whitespace(response.get_data(as_text=True))
+        assert doc.xpath(
+            "//*[.//h4[normalize-space(string())=$title]][normalize-space(string())=$full]" +
+            "[.//a[@href=$mailto][normalize-space(string())=$email]]",
+            title="Contact supplier:",
+            full="Contact supplier: sir.jonah.barrington@example.com",
+            mailto="mailto:sir.jonah.barrington@example.com",
+            email="sir.jonah.barrington@example.com",
+        )
+
+        # "status" radios should have the correct current status checked, none others, and also have the correct
+        # associated label text. and of course be in a form pointing at the correct destination.
+        status_forms = doc.xpath("//form[.//button[@type='submit'][normalize-space(string())='Update status']]")
+        assert len(status_forms) == 1
+        assert status_forms[0].method == "POST"
+        assert status_forms[0].action == "/admin/services/status/151"
+        assert sorted(status_forms[0].form_values()) == [
+            ("csrf_token", mock.ANY),
+            ("service_status", self._service_status_labels[svc_status].lower()),
+        ]
+        for radio_elem in status_forms[0].xpath(".//input[@type='radio'][@name='service_status']"):
+            label_elem = radio_elem.label or radio_elem.xpath("ancestor::label")[0]
+            assert label_elem.xpath("normalize-space(string())").lower() == radio_elem.attrib["value"]
+
+        # ensure "published" radio button is not shown if in disabled status
+        assert (svc_status != "disabled") == bool(status_forms[0].xpath(
+            ".//input[@type='radio'][@name='service_status'][@value=$value]",
+            value=self._service_status_labels["published"].lower(),
+        ))
