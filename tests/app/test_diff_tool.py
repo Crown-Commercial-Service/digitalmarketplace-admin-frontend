@@ -41,11 +41,11 @@ class TestHtmlDiffTablesFromSections(BaseApplicationTest):
             "cloud-support",
             {
                 "serviceName": "Ellen Higgins, second daughter of Julius Karoly",
-                "serviceDescription": "Fanny Hegarty\nRichard Goulding\nChristina Grier\n",
+                "serviceDescription": "Fanny Hegarty\nRichard Goulding\n\nChristina Grier\n",
             },
             {
                 "serviceName": "Ellen Higgins, second daughter of Julius Higgins",
-                "serviceDescription": "Fanny Higgins\n\nSimon Dedalus of Cork\nRichard Goulding\nChristina Grier\n",
+                "serviceDescription": "Fanny Higgins\n\nSimon Dedalus of Cork\nRichard Goulding\n\nChristina Grier\n",
             },
             ("serviceName", "serviceDescription",),
             ("serviceName", "serviceDescription",),
@@ -230,7 +230,7 @@ class TestHtmlDiffTablesFromSections(BaseApplicationTest):
             # alternative
             expected_content_a, expected_content_b = (
                 [
-                    (line or " ")  # diff outputs an extraneous space in blank line cases, which is ok by us
+                    (line or " ")  # diff outputs an extraneous space in some blank line cases, which is ok by us
                     for line in (q.splitlines() if isinstance(q, string_types) else q)
                 ]
                 for q in (r.get(question_id, []) for r in (service_data_a, service_data_b,))
@@ -246,7 +246,7 @@ class TestHtmlDiffTablesFromSections(BaseApplicationTest):
                 # preserving css. but that could always be relaxed if totally necessary. also note if there were nbsps
                 # in our data this would not work because they are purged unconditionally.
                 assert [
-                    elem.xpath("string()")
+                    (elem.xpath("string()") or " ")  # normalizing blank lines to single spaces, reason mentioned above
                     for elem in table_element.xpath(
                         "./tbody/tr/td[$i][contains(@class, 'line-content')]" +
                         "[normalize-space(string(./preceding-sibling::td[1][contains(@class, 'line-number')]))]",
@@ -258,35 +258,44 @@ class TestHtmlDiffTablesFromSections(BaseApplicationTest):
             # assert some things about each row
             for tr in table_element.xpath("./tbody/tr"):
                 # note here how xpath's element indexing is 1-based
-                content_rem = tr.xpath("string(./td[$i])", i=self._expected_removal_content_column+1)
-                content_add = tr.xpath("string(./td[$i])", i=self._expected_addition_content_column+1)
+                content_remside = tr.xpath("string(./td[$i])", i=self._expected_removal_content_column+1)
+                content_addside = tr.xpath("string(./td[$i])", i=self._expected_addition_content_column+1)
 
-                # all rows should have content on at least one side
-                assert content_add or content_rem
+                # in lines where we have additions/removals,,,
+                if tr.xpath(
+                    "./td[contains(@class, 'line-content')]" +
+                    "[contains(@class, 'addition') or contains(@class, 'removal')]"
+                ):
+                    # row should have content on at least one side
+                    assert content_addside or content_remside
 
-                # if no content on one side, all content on other side should be in a del/ins
-                if not content_rem:
-                    assert content_add == tr.xpath(
-                        "string(./td[contains(@class, 'line-content')][contains(@class, 'addition')]/ins)"
-                    )
-                if not content_add:
-                    assert content_rem == tr.xpath(
-                        "string(./td[contains(@class, 'line-content')][contains(@class, 'removal')]/del)"
-                    )
+                    # if no content on one side, all content on other side should be in a del/ins
+                    if not content_remside:
+                        assert content_addside == tr.xpath(
+                            "string(./td[contains(@class, 'line-content')][contains(@class, 'addition')]/ins)"
+                        )
+                    if not content_addside:
+                        assert content_remside == tr.xpath(
+                            "string(./td[contains(@class, 'line-content')][contains(@class, 'removal')]/del)"
+                        )
 
-                # line number should be on a side if and only if there is content on that side
-                assert bool(tr.xpath(
-                    "string(./td[contains(@class, 'line-content')][contains(@class, 'removal')])"
-                )) == bool(tr.xpath(
-                    "normalize-space(string(./td[contains(@class, 'line-number')]" +
-                    "[contains(@class, 'line-number-removal')]))"
-                ))
-                assert bool(tr.xpath(
-                    "string(./td[contains(@class, 'line-content')][contains(@class, 'addition')])"
-                )) == bool(tr.xpath(
-                    "normalize-space(string(./td[contains(@class, 'line-number')]" +
-                    "[contains(@class, 'line-number-add')]))"
-                ))
+                    # line number should be on a side if and only if there is content on that side
+                    assert bool(tr.xpath(
+                        "string(./td[contains(@class, 'line-content')][contains(@class, 'removal')])"
+                    )) == bool(tr.xpath(
+                        "normalize-space(string(./td[contains(@class, 'line-number')]" +
+                        "[contains(@class, 'line-number-removal')]))"
+                    ))
+                    assert bool(tr.xpath(
+                        "string(./td[contains(@class, 'line-content')][contains(@class, 'addition')])"
+                    )) == bool(tr.xpath(
+                        "normalize-space(string(./td[contains(@class, 'line-number')]" +
+                        "[contains(@class, 'line-number-add')]))"
+                    ))
+                else:  # but if there aren't any additions/removals...
+                    # the content should be equal on both sides
+                    assert content_remside == content_addside
+
 
         for question in chain.from_iterable(section.questions for section in content_sections):
             # check a question we expect to have removals does and ones we expect not to ...doesn't.
