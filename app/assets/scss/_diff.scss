@@ -1,6 +1,7 @@
 .diff {
   margin-bottom: $gutter;
 
+/* ******************* TODO: ARE THESE STILL USED AT ALL????  **************************/
   .diff-title {
     @include heading-27;
     font-weight: bold;
@@ -22,8 +23,12 @@
       .revision-date-type {
         font-weight: bold;
         margin-right: $gutter-half;
+/* ******************* END TODO: ARE THESE STILL USED AT ALL????  **************************/
+
+  .page-column-headings + table {
+      caption {
+          padding-top: $gutter/2;
       }
-    }
   }
 
   table {
@@ -54,7 +59,7 @@
       }
 
       &.line-non-existent {
-          background-color: #EEEEEE;
+          background-color: $highlight-colour;
       }
 
       &.removal {
