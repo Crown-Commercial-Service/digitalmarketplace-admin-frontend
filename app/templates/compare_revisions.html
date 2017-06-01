@@ -57,7 +57,7 @@
     {% include "toolkit/secondary-action-link.html" %}
   {% endwith %}
     <div class="grid-row">
-      <div class="column-two-thirds">
+      <div class="column-two-thirds page-section">
         <p>
           {{ unack_update_events|length }} unacknowledged {{ pluralize(unack_update_events|length, "edit", "edits") }}
           {%- if unack_update_events %}
@@ -80,26 +80,28 @@
     </div>
 
     {% if unack_update_events %}
-    <div class="grid-row">
-      <div class="column-one-half">
-        <h3>
-          Previously acknowledged version
-        </h3>
-        <p>
-          Changed on {{ unack_update_events.0.createdAt|datetimeformat }}
-        </p>
-      </div>
-      <div class="column-one-half">
-        <h3>
-          Current version
-        </h3>
-      </div>
-    </div>
     <div class="diff">
+    {% if diffs %}
+      <div class="grid-row page-column-headings">
+        <div class="column-one-half">
+          <h3>
+            Previously acknowledged version
+          </h3>
+          <p>
+            Changed on {{ unack_update_events.0.createdAt|datetimeformat }}
+          </p>
+        </div>
+        <div class="column-one-half">
+          <h3>
+            Current version
+          </h3>
+        </div>
+      </div>
+    {% endif %}
     {% for diff_table in diffs.values() %}
       {{ diff_table }}
     {% else %}
-      <p>All changes were reverted.</p>
+      <p>All changes were reversed.</p>
     {% endfor %}
     </div><!-- end of .diff -->
     <form method="post" action="ACK_URL">

@@ -1,29 +1,10 @@
 .diff {
   margin-bottom: $gutter;
 
-  .diff-title {
-    @include heading-27;
-    font-weight: bold;
-    margin-bottom: $gutter-half;
-  }
-
-  .revision-dates {
-    @extend %contain-floats;
-    margin-bottom: $gutter-half;
-
-    p {
-      float: none;
-      width: 100%;
-      @include media(tablet) {
-        float: left;
-        width: 50%;
+  .page-column-headings + table {
+      caption {
+          padding-top: $gutter/2;
       }
-
-      .revision-date-type {
-        font-weight: bold;
-        margin-right: $gutter-half;
-      }
-    }
   }
 
   table {
@@ -54,7 +35,7 @@
       }
 
       &.line-non-existent {
-          background-color: #EEEEEE;
+          background-color: $highlight-colour;
       }
 
       &.removal {

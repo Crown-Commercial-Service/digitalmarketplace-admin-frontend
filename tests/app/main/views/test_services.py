@@ -1028,7 +1028,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             # some of that element's parents - this should therefore select the bottom-most element that completely
             # contains the target text)
             "//*[normalize-space(string())=$reverted_text][not(.//*[normalize-space(string())=$reverted_text])]",
-            reverted_text="All changes were reverted.",
+            reverted_text="All changes were reversed.",
         )) == (1 if fae_response and not resultant_diff else 0)
 
         if fae_response:
@@ -1055,11 +1055,11 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 ("csrf_token", mock.ANY),
             ]
 
-            assert doc.xpath(
+            assert bool(doc.xpath(
                 "normalize-space(string(//h3[normalize-space(string())=$oldver_title]/ancestor::" +
-                "*[contains(@class, 'column')]))",
+                "*[contains(@class, 'column')][1]))",
                 oldver_title="Previously acknowledged version",
-            ) == "Previously acknowledged version " + exp_oldver_ctxt_text
+            ) == "Previously acknowledged version " + exp_oldver_ctxt_text) == bool(resultant_diff)
         else:
             # in this case we want a loose assertion that nothing exists that has anything like any of these properties
             assert not doc.xpath(
