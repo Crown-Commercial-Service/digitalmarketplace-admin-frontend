@@ -292,10 +292,18 @@ class TestHtmlDiffTablesFromSections(BaseApplicationTest):
                         "normalize-space(string(./td[contains(@class, 'line-number')]" +
                         "[contains(@class, 'line-number-add')]))"
                     ))
+
+                    # line-content tds which are empty should have line-non-existent class
+                    assert all(
+                        bool("line-non-existent" in td.attrib.get("class", "")) == (not td.xpath("string()"))
+                        for td in tr.xpath("./td[contains(@class, 'line-content')]")
+                    )
                 else:  # but if there aren't any additions/removals...
                     # the content should be equal on both sides
                     assert content_remside == content_addside
 
+                    # there shouldn't be any line-non-existent tds
+                    assert not tr.xpath("./td[contains(@class, 'line-non-existent')]")
 
         for question in chain.from_iterable(section.questions for section in content_sections):
             # check a question we expect to have removals does and ones we expect not to ...doesn't.

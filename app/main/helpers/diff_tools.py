@@ -97,19 +97,27 @@ def _clean_difflib_html_table(table_src, table_preamble_template=None, table_pre
         tr[0].attrib["class"] = tr[2].attrib["class"] = "line-number"
         tr[1].attrib["class"] = tr[3].attrib["class"] = "line-content"
 
-        if len(tr[1]):  # i.e. left side is interesting because the content has (presumably span.diff_*) child elements
-            tr[0].attrib["class"] += " line-number-removal"
-            tr[1].attrib["class"] += " removal"
-            for span in tr[1].xpath("./span[@class='diff_sub' or @class='diff_chg']"):
-                span.tag = "del"
-                del span.attrib["class"]
+        if (tr[0].text or "").strip() or len(tr[0]):  # i.e. left side has what is presumably a line number
+            if len(tr[1]):  # i.e. left side is interesting because the content has (presumably span.diff_*) child elems
+                tr[0].attrib["class"] += " line-number-removal"
+                tr[1].attrib["class"] += " removal"
+                for span in tr[1].xpath("./span[@class='diff_sub' or @class='diff_chg']"):
+                    span.tag = "del"
+                    del span.attrib["class"]
+        else:
+            tr[0].attrib["class"] += " line-non-existent"
+            tr[1].attrib["class"] += " line-non-existent"
 
-        if len(tr[3]):  # i.e. right side is interesting because the content has (presumably span.diff_*) child elements
-            tr[2].attrib["class"] += " line-number-addition"
-            tr[3].attrib["class"] += " addition"
-            for span in tr[3].xpath("./span[@class='diff_add' or @class='diff_chg']"):
-                span.tag = "ins"
-                del span.attrib["class"]
+        if (tr[2].text or "").strip() or len(tr[2]):  # i.e. right side has what is presumably a line number
+            if len(tr[3]):  # i.e. right side's interesting because the content has (presumably span.diff_*) child elems
+                tr[2].attrib["class"] += " line-number-addition"
+                tr[3].attrib["class"] += " addition"
+                for span in tr[3].xpath("./span[@class='diff_add' or @class='diff_chg']"):
+                    span.tag = "ins"
+                    del span.attrib["class"]
+        else:
+            tr[2].attrib["class"] += " line-non-existent"
+            tr[3].attrib["class"] += " line-non-existent"
 
     if table_preamble_template:
         preamble_src = render_template(table_preamble_template, **table_preamble_context)
