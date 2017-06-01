@@ -1030,7 +1030,6 @@ class TestServiceUpdates(LoggedInApplicationTest):
             "//*[normalize-space(string())=$reverted_text][not(.//*[normalize-space(string())=$reverted_text])]",
             reverted_text="All changes were reverted.",
         )) == (1 if fae_response and not resultant_diff else 0)
-        
 
         if fae_response:
             assert html_diff_tables_from_sections_iter.call_args_list == [
@@ -1049,9 +1048,9 @@ class TestServiceUpdates(LoggedInApplicationTest):
             )
             assert len(ack_forms) == 1
             assert ack_forms[0].method == "POST"
-            #assert ack_forms[0].action == "/admin/services/151/updates/{}/acknowledge".format(
-            #    text_type(fae_response[0]["oldArchivedServiceId"])
-            #)
+#            assert ack_forms[0].action == "/admin/services/151/updates/{}/acknowledge".format(
+#                text_type(fae_response[0]["oldArchivedServiceId"])
+#            )
             assert sorted(ack_forms[0].form_values()) == [
                 ("csrf_token", mock.ANY),
             ]
