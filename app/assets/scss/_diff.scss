@@ -53,6 +53,10 @@
         border-right: 5px solid white;
       }
 
+      &.line-non-existent {
+          background-color: #EEEEEE;
+      }
+
       &.removal {
         background-color: #FEE5E5;
 
@@ -76,7 +80,6 @@
         text-align: right;
         float: left;
         clear: both;
-        background-color: transparent;
         width: 3%;
         padding-right: 1%;
         border-right: none;
