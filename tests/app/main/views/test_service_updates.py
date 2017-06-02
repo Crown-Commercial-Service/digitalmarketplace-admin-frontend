@@ -173,8 +173,100 @@ class TestServiceUpdates(LoggedInApplicationTest):
             response.get_data(as_text=True)
         )
 
+        data_api_client.find_audit_events.assert_called_with(
+            audit_type=AuditTypes.update_service,
+            acknowledged='true',
+            latest_first='false',
+            earliest_for_each_object='true'
+        )
 
-@mock.patch('app.main.views.service_updates.data_api_client')
+    def test_acknowledge_audit_event_happy_path(self, data_api_client):
+        audit_event = {
+            'auditEvents': {
+                'acknowledged': False,
+                'links': {
+                    'self': 'http://localhost:5000/audit-events'
+                },
+                'data': {
+                    'serviceName': 'new name',
+                    'supplierId': 93518,
+                    'supplierName': 'Clouded Networks',
+                    'serviceId': '321',
+                },
+                'user': 'joeblogs',
+                'type': 'update_service',
+                'id': 123,
+                'createdAt': '2015-06-17T08:49:22.999Z'
+            },
+            'links': {}
+        }
+
+        data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
+        response = self.client.post('/admin/services/321/updates/123/acknowledge')
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/services/updates/unacknowledged'
+
+        data_api_client.acknowledge_audit_event_including_previous.assert_called_with(
+            123,
+            'test@example.com'
+        )
+
+    def test_should_404_wrong_service_id(self, data_api_client):
+        response = self.client.post('/admin/services/123/updates/321/acknowledge')
+        assert response.status_code == 404
+
+    def test_should_410_already_acknowledged_event(self, data_api_client):
+        audit_event = {
+            'auditEvents': {
+                'acknowledged': True,
+                'links': {
+                    'self': 'http://localhost:5000/audit-events'
+                },
+                'data': {
+                    'serviceName': 'new name',
+                    'supplierId': 93518,
+                    'supplierName': 'Clouded Networks',
+                    'serviceId': '321',
+                },
+                'user': 'joeblogs',
+                'type': 'update_service',
+                'id': 123,
+                'createdAt': '2015-06-17T08:49:22.999Z'
+            },
+            'links': {}
+        }
+
+        data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
+        response = self.client.post('/admin/services/321/updates/123/acknowledge')  # noqa
+        assert response.status_code == 410
+
+    def test_should_404_wrong_audit_event_type(self, data_api_client):
+        audit_event = {
+            'auditEvents': {
+                'acknowledged': False,
+                'links': {
+                    'self': 'http://localhost:5000/audit-events'
+                },
+                'data': {
+                    'serviceName': 'new name',
+                    'supplierId': 93518,
+                    'supplierName': 'Clouded Networks',
+                    'serviceId': '321',
+                },
+                'user': 'joeblogs',
+                'type': 'not_the_right_type',
+                'id': 123,
+                'createdAt': '2015-06-17T08:49:22.999Z'
+            },
+            'links': {}
+        }
+
+        data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
+        response = self.client.post('/admin/services/321/updates/123/acknowledge')  # noqa
+        assert response.status_code == 404
+
+
+@mock.patch('app.main.views.service_updates.data_api_client', autospec=True)
 class TestServiceStatusUpdates(LoggedInApplicationTest):
 
     def test_redirects_to_current_day(self, data_api_client):
