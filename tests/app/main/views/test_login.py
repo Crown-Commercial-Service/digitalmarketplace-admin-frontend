@@ -232,7 +232,7 @@ class TestRoleRequired(LoggedInApplicationTest):
         assert response.status_code == 403
 
     def test_admin_role_required_audit_acknowledge(self):
-        response = self.client.post('/admin/service-updates/1/acknowledge')
+        response = self.client.post('/admin/services/1/updates/1/acknowledge')
         assert response.status_code == 403
 
     def test_admin_role_required_unlock_user(self):
