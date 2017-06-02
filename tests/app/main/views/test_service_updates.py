@@ -171,41 +171,6 @@ class TestServiceUpdates(LoggedInApplicationTest):
         assert data_api_client.find_audit_events.called
 
     @mock.patch('app.main.views.service_updates.data_api_client')
-    def test_should_redirect_to_update_page(self, data_api_client):
-        response = self.client.post(
-            '/admin/service-updates/123/acknowledge',
-            data={
-                'acknowledged': 'false',
-                'audit_date': '2010-01-05'
-            }
-        )
-
-        assert response.status_code == 302
-        assert 'http://localhost/admin/service-updates' in response.location
-        assert 'acknowledged=false' in response.location
-        assert 'audit_date=2010-01-05' in response.location
-
-        data_api_client.acknowledge_audit_event.assert_called_with("123", 'test@example.com')
-
-    @mock.patch('app.main.views.service_updates.data_api_client')
-    def test_should_not_call_api_when_form_errors(self, data_api_client):
-        response = self.client.post(
-            '/admin/service-updates/123/acknowledge',
-            data={
-                'acknowledged': 'false',
-                'audit_date': 'invalid'
-            }
-        )
-
-        assert response.status_code == 400
-        assert data_api_client.acknowledge_audit_event.called is False
-        assert self._replace_whitespace(
-            '<inputname="acknowledged"value="false"id="acknowledged-3"type="radio"aria-controls=""checked>'
-        ) in self._replace_whitespace(response.get_data(as_text=True))
-        assert '<input class="filter-field-text" id="audit_date" name="audit_date" placeholder="eg, 2015-07-23" type='\
-            '"text" value="invalid">' in response.get_data(as_text=True)
-
-    @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_show_no_updates_if_none_returned(self, data_api_client):
         data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
@@ -234,62 +199,94 @@ class TestServiceUpdates(LoggedInApplicationTest):
         assert data_api_client.find_audit_events.called is False
 
     @mock.patch('app.main.views.service_updates.data_api_client')
-    def test_should_show_updates_if_valid_search(self, data_api_client):
-
+    def test_acknowledge_audit_event_happy_path(self, data_api_client):
         audit_event = {
-            'auditEvents': [
-                {
-                    'links': {
-                        'self': 'http://localhost:5000/adit-events'
-                    },
-                    'data': {
-                        'serviceName': 'new name',
-                        'supplierId': 93518,
-                        'supplierName': 'Clouded Networks'
-                    },
-                    'user': 'joeblogs',
-                    'type': 'update_service',
-                    'id': 25,
-                    'createdAt': '2015-06-17T08:49:22.999Z'
-                }
-            ],
+            'auditEvents': {
+                'acknowledged': False,
+                'links': {
+                    'self': 'http://localhost:5000/audit-events'
+                },
+                'data': {
+                    'serviceName': 'new name',
+                    'supplierId': 93518,
+                    'supplierName': 'Clouded Networks',
+                    'serviceId': '321',
+                },
+                'user': 'joeblogs',
+                'type': 'update_service',
+                'id': 123,
+                'createdAt': '2015-06-17T08:49:22.999Z'
+            },
             'links': {}
         }
 
-        data_api_client.find_audit_events.return_value = audit_event
-        response = self.client.get('/admin/service-updates?audit_date=2010-01-01')  # noqa
-        assert response.status_code == 200
-
-        assert self._replace_whitespace(
-            '<td class="summary-item-field-first"><span>Clouded Networks</span></td>'
-        ) in self._replace_whitespace(response.get_data(as_text=True))
-        assert self._replace_whitespace(
-            '<td class="summary-item-field"><span>09:49:22<br/>17 June</span></td>'
-        ) in self._replace_whitespace(response.get_data(as_text=True))
-        assert self._replace_whitespace(
-            '<td class="summary-item-field-with-action"><span><a href="/admin/services/compare/...">View changes</a>' +
-            '</span></td>'
-        ) in self._replace_whitespace(response.get_data(as_text=True))
-        assert self._replace_whitespace(
-            '<form action="/admin/service-updates/25/acknowledge" method="post">'
-        ) in self._replace_whitespace(response.get_data(as_text=True))
-        assert self._replace_whitespace(
-            '<input name="audit_date" type="hidden" value="2010-01-01">'
-        ) in self._replace_whitespace(response.get_data(as_text=True))
-        data_api_client.find_audit_events.assert_called_with(
-            page=1,
-            audit_type=AuditTypes.update_service,
-            acknowledged='false',
-            audit_date='2010-01-01')
-
-    @mock.patch('app.main.views.service_updates.data_api_client')
-    def test_should_call_api_ack_audit_event(self, data_api_client):
-        response = self.client.post('/admin/service-updates/123/acknowledge?audit_date=2010-01-01&acknowledged=all')  # noqa
+        data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
+        response = self.client.post('/admin/services/321/updates/123/acknowledge')  # noqa
         assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/service-updates'
 
         data_api_client.acknowledge_audit_event.assert_called_with(
-            '123', 'test@example.com'
+            123,
+            'test@example.com',
+            include_previous_for_object=True,
         )
+
+    @mock.patch('app.main.views.service_updates.data_api_client')
+    def test_should_404_wrong_service_id(self, data_api_client):
+        response = self.client.post('/admin/services/123/updates/321/acknowledge')
+        assert response.status_code == 404
+
+    @mock.patch('app.main.views.service_updates.data_api_client')
+    def test_should_410_already_acknowledged_event(self, data_api_client):
+        audit_event = {
+            'auditEvents': {
+                'acknowledged': True,
+                'links': {
+                    'self': 'http://localhost:5000/audit-events'
+                },
+                'data': {
+                    'serviceName': 'new name',
+                    'supplierId': 93518,
+                    'supplierName': 'Clouded Networks',
+                    'serviceId': '321',
+                },
+                'user': 'joeblogs',
+                'type': 'update_service',
+                'id': 123,
+                'createdAt': '2015-06-17T08:49:22.999Z'
+            },
+            'links': {}
+        }
+
+        data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
+        response = self.client.post('/admin/services/321/updates/123/acknowledge')  # noqa
+        assert response.status_code == 410
+
+    @mock.patch('app.main.views.service_updates.data_api_client')
+    def test_should_404_wrong_audit_event_type(self, data_api_client):
+        audit_event = {
+            'auditEvents': {
+                'acknowledged': False,
+                'links': {
+                    'self': 'http://localhost:5000/audit-events'
+                },
+                'data': {
+                    'serviceName': 'new name',
+                    'supplierId': 93518,
+                    'supplierName': 'Clouded Networks',
+                    'serviceId': '321',
+                },
+                'user': 'joeblogs',
+                'type': 'not_the_right_type',
+                'id': 123,
+                'createdAt': '2015-06-17T08:49:22.999Z'
+            },
+            'links': {}
+        }
+
+        data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
+        response = self.client.post('/admin/services/321/updates/123/acknowledge')  # noqa
+        assert response.status_code == 404
 
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_pass_valid_page_argument_to_api(self, data_api_client):
@@ -309,7 +306,6 @@ class TestServiceUpdates(LoggedInApplicationTest):
         assert response.status_code == 400
 
         assert data_api_client.find_audit_events.called is False
-
 
 @mock.patch('app.main.views.service_updates.data_api_client')
 class TestServiceStatusUpdates(LoggedInApplicationTest):
