@@ -63,7 +63,7 @@ def service_update_audits():
         audit_type=AuditTypes.update_service,
         acknowledged='false',
         latest_first='false',
-    ), 0, _service_update_audits_event_limit))
+    ), 0, _SERVICE_UPDATE_AUDITS_EVENT_LIMIT))
     audit_events.sort(key=lambda audit_event: (audit_event["data"]["serviceId"], audit_event["createdAt"]))
 
     # Build a tuple of the first of the earliest unacknowledged audit events for each service id
@@ -78,7 +78,7 @@ def service_update_audits():
     return render_template(
         "service_update_audits.html",
         audit_events=earliest_unacknowledged_audit_events,
-        event_limit_reached=(len(audit_events) >= _service_update_audits_event_limit),
+        event_limit_reached=(len(audit_events) >= _SERVICE_UPDATE_AUDITS_EVENT_LIMIT),
     )
 
 
@@ -90,7 +90,7 @@ def acknowledged_services():
         audit_type=AuditTypes.update_service,
         acknowledged='true',
         latest_first='false',
-    ), 0, _service_update_audits_event_limit))
+    ), 0, _SERVICE_UPDATE_AUDITS_EVENT_LIMIT))
     audit_events.sort(
         key=lambda audit_event: (audit_event["acknowledgedAt"], audit_event["acknowledgedBy"], audit_event["id"])
     )
@@ -105,7 +105,7 @@ def acknowledged_services():
     return render_template(
         "acknowledged_services.html",
         audit_events=earliest_acknowledged_audit_events,
-        event_limit_reached=(len(audit_events) >= _service_update_audits_event_limit),
+        event_limit_reached=(len(audit_events) >= _SERVICE_UPDATE_AUDITS_EVENT_LIMIT),
     )
 
 
