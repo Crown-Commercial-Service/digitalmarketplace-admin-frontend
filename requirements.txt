@@ -17,7 +17,7 @@ docutils==0.13.1
 dominate==2.3.1
 -e git+https://github.com/AusDTO/dto-digitalmarketplace-apiclient.git@c2bbebcc6ad2c05c9c6de8a286c77733e932a4ea#egg=dto_digitalmarketplace_apiclient==whatever
 -e git+https://github.com/AusDTO/dto-digitalmarketplace-content-loader.git@fd836d86e6f06f711fcef68ef44b35147cf9736f#egg=dto_digitalmarketplace_content_loader==whatever
--e git+https://github.com/AusDTO/dto-digitalmarketplace-utils.git@51c6d178c67d22f6476d87652d4192be02277eda#egg=dto_digitalmarketplace_utils==whatever
+-e git+https://github.com/AusDTO/dto-digitalmarketplace-utils.git@1d3ab3b902c3f4fdb815602eb236a2e267ed4de0#egg=dto_digitalmarketplace_utils==whatever
 enum34==1.1.6
 Flask==0.12.1
 Flask-Bootstrap==3.3.7.1
