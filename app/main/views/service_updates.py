@@ -84,25 +84,22 @@ def service_update_audits():
     )
 
 
-@main.route('/service-updates/<audit_id>/acknowledge', methods=['POST'])
+@main.route('/services/<service_id>/updates/<int:audit_id>/acknowledge', methods=['POST'])
 @login_required
 @role_required('admin')
-def submit_service_update_acknowledgment(audit_id):
-    form = ServiceUpdateAuditEventsForm(request.form)
-    if form.validate():
-        data_api_client.acknowledge_audit_event(
-            audit_id, current_user.email_address)
-        return redirect(
-            url_for(
-                '.service_update_audits',
-                audit_date=form.audit_date.data,
-                acknowledged=form.acknowledged.data)
-        )
-    else:
-        return render_template(
-            "service_update_audits.html",
-            today=datetime.utcnow().strftime(DATETIME_FORMAT),
-            audit_events=None,
-            acknowledged=form.default_acknowledged(),
-            form=form
-        ), 400
+def submit_service_update_acknowledgment(service_id, audit_id):
+    audit_event = data_api_client.get_audit_event(audit_id)["auditEvents"]
+
+    if audit_event["data"]["serviceId"] != service_id or audit_event["type"] != "update_service":
+        abort(404)
+
+    if audit_event['acknowledged']:
+        abort(410)
+
+    data_api_client.acknowledge_audit_event(
+        audit_event["id"],
+        current_user.email_address,
+        include_previous_for_object=True,
+    )
+
+    return redirect(url_for('.service_update_audits'))
