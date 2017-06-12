@@ -307,6 +307,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         assert data_api_client.find_audit_events.called is False
 
+
 @mock.patch('app.main.views.service_updates.data_api_client')
 class TestServiceStatusUpdates(LoggedInApplicationTest):
 
