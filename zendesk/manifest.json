@@ -1,0 +1,17 @@
+{
+  "name": "Digital Marketplace Integration",
+  "author": {
+    "name": "Marketplace",
+    "email": "marketplace@digital.gov.au",
+    "url": ""
+  },
+  "defaultLocale": "en",
+  "private": true,
+  "location": {
+    "support": {
+      "ticket_sidebar": "http://localhost:8000/admin/zendesk"
+    }
+  },
+  "version": "1.0",
+  "frameworkVersion": "2.0"
+}
