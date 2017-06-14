@@ -40,6 +40,11 @@ def applications_list(status=None):
     reject_url = url_for('main.reject_application', _external=True, _scheme=SCHEME)
     revert_url = url_for('main.revert_application', _external=True, _scheme=SCHEME)
     preview_url = url_for('main.preview_application',  _external=True, _scheme=SCHEME)
+    edit_url = '{}://{}/{}/'.format(
+        current_app.config['DM_HTTP_PROTO'],
+        current_app.config['DM_MAIN_SERVER_NAME'],
+        'sellers/application'
+    )
 
     rendered_component = render_component(
         'bundles/ApplicationsAdmin/ApplicationsAdminWidget.js',
@@ -49,6 +54,7 @@ def applications_list(status=None):
                 'url_convert_to_seller': convert_url,
                 'url_reject_application': reject_url,
                 'url_revert_application': revert_url,
+                'url_edit_application': edit_url,
                 'url_preview': preview_url,
                 'heading': 'Applications for approval',
             }
