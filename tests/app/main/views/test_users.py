@@ -9,10 +9,11 @@ from ...helpers import LoggedInApplicationTest
 from dmapiclient import HTTPError
 
 
+@mock.patch('app.main.views.users._user_info')
 @mock.patch('app.main.views.users.data_api_client')
 class TestUsersView(LoggedInApplicationTest):
 
-    def test_should_be_a_404_if_user_not_found(self, data_api_client):
+    def test_should_be_a_404_if_user_not_found(self, data_api_client, _user_info):
         data_api_client.get_user.return_value = None
         response = self.client.get('/admin/users?email_address=some@email.com')
         self.assertEquals(response.status_code, 404)
@@ -27,7 +28,7 @@ class TestUsersView(LoggedInApplicationTest):
             '//p[@class="summary-item-no-content"]//text()')[0].strip()
         self.assertEqual("No users to show", page_title)
 
-    def test_should_be_a_404_if_no_email_provided(self, data_api_client):
+    def test_should_be_a_404_if_no_email_provided(self, data_api_client, _user_info):
         data_api_client.get_user.return_value = None
         response = self.client.get('/admin/users?email_address=')
         self.assertEquals(response.status_code, 404)
@@ -42,7 +43,7 @@ class TestUsersView(LoggedInApplicationTest):
             '//p[@class="summary-item-no-content"]//text()')[0].strip()
         self.assertEqual("No users to show", page_title)
 
-    def test_should_be_a_404_if_no_email_param_provided(self, data_api_client):
+    def test_should_be_a_404_if_no_email_param_provided(self, data_api_client, _user_info):
         data_api_client.get_user.return_value = None
         response = self.client.get('/admin/users')
         self.assertEquals(response.status_code, 404)
@@ -57,11 +58,12 @@ class TestUsersView(LoggedInApplicationTest):
             '//p[@class="summary-item-no-content"]//text()')[0].strip()
         self.assertEqual("No users to show", page_title)
 
-    def test_should_show_buyer_user(self, data_api_client):
+    def test_should_show_buyer_user(self, data_api_client, _user_info):
         buyer = self.load_example_listing("user_response")
         buyer.pop('supplier', None)
         buyer['users']['role'] = 'buyer'
         data_api_client.get_user.return_value = buyer
+        _user_info.return_value = (None, None, None, None, None)
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         self.assertEquals(response.status_code, 200)
 
@@ -107,8 +109,9 @@ class TestUsersView(LoggedInApplicationTest):
             '//input[@class="button-destructive"]')[0].value
         self.assertEquals('Deactivate', button)
 
-    def test_should_show_supplier_user(self, data_api_client):
+    def test_should_show_supplier_user(self, data_api_client, _user_info):
         buyer = self.load_example_listing("user_response")
+        _user_info.return_value = (None, None, None, None, None)
         data_api_client.get_user.return_value = buyer
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         self.assertEquals(response.status_code, 200)
@@ -131,11 +134,12 @@ class TestUsersView(LoggedInApplicationTest):
             '//tr[@class="summary-item-row"]//td/span/a')[0]
         self.assertEquals('/admin/suppliers?supplier_code=1000', supplier_link.attrib['href'])
 
-    def test_should_show_unlock_button(self, data_api_client):
+    def test_should_show_unlock_button(self, data_api_client, _user_info):
         buyer = self.load_example_listing("user_response")
         buyer['users']['locked'] = True
 
         data_api_client.get_user.return_value = buyer
+        _user_info.return_value = (None, None, None, None, None)
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         self.assertEquals(response.status_code, 200)
 
@@ -151,10 +155,11 @@ class TestUsersView(LoggedInApplicationTest):
         self.assertEquals('Unlock', unlock_button)
         self.assertEquals('/admin/users?email_address=test.user%40sme.com', return_link.attrib['value'])
 
-    def test_should_show_password_reset(self, data_api_client):
+    def test_should_show_password_reset(self, data_api_client, _user_info):
         buyer = self.load_example_listing("user_response")
 
         data_api_client.get_user.return_value = buyer
+        _user_info.return_value = (None, None, None, None, None)
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         self.assertEquals(response.status_code, 200)
 
@@ -164,10 +169,11 @@ class TestUsersView(LoggedInApplicationTest):
             '//tr[@class="summary-item-row"]//a[text()="Reset Password"]')[0]
         self.assertEquals('/admin/suppliers/users/999/reset_password', reset_link.attrib['href'])
 
-    def test_should_show_deactivate_button(self, data_api_client):
+    def test_should_show_deactivate_button(self, data_api_client, _user_info):
         buyer = self.load_example_listing("user_response")
 
         data_api_client.get_user.return_value = buyer
+        _user_info.return_value = (None, None, None, None, None)
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         self.assertEquals(response.status_code, 200)
 

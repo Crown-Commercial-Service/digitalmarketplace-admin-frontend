@@ -9,6 +9,7 @@ import unicodecsv
 from .. import main
 from ... import data_api_client
 from ..auth import role_required
+from .zendesk import _user_info
 
 
 @main.route('/users', methods=['GET'])
@@ -23,10 +24,12 @@ def find_user_by_email_address():
         users = data_api_client.get_user(email_address=request.args.get("email_address"))
 
     if users:
+        user, supplier, teammembers, application, briefs = _user_info(request.args.get("email_address"))
         return render_template_with_csrf(
             template,
             users=[users['users']],
-            email_address=request.args.get("email_address")
+            email_address=request.args.get("email_address"),
+            user=user, supplier=supplier, teammembers=teammembers, applications=application, briefs=briefs
         )
     else:
         flash('no_users', 'error')
