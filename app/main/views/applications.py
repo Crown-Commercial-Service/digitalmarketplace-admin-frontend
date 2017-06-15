@@ -15,31 +15,27 @@ import mimetypes
 @login_required
 @role_required('admin')
 def applications_review():
-    return applications_list(status='submitted')
+    applications = data_api_client.req.applications().status('submitted').get(
+        params=dict(order_by='application.status desc, created_at desc')
+    )['applications']
+
+    return applications_list(applications)
 
 
 @main.route('/applications/all', methods=['GET'])
 @login_required
 @role_required('admin')
 def applications_review_all():
-    return applications_list()
+    return applications_list([])
 
 
-def applications_list(status=None):
-    if status:
-        applications = data_api_client.req.applications().status(status).get(
-            params=dict(order_by='application.status desc, created_at desc')
-        )['applications']
-    else:
-        applications = data_api_client.req.applications().get(
-            params=dict(order_by='application.status desc, created_at desc')
-        )['applications']
-
+def applications_list(applications):
     SCHEME = request.environ['wsgi.url_scheme']
     convert_url = url_for('main.convert_to_seller', _external=True, _scheme=SCHEME)
     reject_url = url_for('main.reject_application', _external=True, _scheme=SCHEME)
     revert_url = url_for('main.revert_application', _external=True, _scheme=SCHEME)
-    preview_url = url_for('main.preview_application',  _external=True, _scheme=SCHEME)
+    preview_url = url_for('main.preview_application', _external=True, _scheme=SCHEME)
+    search_url = url_for('main.search_applications', keyword='', _external=True, _scheme=SCHEME)
     edit_url = '{}://{}/{}/'.format(
         current_app.config['DM_HTTP_PROTO'],
         current_app.config['DM_MAIN_SERVER_NAME'],
@@ -56,6 +52,7 @@ def applications_list(status=None):
                 'url_revert_application': revert_url,
                 'url_edit_application': edit_url,
                 'url_preview': preview_url,
+                'url_search_applications': search_url,
                 'heading': 'Applications for approval',
             }
         }
@@ -155,4 +152,12 @@ def revert_application():
             'update_details': {'updated_by': current_user.email_address},
             'message': message
         })
+    return jsonify(result)
+
+
+@main.route('/applications/search/<string:keyword>', methods=['GET'])
+@login_required
+@role_required('admin')
+def search_applications(keyword):
+    result = data_api_client.req.applications().search(keyword).get()
     return jsonify(result)
