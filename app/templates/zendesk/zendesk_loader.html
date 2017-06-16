@@ -1,0 +1,49 @@
+<html>
+<head><script src="https://assets.zendesk.com/apps/sdk/2.0/zaf_sdk.js"></script>
+  <link type="text/css" rel="stylesheet" media="screen" href="{{ asset_fingerprinter.get_url('stylesheets/application.css') }}" />
+<script>
+  // inspired by https://developer.mozilla.org/en-US/docs/AJAX/Getting_Started
+    var httpRequest;
+
+    function makeRequest(email) {
+        httpRequest = new XMLHttpRequest();
+
+        if (!httpRequest) {
+            document.getElementById("output").innerHTML = 'Giving up :( Cannot create an XMLHTTP instance';
+            return false;
+        }
+        httpRequest.onreadystatechange = alertContents;
+        httpRequest.open('GET', '/admin/zendesk/'+email);
+        httpRequest.send();
+    }
+
+    function alertContents() {
+        try {
+            if (httpRequest.readyState === XMLHttpRequest.DONE) {
+                if (httpRequest.status === 200) {
+                    document.getElementById("output").innerHTML = httpRequest.responseText;
+                } else {
+                    document.getElementById("output").innerHTML = 'There was a problem with the request.';
+                }
+            }
+        }
+        catch( e ) {
+            document.getElementById("output").innerHTML = 'Caught Exception: ' + e.description;
+        }
+    }
+
+    var client = ZAFClient.init();
+    client.invoke('resize', { width: '100%', height: '350px' });
+    client.get('ticket.requester.email').then(function(data) {
+        document.getElementById("output").innerHTML = "Please wait, loading data for: "+data['ticket.requester.email'];
+        makeRequest(data['ticket.requester.email'])
+    });
+</script>
+</head><body>
+<main style="padding:0;">
+<article id="output" style="padding:0;">
+  <center>Please wait, user data loading...</center>
+</article>
+</main>
+</body>
+</html>

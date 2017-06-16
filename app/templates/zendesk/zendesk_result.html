@@ -1,0 +1,56 @@
+{% if user %}
+  <a href="{{ url_for('main.find_user_by_email_address') }}?email_address={{ email | quote }}" target="_blank">
+    {{ email }} ({{ user.role }})
+  </a>
+{% else %}
+  No user found for {{ email }}
+{% endif %}
+<br/>
+<details>
+  <summary>
+    <small style="font-size: 0.6em">Other users with same domain...</small>
+  </summary>
+
+  <ul>
+    {% for teammember in teammembers['teammembers'] %}
+      {{ teammember.email_address }} {% if teammember.application_id %}
+      (<a href="{{ url_for('main.preview_application', id= teammember.application_id ) }}" target="_blank">
+        Application #{{ teammember.application_id }}
+      </a>)
+    {% endif %}
+    {% endfor %}
+  </ul>
+</details>
+{% if user.application %}
+  <a href="{{ url_for('main.preview_application', id= user.application.id ) }}" target="_blank">
+    Application #{{ user.application.id }} is {{ user.application.status }}
+  </a><br/>
+{% endif %}
+{% if supplier %}
+  Supplier #{{ supplier.code }}: {{ supplier.name }}
+  <a href="{{ url_for('main.find_suppliers') }}?supplier_code={{ supplier.code }}" target="_blank">
+    admin
+  </a>&nbsp;
+  <a href="{{ config['DM_MAIN_SERVER_NAME'] }}/supplier/{{ supplier.code }}" target="_blank">
+    profile
+  </a>
+  <br/>
+{% endif %}
+{%  if briefs %}
+  <b>Briefs published:</b>
+<ul>
+      {% for brief in briefs %}
+        {% if brief.status != 'draft' %}
+        <li> <a href="{{ config['DM_MAIN_SERVER_NAME'] }}/digital-marketplace/opportunities/{{ brief.id }}">{{ brief.title }} (#{{ brief.id }}) closing {{ brief.dates.closing_date }}</a></li>
+        {%  endif %}
+      {% endfor %}
+    </ul>
+  <b>Briefs draft:</b>
+  <ul>
+    {% for brief in briefs %}
+      {% if brief.status == 'draft' %}
+      <li>{{ brief.title }} (#{{ brief.id }})</li>
+      {%  endif %}
+    {% endfor %}
+  </ul>
+{% endif %}

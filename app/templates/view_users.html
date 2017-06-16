@@ -145,6 +145,11 @@
 
       {% endcall %}
       {% endcall %}
+
+{%  if email_address %}
+  {% include "zendesk/zendesk_result.html" %}
+{% endif %}
+
   <form action="{{ url_for('.find_user_by_email_address') }}" method="get" class="question">
     <label class="question-heading" for="email_address">Find users by email address</label>
     <p class='hint'>
