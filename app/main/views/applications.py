@@ -96,10 +96,15 @@ def preview_application(id=None):
 def preview_application_casestudy(application_id, case_study_id):
     application = data_api_client.get_application(application_id)
     for id in application.get('application', {}).get('case_studies', {}):
+        if type(id) is dict:
+            case_study = id
+            id = case_study['id']
+        else:
+            case_study = application['application']['case_studies'][id]
 
-        if id == case_study_id:
+        if str(id) == case_study_id:
             rendered_component = render_component('bundles/CaseStudy/CaseStudyViewWidget.js',
-                                                  {"casestudy": application['application']['case_studies'][id]})
+                                                  {"casestudy": case_study})
 
             return render_template(
                 '_react.html',
