@@ -36,6 +36,7 @@ def applications_list(applications):
     revert_url = url_for('main.revert_application', _external=True, _scheme=SCHEME)
     preview_url = url_for('main.preview_application', _external=True, _scheme=SCHEME)
     search_url = url_for('main.search_applications', keyword='', _external=True, _scheme=SCHEME)
+    delete_url = url_for('main.delete_application', id=0, _external=True, _scheme=SCHEME)
     edit_url = '{}://{}/{}/'.format(
         current_app.config['DM_HTTP_PROTO'],
         current_app.config['DM_MAIN_SERVER_NAME'],
@@ -49,6 +50,7 @@ def applications_list(applications):
             'meta': {
                 'url_convert_to_seller': convert_url,
                 'url_reject_application': reject_url,
+                'url_delete_application': delete_url,
                 'url_revert_application': revert_url,
                 'url_edit_application': edit_url,
                 'url_preview': preview_url,
@@ -165,4 +167,10 @@ def revert_application():
 @role_required('admin')
 def search_applications(keyword):
     result = data_api_client.req.applications().search(keyword).get()
+    return jsonify(result)
+
+
+@main.route('/applications/<int:id>', methods=['DELETE'])
+def delete_application(id):
+    result = data_api_client.req.applications(id).delete({'updated_by': current_user.email_address})
     return jsonify(result)
