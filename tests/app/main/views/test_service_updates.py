@@ -13,9 +13,9 @@ class TestServiceUpdates(LoggedInApplicationTest):
     @pytest.mark.parametrize('audit_events,expected_table_contents,expected_count', (
         (
             (
-                ('2017-04-25T14:43:46.061077Z', '597637931594387', u'Ideal Health £', '240701', '240684'),
-                ('2016-03-05T10:42:16.061077Z', '1123456789012348', u'Testing Limited', '240699', '240682'),
                 ('2012-07-15T18:03:43.061077Z', '1123456789012351', u'Company name', '240697', '240680'),
+                ('2016-03-05T10:42:16.061077Z', '1123456789012348', u'Testing Limited', '240699', '240682'),
+                ('2017-04-25T14:43:46.061077Z', '597637931594387', u'Ideal Health £', '240701', '240684'),
             ),
             (
                 ('Company name', '1123456789012351', '19:03:43 15 July', '/admin/services/compare/240697...240680'),
@@ -26,9 +26,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
         ),
         (
             (
-                ('2017-04-25T14:43:46.061077Z', '597637931590001', 'Ideal Health', '240701', '240684'),
-                ('2016-03-05T10:42:16.061077Z', '597637931590001', 'Ideal Health', '240699', '240682'),
                 ('2012-07-15T18:03:43.061077Z', '597637931590002', 'Company name', '240697', '240680'),
+                ('2016-03-05T10:42:16.061077Z', '597637931590001', 'Ideal Health', '240699', '240682'),
             ),
             (
                 ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/compare/240697...240680'),
@@ -53,19 +52,22 @@ class TestServiceUpdates(LoggedInApplicationTest):
     ))
     def test_should_show_unacknowledged_services(
             self, data_api_client, audit_events, expected_table_contents, expected_count):
-        data_api_client.find_audit_events_iter.return_value = (
-            {
-                "data": {
-                    "oldArchivedServiceId": old_archived_service_id,
-                    "newArchivedServiceId": new_archived_service_id,
-                    "serviceId": service_id,
-                    "supplierName": supplier_name,
-                },
-                "createdAt": date_string
-            } for (
-                date_string, service_id, supplier_name, old_archived_service_id, new_archived_service_id
-            ) in audit_events
-        )
+        data_api_client.find_audit_events.return_value = {
+            "auditEvents": [
+                {
+                    "data": {
+                        "oldArchivedServiceId": old_archived_service_id,
+                        "newArchivedServiceId": new_archived_service_id,
+                        "serviceId": service_id,
+                        "supplierName": supplier_name,
+                    },
+                    "createdAt": date_string
+                } for (
+                    date_string, service_id, supplier_name, old_archived_service_id, new_archived_service_id
+                ) in audit_events
+            ],
+            "links": {},
+        }
 
         response = self.client.get('/admin/services/updates/unacknowledged')
 
@@ -90,12 +92,12 @@ class TestServiceUpdates(LoggedInApplicationTest):
     @pytest.mark.parametrize('audit_events,expected_table_contents,expected_count', (
         (
             (
-                (1234, '2017-04-25T14:43:46.061077Z', 'User 1', '597637931594387',
-                 u'Ideal Health £', '240701', '240684'),
-                (4321, '2016-03-05T10:42:16.061077Z', 'User 2', '1123456789012348',
-                 u'Testing Limited', '240699', '240682'),
                 (5678, '2012-07-15T18:03:43.061077Z', 'User 1', '1123456789012351',
                  u'Company name', '240697', '240680'),
+                (4321, '2016-03-05T10:42:16.061077Z', 'User 2', '1123456789012348',
+                 u'Testing Limited', '240699', '240682'),
+                (1234, '2017-04-25T14:43:46.061077Z', 'User 1', '597637931594387',
+                 u'Ideal Health £', '240701', '240684'),
             ),
             (
                 (u'Company name', '1123456789012351', '19:03:43 15 July', '/admin/services/compare/240697...240680'),
@@ -121,22 +123,25 @@ class TestServiceUpdates(LoggedInApplicationTest):
     ))
     def test_should_show_acknowledged_services(
             self, data_api_client, audit_events, expected_table_contents, expected_count):
-        data_api_client.find_audit_events_iter.return_value = (
-            {
-                "data": {
-                    "oldArchivedServiceId": old_archived_service_id,
-                    "newArchivedServiceId": new_archived_service_id,
-                    "supplierName": supplier_name,
-                    "serviceId": service_id
-                },
-                "id": id,
-                "acknowledgedAt": date_string,
-                "acknowledgedBy": acknowledged_by
-            } for (
-                id, date_string, acknowledged_by, service_id, supplier_name,
-                old_archived_service_id, new_archived_service_id
-            ) in audit_events
-        )
+        data_api_client.find_audit_events.return_value = {
+            "auditEvents": [
+                {
+                    "data": {
+                        "oldArchivedServiceId": old_archived_service_id,
+                        "newArchivedServiceId": new_archived_service_id,
+                        "supplierName": supplier_name,
+                        "serviceId": service_id
+                    },
+                    "id": id,
+                    "acknowledgedAt": date_string,
+                    "acknowledgedBy": acknowledged_by
+                } for (
+                    id, date_string, acknowledged_by, service_id, supplier_name,
+                    old_archived_service_id, new_archived_service_id
+                ) in audit_events
+            ],
+            "links": {},
+        }
 
         response = self.client.get('/admin/services/updates')
 
