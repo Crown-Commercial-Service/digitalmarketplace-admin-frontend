@@ -32,11 +32,7 @@
     <div class="grid-row">
         <div class="column-one-whole">
         {% set content %}
-            {% if event_limit_reached %}
-                <span class="search-summary-count">{{ audit_events|length }}</span> {{ pluralize(audit_events|length, "service", "services") }} (limit reached)
-            {% else %}
-                <span class="search-summary-count">{{ audit_events|length }}</span> {{ pluralize(audit_events|length, "service", "services") }}
-            {% endif %}
+            <span class="search-summary-count">{{ audit_events|length }}</span> {{ pluralize(audit_events|length, "service", "services") }}
         {% endset %}
         {% include "toolkit/search-summary.html" %}
 
