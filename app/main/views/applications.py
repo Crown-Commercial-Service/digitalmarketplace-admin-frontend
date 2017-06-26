@@ -174,3 +174,53 @@ def search_applications(keyword):
 def delete_application(id):
     result = data_api_client.req.applications(id).delete({'updated_by': current_user.email_address})
     return jsonify(result)
+
+
+@main.route('/applications/<int:id>/users', methods=['GET'])
+@login_required
+@role_required('admin')
+def application_users(id):
+    application = data_api_client.get_application(id)['application']
+    users = data_api_client.req.users().get({'application_id': application['id']})['users']
+
+    rendered_component = render_component(
+        'bundles/ApplicationsAdmin/ApplicationsAdminWidget.js',
+        {
+            'users': users,
+            'meta': {
+                'application': application,
+                'url_move_existing_user': url_for('.move_user_to_application', application_id=id),
+            }
+        }
+    )
+
+    return render_template(
+        '_react.html',
+        component=rendered_component
+    )
+
+
+@main.route('/applications/<int:application_id>/move-existing-user', methods=['POST'])
+@login_required
+@role_required('admin')
+def move_user_to_application(application_id):
+    json_payload = request.get_json(True)
+    email_address = json_payload.get('email')
+
+    application = data_api_client.get_application(application_id)
+    if not application:
+        return abort(404)
+
+    user = data_api_client.get_user(email_address=email_address)
+
+    result = data_api_client.req.users(user['users']['id']).post(
+        data={
+            'users': {
+                'role': 'applicant',
+                'application_id': application_id,
+                'active': True
+            },
+            "updated_by": current_user.email_address
+        }
+    )
+    return jsonify(result)
