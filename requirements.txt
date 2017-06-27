@@ -5,7 +5,7 @@
 Flask==0.10.1
 Flask-Login==0.2.11
 Flask-WTF==0.11
-lxml==3.4.4
+lxml==3.8.0
 
 git+https://github.com/alphagov/digitalmarketplace-content-loader.git@4.4.1#egg=digitalmarketplace-content-loader==4.4.1
 git+https://github.com/alphagov/digitalmarketplace-utils.git@27.1.2#egg=digitalmarketplace-utils==27.1.2
