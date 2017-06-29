@@ -216,9 +216,7 @@ def move_user_to_application(application_id):
     result = data_api_client.req.users(user['users']['id']).post(
         data={
             'users': {
-                'role': 'applicant',
                 'application_id': application_id,
-                'active': True
             },
             "updated_by": current_user.email_address
         }
