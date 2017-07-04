@@ -1,6 +1,3 @@
-from datetime import datetime
-
-
 def format_snapshots(snapshots, category, groupings):
     return [
         _label_and_count(

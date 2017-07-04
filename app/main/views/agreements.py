@@ -70,9 +70,7 @@ def next_agreement(supplier_id, framework_slug):
 
     # first advance supplier_frameworks_iter to the requested supplier in the list, disregarding any status filter
     try:
-        current_supplier_framework = next(
-            sf for sf in supplier_frameworks_iter if sf.get("supplierId") == supplier_id
-        )
+        next(sf for sf in supplier_frameworks_iter if sf.get("supplierId") == supplier_id)
     except StopIteration:
         # reached the end of supplier_frameworks_iter without finding an entry for supplier_id. supplier possibly
         # doesn't exist or doesn't have a signed agreement yet

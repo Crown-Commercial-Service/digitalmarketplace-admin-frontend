@@ -89,25 +89,16 @@ def view_signed_agreement(supplier_id, framework_slug):
     if not supplier_framework.get('agreementReturned'):
         abort(404)
 
-    # build an OrderedDict of applied-for lotSlug against lotName, ordered by lotSlug
     if framework["status"] in ("live", "expired"):
-        lot_slugs_names = OrderedDict(sorted(
-            (service["lotSlug"], service["lotName"],)
-            for service in data_api_client.find_services_iter(
-                supplier_id=supplier_id,
-                framework=framework_slug,
-                )
-            )
-        )
+        # If the framework is live or expired we don't need to filter drafts, we only care about successful services
+        service_iterator = data_api_client.find_services_iter(supplier_id=supplier_id, framework=framework_slug)
+        lot_slugs_names = [(service["lotSlug"], service["lotName"]) for service in service_iterator]
     else:
-        lot_slugs_names = OrderedDict(sorted(
-            (service["lotSlug"], service["lotName"],)
-            for service in data_api_client.find_draft_services_iter(
-                supplier_id=supplier_id,
-                framework=framework_slug,
-                ) if service["status"] == "submitted"
-            )
-        )
+        # If the framework has not yet become live we need to filter out unsuccessful services
+        service_iterator = data_api_client.find_draft_services_iter(supplier_id=supplier_id, framework=framework_slug)
+        lot_slugs_names = [
+            (service["lotSlug"], service["lotName"]) for service in service_iterator if service["status"] == "submitted"
+        ]
 
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
     path = supplier_framework['agreementPath']
@@ -119,7 +110,7 @@ def view_signed_agreement(supplier_id, framework_slug):
         supplier=supplier,
         framework=framework,
         supplier_framework=supplier_framework,
-        lot_slugs_names=lot_slugs_names,
+        lot_slugs_names=OrderedDict(sorted(lot_slugs_names)),
         agreement_url=url,
         agreement_ext=get_extension(path),
         next_status=next_status,
@@ -369,7 +360,8 @@ def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
     methods=['POST'])
 @role_required('admin-ccs-sourcing')
 def update_supplier_declaration_section(supplier_id, framework_slug, section_id):
-    supplier = data_api_client.get_supplier(supplier_id)['suppliers']
+    # Supplier must exist.
+    data_api_client.get_supplier(supplier_id)
     framework = data_api_client.get_framework(framework_slug)['frameworks']
     if framework['status'] not in ['pending', 'standstill', 'live']:
         abort(403)

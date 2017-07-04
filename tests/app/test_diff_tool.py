@@ -3,7 +3,7 @@ from itertools import chain
 
 from lxml import html
 import pytest
-from six import next, string_types
+from six import string_types
 
 from app import content_loader
 from app.main.helpers.diff_tools import html_diff_tables_from_sections_iter
@@ -248,18 +248,18 @@ class TestHtmlDiffTablesFromSections(BaseApplicationTest):
                 assert [
                     (elem.xpath("string()") or " ")  # normalizing blank lines to single spaces, reason mentioned above
                     for elem in table_element.xpath(
-                        "./tbody/tr/td[$i][contains(@class, 'line-content')]" +
+                        "./tbody/tr/td[$i][contains(@class, 'line-content')]"
                         "[normalize-space(string(./preceding-sibling::td[1][contains(@class, 'line-number')]))]",
                         # xpath's element indexing is 1-based
-                        i=expected_content_column+1,
+                        i=expected_content_column + 1,
                     )
                 ] == expected_content
 
             # assert some things about each row
             for tr in table_element.xpath("./tbody/tr"):
                 # note here how xpath's element indexing is 1-based
-                content_remside = tr.xpath("string(./td[$i])", i=self._expected_removal_content_column+1)
-                content_addside = tr.xpath("string(./td[$i])", i=self._expected_addition_content_column+1)
+                content_remside = tr.xpath("string(./td[$i])", i=self._expected_removal_content_column + 1)
+                content_addside = tr.xpath("string(./td[$i])", i=self._expected_addition_content_column + 1)
 
                 # in lines where we have additions/removals,,,
                 if tr.xpath(

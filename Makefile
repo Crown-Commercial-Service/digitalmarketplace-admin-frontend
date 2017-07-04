@@ -51,7 +51,7 @@ frontend-build:
 	npm run --silent frontend-build:${GULP_ENVIRONMENT}
 
 .PHONY: test
-test: show-environment test-requirements frontend-build test-pep8 test-python
+test: show-environment test-requirements frontend-build test-flake8 test-python
 
 .PHONY: test-requirements
 test-requirements:
@@ -60,9 +60,9 @@ test-requirements:
 	         echo "Run 'make freeze-requirements' to update."; exit 1; } \
 	    || { echo "requirements.txt is up to date"; exit 0; }
 
-.PHONY: test-pep8
-test-pep8: virtualenv
-	${VIRTUALENV_ROOT}/bin/pep8 .
+.PHONY: test-flake8
+test-flake8: virtualenv
+	${VIRTUALENV_ROOT}/bin/flake8 .
 
 .PHONY: test-python
 test-python: virtualenv
