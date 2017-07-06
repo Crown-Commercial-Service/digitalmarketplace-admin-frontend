@@ -2,6 +2,7 @@ from flask import abort, current_app, flash, redirect, render_template, request,
 from flask_login import login_required, current_user
 from collections import OrderedDict
 from datetime import datetime
+from itertools import chain, dropwhile, islice
 from six import next
 
 from dmapiclient import HTTPError
@@ -136,20 +137,49 @@ def service_updates(service_id):
 
     supplier = data_api_client.get_supplier(service["supplierId"])["suppliers"]
 
-    update_events = list(data_api_client.find_audit_events_iter(
-        object_id=service_id,
-        object_type="services",
-        audit_type=AuditTypes.update_service,
-        acknowledged="false",
-        latest_first="false",
-    ))
+    common_request_kwargs = {
+        "object_id": service_id,
+        "object_type": "services",
+        "audit_type": AuditTypes.update_service,
+        "acknowledged": "false",
+    }
+
+    all_update_events = latest_update_events = oldest_update_events = None
+    latest_update_events_response = data_api_client.find_audit_events(
+        latest_first="true",
+        **common_request_kwargs
+    )
+    latest_update_events = latest_update_events_response["auditEvents"]
+    if latest_update_events_response["links"].get("next"):
+        # we haven't got all update events for this object. fetch the oldest
+        oldest_update_events_response = data_api_client.find_audit_events(
+            latest_first="false",
+            **common_request_kwargs
+        )
+        oldest_update_events = oldest_update_events_response["auditEvents"][::-1]
+
+        # now we check to see if we're able to splice together the full list using these two responses. we'll know this
+        # if we are able to find the last of latest_update_events in oldest_update_events. if we're not able to, we'll
+        # have to leave all_update_events as None to signal that we don't have all the events
+        if latest_update_events[-1]["id"] in (ae["id"] for ae in oldest_update_events):
+            all_update_events = tuple(ae for ae in chain(
+                latest_update_events,
+                # being careful here to swallow the actual *matching* event using islice
+                islice(dropwhile(lambda ae: ae["id"] != latest_update_events[-1]["id"], oldest_update_events), 1, None),
+            ))
+    else:
+        all_update_events = oldest_update_events = latest_update_events
+
+    # so now we should be in the position where, in all cases:
+    # - all_update_events should contain all update events unless this is not possible using two requests, in which
+    #   case it is set to None
+    # - latest_update_events[0] and oldest_update_events[-1] should contain the latest and oldest update events
+    #   respectively
 
     extra_context = {}
-    if update_events:
-        update_events.sort(key=lambda audit_event: (audit_event["createdAt"], audit_event["user"], audit_event["id"]))
-
+    if latest_update_events:
         archived_service_response = data_api_client.get_archived_service(
-            update_events[0]["data"]["oldArchivedServiceId"]
+            oldest_update_events[-1]["data"]["oldArchivedServiceId"]
         )
         if archived_service_response is None:
             raise ValueError("referenced archived_service_id does not exist?")
@@ -175,8 +205,13 @@ def service_updates(service_id):
         "compare_revisions.html",
         service=service,
         supplier=supplier,
-        unack_update_events=update_events,
-        n_editing_users=len(frozenset(audit_event["user"] for audit_event in update_events)),
+        all_update_events=all_update_events,
+        latest_update_events=latest_update_events,
+        oldest_update_events=oldest_update_events,
+        n_editing_users_min=len(frozenset(audit_event["user"] for audit_event in chain(
+            latest_update_events,
+            oldest_update_events,
+        ))),
         **extra_context
     )
 
