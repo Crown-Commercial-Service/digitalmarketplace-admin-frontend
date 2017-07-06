@@ -781,217 +781,319 @@ class TestServiceUpdates(LoggedInApplicationTest):
             },
         }[supplier_id]}
 
+    @staticmethod
+    def _mock_find_audit_events_side_effect(fae_response_src, implicit_page_len, **kwargs):
+        if kwargs.get("page") or kwargs.get("page_len"):
+            raise NotImplementedError
+
+        links = {
+            "self": "http://example.com/dummy",
+        }
+        if len(fae_response_src) > implicit_page_len:
+            links["next"] = "http://example.com/dummy_next"
+        if kwargs.get("latest_first") == "true":
+            fae_response_src = fae_response_src[::-1]
+        return {
+            "auditEvents": fae_response_src[:implicit_page_len],
+            "links": links,
+        }
+
     _service_status_labels = {
         "disabled": "Removed",
         "enabled": "Private",
         "published": "Public",
     }
 
-    @pytest.mark.parametrize("fae_response,avail_arch_svcs,svc_status,exp_summ_text,exp_oldver_ctxt_text", (
-        (
-            # fae_response (find_audit_events response)
+    @pytest.mark.parametrize(
+        "fae_response_src,avail_arch_svcs,svc_status,exp_oldver_ctxt_text,fae_page_len,exp_summ_text",
+        chain.from_iterable(
             (
-                {
-                    "id": 567567,
-                    "type": "update_service",
-                    "acknowledged": False,
-                    "data": {
-                        "oldArchivedServiceId": "789",
-                        "newArchivedServiceId": "678",
+                (fae_r_s, avail_a_s, svc_s, exp_ov_c_t, fae_p_l, exp_s_t,)
+                for fae_p_l, exp_s_t in variant_params
+            )
+            for fae_r_s, avail_a_s, svc_s, exp_ov_c_t, variant_params in (
+                (
+                    # fae_response_src (find_audit_events response source data)
+                    (
+                        {
+                            "id": 567567,
+                            "type": "update_service",
+                            "acknowledged": False,
+                            "data": {
+                                "oldArchivedServiceId": "789",
+                                "newArchivedServiceId": "678",
+                            },
+                            "createdAt": "2010-02-03T10:11:12.345Z",
+                            "user": "someone@example.com",
+                        },
+                    ),
+                    # avail_arch_svcs (available archived services)
+                    {
+                        "789": {
+                            "frameworkSlug": "g-cloud-9",
+                            "lot": "cloud-hosting",
+                            "supplierId": 909090,
+                            "supplierName": "Barrington's",
+                            "serviceName": "Melonflavoured soap",
+                        },
                     },
-                    "createdAt": "2010-02-03T10:11:12.345Z",
-                    "user": "someone@example.com",
-                },
-            ),
-            # avail_arch_svcs (available archived services)
-            {
-                "789": {
-                    "frameworkSlug": "g-cloud-9",
-                    "lot": "cloud-hosting",
-                    "supplierId": 909090,
-                    "supplierName": "Barrington's",
-                    "serviceName": "Melonflavoured soap",
-                },
-            },
-            # svc_status (service status)
-            "disabled",
-            # exp_summ_text (expected summary text)
-            "1 unacknowledged edit by someone@example.com on Wednesday 3 February 2010.",
-            # exp_oldver_ctxt_text (expected oldversion title context text)
-            "Changed on Wednesday 3 February 2010 at 10:11",
-        ),
-        (
-            (
-                {
-                    "id": 1928374,
-                    "type": "update_service",
-                    "acknowledged": False,
-                    "data": {
-                        "oldArchivedServiceId": "111",
-                        "newArchivedServiceId": "222",
+                    # svc_status (service status)
+                    "disabled",
+                    # exp_oldver_ctxt_text (expected oldversion title context text)
+                    "Changed on Wednesday 3 February 2010 at 10:11",
+                    # sets of (fae_page_len, exp_summ_text) combinations to be flattened and joined against the above
+                    # parameters^. this lets us reuse a long-winded description of the "universe" against many different
+                    # implicit page_len values to test it with
+                    (
+                        (
+                            # fae_page_len (find_audit_events implicit page_len)
+                            5,
+                            # exp_summ_text (expected summary text)
+                            "1 unacknowledged edit by someone@example.com on Wednesday 3 February 2010.",
+                        ),
+                    ),
+                ),
+                (
+                    (
+                        {
+                            "id": 1928374,
+                            "type": "update_service",
+                            "acknowledged": False,
+                            "data": {
+                                "oldArchivedServiceId": "111",
+                                "newArchivedServiceId": "222",
+                            },
+                            "createdAt": "2015-02-03T20:11:12.345Z",
+                            "user": "lynch@example.com",
+                        },
+                        {
+                            "id": 293847,
+                            "type": "update_service",
+                            "acknowledged": False,
+                            "data": {
+                                "oldArchivedServiceId": "222",
+                                "newArchivedServiceId": "333",
+                            },
+                            "createdAt": "2015-03-22T12:55:12.345Z",
+                            "user": "lynch@example.com",
+                        },
+                        {
+                            "id": 948576,
+                            "type": "update_service",
+                            "acknowledged": False,
+                            "data": {
+                                "oldArchivedServiceId": "333",
+                                "newArchivedServiceId": "444",
+                            },
+                            "createdAt": "2015-03-22T12:57:12.345Z",
+                            "user": "florrie@example.com",
+                        },
+                    ),
+                    {
+                        "111": {
+                            "frameworkSlug": "g-cloud-9",
+                            "lot": "cloud-hosting",
+                            "supplierId": 909090,
+                            "supplierName": "Mr Lambe from London",
+                            "serviceName": "Lamb of London, who takest away the sins of our world.",
+                            "somethingIrrelevant": "Soiled personal linen, wrong side up with care.",
+                        },
                     },
-                    "createdAt": "2015-02-03T20:11:12.345Z",
-                    "user": "lynch@example.com",
-                },
-                {
-                    "id": 293847,
-                    "type": "update_service",
-                    "acknowledged": False,
-                    "data": {
-                        "oldArchivedServiceId": "222",
-                        "newArchivedServiceId": "333",
+                    "published",
+                    "Changed on Tuesday 3 February 2015 at 20:11",
+                    (
+                        (
+                            5,
+                            (
+                                "3 unacknowledged edits by 2 users between Tuesday 3 February 2015 and Sunday 22 "
+                                "March 2015."
+                            ),
+                        ),
+                        (
+                            2,
+                            (
+                                "3 unacknowledged edits by 2 users between Tuesday 3 February 2015 and Sunday 22 "
+                                "March 2015."
+                            ),
+                        ),
+                        (
+                            1,
+                            (
+                                "Multiple unacknowledged edits between Tuesday 3 February 2015 and Sunday 22 March "
+                                "2015."
+                            ),
+                        ),
+                    ),
+                ),
+                (
+                    (
+                        {
+                            "id": 65432,
+                            "type": "update_service",
+                            "acknowledged": False,
+                            "data": {
+                                "oldArchivedServiceId": "4444",
+                                "newArchivedServiceId": "5555",
+                            },
+                            "createdAt": "2012-06-30T20:01:12.345Z",
+                            "user": "marion@example.com",
+                        },
+                        {
+                            "id": 76543,
+                            "type": "update_service",
+                            "acknowledged": False,
+                            "data": {
+                                "oldArchivedServiceId": "5555",
+                                "newArchivedServiceId": "6666",
+                            },
+                            "createdAt": "2012-06-30T22:55:12.345Z",
+                            "user": "marion@example.com",
+                        },
+                    ),
+                    {
+                        "4444": {
+                            "id": "151",
+                            "frameworkSlug": "g-cloud-9",
+                            "lot": "cloud-hosting",
+                            "supplierId": 909090,
+                            "supplierName": "Barrington's",
+                            "serviceName": "Lemonflavoured soap",
+                        },
                     },
-                    "createdAt": "2015-03-22T12:55:12.345Z",
-                    "user": "lynch@example.com",
-                },
-                {
-                    "id": 948576,
-                    "type": "update_service",
-                    "acknowledged": False,
-                    "data": {
-                        "oldArchivedServiceId": "333",
-                        "newArchivedServiceId": "444",
+                    "enabled",
+                    "Changed on Saturday 30 June 2012 at 21:01",
+                    (
+                        (
+                            5,
+                            "2 unacknowledged edits by marion@example.com on Saturday 30 June 2012.",
+                        ),
+                        (
+                            2,
+                            "2 unacknowledged edits by marion@example.com on Saturday 30 June 2012.",
+                        ),
+                        (
+                            1,
+                            "Multiple unacknowledged edits on Saturday 30 June 2012.",
+                        ),
+                    ),
+                ),
+                (
+                    (
+                        {
+                            "id": 556677,
+                            "type": "update_service",
+                            "acknowledged": False,
+                            "data": {
+                                "oldArchivedServiceId": "3535",
+                                "newArchivedServiceId": "6767",
+                            },
+                            "createdAt": "2005-11-12T15:01:12.345Z",
+                            "user": "private.carr@example.com",
+                        },
+                        {
+                            "id": 668833,
+                            "type": "update_service",
+                            "acknowledged": False,
+                            "data": {
+                                "oldArchivedServiceId": "6767",
+                                "newArchivedServiceId": "7373",
+                            },
+                            "createdAt": "2005-12-10T11:55:12.345Z",
+                            "user": "private.carr@example.com",
+                        },
+                        {
+                            "id": 449966,
+                            "type": "update_service",
+                            "acknowledged": False,
+                            "data": {
+                                "oldArchivedServiceId": "7373",
+                                "newArchivedServiceId": "4747",
+                            },
+                            "createdAt": "2005-12-11T12:55:12.345Z",
+                            "user": "cissy@example.com",
+                        },
+                        {
+                            "id": 221188,
+                            "type": "update_service",
+                            "acknowledged": False,
+                            "data": {
+                                "oldArchivedServiceId": "4747",
+                                "newArchivedServiceId": "9292",
+                            },
+                            "createdAt": "2005-12-17T09:22:12.345Z",
+                            "user": "private.carr@example.com",
+                        },
+                    ),
+                    {
+                        "3535": {
+                            "id": "151",
+                            "frameworkSlug": "g-cloud-9",
+                            "lot": "cloud-hosting",
+                            "supplierId": 909090,
+                            "supplierName": "Barrington's",
+                            "serviceName": "Lemonflavoured soup",
+                        },
                     },
-                    "createdAt": "2015-03-22T12:57:12.345Z",
-                    "user": "florrie@example.com",
-                },
-            ),
-            {
-                "111": {
-                    "frameworkSlug": "g-cloud-9",
-                    "lot": "cloud-hosting",
-                    "supplierId": 909090,
-                    "supplierName": "Mr Lambe from London",
-                    "serviceName": "Lamb of London, who takest away the sins of our world.",
-                    "somethingIrrelevant": "Soiled personal linen, wrong side up with care.",
-                },
-            },
-            "published",
-            "3 unacknowledged edits by 2 users between Tuesday 3 February 2015 and Sunday 22 March 2015.",
-            "Changed on Tuesday 3 February 2015 at 20:11",
-        ),
-        (
-            (
-                {
-                    "id": 65432,
-                    "type": "update_service",
-                    "acknowledged": False,
-                    "data": {
-                        "oldArchivedServiceId": "4444",
-                        "newArchivedServiceId": "5555",
-                    },
-                    "createdAt": "2012-06-30T20:01:12.345Z",
-                    "user": "marion@example.com",
-                },
-                {
-                    "id": 76543,
-                    "type": "update_service",
-                    "acknowledged": False,
-                    "data": {
-                        "oldArchivedServiceId": "5555",
-                        "newArchivedServiceId": "6666",
-                    },
-                    "createdAt": "2012-06-30T22:55:12.345Z",
-                    "user": "marion@example.com",
-                },
-            ),
-            {
-                "4444": {
-                    "id": "151",
-                    "frameworkSlug": "g-cloud-9",
-                    "lot": "cloud-hosting",
-                    "supplierId": 909090,
-                    "supplierName": "Barrington's",
-                    "serviceName": "Lemonflavoured soap",
-                },
-            },
-            "enabled",
-            "2 unacknowledged edits by marion@example.com on Saturday 30 June 2012.",
-            "Changed on Saturday 30 June 2012 at 21:01",
-        ),
-        (
-            (
-                {
-                    "id": 556677,
-                    "type": "update_service",
-                    "acknowledged": False,
-                    "data": {
-                        "oldArchivedServiceId": "3535",
-                        "newArchivedServiceId": "6767",
-                    },
-                    "createdAt": "2005-11-12T15:01:12.345Z",
-                    "user": "private.carr@example.com",
-                },
-                {
-                    "id": 668833,
-                    "type": "update_service",
-                    "acknowledged": False,
-                    "data": {
-                        "oldArchivedServiceId": "6767",
-                        "newArchivedServiceId": "7373",
-                    },
-                    "createdAt": "2005-12-10T11:55:12.345Z",
-                    "user": "private.carr@example.com",
-                },
-                {
-                    "id": 449966,
-                    "type": "update_service",
-                    "acknowledged": False,
-                    "data": {
-                        "oldArchivedServiceId": "7373",
-                        "newArchivedServiceId": "4747",
-                    },
-                    "createdAt": "2005-12-11T12:55:12.345Z",
-                    "user": "cissy@example.com",
-                },
-                {
-                    "id": 221188,
-                    "type": "update_service",
-                    "acknowledged": False,
-                    "data": {
-                        "oldArchivedServiceId": "4747",
-                        "newArchivedServiceId": "9292",
-                    },
-                    "createdAt": "2005-12-17T09:22:12.345Z",
-                    "user": "private.carr@example.com",
-                },
-            ),
-            {
-                "3535": {
-                    "id": "151",
-                    "frameworkSlug": "g-cloud-9",
-                    "lot": "cloud-hosting",
-                    "supplierId": 909090,
-                    "supplierName": "Barrington's",
-                    "serviceName": "Lemonflavoured soup",
-                },
-            },
-            "enabled",
-            "4 unacknowledged edits by 2 users between Saturday 12 November 2005 and Saturday 17 December 2005.",
-            "Changed on Saturday 12 November 2005 at 15:01",
-        ),
-        (
-            (),
-            {},
-            "enabled",
-            "0 unacknowledged edits.",
-            None,
-        ),
-    ))
+                    "enabled",
+                    "Changed on Saturday 12 November 2005 at 15:01",
+                    (
+                        (
+                            5,
+                            (
+                                "4 unacknowledged edits by 2 users between Saturday 12 November 2005 and Saturday 17 "
+                                "December 2005."
+                            ),
+                        ),
+                        (
+                            3,
+                            (
+                                "4 unacknowledged edits by 2 users between Saturday 12 November 2005 and Saturday 17 "
+                                "December 2005."
+                            ),
+                        ),
+                        (
+                            2,
+                            (
+                                "Multiple unacknowledged edits between Saturday 12 November 2005 and Saturday 17 "
+                                "December 2005."
+                            ),
+                        ),
+                    ),
+                ),
+                (
+                    (),
+                    {},
+                    "enabled",
+                    None,
+                    (
+                        (
+                            5,
+                            "0 unacknowledged edits.",
+                        ),
+                    ),
+                ),
+            )
+        )
+    )
     @pytest.mark.parametrize("resultant_diff", (False, True))
     def test_unacknowledged_updates(
             self,
             data_api_client,
             html_diff_tables_from_sections_iter,
-            fae_response,
+            fae_response_src,
             avail_arch_svcs,
             svc_status,
-            exp_summ_text,
             exp_oldver_ctxt_text,
+            fae_page_len,
+            exp_summ_text,
             resultant_diff,
             ):
         data_api_client.get_service.side_effect = partial(self._mock_get_service_side_effect, svc_status)
-        data_api_client.find_audit_events_iter.side_effect = lambda *a, **ka: iter(fae_response)
+        data_api_client.find_audit_events.side_effect = partial(
+            self._mock_find_audit_events_side_effect,
+            fae_response_src,
+            fae_page_len,
+        )
         data_api_client.get_archived_service.side_effect = partial(
             self._mock_get_archived_service_side_effect,
             avail_arch_svcs,
@@ -1006,22 +1108,22 @@ class TestServiceUpdates(LoggedInApplicationTest):
         assert response.status_code == 200
         doc = html.fromstring(response.get_data(as_text=True))
 
-        assert data_api_client.find_audit_events_iter.call_args_list == [
-            ((), {
+        assert all(
+            kwargs == {
                 "object_id": "151",
                 "object_type": "services",
                 "audit_type": AuditTypes.update_service,
                 "acknowledged": "false",
-                "latest_first": "false",
-            },),
-        ]
+                "latest_first": mock.ANY,
+            } for args, kwargs in data_api_client.find_audit_events.call_args_list
+        )
 
         assert doc.xpath("normalize-space(string(//header//*[@class='context']))") == "Barrington's"
         assert doc.xpath("normalize-space(string(//header//h1))") == "Lemonflavoured soap"
 
         assert doc.xpath("//p[normalize-space(string())=$expected_text]", expected_text=exp_summ_text)
 
-        assert len(doc.xpath("//*[@class='dummy-diff-table']")) == (1 if fae_response and resultant_diff else 0)
+        assert len(doc.xpath("//*[@class='dummy-diff-table']")) == (1 if fae_response_src and resultant_diff else 0)
         assert len(doc.xpath(
             # an element that has the textual contents $reverted_text but doesn't have any children that have *exactly*
             # that text (this stops us getting multiple results for a single appearance of the text, because it includes
@@ -1029,13 +1131,13 @@ class TestServiceUpdates(LoggedInApplicationTest):
             # contains the target text)
             "//*[normalize-space(string())=$reverted_text][not(.//*[normalize-space(string())=$reverted_text])]",
             reverted_text="All changes were reversed.",
-        )) == (1 if fae_response and not resultant_diff else 0)
+        )) == (1 if fae_response_src and not resultant_diff else 0)
 
-        if fae_response:
+        if fae_response_src:
             assert html_diff_tables_from_sections_iter.call_args_list == [
                 ((), {
                     "sections": mock.ANY,  # test separately later?
-                    "revision_1": avail_arch_svcs[fae_response[0]["data"]["oldArchivedServiceId"]],
+                    "revision_1": avail_arch_svcs[fae_response_src[0]["data"]["oldArchivedServiceId"]],
                     "revision_2": self._mock_get_service_side_effect(svc_status, "151")["services"],
                     "table_preamble_template": "diff_table/_table_preamble.html",
                 },),
@@ -1044,12 +1146,12 @@ class TestServiceUpdates(LoggedInApplicationTest):
             # in this case we want a strict assertion that *all* of the following are true about the ack_form
             ack_forms = doc.xpath(
                 "//form[.//button[@type='submit'][normalize-space(string())=$ack_text]]",
-                ack_text="Acknowledge edit{}".format("" if len(fae_response) == 1 else "s"),
+                ack_text="Acknowledge edit{}".format("" if len(fae_response_src) == 1 else "s"),
             )
             assert len(ack_forms) == 1
             assert ack_forms[0].method == "POST"
 #            assert ack_forms[0].action == "/admin/services/151/updates/{}/acknowledge".format(
-#                text_type(fae_response[0]["oldArchivedServiceId"])
+#                text_type(fae_response_src[0]["oldArchivedServiceId"])
 #            )
             assert sorted(ack_forms[0].form_values()) == [
                 ("csrf_token", mock.ANY),
