@@ -1,209 +1,128 @@
 import difflib
-try:
-    from itertools import izip_longest
-except ImportError:
-    from itertools import zip_longest as izip_longest
 from datetime import datetime
-from flask import Markup, escape
+from itertools import chain
+import re
+
+from flask import Markup, escape, render_template
 from flask._compat import string_types
+
+from lxml import html
+from six.moves import zip_longest as izip_longest
+
+from dmcontent.questions import Multiquestion
 from dmutils.formats import DATETIME_FORMAT, DISPLAY_DATETIME_FORMAT
 
 
-def get_diffs_from_service_data(
-        sections=None,
-        revision_1=None,
-        revision_2=None,
-        include_unchanged_lines_in_output=False
+def _question_iter(question):
+    # type testing is weird - this should eventually belong in the question subclass itself
+    if isinstance(question, Multiquestion):
+        for sub_question in question.questions:
+            yield sub_question
+    else:
+        yield question
+
+
+def html_diff_tables_from_sections_iter(
+        sections,
+        revision_1,
+        revision_2,
+        table_preamble_template=None,
 ):
-    def all_are_lists(*args):
-        return all(isinstance(arg, list) for arg in args)
-
-    def all_are_strings(*args):
-        return all(isinstance(arg, string_types) for arg in args)
-
-    diffs = []
+    html_diff = difflib.HtmlDiff()
 
     for section in sections:
-        for question in section['questions']:
-            question_revision_1, question_revision_2 = None, None
+        for question in chain.from_iterable(_question_iter(question) for question in section['questions']):
+            q1, q2 = (r.get(question['id'], []) for r in (revision_1, revision_2,))
+            if q1 != q2:
+                q1, q2 = ((q.splitlines() if isinstance(q, string_types) else q) for q in (q1, q2,))
 
-            if all_are_lists(
-                    revision_1.get(question['id'], []),
-                    revision_2.get(question['id'], [])
-            ):
-                question_revision_1 = revision_1.get(question['id'], [])
-                question_revision_2 = revision_2.get(question['id'], [])
-
-            elif all_are_strings(
-                    revision_1.get(question['id'], ''),
-                    revision_2.get(question['id'], '')
-            ):
-                question_revision_1 = revision_1.get(question['id'], '').splitlines()
-                question_revision_2 = revision_2.get(question['id'], '').splitlines()
-
-            if question_revision_1 is not None and question_revision_2 is not None:
-                question_diff = render_lines(
-                    question_revision_1,
-                    question_revision_2,
-                    include_unchanged_lines_in_output
-                )
-
-                # if arrays are empty, there are no changes for this question
-                if question_diff['revision_1'] or question_diff['revision_2']:
-                    diffs.append({
-                        'section_name': section['name'],
-                        'label': question['question'],
-                        'revisions':
-                            [val + question_diff['revision_2'][i]
-                             for i, val
-                             in enumerate(question_diff['revision_1'])]
-                    })
-
-    return diffs
+                yield section.slug, question.id, Markup(_clean_difflib_html_table(
+                    html_diff.make_table(q1, q2),
+                    table_preamble_template=table_preamble_template,
+                    table_preamble_context={
+                        "section": section,
+                        "question": question,
+                    },
+                ))
 
 
-def get_revision_dates(revision_1=None, revision_2=None):
-
-    def get_revision_date(date_string):
-        # Tuesday, 10 June 2015 at 14:00
-        return datetime.strptime(
-            date_string, DATETIME_FORMAT
-        ).strftime(DISPLAY_DATETIME_FORMAT)
-
-    return {
-        'revision_1': get_revision_date(revision_1['updatedAt']),
-        'revision_2': get_revision_date(revision_2['updatedAt'])
-    }
+def _strip_nbsp(content):
+    return content.replace(u"\u00a0", u" ")
 
 
-def render_lines(
-        revision_1, revision_2, include_unchanged_lines_in_output=False):
-    """
-    Turns a pair of input lines into a list of word diffs
-
-    In:
-    revision_1: ['Hi there', 'Less letters']
-    revision_2: ['Hi there!', 'Less let']
-
-    Out:
-    { 'revision_1': ['  Hi', '- there'], ['  Less', '- letters'],
-      'revision_2': ['  Hi', '+ there!'], ['  Less', '+ let'] }
-    """
-
-    lines = {
-        'revision_1': [],
-        'revision_2': []
-    }
-
-    for index, revisions in enumerate(
-            izip_longest(revision_1, revision_2, fillvalue='')
-    ):
-        diff = get_words_diff(revisions[0], revisions[1])
-
-        # create an array of removed words and one of added rows
-        revision_1_words, revision_2_words = split_words_diff(diff)
-
-        # if revisions are equal and we want to skip unchanged lines
-        if revision_1_words == revision_2_words \
-            and get_line_type(revision_1_words) == 'unchanged' \
-            and get_line_type(revision_2_words) == 'unchanged' \
-                and not include_unchanged_lines_in_output:
-            continue
-
-        lines['revision_1'].append(
-            Markup(render_words_html(revision_1_words, index+1))
-        )
-        lines['revision_2'].append(
-            Markup(render_words_html(revision_2_words, index+1))
-        )
-
-    return lines
+def _strip_element_nbsp(element):
+    element.text = element.text and _strip_nbsp(element.text)
+    element.tail = element.tail and _strip_nbsp(element.tail)
+    for child_element in element:
+        _strip_element_nbsp(child_element)
 
 
-def split_words_diff(words_diff):
-    """
-    Accepts a list of words that have been diffed
-    Returns two lists: one with removals ('-') and one with additions ('+')
-    Ignores detail ('?') lines
+def _clean_difflib_html_table(table_src, table_preamble_template=None, table_preamble_context={}):
+    # difflib doesn't produce html *quite* how we would like, so we do the admittedly slightly strange thing here of
+    # parsing it, modifying the result in-place and re-serializing it for rendering. this is, in my opinion, the least-
+    # worst thing to do, because it allows us to take advantage of the (well tested) logic of difflib.HtmlDiff while
+    # just adding relatively simple style-mangling code of our own.
+    #
+    # another (perhaps more obvious) alternative to this would have been to adapt our stytles to difflib's output,
+    # but... frankly our style scheme for this is more well thought out and, more importantly, already cross-browser
+    # tested.
+    table_element = html.fragment_fromstring(table_src)
 
-    In:  ['  Hi', '- there', '+ there!', '?      +\n']
-    Out: (['  Hi', '- there'], ['  Hi', '+ there!'])
-    """
+    # colgroups not wanted
+    for colgroup in table_element.xpath(".//colgroup"):
+        colgroup.getparent().remove(colgroup)
 
-    return [w for w in words_diff
-            if get_word_type(w) in ['unchanged', 'removal']], \
-           [w for w in words_diff
-            if get_word_type(w) in ['unchanged', 'addition']]
+    # column of links not wanted
+    for diff_next in table_element.xpath(".//td[@class='diff_next']"):
+        diff_next.getparent().remove(diff_next)
 
+    # this isn't even valid html5 anymore
+    for td_nowrap in table_element.xpath(".//td[@nowrap]"):
+        del td_nowrap.attrib["nowrap"]
 
-def render_words_html(words, line_number):
+    for key in table_element.keys():
+        del table_element.attrib[key]
 
-    def _render_words_inner_html(words, inferred_type):
+    # we can't really safely use ids (who knows if we're going to use >1 of these in a page?)
+    for element in table_element.xpath(".//*[@id]"):
+        del element.attrib["id"]
 
-        html_words = []
+    # difflib very helpfully replaces all our spaces with nbsp, which is not something we want
+    _strip_element_nbsp(table_element.xpath("./tbody")[0])
 
-        for word in words:
-            word = escape(word)
-            type = get_word_type(word)
+    for line_number_td in table_element.xpath(".//td[@class='diff_header']"):
+        line_number_td.attrib["class"] = "line-number"
 
-            if type == 'unchanged':
-                html_words.append(u"{}".format(word[2:]))
+    for tr in table_element.xpath("./tbody/tr"):
+        tr[0].attrib["class"] = tr[2].attrib["class"] = "line-number"
+        tr[1].attrib["class"] = tr[3].attrib["class"] = "line-content"
 
-            elif type == inferred_type:
-                html_words.append(u"<strong>{}</strong>".format(word[2:]))
+        if (tr[0].text or "").strip() or len(tr[0]):  # i.e. left side has what is presumably a line number
+            if len(tr[1]):  # i.e. left side is interesting because the content has (presumably span.diff_*) child elems
+                tr[0].attrib["class"] += " line-number-removal"
+                tr[1].attrib["class"] += " removal"
+                for span in tr[1].xpath("./span[@class='diff_sub' or @class='diff_chg']"):
+                    span.tag = "del"
+                    del span.attrib["class"]
+        else:
+            tr[0].attrib["class"] += " line-non-existent"
+            tr[1].attrib["class"] += " line-non-existent"
 
-        return ' '.join(html_words).replace(u'</strong> <strong>', ' ')
+        if (tr[2].text or "").strip() or len(tr[2]):  # i.e. right side has what is presumably a line number
+            if len(tr[3]):  # i.e. right side's interesting because the content has (presumably span.diff_*) child elems
+                tr[2].attrib["class"] += " line-number-addition"
+                tr[3].attrib["class"] += " addition"
+                for span in tr[3].xpath("./span[@class='diff_add' or @class='diff_chg']"):
+                    span.tag = "ins"
+                    del span.attrib["class"]
+        else:
+            tr[2].attrib["class"] += " line-non-existent"
+            tr[3].attrib["class"] += " line-non-existent"
 
-    # Can only have one inferred type per line
-    inferred_type = get_line_type(words)
+    if table_preamble_template:
+        preamble_src = render_template(table_preamble_template, **table_preamble_context)
+        preamble_elements = html.fragments_fromstring(preamble_src)
+        for element in reversed(preamble_elements):
+            table_element.insert(0, element)
 
-    return \
-        u"<td class='line-number line-number-{type}'>{line_number}</td>" \
-        u"<td class='line-content {type}'>{line}</td>".format(
-            type=inferred_type,
-            line_number=line_number,
-            line=_render_words_inner_html(words, inferred_type)
-        )
-
-
-def get_words_diff(revision_1_line, revision_2_line):
-    """
-    Accepts two strings which are split into lists
-    Returns a list of word-diffs
-
-    In:  'Hi there', 'Hi there!'
-    Out: ['  Hi', '- there', '+ there!', '?      +\n']
-    """
-    differ = difflib.Differ()
-    # Splitting the lines on whitespace to that we get a word diff
-    return list(differ.compare(
-        revision_1_line.split(), revision_2_line.split()
-    ))
-
-
-def get_line_type(words, types_to_look_for=None):
-
-    if not words:
-        return 'empty'
-
-    if not types_to_look_for:
-        types_to_look_for = ['addition', 'removal']
-
-    for word in words:
-        type = get_word_type(word)
-        if type in types_to_look_for:
-            return type
-
-    # if words is empty, this is still what we want
-    return 'unchanged'
-
-
-def get_word_type(string):
-    if string.startswith('+ '):
-        return 'addition'
-    if string.startswith('- '):
-        return 'removal'
-    if string.startswith('? '):
-        return 'detail'
-    if string.startswith('  '):
-        return 'unchanged'
+    return html.tostring(table_element)

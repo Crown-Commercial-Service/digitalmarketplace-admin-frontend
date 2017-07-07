@@ -1,29 +1,10 @@
 .diff {
   margin-bottom: $gutter;
 
-  .diff-title {
-    @include heading-27;
-    font-weight: bold;
-    margin-bottom: $gutter-half;
-  }
-
-  .revision-dates {
-    @extend %contain-floats;
-    margin-bottom: $gutter-half;
-
-    p {
-      float: none;
-      width: 100%;
-      @include media(tablet) {
-        float: left;
-        width: 50%;
+  .page-column-headings + table {
+      caption {
+          padding-top: $gutter/2;
       }
-
-      .revision-date-type {
-        font-weight: bold;
-        margin-right: $gutter-half;
-      }
-    }
   }
 
   table {
@@ -53,10 +34,14 @@
         border-right: 5px solid white;
       }
 
+      &.line-non-existent {
+          background-color: $highlight-colour;
+      }
+
       &.removal {
         background-color: #FEE5E5;
 
-        strong {
+        del {
           background-color: #FDABAB;
           font-weight: normal;
         }
@@ -64,9 +49,10 @@
       &.addition {
         background-color: #E5FEE5;
 
-        strong {
+        ins {
           background-color: #ABFDAB;
           font-weight: normal;
+          text-decoration: none;
         }
       }
 
@@ -75,7 +61,6 @@
         text-align: right;
         float: left;
         clear: both;
-        background-color: transparent;
         width: 3%;
         padding-right: 1%;
         border-right: none;
@@ -99,6 +84,7 @@
         width: 95%;
         padding-left: 1%;
         float: right;
+        white-space: pre-wrap;
 
         @include media(tablet) {
           width: 41%;
