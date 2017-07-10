@@ -63,6 +63,7 @@ class Config(object):
     INVITE_EMAIL_FROM = DM_GENERIC_NOREPLY_EMAIL
     INVITE_EMAIL_SUBJECT = 'Your Digital Marketplace invitation'
     CREATE_USER_PATH = 'sellers/create-user'
+    CREATE_APPLICANT_PATH = 'sellers/signup/create-user'
 
     REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/bundle/'
     REACT_RENDER_URL = 'https://dm-dev-frontend.apps.staging.digital.gov.au/render'

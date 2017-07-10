@@ -7,6 +7,7 @@ from ..auth import role_required
 
 from react.render import render_component
 from dmutils.file import s3_download_file
+from dmutils.email import send_email, generate_token, EmailError
 import os
 import mimetypes
 
@@ -190,6 +191,7 @@ def application_users(id):
             'meta': {
                 'application': application,
                 'url_move_existing_user': url_for('.move_user_to_application', application_id=id),
+                'url_invite_user': url_for('.invite_user_to_application', application_id=id),
             }
         }
     )
@@ -222,3 +224,58 @@ def move_user_to_application(application_id):
         }
     )
     return jsonify(result)
+
+
+@main.route('/applications/<int:application_id>/invite-user', methods=['POST'])
+@login_required
+@role_required('admin')
+def invite_user_to_application(application_id):
+    json_payload = request.get_json(True)
+    email_address = json_payload.get('email')
+    name = json_payload.get('name')
+
+    application = data_api_client.get_application(application_id)
+    if not application:
+        return abort(404)
+
+    user_json = data_api_client.get_user(email_address=email_address)
+
+    if user_json:
+        return abort(400)
+
+    token_data = {'id': application_id, 'name': name, 'email_address': email_address}
+    token = generate_token(token_data, current_app.config['SECRET_KEY'], current_app.config['INVITE_EMAIL_SALT'])
+
+    url = '{}://{}/{}/{}'.format(
+        current_app.config['DM_HTTP_PROTO'],
+        current_app.config['DM_MAIN_SERVER_NAME'],
+        current_app.config['CREATE_APPLICANT_PATH'],
+        format(token)
+    )
+
+    email_body = render_template(
+        'emails/invite_user_application_email.html',
+        url=url,
+        supplier=application['application']['name'],
+        name=name,
+    )
+
+    try:
+        send_email(
+            email_address,
+            email_body,
+            current_app.config['INVITE_EMAIL_SUBJECT'],
+            current_app.config['INVITE_EMAIL_FROM'],
+            current_app.config['INVITE_EMAIL_NAME'],
+        )
+    except EmailError as e:
+        current_app.logger.error(
+            'Invitation email failed to send error {} to {} supplier {} supplier code {} '.format(
+                str(e),
+                email_address,
+                current_user.supplier_name,
+                current_user.supplier_code)
+        )
+        abort(503, "Failed to send user invite reset")
+
+    return jsonify(success=True), 200
