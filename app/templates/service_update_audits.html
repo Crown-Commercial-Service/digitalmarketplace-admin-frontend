@@ -13,9 +13,6 @@
       {
         "link": url_for('.index'),
         "label": "Admin home"
-      },
-      {
-        "label": "Audits",
       }
     ]
   %}
@@ -25,7 +22,7 @@
 {% block main_content %}
     {%
       with
-      heading = "Unacknowledged service edits"
+      heading = "Check edited services"
     %}
       {% include "toolkit/page-heading.html" %}
     {% endwith %}
