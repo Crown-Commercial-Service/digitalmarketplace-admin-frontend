@@ -10,6 +10,8 @@ from ...helpers import LoggedInApplicationTest
 
 @mock.patch('app.main.views.service_updates.data_api_client', autospec=True)
 class TestServiceUpdates(LoggedInApplicationTest):
+    user_role = 'admin-ccs-category'
+
     @pytest.mark.parametrize('audit_events,expected_table_contents,expected_count', (
         (
             (
@@ -18,9 +20,9 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 ('2017-04-25T14:43:46.061077Z', '597637931594387', u'Ideal Health £', '240701', '240684'),
             ),
             (
-                ('Company name', '1123456789012351', '19:03:43 15 July', '/admin/services/compare/240697...240680'),
-                (u'Testing Limited', '1123456789012348', '10:42:16 5 March', '/admin/services/compare/240699...240682'),
-                (u'Ideal Health £', '597637931594387', '15:43:46 25 April', '/admin/services/compare/240701...240684'),
+                ('Company name', '1123456789012351', '19:03:43 15 July', '/admin/services/compare/240697...240680?audit_event_id='),  # noqa
+                (u'Testing Limited', '1123456789012348', '10:42:16 5 March', '/admin/services/compare/240699...240682?audit_event_id='),  # noqa
+                (u'Ideal Health £', '597637931594387', '15:43:46 25 April', '/admin/services/compare/240701...240684?audit_event_id='),  # noqa
             ),
             '3 services',
         ),
@@ -30,8 +32,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 ('2016-03-05T10:42:16.061077Z', '597637931590001', 'Ideal Health', '240699', '240682'),
             ),
             (
-                ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/compare/240697...240680'),
-                ('Ideal Health', '597637931590001', '10:42:16 5 March', '/admin/services/compare/240699...240682'),
+                ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/compare/240697...240680?audit_event_id='),  # noqa
+                ('Ideal Health', '597637931590001', '10:42:16 5 March', '/admin/services/compare/240699...240682?audit_event_id='),  # noqa
             ),
             '2 services',
         ),
@@ -45,7 +47,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 ('2012-07-15T18:03:43.061077Z', '597637931590002', 'Company name', '240697', '240680'),
             ),
             (
-                ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/compare/240697...240680'),
+                ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/compare/240697...240680?audit_event_id='),  # noqa
             ),
             '1 service',
         ),
@@ -100,9 +102,9 @@ class TestServiceUpdates(LoggedInApplicationTest):
                  u'Ideal Health £', '240701', '240684'),
             ),
             (
-                (u'Company name', '1123456789012351', '19:03:43 15 July', '/admin/services/compare/240697...240680'),
-                (u'Testing Limited', '1123456789012348', '10:42:16 5 March', '/admin/services/compare/240699...240682'),
-                (u'Ideal Health £', '597637931594387', '15:43:46 25 April', '/admin/services/compare/240701...240684'),
+                (u'Company name', '1123456789012351', '19:03:43 15 July', '/admin/services/compare/240697...240680?audit_event_id=5678'),  # noqa
+                (u'Testing Limited', '1123456789012348', '10:42:16 5 March', '/admin/services/compare/240699...240682?audit_event_id=4321'),  # noqa
+                (u'Ideal Health £', '597637931594387', '15:43:46 25 April', '/admin/services/compare/240701...240684?audit_event_id=1234'),  # noqa
             ),
             '3 services',
         ),
@@ -116,7 +118,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 (3456, '2012-07-15T18:03:43.061077Z', 'user 1', '597637931590002', 'Company name', '240697', '240680'),
             ),
             (
-                ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/compare/240697...240680'),
+                ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/compare/240697...240680?audit_event_id=3456'),  # noqa
             ),
             '1 service',
         ),
@@ -143,7 +145,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             "links": {},
         }
 
-        response = self.client.get('/admin/services/updates')
+        response = self.client.get('/admin/services/updates/acknowledged')
 
         assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
@@ -166,7 +168,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
     def test_should_show_no_updates_if_none_returned(self, data_api_client):
         data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
-        response = self.client.get('/admin/services/updates')  # noqa
+        response = self.client.get('/admin/services/updates/acknowledged')  # noqa
         assert response.status_code == 200
 
         assert self._replace_whitespace('Noauditeventsfound') in self._replace_whitespace(
@@ -185,7 +187,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             'auditEvents': {
                 'acknowledged': False,
                 'links': {
-                    'self': 'http://localhost:5000/audit-events'
+                    'self': 'http://localhost:5000/services/updates/unacknowledged'
                 },
                 'data': {
                     'serviceName': 'new name',
@@ -206,7 +208,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == 'http://localhost/admin/services/updates/unacknowledged'
 
-        data_api_client.acknowledge_audit_event_including_previous.assert_called_with(
+        data_api_client.acknowledge_service_update_including_previous.assert_called_with(
+            u'321',
             123,
             'test@example.com'
         )
@@ -214,6 +217,14 @@ class TestServiceUpdates(LoggedInApplicationTest):
     def test_should_404_wrong_service_id(self, data_api_client):
         response = self.client.post('/admin/services/123/updates/321/acknowledge')
         assert response.status_code == 404
+
+    def test_should_403_forbidden_user_roles(self, data_api_client):
+        roles_not_allowed = ('admin', 'admin-ccs-sourcing', 'buyer', 'supplier')
+
+        for role in roles_not_allowed:
+            self.user_role = role
+            response = self.client.post('/admin/services/123/updates/321/acknowledge')
+            assert response.status_code == 403
 
     def test_should_410_already_acknowledged_event(self, data_api_client):
         audit_event = {
