@@ -35,8 +35,8 @@
 
             {% call(item) summary.list_table(
               audit_events,
-              caption="Audit events",
-              empty_message="No audit events found",
+              caption="Edited services",
+              empty_message="No edited services found",
               field_headings=[
                 'Supplier',
                 'Service ID',
@@ -59,7 +59,8 @@
                   url_for(
                     '.compare',
                     old_archived_service_id=item.data.oldArchivedServiceId,
-                    new_archived_service_id=item.data.newArchivedServiceId
+                    new_archived_service_id=item.data.newArchivedServiceId,
+                    audit_event_id=item.id
                   )
                 ) }}
               {% endcall %}
