@@ -13,9 +13,6 @@
       {
         "link": url_for('.index'),
         "label": "Admin home"
-      },
-      {
-        "label": "Audits",
       }
     ]
   %}
@@ -25,7 +22,7 @@
 {% block main_content %}
     {%
       with
-      heading = "Acknowledged service edits"
+      heading = "Approved service edits"
     %}
       {% include "toolkit/page-heading.html" %}
     {% endwith %}
@@ -62,7 +59,8 @@
                   url_for(
                     '.compare',
                     old_archived_service_id=item.data.oldArchivedServiceId,
-                    new_archived_service_id=item.data.newArchivedServiceId
+                    new_archived_service_id=item.data.newArchivedServiceId,
+                    audit_event_id=item.id
                   )
                 ) }}
               {% endcall %}

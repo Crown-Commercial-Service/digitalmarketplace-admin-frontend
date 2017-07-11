@@ -68,11 +68,11 @@ def service_update_audits():
     )
 
 
-@main.route('/services/updates', methods=['GET'])
+@main.route('/services/updates/acknowledged', methods=['GET'])
 @login_required
 @role_required('admin', 'admin-ccs-category')
 def acknowledged_services():
-    audit_events = data_api_client.find_audit_events(
+    audit_events_response = data_api_client.find_audit_events(
         audit_type=AuditTypes.update_service,
         acknowledged='true',
         latest_first='false',
@@ -81,7 +81,7 @@ def acknowledged_services():
 
     return render_template(
         "acknowledged_services.html",
-        audit_events=audit_events['auditEvents'],
+        audit_events=audit_events_response['auditEvents'],
     )
 
 

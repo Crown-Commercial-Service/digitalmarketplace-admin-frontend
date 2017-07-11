@@ -9,7 +9,7 @@
 
   .revision-dates {
     @extend %contain-floats;
-    margin-bottom: $gutter-half;
+    margin: $gutter-half 0;
 
     p {
       float: none;
