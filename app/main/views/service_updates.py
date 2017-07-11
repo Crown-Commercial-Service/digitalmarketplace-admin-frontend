@@ -97,7 +97,8 @@ def submit_service_update_acknowledgment(service_id, audit_id):
     if audit_event['acknowledged']:
         abort(410)
 
-    data_api_client.acknowledge_audit_event_including_previous(
+    data_api_client.acknowledge_service_update_including_previous(
+        service_id,
         audit_event["id"],
         current_user.email_address
     )
