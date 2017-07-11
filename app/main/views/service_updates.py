@@ -87,7 +87,7 @@ def acknowledged_services():
 
 @main.route('/services/<service_id>/updates/<int:audit_id>/acknowledge', methods=['POST'])
 @login_required
-@role_required('admin')
+@role_required('admin-ccs-category')
 def submit_service_update_acknowledgment(service_id, audit_id):
     audit_event = data_api_client.get_audit_event(audit_id)["auditEvents"]
 
