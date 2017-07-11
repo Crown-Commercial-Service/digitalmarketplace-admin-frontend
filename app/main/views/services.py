@@ -127,6 +127,7 @@ def edit(service_id, section_id):
 @role_required('admin', 'admin-ccs-category')
 def compare(old_archived_service_id, new_archived_service_id):
     audit_event_id = request.args.get('audit_event_id')
+
     audit_event = data_api_client.get_audit_event(audit_event_id)['auditEvents']
 
     def validate_archived_services(old_archived_service, new_archived_service):
@@ -187,6 +188,7 @@ def compare(old_archived_service_id, new_archived_service_id):
         )
 
     supplier = data_api_client.get_supplier(service_data["supplierId"])["suppliers"]
+
     supplier_contact = supplier["contactInformation"][0]["email"]
 
     return render_template(
