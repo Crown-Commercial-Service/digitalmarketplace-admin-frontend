@@ -56,6 +56,13 @@ def create_app(config_name):
             application.logger.info(
                 "Could not load declaration manifest for {}".format(framework_data['slug'])
             )
+        try:
+            content_loader.load_manifest(framework_data['slug'], 'services', 'edit_service')
+        except ContentNotFoundError:
+            # Not all frameworks have this, so no need to panic (e.g. G-Cloud 4, G-Cloud 5)
+            application.logger.info(
+                "Could not load edit_service manifest for {}".format(framework_data['slug'])
+            )
 
     # Should be incorporated into digitalmarketplace-utils as well
     csrf.init_app(application)
