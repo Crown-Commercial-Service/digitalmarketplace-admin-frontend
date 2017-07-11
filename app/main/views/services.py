@@ -126,6 +126,10 @@ def edit(service_id, section_id):
 @login_required
 @role_required('admin', 'admin-ccs-category')
 def compare(old_archived_service_id, new_archived_service_id):
+    audit_event_id = request.args.get('audit_event_id')
+
+    if not audit_event_id:
+        abort(404)
 
     def validate_archived_services(old_archived_service, new_archived_service):
 
@@ -167,7 +171,7 @@ def compare(old_archived_service_id, new_archived_service_id):
     except (HTTPError, KeyError, ValueError):
         abort(404)
 
-    content = content_loader.get_manifest('g-cloud-6', 'edit_service_as_admin').filter(service_data)
+    content = content_loader.get_manifest(service_data['frameworkSlug'], 'edit_service').filter(service_data)
 
     # It's possible to have an empty array if none of the lines were changed.
     # TODO This possibility isn't actually handled.
@@ -184,12 +188,17 @@ def compare(old_archived_service_id, new_archived_service_id):
             service_data_revision_2
         )
 
+    supplier = data_api_client.get_supplier(service_data["supplierId"])["suppliers"]
+    supplier_contact = supplier["contactInformation"][0]["email"]
+
     return render_template(
         "compare_revisions.html",
         diffs=service_diffs,
         revision_dates=revision_dates,
         sections=content.sections,
-        service_data=service_data
+        service_data=service_data,
+        supplier_contact=supplier_contact,
+        audit_event_id=audit_event_id
     )
 
 
