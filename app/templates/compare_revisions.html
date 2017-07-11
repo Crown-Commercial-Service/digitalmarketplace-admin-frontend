@@ -53,7 +53,7 @@
       {%
         with
           url = "/g-cloud/services/{}".format(service_data.id),
-          text = "View service page on the Digital Marketplace"
+          text = "View service"
       %}
         {% include "toolkit/secondary-action-link.html" %}
       {% endwith %}
@@ -92,6 +92,18 @@
         {% endfor %}
       {% endfor %}
       </div><!-- end of .diff -->
+
+      <p class="dmspeak">
+          <strong>Contact supplier: </strong><br />
+          <a href="mailto:{{ supplier_contact }}">{{ supplier_contact }}</a>
+      </p>
+
+      {% if current_user.has_any_role('admin-ccs-category') %}
+            <form action="{{ url_for('.submit_service_update_acknowledgment', service_id=service_data.id, audit_id=audit_event_id ) }}" method="post">
+                <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
+                <input type="submit" class="button-save"  value="Approve edits" />
+            </form>
+      {% endif %}
 
       {% if current_user.has_role('admin') %}
       <form action="{{ url_for('.update_service_status', service_id=service_data.id ) }}" method="post">
