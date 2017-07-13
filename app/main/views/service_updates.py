@@ -4,12 +4,10 @@ from flask import request, render_template, redirect, url_for, abort
 from flask_login import login_required, current_user
 
 from dmapiclient.audit import AuditTypes
-from dmutils.formats import DATETIME_FORMAT
 
 from ... import data_api_client
 from .. import main
 from ..auth import role_required
-from ..forms import ServiceUpdateAuditEventsForm
 
 
 @main.route('/service-status-updates', methods=['GET'])
