@@ -105,7 +105,7 @@ class Development(Config):
     DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-communications-dev-dev'
     DM_AGREEMENTS_BUCKET = 'digitalmarketplace-documents-dev-dev'
 
-    DM_DATA_API_URL = "http://localhost:5000"
+    DM_DATA_API_URL = "http://localhost:5000/api/"
     DM_DATA_API_AUTH_TOKEN = "myToken"
     SECRET_KEY = 'DevKeyDevKeyDevKeyDevKeyDevKeyDevKeyDevKeyX='
     DM_S3_DOCUMENT_BUCKET = "digitalmarketplace-documents-dev-dev"
