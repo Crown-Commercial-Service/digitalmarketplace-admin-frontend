@@ -10,9 +10,6 @@
       <ul id="proposition-links">
         {% if current_user.has_role('admin') or current_user.has_role('admin-ccs-category') %}
         <li>
-            <a href="{{ url_for('main.service_update_audits') }}">Service updates</a>
-        </li>
-        <li>
             <a href="{{ url_for('main.service_status_update_audits') }}">Service status changes</a>
         </li>
         {% endif %}
