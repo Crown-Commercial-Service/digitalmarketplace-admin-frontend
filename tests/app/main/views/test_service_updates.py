@@ -163,7 +163,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             assert tuple(
                 tuple(th.xpath('normalize-space(string())') for th in tr.xpath('./th'))
                 for tr in document.xpath('//table[@class="summary-item-body"]/thead/tr')
-            ) == (('Supplier', 'Service ID', 'Acknowledged', 'Changes'),)
+            ) == (('Supplier', 'Service ID', 'Approved', 'Changes'),)
 
     def test_should_show_no_updates_if_none_returned(self, data_api_client):
         data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
