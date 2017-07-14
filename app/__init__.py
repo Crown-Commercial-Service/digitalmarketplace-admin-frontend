@@ -2,7 +2,6 @@ from datetime import timedelta, datetime
 
 from dmcontent.errors import ContentNotFoundError
 from flask import Flask, request, redirect
-from flask.ext.bootstrap import Bootstrap
 from flask_login import LoginManager
 from flask_wtf.csrf import CsrfProtect
 
@@ -14,7 +13,6 @@ from dmcontent.content_loader import ContentLoader
 from config import configs
 
 
-bootstrap = Bootstrap()
 csrf = CsrfProtect()
 data_api_client = dmapiclient.DataAPIClient()
 feature_flags = flask_featureflags.FeatureFlag()
@@ -35,7 +33,6 @@ def create_app(config_name):
     init_app(
         application,
         configs[config_name],
-        bootstrap=bootstrap,
         data_api_client=data_api_client,
         feature_flags=feature_flags,
         login_manager=login_manager

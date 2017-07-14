@@ -17,7 +17,7 @@ sudo easy_install virtualenv
 
 Install dependencies, build assets and run the app
 ```
-make run_all
+make run-all
 ```
 
 ## Full setup
@@ -41,7 +41,7 @@ source ./venv/bin/activate
 
 Install new Python dependencies with pip
 
-```make requirements_for_test```
+```make requirements-dev```
 
 Install frontend dependencies with npm and gulp
 
@@ -82,16 +82,29 @@ make test
 
 ### Run the development server
 
-To run the Admin Frontend App for local development use the `run_all` target.
+To run the Admin Frontend App for local development use the `run-all` target.
 This will install requirements, build assets and run the app.
 
 ```
-make run_all
+make run-all
 ```
 
-To just run the application use the `run_app` target.
+To just run the application use the `run-app` target.
 
 The admin frontend runs on port 5004. Use the app at [http://127.0.0.1:5004/admin/](http://127.0.0.1:5004/admin/)
+
+### Updating application dependencies
+
+`requirements.txt` file is generated from the `requirements-app.txt` in order to pin
+versions of all nested dependecies. If `requirements-app.txt` has been changed (or
+we want to update the unpinned nested dependencies) `requirements.txt` should be
+regenerated with
+
+```
+make freeze-requirements
+```
+
+`requirements.txt` should be commited alongside `requirements-app.txt` changes.
 
 ### Using FeatureFlags
 
