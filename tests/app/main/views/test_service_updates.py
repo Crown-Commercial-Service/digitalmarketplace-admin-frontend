@@ -24,7 +24,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 (u'Testing Limited', '1123456789012348', '10:42:16 5 March', '/admin/services/compare/240699...240682?audit_event_id='),  # noqa
                 (u'Ideal Health £', '597637931594387', '15:43:46 25 April', '/admin/services/compare/240701...240684?audit_event_id='),  # noqa
             ),
-            '3 services',
+            '3 edited services',
         ),
         (
             (
@@ -35,12 +35,12 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/compare/240697...240680?audit_event_id='),  # noqa
                 ('Ideal Health', '597637931590001', '10:42:16 5 March', '/admin/services/compare/240699...240682?audit_event_id='),  # noqa
             ),
-            '2 services',
+            '2 edited services',
         ),
         (
             (),
             (),
-            '0 services',
+            '0 edited services',
         ),
         (
             (
@@ -49,7 +49,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             (
                 ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/compare/240697...240680?audit_event_id='),  # noqa
             ),
-            '1 service',
+            '1 edited service',
         ),
     ))
     def test_should_show_unacknowledged_services(
