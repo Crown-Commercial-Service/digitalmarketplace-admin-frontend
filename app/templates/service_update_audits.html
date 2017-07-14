@@ -28,11 +28,9 @@
     {% endwith %}
     <div class="grid-row">
         <div class="column-one-whole">
-        {% set content %}
-            <span class="search-summary-count">{{ audit_events|length }}</span> {{ pluralize(audit_events|length, "service", "services") }}
-        {% endset %}
-        {% include "toolkit/search-summary.html" %}
-
+        <p class="search-summary">
+            <span class="search-summary-count">{{ audit_events|length }}</span> edited {{ pluralize(audit_events|length, "service", "services") }}
+        </p>
             {% call(item) summary.list_table(
               audit_events,
               caption="Edited services",
