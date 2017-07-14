@@ -49,8 +49,9 @@
                   {{ item.data.serviceId }}
                 {% endcall %}
                 {% call summary.field() %}
-                  {{ item.createdAt|timeformat }}
-                  {{ item.createdAt|shortdateformat }}
+                  {{ item.createdAt|shortdateformat }}<br />
+                  at {{ item.createdAt|timeformat }}
+
                 {% endcall %}
                 {{ summary.edit_link(
                   "View changes",
