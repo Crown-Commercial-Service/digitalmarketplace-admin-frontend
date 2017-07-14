@@ -115,35 +115,22 @@
       <p>All changes were reversed.</p>
     {% endfor %}
     </div><!-- end of .diff -->
-    <form method="post" action="ACK_URL">
-      <div style="display:none;">
-        <input name="csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-      </div>
-      <button type="submit" class="button-save">
-        Acknowledge {{ pluralize((all_update_events or (oldest_update_events+latest_update_events))|length, "edit", "edits") }}
-      </button>
-    </form>
     {% endif %}
 
-    {% if current_user.has_any_role('admin-ccs-category') and not audit_event.acknowledged %}
-        <form action="{{ url_for('.submit_service_update_acknowledgment', service_id=service_data.id, audit_id=audit_event.id ) }}" method="post">
+    {% if current_user.has_any_role('admin-ccs-category') %}
+        <form action="{{ url_for('.submit_service_update_acknowledgment', service_id=service.id, audit_id=latest_update_events[0].id)}}" method="post">
             <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
-            <p>
-                <strong>Contact supplier: </strong><br />
-                <a href="mailto:{{ supplier_contact }}">{{ supplier_contact }}</a>
-            </p>
+            <div class="grid-row">
+              <div class="column-one-whole">
+                <h4>Contact supplier:</h4>
+                <p><a href="mailto:{{ supplier["contactInformation"][0]["email"] }}">
+                    {{ supplier["contactInformation"][0]["email"] }}
+                </a></p>
+              </div>
+            </div>
 
-            <input type="submit" class="button-save"  value="Approve edits" />
+            <input type="submit" class="button-save"  value="Approve {{ pluralize((all_update_events or (oldest_update_events+latest_update_events))|length, "edit", "edits") }}" />
         </form>
-
-     <div class="grid-row">
-      <div class="column-one-whole">
-        <h4>Contact supplier:</h4>
-        <p><a href="mailto:{{ supplier["contactInformation"][0]["email"] }}">
-            {{ supplier["contactInformation"][0]["email"] }}
-        </a></p>
-      </div>
-    </div>
     {% endif %}
 
   </div>
