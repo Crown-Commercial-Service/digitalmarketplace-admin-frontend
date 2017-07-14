@@ -4,12 +4,10 @@ from flask import request, render_template, redirect, url_for, abort
 from flask_login import login_required, current_user
 
 from dmapiclient.audit import AuditTypes
-from dmutils.formats import DATETIME_FORMAT
 
 from ... import data_api_client
 from .. import main
 from ..auth import role_required
-from ..forms import ServiceUpdateAuditEventsForm
 
 
 @main.route('/service-status-updates', methods=['GET'])
@@ -27,7 +25,7 @@ def service_status_update_audits(day=None, page=1):
 
     try:
         day_as_datetime = datetime.strptime(day, '%Y-%m-%d')
-    except ValueError as err:
+    except ValueError:
         abort(404)
 
     status_update_audit_events = data_api_client.find_audit_events(
@@ -50,59 +48,57 @@ def service_status_update_audits(day=None, page=1):
     )
 
 
-@main.route('/service-updates', methods=['GET'])
+@main.route('/services/updates/unacknowledged', methods=['GET'])
 @login_required
 @role_required('admin', 'admin-ccs-category')
 def service_update_audits():
-    form = ServiceUpdateAuditEventsForm(request.args, csrf_enabled=False)
-
-    if not form.validate():
-        return render_template(
-            "service_update_audits.html",
-            today=datetime.utcnow().strftime(DATETIME_FORMAT),
-            acknowledged=form.default_acknowledged(),
-            audit_events=[],
-            form=form
-        ), 400
-
-    audit_events = data_api_client.find_audit_events(
+    audit_events_response = data_api_client.find_audit_events(
         audit_type=AuditTypes.update_service,
-        acknowledged=form.default_acknowledged(),
-        audit_date=form.format_date(),
-        page=form.page.data
+        acknowledged='false',
+        latest_first='false',
+        earliest_for_each_object='true',
     )
 
     return render_template(
         "service_update_audits.html",
-        today=form.format_date_for_display().strftime(DATETIME_FORMAT),
-        acknowledged=form.default_acknowledged(),
-        audit_events=audit_events['auditEvents'],
-        current_page=form.page.data,
-        prev_page_exists=bool(audit_events['links'].get('prev')),
-        next_page_exists=bool(audit_events['links'].get('next')),
-        form=form
+        audit_events=audit_events_response['auditEvents'],
+        has_next=bool(audit_events_response['links'].get('next')),
     )
 
 
-@main.route('/service-updates/<audit_id>/acknowledge', methods=['POST'])
+@main.route('/services/updates/acknowledged', methods=['GET'])
 @login_required
-@role_required('admin')
-def submit_service_update_acknowledgment(audit_id):
-    form = ServiceUpdateAuditEventsForm(request.form)
-    if form.validate():
-        data_api_client.acknowledge_audit_event(
-            audit_id, current_user.email_address)
-        return redirect(
-            url_for(
-                '.service_update_audits',
-                audit_date=form.audit_date.data,
-                acknowledged=form.acknowledged.data)
-        )
-    else:
-        return render_template(
-            "service_update_audits.html",
-            today=datetime.utcnow().strftime(DATETIME_FORMAT),
-            audit_events=None,
-            acknowledged=form.default_acknowledged(),
-            form=form
-        ), 400
+@role_required('admin', 'admin-ccs-category')
+def acknowledged_services():
+    audit_events_response = data_api_client.find_audit_events(
+        audit_type=AuditTypes.update_service,
+        acknowledged='true',
+        latest_first='false',
+        earliest_for_each_object='true',
+    )
+
+    return render_template(
+        "acknowledged_services.html",
+        audit_events=audit_events_response['auditEvents'],
+    )
+
+
+@main.route('/services/<service_id>/updates/<int:audit_id>/acknowledge', methods=['POST'])
+@login_required
+@role_required('admin-ccs-category')
+def submit_service_update_acknowledgment(service_id, audit_id):
+    audit_event = data_api_client.get_audit_event(audit_id)["auditEvents"]
+
+    if audit_event["data"]["serviceId"] != service_id or audit_event["type"] != "update_service":
+        abort(404)
+
+    if audit_event['acknowledged']:
+        abort(410)
+
+    data_api_client.acknowledge_service_update_including_previous(
+        service_id,
+        audit_event["id"],
+        current_user.email_address
+    )
+
+    return redirect(url_for('.service_update_audits'))

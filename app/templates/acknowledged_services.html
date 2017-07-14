@@ -22,23 +22,24 @@
 {% block main_content %}
     {%
       with
-      heading = "Check edits to services"
+      heading = "Approved service edits"
     %}
       {% include "toolkit/page-heading.html" %}
     {% endwith %}
     <div class="grid-row">
         <div class="column-one-whole">
         <p class="search-summary">
-            <span class="search-summary-count">{{ audit_events|length }}</span> edited {{ pluralize(audit_events|length, "service", "services") }}
+            <span class="search-summary-count">{{ audit_events|length }}</span> {{ pluralize(audit_events|length, "service", "services") }}
         </p>
+
             {% call(item) summary.list_table(
               audit_events,
-              caption="Edited services",
-              empty_message="No edited services found",
+              caption="Audit events",
+              empty_message="No audit events found",
               field_headings=[
                 'Supplier',
                 'Service ID',
-                'Edited',
+                'Approved',
                 summary.hidden_field_heading("Changes"),
               ],
               field_headings_visible=True
@@ -49,9 +50,8 @@
                   {{ item.data.serviceId }}
                 {% endcall %}
                 {% call summary.field() %}
-                  {{ item.createdAt|shortdateformat }}<br />
-                  at {{ item.createdAt|timeformat }}
-
+                  {{ item.acknowledgedAt|timeformat }}
+                  {{ item.acknowledgedAt|shortdateformat }}
                 {% endcall %}
                 {{ summary.edit_link(
                   "View changes",

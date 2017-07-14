@@ -1,4 +1,4 @@
-<p class="search-summary">
+<p class="search-summary-border-bottom">
   <em class="search-summary-count">{{ supplier_frameworks|length }}</em>
   {{ pluralize(supplier_frameworks|length, "agreement", "agreements") }}
   <em>{{ status_labels.get(status)|lower if status else "returned" }}</em>

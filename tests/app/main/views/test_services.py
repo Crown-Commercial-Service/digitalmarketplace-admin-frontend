@@ -746,7 +746,8 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
                 'updatedAt': '2014-12-10T10:55:25.00000Z',
                 'serviceName': '<h1>Cloudy</h1> Cloud Service',
                 'status': 'published',
-                'serviceSummary': 'Something'
+                'serviceSummary': 'Something',
+                'frameworkSlug': 'dummy-cloud-slug'
             }}
         }
 
@@ -756,33 +757,38 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
                 'supplierId': 2,
                 'updatedAt': '2014-12-01T10:55:25.00000Z',
                 'serviceName': 'Cloud Service',
-                'serviceSummary': 'Something'
+                'serviceSummary': 'Something',
+                'frameworkSlug': 'dummy-cloud-slug'
             }},
             20: {'services': {
                 'id': 1,
                 'supplierId': 2,
                 'updatedAt': '2014-12-02T10:55:25.00000Z',
                 'serviceName': '<h1>Cloudy</h1> Cloud Service',
-                'serviceSummary': 'Something'
+                'serviceSummary': 'Something',
+                'frameworkSlug': 'dummy-cloud-slug'
             }},
             # Service id doesn't exist
             30: {'services': {
                 'id': 2,
                 'supplierId': 2,
-                'updatedAt': '2014-12-03T10:55:25.00000Z'
+                'updatedAt': '2014-12-03T10:55:25.00000Z',
+                'frameworkSlug': 'dummy-cloud-slug'
             }},
             # Service id doesn't exist
             40: {'services': {
                 'id': 2,
                 'supplierId': 2,
-                'updatedAt': '2014-12-04T10:55:25.00000Z'
+                'updatedAt': '2014-12-04T10:55:25.00000Z',
+                'frameworkSlug': 'dummy-cloud-slug'
             }},
             # missing the serviceSummary
             50: {'services': {
                 'id': 1,
                 'supplierId': 2,
                 'updatedAt': '2014-12-03T10:55:25.00000Z',
-                'serviceName': '<h1>Cloudy</h1> Cloud Service'
+                'serviceName': '<h1>Cloudy</h1> Cloud Service',
+                'frameworkSlug': 'dummy-cloud-slug'
             }}
         }
 
@@ -833,6 +839,10 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
             self._get_archived_service
         data_api_client.get_service.side_effect = self._get_service
 
+        data_api_client.get_audit_event.return_value = {
+            'auditEvents': {"id": 123, "acknowledgedAt": "2017-07-11T14:39:15.234477Z"}
+        }
+
         return self.client.get('/admin/services/compare/{}...{}'.format(
             archived_service_id_1, archived_service_id_2
         ))
@@ -866,7 +876,7 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
         response = self._get_archived_services_response('30', '40')
         assert response.status_code == 404
 
-    @mock.patch('app.main.views.services.content_loader')
+    @mock.patch('app.main.views.services.content_loader', autospec=True)
     def test_can_get_archived_services_with_dates_and_diffs(self, content_loader):
 
         class TestBuilder(object):
@@ -900,13 +910,7 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
             '<td class=\'line-content addition\'><strong>&lt;h1&gt;Cloudy&lt;/h1&gt;</strong> Cloud Service</td>'
         ) in self.strip_all_whitespace(response.get_data(as_text=True))
 
-        # check status is right
-        assert self.strip_all_whitespace(
-            '<input type="radio" name="service_status" id="service_status_published" value="public" checked=' +
-            '"checked" />'
-        ) in self.strip_all_whitespace(response.get_data(as_text=True))
-
-    @mock.patch('app.main.views.services.content_loader')
+    @mock.patch('app.main.views.services.content_loader', autospec=True)
     def test_can_get_archived_services_with_differing_keys(self, content_loader):
 
         class TestBuilder(object):
@@ -917,3 +921,29 @@ class TestCompareServiceArchives(LoggedInApplicationTest):
         content_loader.get_manifest.return_value = TestBuilder()
         response = self._get_archived_services_response('10', '50')
         assert response.status_code == 200
+
+    @mock.patch('app.main.views.services.content_loader', autospec=True)
+    def test_approval_button_only_visible_to_ccs_category(self, content_loader):
+
+        class TestBuilder(object):
+            @staticmethod
+            def filter(*args):
+                return self._TestContent()
+
+        content_loader.get_manifest.return_value = TestBuilder()
+        self.user_role = 'admin-ccs-category'
+        response = self._get_archived_services_response('10', '20')
+
+        assert self.strip_all_whitespace(
+            '<input type="submit" class="button-save"  value="Approve edits" />'
+        ) in self.strip_all_whitespace(response.get_data(as_text=True))
+
+        roles_not_allowed = ('admin', 'admin-ccs-sourcing', 'buyer', 'supplier')
+
+        for role in roles_not_allowed:
+            self.user_role = role
+            response = self._get_archived_services_response('10', '20')
+
+            assert self.strip_all_whitespace(
+                '<input type="submit" class="button-save"  value="Approve edits" />'
+            ) not in self.strip_all_whitespace(response.get_data(as_text=True))
