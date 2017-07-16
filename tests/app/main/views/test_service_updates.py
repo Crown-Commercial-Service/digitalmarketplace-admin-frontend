@@ -16,13 +16,13 @@ class TestServiceUpdates(LoggedInApplicationTest):
         (
             (
                 ('2012-07-15T18:03:43.061077Z', '1123456789012351', u'Company name', '240697', '240680'),
-                ('2016-03-05T10:42:16.061077Z', '1123456789012348', u'Testing Limited', '240699', '240682'),
-                ('2017-04-25T14:43:46.061077Z', '597637931594387', u'Ideal Health £', '240701', '240684'),
+                ('2016-03-05T10:42:16.061077Z', '1123456789012348', u'Testing Ltd', '240699', '240682'),
+                ('2017-04-25T14:43:46.061077Z', '597637931594387', u'Making £ Inc', '240701', '240684'),
             ),
             (
-                ('Company name', '1123456789012351', '15 July at 19:03:43', '/admin/services/compare/240697...240680?audit_event_id='),  # noqa
-                (u'Testing Limited', '1123456789012348', '5 March at 10:42:16', '/admin/services/compare/240699...240682?audit_event_id='),  # noqa
-                (u'Ideal Health £', '597637931594387', '25 April at 15:43:46', '/admin/services/compare/240701...240684?audit_event_id='),  # noqa
+                ('Company name', '1123456789012351', '15 July at 19:03:43', '/admin/services/1123456789012351/updates'),
+                (u'Testing Ltd', '1123456789012348', '5 March at 10:42:16', '/admin/services/1123456789012348/updates'),
+                (u'Making £ Inc', '597637931594387', '25 April at 15:43:46', '/admin/services/597637931594387/updates'),
             ),
             '3 edited services',
         ),
@@ -32,8 +32,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 ('2016-03-05T10:42:16.061077Z', '597637931590001', 'Ideal Health', '240699', '240682'),
             ),
             (
-                ('Company name', '597637931590002', '15 July at 19:03:43', '/admin/services/compare/240697...240680?audit_event_id='),  # noqa
-                ('Ideal Health', '597637931590001', '5 March at 10:42:16', '/admin/services/compare/240699...240682?audit_event_id='),  # noqa
+                ('Company name', '597637931590002', '15 July at 19:03:43', '/admin/services/597637931590002/updates'),
+                ('Ideal Health', '597637931590001', '5 March at 10:42:16', '/admin/services/597637931590001/updates'),
             ),
             '2 edited services',
         ),
@@ -47,7 +47,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 ('2012-07-15T18:03:43.061077Z', '597637931590002', 'Company name', '240697', '240680'),
             ),
             (
-                ('Company name', '597637931590002', '15 July at 19:03:43', '/admin/services/compare/240697...240680?audit_event_id='),  # noqa
+                ('Company name', '597637931590002', '15 July at 19:03:43', '/admin/services/597637931590002/updates'),
             ),
             '1 edited service',
         ),
@@ -97,14 +97,14 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 (5678, '2012-07-15T18:03:43.061077Z', 'User 1', '1123456789012351',
                  u'Company name', '240697', '240680'),
                 (4321, '2016-03-05T10:42:16.061077Z', 'User 2', '1123456789012348',
-                 u'Testing Limited', '240699', '240682'),
+                 u'Testing Ltd', '240699', '240682'),
                 (1234, '2017-04-25T14:43:46.061077Z', 'User 1', '597637931594387',
-                 u'Ideal Health £', '240701', '240684'),
+                 u'Making £ Inc', '240701', '240684'),
             ),
             (
-                (u'Company name', '1123456789012351', '19:03:43 15 July', '/admin/services/compare/240697...240680?audit_event_id=5678'),  # noqa
-                (u'Testing Limited', '1123456789012348', '10:42:16 5 March', '/admin/services/compare/240699...240682?audit_event_id=4321'),  # noqa
-                (u'Ideal Health £', '597637931594387', '15:43:46 25 April', '/admin/services/compare/240701...240684?audit_event_id=1234'),  # noqa
+                (u'Company name', '1123456789012351', '19:03:43 15 July', '/admin/services/1123456789012351/updates'),
+                (u'Testing Ltd', '1123456789012348', '10:42:16 5 March', '/admin/services/1123456789012348/updates'),
+                (u'Making £ Inc', '597637931594387', '15:43:46 25 April', '/admin/services/597637931594387/updates'),
             ),
             '3 services',
         ),
@@ -118,7 +118,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 (3456, '2012-07-15T18:03:43.061077Z', 'user 1', '597637931590002', 'Company name', '240697', '240680'),
             ),
             (
-                ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/compare/240697...240680?audit_event_id=3456'),  # noqa
+                ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/597637931590002/updates'),
             ),
             '1 service',
         ),

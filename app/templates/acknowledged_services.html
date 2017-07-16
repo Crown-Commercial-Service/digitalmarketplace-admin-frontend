@@ -56,10 +56,8 @@
                 {{ summary.edit_link(
                   "View changes",
                   url_for(
-                    '.compare',
-                    old_archived_service_id=item.data.oldArchivedServiceId,
-                    new_archived_service_id=item.data.newArchivedServiceId,
-                    audit_event_id=item.id
+                    '.service_updates',
+                    service_id=item.data.serviceId
                   )
                 ) }}
               {% endcall %}
