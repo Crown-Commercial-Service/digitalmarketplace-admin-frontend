@@ -849,7 +849,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                             # fae_page_len (find_audit_events implicit page_len)
                             5,
                             # exp_summ_text (expected summary text)
-                            "1 unacknowledged edit by someone@example.com on Wednesday 3 February 2010.",
+                            "1 unapproved edit by someone@example.com on Wednesday 3 February 2010.",
                         ),
                     ),
                 ),
@@ -905,21 +905,21 @@ class TestServiceUpdates(LoggedInApplicationTest):
                         (
                             5,
                             (
-                                "3 unacknowledged edits by 2 users between Tuesday 3 February 2015 and Sunday 22 "
+                                "3 unapproved edits by 2 users between Tuesday 3 February 2015 and Sunday 22 "
                                 "March 2015."
                             ),
                         ),
                         (
                             2,
                             (
-                                "3 unacknowledged edits by 2 users between Tuesday 3 February 2015 and Sunday 22 "
+                                "3 unapproved edits by 2 users between Tuesday 3 February 2015 and Sunday 22 "
                                 "March 2015."
                             ),
                         ),
                         (
                             1,
                             (
-                                "Multiple unacknowledged edits between Tuesday 3 February 2015 and Sunday 22 March "
+                                "Multiple unapproved edits between Tuesday 3 February 2015 and Sunday 22 March "
                                 "2015."
                             ),
                         ),
@@ -965,15 +965,15 @@ class TestServiceUpdates(LoggedInApplicationTest):
                     (
                         (
                             5,
-                            "2 unacknowledged edits by marion@example.com on Saturday 30 June 2012.",
+                            "2 unapproved edits by marion@example.com on Saturday 30 June 2012.",
                         ),
                         (
                             2,
-                            "2 unacknowledged edits by marion@example.com on Saturday 30 June 2012.",
+                            "2 unapproved edits by marion@example.com on Saturday 30 June 2012.",
                         ),
                         (
                             1,
-                            "Multiple unacknowledged edits on Saturday 30 June 2012.",
+                            "Multiple unapproved edits on Saturday 30 June 2012.",
                         ),
                     ),
                 ),
@@ -1040,21 +1040,21 @@ class TestServiceUpdates(LoggedInApplicationTest):
                         (
                             5,
                             (
-                                "4 unacknowledged edits by 2 users between Saturday 12 November 2005 and Saturday 17 "
+                                "4 unapproved edits by 2 users between Saturday 12 November 2005 and Saturday 17 "
                                 "December 2005."
                             ),
                         ),
                         (
                             3,
                             (
-                                "4 unacknowledged edits by 2 users between Saturday 12 November 2005 and Saturday 17 "
+                                "4 unapproved edits by 2 users between Saturday 12 November 2005 and Saturday 17 "
                                 "December 2005."
                             ),
                         ),
                         (
                             2,
                             (
-                                "Multiple unacknowledged edits between Saturday 12 November 2005 and Saturday 17 "
+                                "Multiple unapproved edits between Saturday 12 November 2005 and Saturday 17 "
                                 "December 2005."
                             ),
                         ),
@@ -1068,7 +1068,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                     (
                         (
                             5,
-                            "0 unacknowledged edits.",
+                            "0 unapproved edits.",
                         ),
                     ),
                 ),
@@ -1146,7 +1146,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             # in this case we want a strict assertion that *all* of the following are true about the ack_form
             ack_forms = doc.xpath(
                 "//form[.//button[@type='submit'][normalize-space(string())=$ack_text]]",
-                ack_text="Acknowledge edit{}".format("" if len(fae_response_src) == 1 else "s"),
+                ack_text="Approve edit{}".format("" if len(fae_response_src) == 1 else "s"),
             )
             assert len(ack_forms) == 1
             assert ack_forms[0].method == "POST"
@@ -1160,19 +1160,19 @@ class TestServiceUpdates(LoggedInApplicationTest):
             assert bool(doc.xpath(
                 "normalize-space(string(//h3[normalize-space(string())=$oldver_title]/ancestor::" +
                 "*[contains(@class, 'column')][1]))",
-                oldver_title="Previously acknowledged version",
-            ) == "Previously acknowledged version " + exp_oldver_ctxt_text) == bool(resultant_diff)
+                oldver_title="Previously approved version",
+            ) == "Previously approved version " + exp_oldver_ctxt_text) == bool(resultant_diff)
         else:
             # in this case we want a loose assertion that nothing exists that has anything like any of these properties
             assert not doc.xpath(
                 "//form[.//button[@type='submit'][contains(normalize-space(string()), $ack_text)]]",
-                ack_text="Acknowledge edit",
+                ack_text="Approve edit",
             )
-            assert not any(form.action.endswith("acknowledge") for form in doc.xpath("//form"))
+            assert not any(form.action.endswith("approve") for form in doc.xpath("//form"))
 
             assert not doc.xpath(
                 "//h3[normalize-space(string())=$oldver_title]",
-                oldver_title="Previously acknowledged version",
+                oldver_title="Previously approved version",
             )
 
         assert doc.xpath(

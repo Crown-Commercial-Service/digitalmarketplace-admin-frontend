@@ -173,12 +173,12 @@
       {% with items = [
           {
               "body": "View edits",
-              "link": "/admin/services/updates/unacknowledged",
+              "link": url_for('.service_update_audits'),
               "title": "Check edits to services"
           },
           {
               "body": "View approved edits",
-              "link": "/admin/services/updates/acknowledged",
+              "link": url_for('.approved_services'),
               "title": "Approved service edits"
           }
       ]

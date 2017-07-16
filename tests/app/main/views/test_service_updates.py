@@ -71,7 +71,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             "links": {},
         }
 
-        response = self.client.get('/admin/services/updates/unacknowledged')
+        response = self.client.get('/admin/services/updates/unapproved')
 
         assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
@@ -118,7 +118,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 (3456, '2012-07-15T18:03:43.061077Z', 'user 1', '597637931590002', 'Company name', '240697', '240680'),
             ),
             (
-                ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/597637931590002/updates'),
+                ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/compare/240697...240680?audit_event_id=3456'),  # noqa
             ),
             '1 service',
         ),
@@ -145,7 +145,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             "links": {},
         }
 
-        response = self.client.get('/admin/services/updates/acknowledged')
+        response = self.client.get('/admin/services/updates/approved')
 
         assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
@@ -168,7 +168,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
     def test_should_show_no_updates_if_none_returned(self, data_api_client):
         data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
-        response = self.client.get('/admin/services/updates/acknowledged')  # noqa
+        response = self.client.get('/admin/services/updates/approved')
         assert response.status_code == 200
 
         assert self._replace_whitespace('Noauditeventsfound') in self._replace_whitespace(
@@ -187,7 +187,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             'auditEvents': {
                 'acknowledged': False,
                 'links': {
-                    'self': 'http://localhost:5000/services/updates/unacknowledged'
+                    'self': 'http://localhost:5000/services/updates/unapproved'
                 },
                 'data': {
                     'serviceName': 'new name',
@@ -204,9 +204,9 @@ class TestServiceUpdates(LoggedInApplicationTest):
         }
 
         data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
-        response = self.client.post('/admin/services/321/updates/123/acknowledge')
+        response = self.client.post('/admin/services/321/updates/123/approve')
         assert response.status_code == 302
-        assert response.location == 'http://localhost/admin/services/updates/unacknowledged'
+        assert response.location == 'http://localhost/admin/services/updates/unapproved'
 
         data_api_client.acknowledge_service_update_including_previous.assert_called_with(
             u'321',
@@ -215,7 +215,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         )
 
     def test_should_404_wrong_service_id(self, data_api_client):
-        response = self.client.post('/admin/services/123/updates/321/acknowledge')
+        response = self.client.post('/admin/services/123/updates/321/approve')
         assert response.status_code == 404
 
     def test_should_403_forbidden_user_roles(self, data_api_client):
@@ -223,7 +223,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         for role in roles_not_allowed:
             self.user_role = role
-            response = self.client.post('/admin/services/123/updates/321/acknowledge')
+            response = self.client.post('/admin/services/123/updates/321/approve')
             assert response.status_code == 403
 
     def test_should_410_already_acknowledged_event(self, data_api_client):
@@ -248,7 +248,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         }
 
         data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
-        response = self.client.post('/admin/services/321/updates/123/acknowledge')  # noqa
+        response = self.client.post('/admin/services/321/updates/123/approve')  # noqa
         assert response.status_code == 410
 
     def test_should_404_wrong_audit_event_type(self, data_api_client):
@@ -273,7 +273,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         }
 
         data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
-        response = self.client.post('/admin/services/321/updates/123/acknowledge')  # noqa
+        response = self.client.post('/admin/services/321/updates/123/approve')
         assert response.status_code == 404
 
 
