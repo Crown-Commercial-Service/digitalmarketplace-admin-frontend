@@ -1,30 +1,6 @@
 .diff {
   margin-bottom: $gutter;
 
-/* ******************* TODO: ARE THESE STILL USED AT ALL????  **************************/
-  .diff-title {
-    @include heading-27;
-    font-weight: bold;
-    margin-bottom: $gutter-half;
-  }
-
-  .revision-dates {
-    @extend %contain-floats;
-    margin: $gutter-half 0;
-
-    p {
-      float: none;
-      width: 100%;
-      @include media(tablet) {
-        float: left;
-        width: 50%;
-      }
-
-      .revision-date-type {
-        font-weight: bold;
-        margin-right: $gutter-half;
-/* ******************* END TODO: ARE THESE STILL USED AT ALL????  **************************/
-
   .page-column-headings + table {
       caption {
           padding-top: $gutter/2;
