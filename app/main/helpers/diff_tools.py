@@ -129,4 +129,4 @@ def _clean_difflib_html_table(table_src, table_preamble_template=None, table_pre
         for element in reversed(preamble_elements):
             table_element.insert(0, element)
 
-    return html.tostring(table_element)
+    return html.tostring(table_element, encoding="unicode")
