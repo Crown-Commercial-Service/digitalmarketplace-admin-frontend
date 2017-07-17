@@ -30,8 +30,7 @@ def html_diff_tables_from_sections_iter(
         for question in chain.from_iterable(_question_iter(question) for question in section['questions']):
             q1, q2 = (r.get(question['id'], []) for r in (revision_1, revision_2,))
             if q1 != q2:
-                q1, q2 = ((q.splitlines() if isinstance(q, string_types) else q) for q in (q1, q2,))
-
+                q1, q2 = (_get_value_for_difflib(q) for q in (q1, q2,))
                 yield section.slug, question.id, Markup(_clean_difflib_html_table(
                     html_diff.make_table(q1, q2),
                     table_preamble_template=table_preamble_template,
@@ -40,6 +39,15 @@ def html_diff_tables_from_sections_iter(
                         "question": question,
                     },
                 ))
+
+
+def _get_value_for_difflib(thing):
+    if isinstance(thing, string_types):
+        return thing.splitlines()
+    elif isinstance(thing, bool):
+        return ["{}".format(thing)]
+    else:
+        return thing
 
 
 def _strip_nbsp(content):
