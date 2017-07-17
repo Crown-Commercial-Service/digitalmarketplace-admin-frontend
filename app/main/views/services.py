@@ -147,6 +147,7 @@ def service_updates(service_id):
         **common_request_kwargs
     )
     latest_update_events = latest_update_events_response["auditEvents"]
+
     if latest_update_events_response["links"].get("next"):
         # we haven't got all update events for this object. fetch the oldest
         oldest_update_events_response = data_api_client.find_audit_events(
@@ -178,8 +179,10 @@ def service_updates(service_id):
         archived_service_response = data_api_client.get_archived_service(
             oldest_update_events[-1]["data"]["oldArchivedServiceId"]
         )
+
         if archived_service_response is None:
             raise ValueError("referenced archived_service_id does not exist?")
+
         extra_context["archived_service"] = archived_service = archived_service_response["services"]
 
         # the edit_service_as_admin manifest should hopefully be a superset of all editable fields

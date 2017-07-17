@@ -85,7 +85,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         assert document.xpath('normalize-space(string(//*[@class="search-summary"]))') == expected_count
 
-        if (audit_events != ()):
+        if audit_events != ():
             assert tuple(
                 tuple(th.xpath('normalize-space(string())') for th in tr.xpath('./th'))
                 for tr in document.xpath('//table[@class="summary-item-body"]/thead/tr')
@@ -118,7 +118,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 (3456, '2012-07-15T18:03:43.061077Z', 'user 1', '597637931590002', 'Company name', '240697', '240680'),
             ),
             (
-                ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/compare/240697...240680?audit_event_id=3456'),  # noqa
+                ('Company name', '597637931590002', '19:03:43 15 July', '/admin/services/597637931590002/updates'),
             ),
             '1 service',
         ),
@@ -159,7 +159,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         assert document.xpath('normalize-space(string(//*[@class="search-summary"]))') == expected_count
 
-        if (audit_events != ()):
+        if audit_events != ():
             assert tuple(
                 tuple(th.xpath('normalize-space(string())') for th in tr.xpath('./th'))
                 for tr in document.xpath('//table[@class="summary-item-body"]/thead/tr')
@@ -248,7 +248,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         }
 
         data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
-        response = self.client.post('/admin/services/321/updates/123/approve')  # noqa
+        response = self.client.post('/admin/services/321/updates/123/approve')
         assert response.status_code == 410
 
     def test_should_404_wrong_audit_event_type(self, data_api_client):

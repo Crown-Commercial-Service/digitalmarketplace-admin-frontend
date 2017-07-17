@@ -1,16 +1,12 @@
 import difflib
-from datetime import datetime
 from itertools import chain
-import re
 
-from flask import Markup, escape, render_template
+from flask import Markup, render_template
 from flask._compat import string_types
 
 from lxml import html
-from six.moves import zip_longest as izip_longest
 
 from dmcontent.questions import Multiquestion
-from dmutils.formats import DATETIME_FORMAT, DISPLAY_DATETIME_FORMAT
 
 
 def _question_iter(question):

@@ -13,7 +13,7 @@ from flask import Markup
 from lxml import html
 from six import text_type
 
-from dmapiclient import HTTPError, REQUEST_ERROR_MESSAGE
+from dmapiclient import HTTPError
 from dmapiclient.audit import AuditTypes
 from ...helpers import LoggedInApplicationTest
 from dmutils import s3
@@ -411,8 +411,8 @@ class TestServiceUpdate(LoggedInApplicationTest):
             'frameworkSlug': 'g-cloud-7',
             'lot': 'SCS',
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
-            'serviceDefinitionDocumentURL': "http://assets/documents/1/2-service-definition.pdf",  # noqa
-            'termsAndConditionsDocumentURL': "http://assets/documents/1/2-terms-and-conditions.pdf",  # noqa
+            'serviceDefinitionDocumentURL': "http://assets/documents/1/2-service-definition.pdf",
+            'termsAndConditionsDocumentURL': "http://assets/documents/1/2-terms-and-conditions.pdf",
             'sfiaRateDocumentURL': None
         }}
         response = self.client.post(
@@ -441,7 +441,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
             'supplierId': 2,
             'frameworkSlug': 'g-cloud-7',
             'lot': 'SCS',
-            'serviceDefinitionDocumentURL': "http://assets/documents/7654/2-service-definition.pdf",  # noqa
+            'serviceDefinitionDocumentURL': "http://assets/documents/7654/2-service-definition.pdf",
             'pricingDocumentURL': "http://assets/documents/7654/2-pricing.pdf",
             'sfiaRateDocumentURL': None
         }}
@@ -740,7 +740,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         assert response.status_code == 404
 
 
-@mock.patch("app.main.views.services.html_diff_tables_from_sections_iter")
+@mock.patch("app.main.views.services.html_diff_tables_from_sections_iter", autospec=True)
 @mock.patch('app.main.views.services.data_api_client', autospec=True)
 class TestServiceUpdates(LoggedInApplicationTest):
     def test_nonexistent_service(self, data_api_client, html_diff_tables_from_sections_iter):
@@ -1103,6 +1103,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             ("dummy_section", "dummy_question", Markup("<div class='dummy-diff-table'>dummy</div>")),
         ) if resultant_diff else ())
 
+        self.user_role = "admin-ccs-category"
         response = self.client.get('/admin/services/151/updates')
 
         assert response.status_code == 200
@@ -1145,14 +1146,14 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
             # in this case we want a strict assertion that *all* of the following are true about the ack_form
             ack_forms = doc.xpath(
-                "//form[.//button[@type='submit'][normalize-space(string())=$ack_text]]",
+                "//form[.//input[@type='submit' and @value=$ack_text]]",
                 ack_text="Approve edit{}".format("" if len(fae_response_src) == 1 else "s"),
             )
             assert len(ack_forms) == 1
             assert ack_forms[0].method == "POST"
-#            assert ack_forms[0].action == "/admin/services/151/updates/{}/acknowledge".format(
-#                text_type(fae_response_src[0]["oldArchivedServiceId"])
-#            )
+            assert ack_forms[0].action == "/admin/services/151/updates/{}/approve".format(
+                text_type(fae_response_src[-1]["id"])
+            )
             assert sorted(ack_forms[0].form_values()) == [
                 ("csrf_token", mock.ANY),
             ]
@@ -1183,23 +1184,3 @@ class TestServiceUpdates(LoggedInApplicationTest):
             mailto="mailto:sir.jonah.barrington@example.com",
             email="sir.jonah.barrington@example.com",
         )
-
-        # "status" radios should have the correct current status checked, none others, and also have the correct
-        # associated label text. and of course be in a form pointing at the correct destination.
-        status_forms = doc.xpath("//form[.//button[@type='submit'][normalize-space(string())='Update status']]")
-        assert len(status_forms) == 1
-        assert status_forms[0].method == "POST"
-        assert status_forms[0].action == "/admin/services/status/151"
-        assert sorted(status_forms[0].form_values()) == [
-            ("csrf_token", mock.ANY),
-            ("service_status", self._service_status_labels[svc_status].lower()),
-        ]
-        for radio_elem in status_forms[0].xpath(".//input[@type='radio'][@name='service_status']"):
-            label_elem = radio_elem.label or radio_elem.xpath("ancestor::label")[0]
-            assert label_elem.xpath("normalize-space(string())").lower() == radio_elem.attrib["value"]
-
-        # ensure "published" radio button is not shown if in disabled status
-        assert (svc_status != "disabled") == bool(status_forms[0].xpath(
-            ".//input[@type='radio'][@name='service_status'][@value=$value]",
-            value=self._service_status_labels["published"].lower(),
-        ))
