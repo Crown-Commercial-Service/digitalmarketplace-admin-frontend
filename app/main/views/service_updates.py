@@ -66,23 +66,6 @@ def service_update_audits():
     )
 
 
-@main.route('/services/updates/approved', methods=['GET'])
-@login_required
-@role_required('admin', 'admin-ccs-category')
-def approved_services():
-    audit_events_response = data_api_client.find_audit_events(
-        audit_type=AuditTypes.update_service,
-        acknowledged='true',
-        latest_first='false',
-        earliest_for_each_object='true',
-    )
-
-    return render_template(
-        "service_updates_approved.html",
-        audit_events=audit_events_response['auditEvents'],
-    )
-
-
 @main.route('/services/<service_id>/updates/<int:audit_id>/approve', methods=['POST'])
 @login_required
 @role_required('admin-ccs-category')
