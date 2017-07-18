@@ -89,6 +89,25 @@
 <div class="grid-row">
     <div class="column-two-thirds">
 
+  {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
+      {% with
+          smaller = True,
+          heading = "Service edits"
+      %}
+        {% include "toolkit/page-heading.html" %}
+      {% endwith %}
+      {% with items = [
+          {
+
+              "link": url_for('.service_update_audits'),
+              "title": "Check edits to services"
+          },
+      ]
+      %}
+        {% include "toolkit/browse-list.html" %}
+      {% endwith %}
+  {% endif %}
+
   {% with
       smaller = True,
       heading = "Statistics"
@@ -163,29 +182,6 @@
     {% endwith %}
   {% endif %}
 
-  {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
-      {% with
-          smaller = True,
-          heading = "Service edits"
-      %}
-        {% include "toolkit/page-heading.html" %}
-      {% endwith %}
-      {% with items = [
-          {
-              "body": "View edits",
-              "link": url_for('.service_update_audits'),
-              "title": "Check edits to services"
-          },
-          {
-              "body": "View approved edits",
-              "link": url_for('.approved_services'),
-              "title": "Approved service edits"
-          }
-      ]
-      %}
-        {% include "toolkit/browse-list.html" %}
-      {% endwith %}
-  {% endif %}
   </div>
 </div>
 {% endblock %}
