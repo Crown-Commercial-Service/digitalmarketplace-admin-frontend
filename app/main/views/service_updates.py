@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from flask import request, render_template, redirect, url_for, abort
+from flask import abort, flash, redirect, render_template, url_for
 from flask_login import login_required, current_user
 
 from dmapiclient.audit import AuditTypes
@@ -83,5 +83,5 @@ def submit_service_update_approval(service_id, audit_id):
         audit_event["id"],
         current_user.email_address
     )
-
+    flash("The changes to service {} were approved.".format(service_id), 'message')
     return redirect(url_for('.service_update_audits'))

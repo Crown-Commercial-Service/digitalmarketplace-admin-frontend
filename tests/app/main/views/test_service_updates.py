@@ -3,8 +3,7 @@ import mock
 import pytest
 from lxml import html
 
-from dmapiclient.audit import AuditTypes
-
+from tests.app.main.helpers.flash_tester import assert_flashes
 from ...helpers import LoggedInApplicationTest
 
 
@@ -115,6 +114,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
         response = self.client.post('/admin/services/321/updates/123/approve')
         assert response.status_code == 302
+        assert_flashes(self, "The changes to service 321 were approved.")
         assert response.location == 'http://localhost/admin/services/updates/unapproved'
 
         data_api_client.acknowledge_service_update_including_previous.assert_called_with(
