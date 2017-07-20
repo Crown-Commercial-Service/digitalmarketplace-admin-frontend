@@ -28,8 +28,12 @@ def manage_communications(framework_slug):
     communications_bucket = s3.S3(current_app.config['DM_COMMUNICATIONS_BUCKET'])
     framework = data_api_client.get_framework(framework_slug)['frameworks']
 
-    clarification = next(iter(communications_bucket.list(_get_path(framework_slug, 'updates/clarifications'))), None)
-    communication = next(iter(communications_bucket.list(_get_path(framework_slug, 'updates/communications'))), None)
+    clarification = next(iter(communications_bucket.list(
+        _get_path(framework_slug, 'updates/clarifications'), load_timestamps=True
+    )), None)
+    communication = next(iter(communications_bucket.list(
+        _get_path(framework_slug, 'updates/communications'), load_timestamps=True
+    )), None)
 
     return render_template(
         'manage_communications.html',
