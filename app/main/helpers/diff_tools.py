@@ -9,13 +9,22 @@ from lxml import html
 from dmcontent.questions import Multiquestion
 
 
-def _question_iter(question):
+def _unpack_question(question):
+    unpacked = []
     # type testing is weird - this should eventually belong in the question subclass itself
     if isinstance(question, Multiquestion):
         for sub_question in question.questions:
-            yield sub_question
+            # We have some multiquestions that contain multiquestions so need to recurse
+            unpacked.extend(_unpack_question(sub_question))
+        return unpacked
     else:
-        yield question
+        unpacked.append(question)
+        return unpacked
+
+
+def _question_iter(question):
+    for sub_question in _unpack_question(question):
+        yield sub_question
 
 
 def html_diff_tables_from_sections_iter(
