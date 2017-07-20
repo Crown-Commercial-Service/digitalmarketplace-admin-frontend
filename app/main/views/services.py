@@ -159,8 +159,8 @@ def service_updates(service_id):
         # now we check to see if we're able to splice together the full list using these two responses. we'll know this
         # if we are able to find the last of latest_update_events in oldest_update_events. if we're not able to, we'll
         # have to leave all_update_events as None to signal that we don't have all the events
-        if latest_update_events[-1]["id"] in (ae["id"] for ae in oldest_update_events):
-            all_update_events = tuple(ae for ae in chain(
+        if latest_update_events[-1]["id"] in (audit_event["id"] for audit_event in oldest_update_events):
+            all_update_events = tuple(audit_event for audit_event in chain(
                 latest_update_events,
                 # being careful here to swallow the actual *matching* event using islice
                 islice(dropwhile(lambda ae: ae["id"] != latest_update_events[-1]["id"], oldest_update_events), 1, None),
