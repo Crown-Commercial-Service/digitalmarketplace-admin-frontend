@@ -68,7 +68,7 @@ $path: "/admin/static/images/";
   margin-bottom: 20px;
 }
 
-.search-summary {
+.search-summary-border-bottom {
   padding: 0 0 $gutter-half;
   margin: 0 0 $gutter-half;
   border-bottom: 1px solid $border-colour;
@@ -77,6 +77,12 @@ $path: "/admin/static/images/";
     font-style: normal;
     font-weight: bold;
   }
+}
+
+.search-summary {
+  padding-bottom: 20px;
+  font-size: 24px;
+
 }
 
 .break-email {

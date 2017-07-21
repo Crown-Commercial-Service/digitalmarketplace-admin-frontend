@@ -1,8 +1,12 @@
 from flask import abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import login_required, current_user
+from collections import OrderedDict
 from datetime import datetime
+from itertools import chain, dropwhile, islice
+from six import next
 
 from dmapiclient import HTTPError
+from dmapiclient.audit import AuditTypes
 from dmutils.formats import DATETIME_FORMAT
 from dmcontent.formats import format_service_price
 from dmutils.documents import upload_service_documents
@@ -14,7 +18,7 @@ from ... import content_loader
 from .. import main
 
 from ..auth import role_required
-from ..helpers.diff_tools import get_diffs_from_service_data, get_revision_dates
+from ..helpers.diff_tools import html_diff_tables_from_sections_iter
 
 
 @main.route('', methods=['GET'])
@@ -119,72 +123,96 @@ def edit(service_id, section_id):
     )
 
 
-@main.route(
-    '/services/compare/<old_archived_service_id>...<new_archived_service_id>',
-    methods=['GET']
-)
+@main.route('/services/<service_id>/updates', methods=['GET'])
 @login_required
 @role_required('admin', 'admin-ccs-category')
-def compare(old_archived_service_id, new_archived_service_id):
+def service_updates(service_id):
+    service_response = data_api_client.get_service(service_id)
+    if service_response is None:
+        abort(404)
+    service = service_response['services']
 
-    def validate_archived_services(old_archived_service, new_archived_service):
+    supplier = data_api_client.get_supplier(service["supplierId"])["suppliers"]
 
-        if old_archived_service.get('id', -1) \
-                != new_archived_service.get('id', -2):
-            return False
+    common_request_kwargs = {
+        "object_id": service_id,
+        "object_type": "services",
+        "audit_type": AuditTypes.update_service,
+        "acknowledged": "false",
+    }
 
-        old_updated_at = datetime.strptime(
-            old_archived_service.get('updatedAt'), DATETIME_FORMAT)
-
-        new_updated_at = datetime.strptime(
-            new_archived_service.get('updatedAt'), DATETIME_FORMAT)
-
-        if old_updated_at >= new_updated_at:
-            return False
-
-        return True
-
-    try:
-        service_data_revision_1 = data_api_client.get_archived_service(
-            old_archived_service_id)['services']
-
-        service_data_revision_2 = data_api_client.get_archived_service(
-            new_archived_service_id)['services']
-
-        # ids exist, ids match, dates are chronological
-        if not validate_archived_services(
-                service_data_revision_1, service_data_revision_2):
-            raise ValueError
-
-        service_data = data_api_client.get_service(
-            service_data_revision_1['id'])['services']
-
-    except (HTTPError, KeyError, ValueError):
-        return abort(404)
-
-    content = content_loader.get_manifest('g-cloud-6', 'edit_service_as_admin').filter(service_data)
-
-    # It's possible to have an empty array if none of the lines were changed.
-    # TODO This possibility isn't actually handled.
-    service_diffs = get_diffs_from_service_data(
-        sections=content.sections,
-        revision_1=service_data_revision_1,
-        revision_2=service_data_revision_2,
-        include_unchanged_lines_in_output=False
+    all_update_events = latest_update_events = oldest_update_events = None
+    latest_update_events_response = data_api_client.find_audit_events(
+        latest_first="true",
+        **common_request_kwargs
     )
+    latest_update_events = latest_update_events_response["auditEvents"]
 
-    revision_dates = None if not service_diffs else \
-        get_revision_dates(
-            service_data_revision_1,
-            service_data_revision_2
+    if latest_update_events_response["links"].get("next"):
+        # we haven't got all update events for this object. fetch the oldest
+        oldest_update_events_response = data_api_client.find_audit_events(
+            latest_first="false",
+            **common_request_kwargs
+        )
+        oldest_update_events = oldest_update_events_response["auditEvents"][::-1]
+
+        # now we check to see if we're able to splice together the full list using these two responses. we'll know this
+        # if we are able to find the last of latest_update_events in oldest_update_events. if we're not able to, we'll
+        # have to leave all_update_events as None to signal that we don't have all the events
+        if latest_update_events[-1]["id"] in (audit_event["id"] for audit_event in oldest_update_events):
+            all_update_events = tuple(audit_event for audit_event in chain(
+                latest_update_events,
+                # being careful here to swallow the actual *matching* event using islice
+                islice(dropwhile(lambda ae: ae["id"] != latest_update_events[-1]["id"], oldest_update_events), 1, None),
+            ))
+    else:
+        all_update_events = oldest_update_events = latest_update_events
+
+    # so now we should be in the position where, in all cases:
+    # - all_update_events should contain all update events unless this is not possible using two requests, in which
+    #   case it is set to None
+    # - latest_update_events[0] and oldest_update_events[-1] should contain the latest and oldest update events
+    #   respectively
+
+    extra_context = {}
+    if latest_update_events:
+        archived_service_response = data_api_client.get_archived_service(
+            oldest_update_events[-1]["data"]["oldArchivedServiceId"]
+        )
+
+        if archived_service_response is None:
+            raise ValueError("referenced archived_service_id does not exist?")
+
+        extra_context["archived_service"] = archived_service = archived_service_response["services"]
+
+        # the edit_service_as_admin manifest should hopefully be a superset of all editable fields
+        extra_context["sections"] = sections = content_loader.get_manifest(
+            service['frameworkSlug'],
+            'edit_service_as_admin',
+        ).filter(service).sections
+
+        extra_context["diffs"] = OrderedDict(
+            (question_id, table_html,)
+            for section_slug, question_id, table_html in html_diff_tables_from_sections_iter(
+                sections=sections,
+                revision_1=archived_service,
+                revision_2=service,
+                table_preamble_template="diff_table/_table_preamble.html",
+            )
         )
 
     return render_template(
         "compare_revisions.html",
-        diffs=service_diffs,
-        revision_dates=revision_dates,
-        sections=content.sections,
-        service_data=service_data
+        service=service,
+        supplier=supplier,
+        all_update_events=all_update_events,
+        latest_update_events=latest_update_events,
+        oldest_update_events=oldest_update_events,
+        n_editing_users_min=len(frozenset(audit_event["user"] for audit_event in chain(
+            latest_update_events,
+            oldest_update_events,
+        ))),
+        **extra_context
     )
 
 

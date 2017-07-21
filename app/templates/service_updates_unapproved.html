@@ -1,0 +1,99 @@
+{% import "toolkit/summary-table.html" as summary %}
+
+{% extends "_base_page.html" %}
+{% block page_title %}
+  Digital Marketplace admin
+{% endblock %}
+
+{% set csrf = csrf_token() %}
+
+{% block breadcrumb %}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+{% block main_content %}
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+      {% for category, message in messages %}
+          {%
+          with
+              message = message,
+              type = "destructive" if category == 'error' else 'success'
+          %}
+          {% include "toolkit/notification-banner.html" %}
+          {% endwith %}
+      {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+    {%
+      with
+      heading = "Check edits to services"
+    %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
+    <div class="grid-row">
+        <div class="column-one-whole">
+        <p class="search-summary">
+            <span class="search-summary-count">{{ audit_events|length }}</span> edited {{ pluralize(audit_events|length, "service", "services") }}
+        </p>
+            {% call(item) summary.list_table(
+              audit_events,
+              caption="Edited services",
+              empty_message="No edited services found",
+              field_headings=[
+                'Supplier',
+                'Service ID',
+                'Edited',
+                summary.hidden_field_heading("Changes"),
+              ],
+              field_headings_visible=True
+            ) %}
+              {% call summary.row() %}
+                {{ summary.field_name(item.data.supplierName, wide=True) }}
+                {% call summary.field() %}
+                  {{ item.data.serviceId }}
+                {% endcall %}
+                {% call summary.field() %}
+                  {{ item.createdAt|shortdateformat }}<br />
+                  at {{ item.createdAt|timeformat }}
+
+                {% endcall %}
+                {{ summary.edit_link(
+                  "View changes",
+                  url_for(
+                    '.service_updates',
+                    service_id=item.data.serviceId,
+                  )
+                ) }}
+              {% endcall %}
+            {% endcall %}
+
+            {%
+              with
+              previous_page = {
+                "url": url_for(".service_update_audits", page=current_page-1, approved=acknowledged),
+                "title": "Previous page",
+                "label": "Page " + ((current_page-1)|string)
+              } if prev_page_exists or False,
+              next_page = {
+                "url": url_for(".service_update_audits", page=current_page+1, approved=acknowledged),
+                "title": "Next page",
+                "label": "Page " + ((current_page+1)|string)
+              } if next_page_exists or False
+            %}
+              {% include "toolkit/previous-next-navigation.html" %}
+            {% endwith %}
+        </div>
+    </div>
+
+{% endblock %}
