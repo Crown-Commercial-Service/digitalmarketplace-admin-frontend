@@ -1,4 +1,4 @@
-venv/
+venv*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -66,3 +66,6 @@ app/content
 
 # Front end generated assets
 app/static
+
+# local environment customizations
+local.nix
