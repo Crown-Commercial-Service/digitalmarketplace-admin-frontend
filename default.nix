@@ -4,7 +4,7 @@ let
   args = rec {
     pkgs = import <nixpkgs> {};
     pythonPackages = pkgs.python36Packages;
-    forTest = true;
+    forDev = true;
     localOverridesPath = ./local.nix;
   } // argsOuter;
 in (with args; {
@@ -20,7 +20,7 @@ in (with args; {
       pkgs.git
       # for `cryptography`
       pkgs.openssl
-    ] ++ pkgs.stdenv.lib.optionals forTest ([
+    ] ++ pkgs.stdenv.lib.optionals forDev ([
         # for lxml
         pkgs.libxml2
         pkgs.libxslt
@@ -49,7 +49,7 @@ in (with args; {
         ${pythonPackages.virtualenv}/bin/virtualenv $VIRTUALENV_ROOT
       fi
       source $VIRTUALENV_ROOT/bin/activate
-      make requirements${pkgs.stdenv.lib.optionalString forTest "_for_test"}
+      make requirements${pkgs.stdenv.lib.optionalString forDev "-dev"}
     '';
   }).overrideAttrs (if builtins.pathExists localOverridesPath then (import localOverridesPath args) else (x: x));
 })
