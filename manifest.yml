@@ -1,7 +1,7 @@
 applications:
     - name: dm-dev-admin
       command: python application.py runprodserver
-      buildpack: https://github.com/cloudfoundry/buildpack-python.git#v1.5.13
+      buildpack: python_buildpack
       memory: 512M
       disk_quota: 1G
       instances: 2
