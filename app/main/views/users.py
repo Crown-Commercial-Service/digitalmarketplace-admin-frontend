@@ -14,6 +14,8 @@ from .. import main
 from ... import data_api_client
 from ..auth import role_required
 
+CLOSED_BRIEF_STATUSES = ['closed', 'awarded']
+
 
 @main.route('/users', methods=['GET'])
 @login_required
@@ -132,7 +134,9 @@ def download_buyers_and_briefs():
         (
             "applicationsClosedAtDateIfClosed",
             lambda brief:
-                (brief.get("applicationsClosedAt", "") if brief.get("status") == "closed" else "").partition("T")[0],
+                (
+                    brief.get("applicationsClosedAt", "") if brief.get("status") in CLOSED_BRIEF_STATUSES else ""
+                ).partition("T")[0],
         ),
     ))
 
