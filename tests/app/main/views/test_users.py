@@ -2,12 +2,15 @@
 from __future__ import unicode_literals
 from datetime import datetime
 
-import mock
 import copy
+import mock
+import pytest
 import six
 from lxml import html
 from ...helpers import LoggedInApplicationTest
 from dmapiclient import HTTPError
+
+from app.main.views.users import CLOSED_BRIEF_STATUSES
 
 
 @mock.patch('app.main.views.users.data_api_client')
@@ -565,7 +568,8 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         assert buyer[4:] == [u"321", u"This is a brief", u"London", u'magic-roundabout', u"open", u"", ]
 
-    def test_brief_applications_closed_at_is_output_if_status_closed(self, data_api_client):
+    @pytest.mark.parametrize("status", CLOSED_BRIEF_STATUSES)
+    def test_brief_applications_closed_at_is_output_if_brief_status_is_closed_or_awarded(self, data_api_client, status):
         data_api_client.find_users_iter.return_value = [
             {
                 'id': 1,
@@ -581,7 +585,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 'id': 321,
                 'title': 'This is a brief',
                 'location': 'London',
-                'status': 'closed',
+                'status': status,
                 'users': [{
                     'id': 1
                 }],
@@ -597,7 +601,7 @@ class TestBuyersExport(LoggedInApplicationTest):
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
         buyer = rows[1]
 
-        assert buyer[4:] == [u"321", u"This is a brief", u"London", u'magic-roundabout', u"closed", u"2016-09-05", ]
+        assert buyer[4:] == [u"321", u"This is a brief", u"London", u'magic-roundabout', status, u"2016-09-05", ]
 
     def test_csv_is_sorted_by_name(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
