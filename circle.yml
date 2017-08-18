@@ -22,8 +22,8 @@ deployment:
   development:
     branch: master
     commands:
-      - cf login -a https://api.system.staging.digital.gov.au -o dto -u $CF_USER_STAGING -p $CF_PASSWORD_STAGING
-      - cf target -o dto -s digital-marketplace
+      - cf login -a https://api.system.z.cld.gov.au -u $CF_USER_STAGING -p $CF_PASSWORD_STAGING
+      - cf target -o dta -s marketplace
       - cf push
 
   production:
