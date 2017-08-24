@@ -203,6 +203,12 @@ class TestListAgreements(LoggedInApplicationTest):
 
         assert response.status_code == 403
 
+    def test_invalid_status_raises_400(self, data_api_client):
+
+        response = self.client.get('/admin/agreements/g-cloud-7?status=bad')
+
+        assert response.status_code == 400
+
 
 @mock.patch('app.main.views.agreements.data_api_client')
 class TestNextAgreementRedirect(LoggedInApplicationTest):
@@ -337,3 +343,7 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
             (ca_kwargs.get("with_declarations") is False and not ca_kwargs.get("status"))
             for ca_args, ca_kwargs in data_api_client.find_framework_suppliers.call_args_list
         )
+
+    def test_invalid_status_raises_400(self, data_api_client):
+        response = self.client.get('/admin/suppliers/151/agreements/g-cloud-8/next?status=bad')
+        assert response.status_code == 400
