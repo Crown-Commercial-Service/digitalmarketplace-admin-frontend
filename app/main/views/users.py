@@ -14,7 +14,7 @@ from .. import main
 from ... import data_api_client
 from ..auth import role_required
 
-CLOSED_BRIEF_STATUSES = ['closed', 'awarded']
+CLOSED_BRIEF_STATUSES = ['closed', 'awarded', 'cancelled', 'unsuccessful']
 
 
 @main.route('/users', methods=['GET'])
