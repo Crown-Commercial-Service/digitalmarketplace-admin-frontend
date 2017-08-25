@@ -1,13 +1,10 @@
 from flask import abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from collections import OrderedDict
-from datetime import datetime
 from itertools import chain, dropwhile, islice
-from six import next
 
 from dmapiclient import HTTPError
 from dmapiclient.audit import AuditTypes
-from dmutils.formats import DATETIME_FORMAT
 from dmcontent.formats import format_service_price
 from dmutils.documents import upload_service_documents
 from dmutils import s3  # this style of import so we only have to mock once

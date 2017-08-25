@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
 
 from dmcontent.errors import ContentNotFoundError
 from flask import Flask, request, redirect

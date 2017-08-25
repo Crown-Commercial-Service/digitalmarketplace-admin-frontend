@@ -8,7 +8,6 @@ from flask_login import flash
 from datetime import datetime
 from dmutils import csv_generator
 from six import itervalues, iterkeys
-from unicodecsv import DictWriter
 
 from .. import main
 from ... import data_api_client
