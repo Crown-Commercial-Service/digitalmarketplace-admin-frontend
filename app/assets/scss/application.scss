@@ -5,10 +5,6 @@ $path: "/admin/static/images/";
 @import "toolkit/shared_placeholders/_placeholders.scss";
 @import "toolkit/shared_placeholders/_temporary-messages.scss";
 
-// Digital Marketplace front end toolkit components
-@import "forms/_option-select.scss";
-@import "forms/_keyword-search.scss";
-
 // Digital Marketplace Front-end toolkit styles
 @import "toolkit/grids";
 @import "toolkit/breadcrumb";
@@ -24,9 +20,14 @@ $path: "/admin/static/images/";
 @import "toolkit/forms/word-counter";
 @import "toolkit/link-button";
 @import "toolkit/notification-banners";
+@import "toolkit/proposition-header";
 @import "toolkit/page-headings";
 @import "toolkit/previous-next-navigation";
 @import "toolkit/secondary-action-link";
+
+// Digital Marketplace front end toolkit components
+@import "forms/_option-select.scss";
+@import "forms/_keyword-search.scss";
 
 // Admin app styles
 @import "_reset";
