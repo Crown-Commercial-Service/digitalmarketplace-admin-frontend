@@ -63,7 +63,7 @@ def create_app(config_name):
 
     application.register_blueprint(status_blueprint, url_prefix='/admin')
     application.register_blueprint(main_blueprint, url_prefix='/admin')
-    login_manager.login_view = 'main.render_login'
+    login_manager.login_view = '/user/login'
     main_blueprint.config = application.config.copy()
 
     @application.before_request

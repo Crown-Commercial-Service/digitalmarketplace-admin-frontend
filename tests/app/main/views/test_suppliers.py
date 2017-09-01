@@ -1443,7 +1443,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert "Put on hold and continue" not in data
         assert "Cancel acceptance" not in data
 
-        assert not document.xpath("//form//input[@type='submit']")
+        assert document.xpath("//form//input[@type='submit']/@value") == ['Log out']
 
         assert bool(document.xpath("//h2[normalize-space(string())='Accepted by']")) == (
             agreement_status in ("approved", "countersigned",)

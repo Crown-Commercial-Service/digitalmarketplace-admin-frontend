@@ -3,11 +3,31 @@ import re
 import os
 
 from dmutils.user import User
-from flask import json
+from flask import json, Blueprint
 from werkzeug.datastructures import MultiDict
+from flask_login import login_user
 
 from app import create_app, data_api_client
 from app import login_manager
+
+
+login_for_tests = Blueprint('login_for_tests', __name__)
+
+
+@login_for_tests.route('/auto-login')
+def auto_login():
+    user_json = {"users": {
+        'id': 1234,
+        'emailAddress': 'test@example.com',
+        'role': 'admin',
+        'locked': False,
+        'passwordChangedAt': '2015-01-01T00:00:00Z',
+        'active': True,
+        'name': 'tester'
+    }}
+    user = User.from_json(user_json)
+    login_user(user)
+    return "OK"
 
 
 class BaseApplicationTest(object):
@@ -88,8 +108,10 @@ class LoggedInApplicationTest(BaseApplicationTest):
     def setup_method(self, method):
         super(LoggedInApplicationTest, self).setup_method(method)
 
-        patch_config = {
-            'authenticate_user.return_value': {
+        self.app.register_blueprint(login_for_tests)
+
+        with mock.patch('app.data_api_client') as login_api_client:
+            login_api_client.authenticate_user.return_value = {
                 'users': {
                     'id': 1234,
                     'emailAddress': 'test@example.com',
@@ -100,16 +122,9 @@ class LoggedInApplicationTest(BaseApplicationTest):
                     'name': 'tester'
                 }
             }
-        }
-        self._data_api_client = mock.patch(
-            'app.main.views.login.data_api_client',
-            **patch_config
-        )
-        self._data_api_client.start()
-        res = self.client.post('/admin/login', data={
-            'email_address': 'test@example.com',
-            'password': '1234567890'
-        })
+
+            res = self.client.get('/auto-login')
+            assert res.status_code == 200
 
         self._user_callback = login_manager.user_callback
         login_manager.user_loader(self.user_loader)
@@ -121,7 +136,6 @@ class LoggedInApplicationTest(BaseApplicationTest):
             )
 
     def teardown_method(self, method):
-        self._data_api_client.stop()
         login_manager.user_loader(self._user_callback)
         super(LoggedInApplicationTest, self).teardown_method(method)
 
