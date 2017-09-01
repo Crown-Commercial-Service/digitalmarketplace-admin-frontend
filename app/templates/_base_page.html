@@ -11,7 +11,11 @@
 {% block header_class %}with-proposition{% endblock %}
 
 {% block proposition_header %}
-  {% include "_proposition_header.html" %}
+  {% with items = [
+      {"label": "Service status changes", "link": url_for('main.service_status_update_audits')}
+  ] %}
+    {% include "toolkit/proposition-header.html" %}
+  {% endwith %}
 {% endblock %}
 
 {% block content %}
