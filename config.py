@@ -13,8 +13,8 @@ class Config(object):
     )
     DEBUG = True
     WTF_CSRF_ENABLED = True
-    SESSION_COOKIE_NAME = 'dm_admin_session'
-    SESSION_COOKIE_PATH = '/admin'
+    SESSION_COOKIE_NAME = 'dm_session'
+    SESSION_COOKIE_PATH = '/'
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = True
     DM_S3_DOCUMENT_BUCKET = None
