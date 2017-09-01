@@ -4,7 +4,7 @@ from itertools import chain
 from collections import OrderedDict
 
 from flask import render_template, request, Response
-from flask_login import login_required, flash
+from flask_login import flash
 from datetime import datetime
 from dmutils import csv_generator
 from six import itervalues, iterkeys
@@ -18,7 +18,6 @@ CLOSED_BRIEF_STATUSES = ['closed', 'awarded']
 
 
 @main.route('/users', methods=['GET'])
-@login_required
 @role_required('admin')
 def find_user_by_email_address():
     template = "view_users.html"
@@ -44,7 +43,6 @@ def find_user_by_email_address():
 
 
 @main.route('/users/download', methods=['GET'])
-@login_required
 @role_required('admin')
 def list_frameworks_with_users(errors=None):
     bad_statuses = ['coming', 'expired']
@@ -63,7 +61,6 @@ def list_frameworks_with_users(errors=None):
 
 
 @main.route('/users/download/<framework_slug>', methods=['GET'])
-@login_required
 @role_required('admin')
 def download_users(framework_slug):
     supplier_rows = data_api_client.export_users(framework_slug).get('users', [])
@@ -94,7 +91,6 @@ def download_users(framework_slug):
 
 
 @main.route('/users/download/buyers', methods=['GET'])
-@login_required
 @role_required('admin')
 def download_buyers_and_briefs():
     users = {user["id"]: dict(user, briefs=[]) for user in data_api_client.find_users_iter(role="buyer")}

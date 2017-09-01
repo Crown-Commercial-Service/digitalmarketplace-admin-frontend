@@ -1,6 +1,5 @@
 from flask import render_template, redirect, url_for, current_app, \
     request, flash
-from flask_login import login_required
 
 from .. import main
 from ..auth import role_required
@@ -22,7 +21,6 @@ def _save_file(bucket, framework_slug, path, the_file, flash_message):
 
 
 @main.route('/communications/<framework_slug>', methods=['GET'])
-@login_required
 @role_required('admin')
 def manage_communications(framework_slug):
     communications_bucket = s3.S3(current_app.config['DM_COMMUNICATIONS_BUCKET'])
@@ -44,7 +42,6 @@ def manage_communications(framework_slug):
 
 
 @main.route('/communications/<framework_slug>', methods=['POST'])
-@login_required
 @role_required('admin')
 def upload_communication(framework_slug):
     communications_bucket = s3.S3(current_app.config['DM_COMMUNICATIONS_BUCKET'])

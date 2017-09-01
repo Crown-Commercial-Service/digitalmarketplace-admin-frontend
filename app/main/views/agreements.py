@@ -2,7 +2,6 @@ from collections import OrderedDict
 
 from dmutils.documents import degenerate_document_path_and_return_doc_name
 from flask import render_template, redirect, url_for, abort, request
-from flask_login import login_required
 from dateutil.parser import parse as parse_date
 from six import next
 
@@ -31,7 +30,6 @@ def _get_supplier_frameworks(framework_slug, status=None):
 
 
 @main.route('/agreements/<framework_slug>', methods=['GET'])
-@login_required
 @role_required('admin', 'admin-ccs-sourcing')
 def list_agreements(framework_slug):
     framework = data_api_client.get_framework(framework_slug)['frameworks']
@@ -58,7 +56,6 @@ def list_agreements(framework_slug):
 
 
 @main.route('/suppliers/<int:supplier_id>/agreements/<framework_slug>/next', methods=('GET',))
-@login_required
 @role_required('admin', 'admin-ccs-sourcing')
 def next_agreement(supplier_id, framework_slug):
     status = request.args.get("status")
