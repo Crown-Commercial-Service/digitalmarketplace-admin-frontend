@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from flask import render_template, request
-from flask_login import login_required
 
 from dmapiclient.audit import AuditTypes
 from dmutils.formats import DATETIME_FORMAT
@@ -13,7 +12,6 @@ from ..auth import role_required
 
 
 @main.route('/statistics/<string:framework_slug>', methods=['GET'])
-@login_required
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
 def view_statistics(framework_slug):
 

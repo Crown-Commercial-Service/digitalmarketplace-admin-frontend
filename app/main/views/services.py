@@ -1,5 +1,5 @@
 from flask import abort, current_app, flash, redirect, render_template, request, url_for
-from flask_login import login_required, current_user
+from flask_login import current_user
 from collections import OrderedDict
 from datetime import datetime
 from itertools import chain, dropwhile, islice
@@ -22,7 +22,6 @@ from ..helpers.diff_tools import html_diff_tables_from_sections_iter
 
 
 @main.route('', methods=['GET'])
-@login_required
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
 def index():
     frameworks = data_api_client.find_frameworks()
@@ -34,7 +33,6 @@ def index():
 
 
 @main.route('/services', methods=['GET'])
-@login_required
 @role_required('admin', 'admin-ccs-category')
 def find():
     if request.args.get("service_id") is None:
@@ -44,7 +42,6 @@ def find():
 
 
 @main.route('/services/<service_id>', methods=['GET'])
-@login_required
 @role_required('admin', 'admin-ccs-category')
 def view(service_id):
     try:
@@ -69,7 +66,6 @@ def view(service_id):
 
 
 @main.route('/services/status/<string:service_id>', methods=['POST'])
-@login_required
 @role_required('admin')
 def update_service_status(service_id):
     frontend_status = request.form['service_status']
@@ -103,7 +99,6 @@ def update_service_status(service_id):
 
 
 @main.route('/services/<service_id>/edit/<section_id>', methods=['GET'])
-@login_required
 @role_required('admin', 'admin-ccs-category')
 def edit(service_id, section_id):
     service_data = data_api_client.get_service(service_id)['services']
@@ -124,7 +119,6 @@ def edit(service_id, section_id):
 
 
 @main.route('/services/<service_id>/updates', methods=['GET'])
-@login_required
 @role_required('admin', 'admin-ccs-category')
 def service_updates(service_id):
     service_response = data_api_client.get_service(service_id)
@@ -217,7 +211,6 @@ def service_updates(service_id):
 
 
 @main.route('/services/<service_id>/edit/<section_id>', methods=['POST'])
-@login_required
 @role_required('admin', 'admin-ccs-category')
 def update(service_id, section_id):
     service = data_api_client.get_service(service_id)

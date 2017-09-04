@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from flask import abort, flash, redirect, render_template, url_for
-from flask_login import login_required, current_user
+from flask_login import current_user
 
 from dmapiclient.audit import AuditTypes
 
@@ -13,7 +13,6 @@ from ..auth import role_required
 @main.route('/service-status-updates', methods=['GET'])
 @main.route('/service-status-updates/<day>', methods=['GET'])
 @main.route('/service-status-updates/<day>/page-<int:page>', methods=['GET'])
-@login_required
 @role_required('admin', 'admin-ccs-category')
 def service_status_update_audits(day=None, page=1):
 
@@ -49,7 +48,6 @@ def service_status_update_audits(day=None, page=1):
 
 
 @main.route('/services/updates/unapproved', methods=['GET'])
-@login_required
 @role_required('admin', 'admin-ccs-category')
 def service_update_audits():
     audit_events_response = data_api_client.find_audit_events(
@@ -67,7 +65,6 @@ def service_update_audits():
 
 
 @main.route('/services/<service_id>/updates/<int:audit_id>/approve', methods=['POST'])
-@login_required
 @role_required('admin-ccs-category')
 def submit_service_update_approval(service_id, audit_id):
     audit_event = data_api_client.get_audit_event(audit_id)["auditEvents"]

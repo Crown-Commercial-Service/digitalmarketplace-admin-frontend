@@ -128,7 +128,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         assert response.status_code == 404
 
     def test_should_403_forbidden_user_roles(self, data_api_client):
-        roles_not_allowed = ('admin', 'admin-ccs-sourcing', 'buyer', 'supplier')
+        roles_not_allowed = ('admin', 'admin-ccs-sourcing')
 
         for role in roles_not_allowed:
             self.user_role = role

@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from flask import render_template, request, redirect, url_for, abort, current_app
-from flask_login import login_required, current_user, flash
+from flask_login import current_user, flash
 from dateutil.parser import parse as parse_date
 
 from .. import main
@@ -22,7 +22,6 @@ from dmutils.formats import datetimeformat
 
 
 @main.route('/suppliers', methods=['GET'])
-@login_required
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
 def find_suppliers():
     if request.args.get("supplier_id"):
@@ -41,7 +40,6 @@ def find_suppliers():
 
 
 @main.route('/suppliers/<string:supplier_id>/edit/name', methods=['GET'])
-@login_required
 @role_required('admin')
 def edit_supplier_name(supplier_id):
     supplier = data_api_client.get_supplier(supplier_id)
@@ -53,7 +51,6 @@ def edit_supplier_name(supplier_id):
 
 
 @main.route('/suppliers/<string:supplier_id>/edit/declarations/<string:framework_slug>', methods=['GET'])
-@login_required
 @role_required('admin-ccs-sourcing')
 def view_supplier_declaration(supplier_id, framework_slug):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
@@ -79,7 +76,6 @@ def view_supplier_declaration(supplier_id, framework_slug):
 
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>', methods=['GET'])
-@login_required
 @role_required('admin', 'admin-ccs-sourcing')
 def view_signed_agreement(supplier_id, framework_slug):
     # not properly validating this - all we do is pass it through
@@ -131,7 +127,6 @@ def view_signed_agreement(supplier_id, framework_slug):
 
 
 @main.route('/suppliers/agreements/<agreement_id>/on-hold', methods=['POST'])
-@login_required
 @role_required('admin-ccs-sourcing')
 def put_signed_agreement_on_hold(agreement_id):
     # not properly validating this - all we do is pass it through
@@ -151,7 +146,6 @@ def put_signed_agreement_on_hold(agreement_id):
 
 
 @main.route('/suppliers/agreements/<agreement_id>/approve', methods=['POST'])
-@login_required
 @role_required('admin-ccs-sourcing')
 def approve_agreement_for_countersignature(agreement_id):
     # not properly validating this - all we do is pass it through
@@ -175,7 +169,6 @@ def approve_agreement_for_countersignature(agreement_id):
 
 
 @main.route('/suppliers/agreements/<agreement_id>/unapprove', methods=['POST'])
-@login_required
 @role_required('admin-ccs-sourcing')
 def unapprove_agreement_for_countersignature(agreement_id):
     # not properly validating this - all we do is pass it through
@@ -199,7 +192,6 @@ def unapprove_agreement_for_countersignature(agreement_id):
 
 
 @main.route('/suppliers/<supplier_id>/agreement/<framework_slug>', methods=['GET'])
-@login_required
 @role_required('admin', 'admin-ccs-sourcing')
 def download_signed_agreement_file(supplier_id, framework_slug):
     # This route is used for pre-G-Cloud-8 agreement document downloads
@@ -209,7 +201,6 @@ def download_signed_agreement_file(supplier_id, framework_slug):
 
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>/<document_name>', methods=['GET'])
-@login_required
 @role_required('admin', 'admin-ccs-sourcing')
 def download_agreement_file(supplier_id, framework_slug, document_name):
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
@@ -226,7 +217,6 @@ def download_agreement_file(supplier_id, framework_slug, document_name):
 
 
 @main.route('/suppliers/<supplier_id>/countersigned-agreements/<framework_slug>', methods=['GET'])
-@login_required
 @role_required('admin-ccs-sourcing')
 def list_countersigned_agreement_file(supplier_id, framework_slug):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
@@ -252,7 +242,6 @@ def list_countersigned_agreement_file(supplier_id, framework_slug):
 
 
 @main.route('/suppliers/<supplier_id>/countersigned-agreements/<framework_slug>', methods=['POST'])
-@login_required
 @role_required('admin-ccs-sourcing')
 def upload_countersigned_agreement_file(supplier_id, framework_slug):
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
@@ -312,7 +301,6 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
 
 @main.route('/suppliers/<supplier_id>/countersigned-agreements-remove/<framework_slug>',
             methods=['GET', 'POST'])
-@login_required
 @role_required('admin-ccs-sourcing')
 def remove_countersigned_agreement_file(supplier_id, framework_slug):
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
@@ -349,7 +337,6 @@ def remove_countersigned_agreement_file(supplier_id, framework_slug):
 @main.route(
     '/suppliers/<string:supplier_id>/edit/declarations/<string:framework_slug>/<string:section_id>',
     methods=['GET'])
-@login_required
 @role_required('admin-ccs-sourcing')
 def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
@@ -380,6 +367,7 @@ def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
 @main.route(
     '/suppliers/<string:supplier_id>/edit/declarations/<string:framework_slug>/<string:section_id>',
     methods=['POST'])
+@role_required('admin-ccs-sourcing')
 def update_supplier_declaration_section(supplier_id, framework_slug, section_id):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
@@ -410,7 +398,6 @@ def update_supplier_declaration_section(supplier_id, framework_slug, section_id)
 
 
 @main.route('/suppliers/<string:supplier_id>/edit/name', methods=['POST'])
-@login_required
 @role_required('admin')
 def update_supplier_name(supplier_id):
     supplier = data_api_client.get_supplier(supplier_id)
@@ -424,7 +411,6 @@ def update_supplier_name(supplier_id):
 
 
 @main.route('/suppliers/users', methods=['GET'])
-@login_required
 @role_required('admin', 'admin-ccs-category')
 def find_supplier_users():
 
@@ -444,7 +430,6 @@ def find_supplier_users():
 
 
 @main.route('/suppliers/users/<int:user_id>/unlock', methods=['POST'])
-@login_required
 @role_required('admin')
 def unlock_user(user_id):
     user = data_api_client.update_user(user_id, locked=False, updater=current_user.email_address)
@@ -454,7 +439,6 @@ def unlock_user(user_id):
 
 
 @main.route('/suppliers/users/<int:user_id>/activate', methods=['POST'])
-@login_required
 @role_required('admin')
 def activate_user(user_id):
     user = data_api_client.update_user(user_id, active=True, updater=current_user.email_address)
@@ -464,7 +448,6 @@ def activate_user(user_id):
 
 
 @main.route('/suppliers/users/<int:user_id>/deactivate', methods=['POST'])
-@login_required
 @role_required('admin')
 def deactivate_user(user_id):
     user = data_api_client.update_user(user_id, active=False, updater=current_user.email_address)
@@ -474,7 +457,6 @@ def deactivate_user(user_id):
 
 
 @main.route('/suppliers/<int:supplier_id>/move-existing-user', methods=['POST'])
-@login_required
 @role_required('admin')
 def move_user_to_new_supplier(supplier_id):
     move_user_form = MoveUserForm()
@@ -519,7 +501,6 @@ def move_user_to_new_supplier(supplier_id):
 
 
 @main.route('/suppliers/services', methods=['GET'])
-@login_required
 @role_required('admin', 'admin-ccs-category')
 def find_supplier_services():
 
@@ -537,7 +518,6 @@ def find_supplier_services():
 
 
 @main.route('/suppliers/<int:supplier_id>/invite-user', methods=['POST'])
-@login_required
 @role_required('admin')
 def invite_user(supplier_id):
     invite_form = EmailAddressForm()
