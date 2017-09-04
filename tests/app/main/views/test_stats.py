@@ -14,7 +14,7 @@ class TestStats(LoggedInApplicationTest):
         }
         response = self.client.get('/admin/statistics/g-cloud-7')
 
-        data_api_client.find_audit_events.assert_called_with(
+        data_api_client.find_audit_events.assert_called_once_with(
             audit_type=AuditTypes.snapshot_framework_stats,
             object_type='frameworks',
             object_id='g-cloud-7',
@@ -32,7 +32,7 @@ class TestStats(LoggedInApplicationTest):
         }
         response = self.client.get('/admin/statistics/g-cloud-7')
 
-        assert data_api_client.get_framework_stats.call_args == mock.call('g-cloud-7')
+        data_api_client.get_framework_stats.assert_called_once_with('g-cloud-7')
         assert response.status_code == 200
 
     def test_supplier_counts_on_stats_page(self, data_api_client):
@@ -83,7 +83,7 @@ class TestStats(LoggedInApplicationTest):
 
         response = self.client.get('/admin/statistics/g-cloud-7')
 
-        data_api_client.find_audit_events.assert_called_with(
+        data_api_client.find_audit_events.assert_called_once_with(
             audit_type=AuditTypes.snapshot_framework_stats,
             object_type='frameworks',
             object_id='g-cloud-7',
