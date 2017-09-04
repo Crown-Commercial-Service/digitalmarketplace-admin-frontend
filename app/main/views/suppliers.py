@@ -367,6 +367,7 @@ def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
 @main.route(
     '/suppliers/<string:supplier_id>/edit/declarations/<string:framework_slug>/<string:section_id>',
     methods=['POST'])
+@role_required('admin-ccs-sourcing')
 def update_supplier_declaration_section(supplier_id, framework_slug, section_id):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
