@@ -77,8 +77,8 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         assert response.status_code == 200
 
-        data_api_client.get_supplier.assert_called_with('1000')
-        data_api_client.find_users.assert_called_with('1000')
+        data_api_client.get_supplier.assert_called_once_with('1000')
+        data_api_client.find_users.assert_called_once_with('1000')
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_have_supplier_name_on_page(self, data_api_client):
@@ -156,7 +156,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.post('/admin/suppliers/users/999/unlock')
 
-        data_api_client.update_user.assert_called_with(999, locked=False, updater="test@example.com")
+        data_api_client.update_user.assert_called_once_with(999, locked=False, updater="test@example.com")
 
         assert response.status_code == 302
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
@@ -168,10 +168,25 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.post('/admin/suppliers/users/999/activate')
 
-        data_api_client.update_user.assert_called_with(999, active=True, updater="test@example.com")
+        data_api_client.update_user.assert_called_once_with(999, active=True, updater="test@example.com")
 
         assert response.status_code == 302
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
+
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_call_api_to_activate_user_and_redirect_to_source_if_present(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.update_user.return_value = self.load_example_listing("user_response")
+
+        response = self.client.post(
+            '/admin/suppliers/users/999/activate',
+            data={'source': "http://example.com"}
+        )
+
+        data_api_client.update_user.assert_called_once_with(999, active=True, updater="test@example.com")
+
+        assert response.status_code == 302
+        assert response.location == "http://example.com"
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_deactivate_user(self, data_api_client):
@@ -183,10 +198,25 @@ class TestSupplierUsersView(LoggedInApplicationTest):
             data={'supplier_id': 1000}
         )
 
-        data_api_client.update_user.assert_called_with(999, active=False, updater="test@example.com")
+        data_api_client.update_user.assert_called_once_with(999, active=False, updater="test@example.com")
 
         assert response.status_code == 302
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
+
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_call_api_to_deactivate_user_and_redirect_to_source_if_present(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.update_user.return_value = self.load_example_listing("user_response")
+
+        response = self.client.post(
+            '/admin/suppliers/users/999/deactivate',
+            data={'supplier_id': 1000, 'source': "http://example.com"}
+        )
+
+        data_api_client.update_user.assert_called_once_with(999, active=False, updater="test@example.com")
+
+        assert response.status_code == 302
+        assert response.location == "http://example.com"
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_move_user_to_another_supplier(self, data_api_client):
@@ -199,7 +229,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
             data={'user_to_move_email_address': 'test.user@sme.com'}
         )
 
-        data_api_client.update_user.assert_called_with(
+        data_api_client.update_user.assert_called_once_with(
             999, role='supplier', supplier_id=1000, active=True, updater="test@example.com"
         )
 
@@ -216,7 +246,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert response.status_code == 404
 
     def test_should_404_if_no_supplier_id_on_services(self):
-        response = self.client.get('/admin/suppliers/users')
+        response = self.client.get('/admin/suppliers/services')
         assert response.status_code == 404
 
     @mock.patch('app.main.views.suppliers.data_api_client')
@@ -226,8 +256,8 @@ class TestSupplierServicesView(LoggedInApplicationTest):
 
         assert response.status_code == 200
 
-        data_api_client.get_supplier.assert_called_with('1000')
-        data_api_client.find_services.assert_called_with('1000')
+        data_api_client.get_supplier.assert_called_once_with('1000')
+        data_api_client.find_services.assert_called_once_with('1000')
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_indicate_if_supplier_has_no_services(self, data_api_client):
@@ -347,7 +377,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             follow_redirects=True
         )
 
-        data_api_client.get_supplier.assert_called_with(1234)
+        data_api_client.get_supplier.assert_called_once_with(1234)
         assert data_api_client.find_users.called is False
         assert response.status_code == 404
 
@@ -362,8 +392,8 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             follow_redirects=True
         )
 
-        data_api_client.get_supplier.assert_called_with(1234)
-        data_api_client.find_users.assert_called_with(1234)
+        data_api_client.get_supplier.assert_called_once_with(1234)
+        data_api_client.find_users.assert_called_once_with(1234)
         assert response.status_code == 404
 
     @mock.patch('app.main.views.suppliers.generate_token')
@@ -575,7 +605,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
         assert response.status_code == 404
-        data_api_client.get_supplier.assert_called_with('1234')
+        data_api_client.get_supplier.assert_called_once_with('1234')
         assert data_api_client.get_framework.called is False
 
     def test_should_404_if_framework_does_not_exist(self, data_api_client):
@@ -596,9 +626,9 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
         assert response.status_code == 200
-        data_api_client.get_supplier.assert_called_with('1234')
-        data_api_client.get_framework.assert_called_with('g-cloud-7')
-        data_api_client.get_supplier_declaration.assert_called_with('1234', 'g-cloud-7')
+        data_api_client.get_supplier.assert_called_once_with('1234')
+        data_api_client.get_framework.assert_called_once_with('g-cloud-7')
+        data_api_client.get_supplier_declaration.assert_called_once_with('1234', 'g-cloud-7')
 
     def test_should_show_declaration(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
@@ -651,7 +681,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
 
         assert response.status_code == 404
-        data_api_client.get_supplier.assert_called_with('1234')
+        data_api_client.get_supplier.assert_called_once_with('1234')
         assert data_api_client.get_framework.called is False
 
     def test_should_404_if_framework_does_not_exist(self, data_api_client):
@@ -661,8 +691,8 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
 
         assert response.status_code == 404
-        data_api_client.get_supplier.assert_called_with('1234')
-        data_api_client.get_framework.assert_called_with('g-cloud-7')
+        data_api_client.get_supplier.assert_called_once_with('1234')
+        data_api_client.get_framework.assert_called_once_with('g-cloud-7')
 
     def test_should_404_if_section_does_not_exist(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
@@ -681,9 +711,9 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
 
         assert response.status_code == 200
-        data_api_client.get_supplier.assert_called_with('1234')
-        data_api_client.get_framework.assert_called_with('g-cloud-7')
-        data_api_client.get_supplier_declaration.assert_called_with('1234', 'g-cloud-7')
+        data_api_client.get_supplier.assert_called_once_with('1234')
+        data_api_client.get_framework.assert_called_once_with('g-cloud-7')
+        data_api_client.get_supplier_declaration.assert_called_once_with('1234', 'g-cloud-7')
 
     def test_should_prefill_form_with_declaration(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
@@ -711,7 +741,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         declaration['SQ1-3'] = None
         declaration['SQC3'] = None
 
-        data_api_client.set_supplier_declaration.assert_called_with(
+        data_api_client.set_supplier_declaration.assert_called_once_with(
             '1234', 'g-cloud-7', declaration, 'test@example.com')
 
 
@@ -742,6 +772,13 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
 
         assert response.status_code == 403
 
+    def test_should_404_if_no_supplier_framework_declaration(self, s3, data_api_client):
+        data_api_client.get_supplier_framework_info.return_value = {
+            'frameworkInterest': {'declaration': None}
+        }
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
+        assert response.status_code == 404
+
     def test_should_404_if_document_does_not_exist(self, s3, data_api_client):
         data_api_client.get_supplier_framework_info.return_value = {
             'frameworkInterest': {'declaration': {'SQ1-1a': 'Supplier name'}}
@@ -750,7 +787,7 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
 
-        s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/1234-foo.pdf')
+        s3.S3.return_value.get_signed_url.assert_called_once_with('g-cloud-7/agreements/1234/1234-foo.pdf')
         assert response.status_code == 404
 
     def test_should_redirect(self, s3, data_api_client):
@@ -763,7 +800,7 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
 
-        s3.S3.return_value.get_signed_url.assert_called_with('g-cloud-7/agreements/1234/1234-foo.pdf')
+        s3.S3.return_value.get_signed_url.assert_called_once_with('g-cloud-7/agreements/1234/1234-foo.pdf')
         assert response.status_code == 302
         assert response.location == 'https://example/blah?extra'
 
@@ -778,7 +815,7 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
             '/admin/suppliers/1234/agreements/g-cloud-7/countersigned-framework-agreement.pdf'
         )
 
-        s3.S3.return_value.get_signed_url.assert_called_with(
+        s3.S3.return_value.get_signed_url.assert_called_once_with(
             'g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf'
         )
         assert response.status_code == 302
@@ -1086,8 +1123,8 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
 
         assert response.status_code == 404
-        data_api_client.get_supplier.assert_called_with('1234')
-        data_api_client.get_framework.assert_called_with('g-cloud-8')
+        data_api_client.get_supplier.assert_called_once_with('1234')
+        data_api_client.get_framework.assert_called_once_with('g-cloud-8')
 
     def test_should_404_if_agreement_not_returned(self, s3, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
@@ -1098,9 +1135,18 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
 
         assert response.status_code == 404
-        data_api_client.get_supplier.assert_called_with('1234')
-        data_api_client.get_framework.assert_called_with('g-cloud-8')
-        data_api_client.get_supplier_framework_info.assert_called_with('1234', 'g-cloud-8')
+        data_api_client.get_supplier.assert_called_once_with('1234')
+        data_api_client.get_framework.assert_called_once_with('g-cloud-8')
+        data_api_client.get_supplier_framework_info.assert_called_once_with('1234', 'g-cloud-8')
+
+    def test_should_404_if_agreement_has_no_version(self, s3, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.return_value = {'frameworks': {}}
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+
+        assert response.status_code == 404
+        data_api_client.get_supplier.assert_called_once_with('1234')
+        data_api_client.get_framework.assert_called_once_with('g-cloud-8')
 
     def test_should_show_agreement_details_on_page(self, s3, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
@@ -1109,28 +1155,23 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
             'supplier_framework_response'
         )
 
-        def find_services_iter_side_effect(*args, **kwargs):
-            assert int(kwargs["supplier_id"]) == 1234
-            assert kwargs["framework"] == "g-cloud-8"
-            # very minimal fake services
-            return iter((
-                {
-                    "id": 1111,
-                    "lotSlug": "dried-fruit",
-                    "lotName": "Raisins & dates",
-                },
-                {
-                    "id": 2222,
-                    "lotSlug": "salad",
-                    "lotName": "Lettuce & cucumber",
-                },
-                {
-                    "id": 3333,
-                    "lotSlug": "dried-fruit",
-                    "lotName": "Raisins & dates",
-                },
-            ))
-        data_api_client.find_services_iter.side_effect = find_services_iter_side_effect
+        data_api_client.find_services_iter.return_value = iter((
+            {
+                "id": 1111,
+                "lotSlug": "dried-fruit",
+                "lotName": "Raisins & dates",
+            },
+            {
+                "id": 2222,
+                "lotSlug": "salad",
+                "lotName": "Lettuce & cucumber",
+            },
+            {
+                "id": 3333,
+                "lotSlug": "dried-fruit",
+                "lotName": "Raisins & dates",
+            },
+        ))
 
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
             mock_get_url.return_value = "http://example.com/document/1234.pdf"
@@ -1153,6 +1194,17 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
             # Uploader details
             assert len(document.xpath('//p[contains(text(), "Uploader Name")]')) == 1
             assert len(document.xpath('//span[contains(text(), "uploader@email.com")]')) == 1
+
+    def test_should_404_if_no_signed_url(self, s3, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
+            'supplier_framework_response'
+        )
+        with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
+            mock_get_url.return_value = None
+            response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+            assert response.status_code == 404
 
     def test_should_embed_for_pdf_file(self, s3, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')

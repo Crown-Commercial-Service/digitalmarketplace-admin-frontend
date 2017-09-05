@@ -45,6 +45,18 @@ class TestIndex(LoggedInApplicationTest):
         assert 'Download Framework 3 agreements' not in data
 
 
+class TestServiceFind(LoggedInApplicationTest):
+
+    def test_service_find_redirects_to_view_for_valid_service_id(self):
+        response = self.client.get('/admin/services?service_id=314159265')
+        assert response.status_code == 302
+        assert "/services/314159265" in response.location
+
+    def test_service_find_returns_404_for_missing_service_id(self):
+        response = self.client.get('/admin/services')
+        assert response.status_code == 404
+
+
 class TestServiceView(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_view_no_features_or_benefits_status_disabled(self, data_api_client):
@@ -378,6 +390,18 @@ class TestServiceEdit(LoggedInApplicationTest):
         assert document.xpath("//input[@name='dataManagementLocations']")
         assert document.xpath("//input[@name='dataManagementLocations--assurance']")
 
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_service_edit_with_no_section_returns_404(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'lot': 'saas',
+            'frameworkSlug': 'g-cloud-8',
+        }}
+        response = self.client.get(
+            '/admin/services/234/edit/bad-section')
+
+        data_api_client.get_service.assert_called_with('234')
+        assert response.status_code == 404
+
 
 class TestServiceUpdate(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
@@ -644,6 +668,43 @@ class TestServiceUpdate(LoggedInApplicationTest):
             }
         )
         assert 'There was a problem with the answer to this question' in response.get_data(as_text=True)
+
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_service_update_with_no_service_returns_404(self, data_api_client):
+        data_api_client.get_service.return_value = None
+        response = self.client.post(
+            '/admin/services/234/edit/documents',
+            data={
+                'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
+                'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.txt'),
+                'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
+            }
+        )
+
+        data_api_client.get_service.assert_called_with('234')
+        assert response.status_code == 404
+
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_service_update_with_no_section_returns_404(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'id': 1,
+            'supplierId': 2,
+            'lot': 'SCS',
+            'frameworkSlug': 'g-cloud-7',
+            'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
+            'sfiaRateDocumentURL': None
+        }}
+        response = self.client.post(
+            '/admin/services/234/edit/bad-section',
+            data={
+                'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
+                'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.txt'),
+                'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
+            }
+        )
+
+        data_api_client.get_service.assert_called_with('234')
+        assert response.status_code == 404
 
 
 @mock.patch('app.main.views.services.data_api_client')
