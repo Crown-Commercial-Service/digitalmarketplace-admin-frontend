@@ -326,14 +326,8 @@ def reset_password(user_id):
         current_app.config['SECRET_KEY'],
         current_app.config['RESET_PASSWORD_SALT']
     )
-    url = '{}://{}/{}/{}'.format(
-        current_app.config['DM_HTTP_PROTO'],
-        current_app.config['DM_MAIN_SERVER_NAME'],
-        'reset-password',
-        format(token)
-    )
 
-    return redirect(url)
+    return redirect('/2/reset-password/{}'.format(token))
 
 
 @main.route('/suppliers/<int:supplier_code>/move-existing-user', methods=['POST'])

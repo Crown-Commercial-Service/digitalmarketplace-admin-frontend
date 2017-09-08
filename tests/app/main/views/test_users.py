@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import mock
+import pytest
 import copy
 import six
 from lxml import html
@@ -155,6 +156,7 @@ class TestUsersView(LoggedInApplicationTest):
         self.assertEquals('Unlock', unlock_button)
         self.assertEquals('/admin/users?email_address=test.user%40sme.com', return_link.attrib['value'])
 
+    @pytest.mark.skip
     def test_should_show_password_reset(self, data_api_client, _user_info):
         buyer = self.load_example_listing("user_response")
 

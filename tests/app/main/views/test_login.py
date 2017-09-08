@@ -2,6 +2,7 @@ from functools import wraps
 from lxml import html
 from nose.tools import assert_equal, assert_in
 import mock
+import pytest
 try:
     from urlparse import urlsplit
 except ImportError:
@@ -267,6 +268,7 @@ class TestRoleRequired(LoggedInApplicationTest):
         )
         assert_equal(403, response.status_code)
 
+    @pytest.mark.skip
     def test_admin_role_required_password_reset_user(self):
         response = self.client.post(
             '/admin/suppliers/users/1/reset_password',
