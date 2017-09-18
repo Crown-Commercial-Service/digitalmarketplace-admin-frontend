@@ -46,9 +46,15 @@ def assessments_approve():
 @login_required
 @role_required('admin')
 def assessments_reject():
-    id = request.get_json(force=True)['id']
-    assessment = data_api_client.req.assessments(id).reject()\
-        .post({'update_details': {'updated_by': current_user.email_address}})
+    json_payload = request.get_json(force=True)
+    application_id = json_payload.get('application_id')
+    message = json_payload.get('message', '')
+
+    assessment = data_api_client.req.assessments(application_id).reject() \
+        .post({
+            'update_details': {'updated_by': current_user.email_address},
+            'message': message
+        })
     return jsonify(assessment)
 
 
