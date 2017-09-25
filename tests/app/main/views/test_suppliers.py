@@ -2,6 +2,7 @@ import mock
 import pytest
 from freezegun import freeze_time
 from lxml import html
+from flask import current_app
 from six import BytesIO
 from six.moves.urllib.parse import urlparse, parse_qs
 
@@ -397,37 +398,9 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         data_api_client.find_users.assert_called_once_with(1234)
         assert response.status_code == 404
 
-    @mock.patch('app.main.views.suppliers.generate_token')
-    @mock.patch('app.main.views.suppliers.send_email')
+    @mock.patch('app.main.views.suppliers.send_user_account_email')
     @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_call_generate_token_with_correct_params(self, data_api_client, send_email, generate_token):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_users.return_value = self.load_example_listing("users_response")
-        send_email.return_value = True
-
-        res = self.client.post(
-            "/admin/suppliers/1234/invite-user",
-            data={
-                'email_address': 'this@isvalid.com',
-            })
-
-        generate_token.assert_called_once_with(
-            {
-                "supplier_id": 1234,
-                "supplier_name": "Supplier Name",
-                "email_address": "this@isvalid.com"
-            },
-            'KEY',
-            'SALT'
-        )
-
-        assert res.status_code == 302
-        assert res.location == 'http://localhost/admin/suppliers/users?supplier_id=1234'
-
-    @mock.patch('app.main.views.suppliers.generate_token')
-    @mock.patch('app.main.views.suppliers.send_email')
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_create_audit_event(self, data_api_client, send_email, generate_token):
+    def test_should_create_audit_event(self, data_api_client, send_user_account_email):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
         data_api_client.find_users.return_value = self.load_example_listing('users_response')
 
@@ -447,10 +420,9 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         assert res.status_code == 302
         assert res.location == 'http://localhost/admin/suppliers/users?supplier_id=1234'
 
-    @mock.patch('app.main.views.suppliers.generate_token')
-    @mock.patch('app.main.views.suppliers.send_email')
+    @mock.patch('app.main.views.suppliers.send_user_account_email')
     @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_not_send_email_if_bad_supplier_id(self, data_api_client, send_email, generate_token):
+    def test_should_not_send_email_if_bad_supplier_id(self, data_api_client, send_user_account_email):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         data_api_client.find_users.side_effect = HTTPError(Response(404))
 
@@ -461,107 +433,84 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             })
 
         assert data_api_client.find_users.called is False
-        assert send_email.called is False
-        assert generate_token.called is False
+        assert send_user_account_email.called is False
         assert res.status_code == 404
 
-    @mock.patch('app.main.views.suppliers.send_email')
+    @mock.patch('app.main.views.suppliers.send_user_account_email')
     @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_call_send_email_with_correct_params(self, data_api_client, send_email):
+    def test_should_call_send_email_with_correct_params(self, data_api_client, send_user_account_email):
+        with self.app.app_context():
+            data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+            data_api_client.find_users.return_value = self.load_example_listing("users_response")
+
+            res = self.client.post(
+                "/admin/suppliers/1234/invite-user",
+                data={
+                    'email_address': 'this@isvalid.com',
+                }
+            )
+
+            send_user_account_email.assert_called_once_with(
+                'supplier',
+                'this@isvalid.com',
+                current_app.config['NOTIFY_TEMPLATES']['invite_contributor'],
+                extra_token_data={
+                    'supplier_id': 1234,
+                    'supplier_name': 'Supplier Name'
+                },
+                personalisation={
+                    'user': 'The Digital Marketplace team',
+                    'supplier': 'Supplier Name'
+                }
+            )
+
+            assert res.status_code == 302
+            assert res.location == 'http://localhost/admin/suppliers/users?supplier_id=1234'
+
+    @mock.patch('app.main.views.suppliers.send_user_account_email')
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_strip_whitespace_surrounding_invite_user_email_address_field(
+        self, data_api_client, send_user_account_email
+    ):
+        with self.app.app_context():
+            data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+            data_api_client.find_users.return_value = self.load_example_listing("users_response")
+
+            self.client.post(
+                "/admin/suppliers/1234/invite-user",
+                data={
+                    'email_address': '  this@isvalid.com  ',
+                }
+            )
+
+            send_user_account_email.assert_called_once_with(
+                'supplier',
+                'this@isvalid.com',
+                current_app.config['NOTIFY_TEMPLATES']['invite_contributor'],
+                extra_token_data={
+                    'supplier_id': 1234,
+                    'supplier_name': 'Supplier Name'
+                },
+                personalisation={
+                    'user': 'The Digital Marketplace team',
+                    'supplier': 'Supplier Name'
+                }
+            )
+
+    @mock.patch('dmutils.email.user_account_email.DMNotifyClient')
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_be_a_503_if_email_fails(self, data_api_client, DMNotifyClient):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_users.return_value = self.load_example_listing("users_response")
+        notify_client_mock = mock.Mock()
+        notify_client_mock.send_email.side_effect = EmailError("Arrrgh")
+        DMNotifyClient.return_value = notify_client_mock
 
-        res = self.client.post(
-            "/admin/suppliers/1234/invite-user",
-            data={
-                'email_address': 'this@isvalid.com',
-            }
-        )
-
-        send_email.assert_called_once_with(
-            'this@isvalid.com',
-            mock.ANY,
-            'MANDRILL',
-            'Your Digital Marketplace invitation',
-            'enquiries@digitalmarketplace.service.gov.uk',
-            'Digital Marketplace Admin',
-            ["user-invite"]
-        )
-
-        assert res.status_code == 302
-        assert res.location == 'http://localhost/admin/suppliers/users?supplier_id=1234'
-
-    @mock.patch('app.main.views.suppliers.send_email')
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_strip_whitespace_surrounding_invite_user_email_address_field(self, data_api_client, send_email):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_users.return_value = self.load_example_listing("users_response")
-
-        self.client.post(
-            "/admin/suppliers/1234/invite-user",
-            data={
-                'email_address': '  this@isvalid.com  ',
-            }
-        )
-
-        send_email.assert_called_once_with(
-            'this@isvalid.com',
-            mock.ANY,
-            mock.ANY,
-            mock.ANY,
-            mock.ANY,
-            mock.ANY,
-            mock.ANY
-        )
-
-    @mock.patch('app.main.views.suppliers.generate_token')
-    @mock.patch('app.main.views.suppliers.render_template')
-    @mock.patch('app.main.views.suppliers.send_email')
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_call_render_template_with_correct_params(self, data_api_client,
-                                                             send_email, render_template, generate_token):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_users.return_value = self.load_example_listing("users_response")
-        send_email.return_value = True
-        generate_token.return_value = "token"
-
-        res = self.client.post(
-            "/admin/suppliers/1234/invite-user",
-            data={
-                'email_address': 'this@isvalid.com',
-            }
-        )
-
-        render_template.assert_called_once_with(
-            "emails/invite_user_email.html",
-            url="http://localhost/suppliers/create-user/token",
-            supplier="Supplier Name"
-        )
-
-        assert res.status_code == 302
-        assert res.location == 'http://localhost/admin/suppliers/users?supplier_id=1234'
-
-    @mock.patch('app.main.views.suppliers.send_email')
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_be_a_503_if_email_fails(self, data_api_client, send_email):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_users.return_value = self.load_example_listing("users_response")
-        send_email.side_effect = EmailError("Arrrgh")
         res = self.client.post(
             "/admin/suppliers/1234/invite-user",
             data={
                 'email_address': 'this@isvalid.com',
             })
-
-        send_email.assert_called_once_with(
-            'this@isvalid.com',
-            mock.ANY,
-            'MANDRILL',
-            'Your Digital Marketplace invitation',
-            'enquiries@digitalmarketplace.service.gov.uk',
-            'Digital Marketplace Admin',
-            ["user-invite"]
-        )
 
         assert res.status_code == 503
 

@@ -60,9 +60,11 @@ def create_app(config_name):
     application.permanent_session_lifetime = timedelta(hours=1)
     from .main import main as main_blueprint
     from .status import status as status_blueprint
+    from dmutils.external import external as external_blueprint
 
     application.register_blueprint(status_blueprint, url_prefix='/admin')
     application.register_blueprint(main_blueprint, url_prefix='/admin')
+    application.register_blueprint(external_blueprint)
     login_manager.login_view = '/user/login'
     main_blueprint.config = application.config.copy()
 

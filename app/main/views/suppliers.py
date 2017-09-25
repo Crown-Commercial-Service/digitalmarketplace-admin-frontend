@@ -10,8 +10,7 @@ from ..forms import EmailAddressForm, MoveUserForm
 from ..auth import role_required
 from dmapiclient import HTTPError, APIError
 from dmapiclient.audit import AuditTypes
-from dmutils.email import send_email, generate_token
-from dmutils.email.exceptions import EmailError
+from dmutils.email import send_user_account_email
 from dmutils.documents import (
     AGREEMENT_FILENAME, COUNTERPART_FILENAME,
     file_is_pdf, get_document_path, get_extension, get_signed_url,
@@ -525,46 +524,19 @@ def invite_user(supplier_id):
             abort(404, "Supplier not found")
 
     if invite_form.validate_on_submit():
-        token = generate_token(
-            {
-                "supplier_id": supplier_id,
-                "supplier_name": suppliers['suppliers']['name'],
-                "email_address": invite_form.email_address.data
+        send_user_account_email(
+            'supplier',
+            invite_form.email_address.data,
+            current_app.config['NOTIFY_TEMPLATES']['invite_contributor'],
+            extra_token_data={
+                'supplier_id': supplier_id,
+                'supplier_name': suppliers['suppliers']['name']
             },
-            current_app.config['SHARED_EMAIL_KEY'],
-            current_app.config['INVITE_EMAIL_SALT']
+            personalisation={
+                'user': 'The Digital Marketplace team',
+                'supplier': suppliers['suppliers']['name']
+            }
         )
-
-        url = "{}{}/{}".format(
-            request.url_root,
-            current_app.config['CREATE_USER_PATH'],
-            format(token)
-        )
-
-        email_body = render_template(
-            "emails/invite_user_email.html",
-            url=url,
-            supplier=suppliers['suppliers']['name'])
-
-        try:
-            send_email(
-                invite_form.email_address.data,
-                email_body,
-                current_app.config['DM_MANDRILL_API_KEY'],
-                current_app.config['INVITE_EMAIL_SUBJECT'],
-                current_app.config['INVITE_EMAIL_FROM'],
-                current_app.config['INVITE_EMAIL_NAME'],
-                ["user-invite"]
-            )
-        except EmailError as e:
-            current_app.logger.error(
-                "Invitation email failed to send error {} to {} supplier {} supplier id {} ".format(
-                    str(e),
-                    invite_form.email_address.data,
-                    suppliers['suppliers']['name'],
-                    supplier_id)
-            )
-            abort(503, "Failed to send user invite reset")
 
         data_api_client.create_audit_event(
             audit_type=AuditTypes.invite_user,

@@ -46,11 +46,11 @@ class Config(object):
     SHARED_EMAIL_KEY = None
     INVITE_EMAIL_SALT = 'InviteEmailSalt'
 
-    DM_MANDRILL_API_KEY = None
-    INVITE_EMAIL_NAME = 'Digital Marketplace Admin'
-    INVITE_EMAIL_FROM = 'enquiries@digitalmarketplace.service.gov.uk'
-    INVITE_EMAIL_SUBJECT = 'Your Digital Marketplace invitation'
-    CREATE_USER_PATH = 'suppliers/create-user'
+    DM_NOTIFY_API_KEY = None
+
+    NOTIFY_TEMPLATES = {
+        'invite_contributor': '1cca85e8-d647-46e6-9c0d-6af90b9e69b0'
+    }
 
     @staticmethod
     def init_app(app):
@@ -73,7 +73,7 @@ class Test(Config):
     DM_LOG_LEVEL = 'CRITICAL'
     SHARED_EMAIL_KEY = 'KEY'
     INVITE_EMAIL_SALT = 'SALT'
-    DM_MANDRILL_API_KEY = "MANDRILL"
+    DM_NOTIFY_API_KEY = "not_a_real_key-00000000-fake-uuid-0000-000000000000"
 
 
 class Development(Config):
@@ -89,7 +89,7 @@ class Development(Config):
     DM_DATA_API_URL = "http://localhost:5000"
     DM_DATA_API_AUTH_TOKEN = "myToken"
     SECRET_KEY = "verySecretKey"
-    DM_MANDRILL_API_KEY = "not_a_real_key"
+    DM_NOTIFY_API_KEY = "not_a_real_key-00000000-fake-uuid-0000-000000000000"
     SHARED_EMAIL_KEY = "very_secret"
 
 
@@ -97,6 +97,10 @@ class Live(Config):
     DEBUG = False
     AUTHENTICATION = True
     DM_HTTP_PROTO = 'https'
+
+    NOTIFY_TEMPLATES = {
+        'invite_contributor': '5eefe42d-1694-4388-8908-991cdfba0a71'
+    }
 
 
 configs = {
