@@ -23,11 +23,11 @@ class TestIndex(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
     def test_index_shows_frameworks_in_standstill_or_live(self, data_api_client):
         data_api_client.find_frameworks.return_value = {'frameworks': [
-            {'id': 1, 'frameworkAgreementVersion':   None, 'name': 'Framework 1', 'slug': 'framework-1',
+            {'id': 1, 'frameworkAgreementVersion': None, 'name': 'Framework 1', 'slug': 'framework-1',
              'status': 'standstill'},
             {'id': 2, 'frameworkAgreementVersion': 'v1.0', 'name': 'Framework 2', 'slug': 'framework-2',
              'status': 'live'},
-            {'id': 3, 'frameworkAgreementVersion':   None, 'name': 'Framework 3', 'slug': 'framework-3',
+            {'id': 3, 'frameworkAgreementVersion': None, 'name': 'Framework 3', 'slug': 'framework-3',
              'status': 'open'},
         ]}
 
@@ -1138,17 +1138,17 @@ class TestServiceUpdates(LoggedInApplicationTest):
     )
     @pytest.mark.parametrize("resultant_diff", (False, True))
     def test_unacknowledged_updates(
-            self,
-            data_api_client,
-            html_diff_tables_from_sections_iter,
-            fae_response_src,
-            avail_arch_svcs,
-            svc_status,
-            exp_oldver_ctxt_text,
-            fae_page_len,
-            exp_summ_text,
-            resultant_diff,
-            ):
+        self,
+        data_api_client,
+        html_diff_tables_from_sections_iter,
+        fae_response_src,
+        avail_arch_svcs,
+        svc_status,
+        exp_oldver_ctxt_text,
+        fae_page_len,
+        exp_summ_text,
+        resultant_diff,
+    ):
         data_api_client.get_service.side_effect = partial(self._mock_get_service_side_effect, svc_status)
         data_api_client.find_audit_events.side_effect = partial(
             self._mock_find_audit_events_side_effect,

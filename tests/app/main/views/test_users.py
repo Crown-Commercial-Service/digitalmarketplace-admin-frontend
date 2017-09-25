@@ -1,16 +1,17 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from datetime import datetime
 
 import copy
 import mock
 import pytest
 import six
+from datetime import datetime
 from lxml import html
-from ...helpers import LoggedInApplicationTest
+
 from dmapiclient import HTTPError
 
 from app.main.views.users import CLOSED_BRIEF_STATUSES
+from ...helpers import LoggedInApplicationTest
 
 
 @mock.patch('app.main.views.users.data_api_client')
@@ -248,7 +249,7 @@ class TestUsersExport(LoggedInApplicationTest):
             assert sorted(list(users[0].keys())) == sorted(rows[0])
 
             for index, user in enumerate(users):
-                assert sorted([six.text_type(val) for val in user.values()]) == sorted(rows[index+1])
+                assert sorted([six.text_type(val) for val in user.values()]) == sorted(rows[index + 1])
 
     ##########################################################################
     def test_get_form_with_valid_framework(self, data_api_client):
