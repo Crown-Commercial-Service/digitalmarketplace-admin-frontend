@@ -901,7 +901,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                     # svc_status (service status)
                     "disabled",
                     # exp_oldver_ctxt_text (expected oldversion title context text)
-                    "Changed on Wednesday 3 February 2010 at 10:11",
+                    "Changed on Wednesday 3 February 2010 at 10:11am",
                     # sets of (fae_page_len, exp_summ_text) combinations to be flattened and joined against the above
                     # parameters^. this lets us reuse a long-winded description of the "universe" against many different
                     # implicit page_len values to test it with
@@ -961,7 +961,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                         },
                     },
                     "published",
-                    "Changed on Tuesday 3 February 2015 at 20:11",
+                    "Changed on Tuesday 3 February 2015 at 8:11pm",
                     (
                         (
                             5,
@@ -1022,7 +1022,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                         },
                     },
                     "enabled",
-                    "Changed on Saturday 30 June 2012 at 21:01",
+                    "Changed on Saturday 30 June 2012 at 9:01pm",
                     (
                         (
                             5,
@@ -1096,7 +1096,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                         },
                     },
                     "enabled",
-                    "Changed on Saturday 12 November 2005 at 15:01",
+                    "Changed on Saturday 12 November 2005 at 3:01pm",
                     (
                         (
                             5,
