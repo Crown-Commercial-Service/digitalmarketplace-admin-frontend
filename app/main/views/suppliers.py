@@ -321,13 +321,15 @@ def reset_password(user_id):
     token = generate_token(
         {
             "user": user_id,
-            "email_adddress": user['users']['emailAddress']
+            "email_address": user['users']['emailAddress']
         },
         current_app.config['SECRET_KEY'],
         current_app.config['RESET_PASSWORD_SALT']
     )
 
-    return redirect('/2/reset-password/{}'.format(token))
+    return redirect('{}://{}/2/reset-password/{}'.format(current_app.config['DM_HTTP_PROTO'],
+                                                         current_app.config['DM_MAIN_SERVER_NAME'],
+                                                         token))
 
 
 @main.route('/suppliers/<int:supplier_code>/move-existing-user', methods=['POST'])
