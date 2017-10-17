@@ -309,7 +309,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
 
         assert response.status_code == 200
         assert "Removed" in response.get_data(as_text=True)
-        assert "Details" in response.get_data(as_text=True)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_correct_fields_for_enabled_service(self, data_api_client):

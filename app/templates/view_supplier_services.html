@@ -57,10 +57,7 @@
           {% endif %}
         </span>
       {% endcall %}
-      {{ summary.edit_link(
-        'Details' if item.status == 'disabled' or not current_user.has_role('admin') else 'Edit',
-        url_for('.view', service_id=item.id)
-      ) }}
+      {{ summary.edit_link('Edit', url_for('.view', service_id=item.id)) }}
     {% endcall %}
   {% endcall %}
 {% endblock %}
