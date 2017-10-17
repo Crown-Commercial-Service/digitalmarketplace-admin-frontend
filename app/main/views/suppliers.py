@@ -39,7 +39,7 @@ def find_suppliers():
 
 
 @main.route('/suppliers/<string:supplier_id>/edit/name', methods=['GET'])
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def edit_supplier_name(supplier_id):
     supplier = data_api_client.get_supplier(supplier_id)
 
@@ -47,6 +47,19 @@ def edit_supplier_name(supplier_id):
         "edit_supplier_name.html",
         supplier=supplier["suppliers"]
     )
+
+
+@main.route('/suppliers/<string:supplier_id>/edit/name', methods=['POST'])
+@role_required('admin', 'admin-ccs-category')
+def update_supplier_name(supplier_id):
+    supplier = data_api_client.get_supplier(supplier_id)
+    new_supplier_name = request.form.get('new_supplier_name', '')
+
+    data_api_client.update_supplier(
+        supplier['suppliers']['id'], {'name': new_supplier_name}, current_user.email_address
+    )
+
+    return redirect(url_for('.find_suppliers', supplier_id=supplier_id))
 
 
 @main.route('/suppliers/<string:supplier_id>/edit/declarations/<string:framework_slug>', methods=['GET'])
@@ -386,19 +399,6 @@ def update_supplier_declaration_section(supplier_id, framework_slug, section_id)
 
     return redirect(url_for('.view_supplier_declaration',
                             supplier_id=supplier_id, framework_slug=framework_slug))
-
-
-@main.route('/suppliers/<string:supplier_id>/edit/name', methods=['POST'])
-@role_required('admin')
-def update_supplier_name(supplier_id):
-    supplier = data_api_client.get_supplier(supplier_id)
-    new_supplier_name = request.form.get('new_supplier_name', '')
-
-    data_api_client.update_supplier(
-        supplier['suppliers']['id'], {'name': new_supplier_name}, current_user.email_address
-    )
-
-    return redirect(url_for('.find_suppliers', supplier_id=supplier_id))
 
 
 @main.route('/suppliers/users', methods=['GET'])

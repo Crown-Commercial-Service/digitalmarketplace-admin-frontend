@@ -22,14 +22,7 @@
   {% endwith %}
 
   <div class="page-section">
-    {% if current_user.has_role("admin") %}
-      {% set field_headings = [
-        "Name",
-        summary.hidden_field_heading("Change name"),
-        summary.hidden_field_heading("Users"),
-        summary.hidden_field_heading("Services"),
-      ] %}
-    {% elif current_user.has_role("admin-ccs-sourcing") %}
+    {% if current_user.has_role("admin-ccs-sourcing") %}
       {% set field_headings = [
         "Name",
         "G-Cloud 7",
@@ -41,6 +34,7 @@
     {% else %}
       {% set field_headings = [
         "Name",
+        summary.hidden_field_heading("Change name"),
         summary.hidden_field_heading("Users"),
         summary.hidden_field_heading("Services"),
       ] %}
@@ -55,15 +49,10 @@
     %}
 
       {% call summary.row() %}
+
         {% if current_user.has_role('admin-ccs-sourcing') %}
+
           {{ summary.field_name(item.name, rowspan=5) }}
-        {% else %}
-          {{ summary.field_name(item.name) }}
-        {% endif %}
-        {% if current_user.has_role('admin') %}
-          {{ summary.edit_link("Change name", url_for(".edit_supplier_name", supplier_id=item.id)) }}
-        {% endif %}
-        {% if current_user.has_role('admin-ccs-sourcing') %}
 
           {% call summary.row() %}
             {% call summary.field() %}
@@ -118,12 +107,15 @@
               ⬆ <a href="{{ url_for(".list_countersigned_agreement_file", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists") }}">Countersigned agreement</a>
             {% endcall %}
           {% endcall %}
-
         {% endif %}
+
         {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
+          {{ summary.field_name(item.name) }}
+          {{ summary.edit_link("Change name", url_for(".edit_supplier_name", supplier_id=item.id)) }}
           {{ summary.edit_link("Users", url_for(".find_supplier_users", supplier_id=item.id)) }}
           {{ summary.edit_link("Services", url_for(".find_supplier_services", supplier_id=item.id)) }}
         {% endif %}
+
       {% endcall %}
     {% endcall %}
   </div>
