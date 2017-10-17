@@ -21,7 +21,7 @@ def _save_file(bucket, framework_slug, path, the_file, flash_message):
 
 
 @main.route('/communications/<framework_slug>', methods=['GET'])
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def manage_communications(framework_slug):
     communications_bucket = s3.S3(current_app.config['DM_COMMUNICATIONS_BUCKET'])
     framework = data_api_client.get_framework(framework_slug)['frameworks']
@@ -42,7 +42,7 @@ def manage_communications(framework_slug):
 
 
 @main.route('/communications/<framework_slug>', methods=['POST'])
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def upload_communication(framework_slug):
     communications_bucket = s3.S3(current_app.config['DM_COMMUNICATIONS_BUCKET'])
     errors = {}
