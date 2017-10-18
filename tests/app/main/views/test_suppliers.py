@@ -516,17 +516,18 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
 
 @mock.patch('app.main.views.suppliers.data_api_client')
 class TestUpdatintSupplierName(LoggedInApplicationTest):
-    def test_admin_and_ccs_category_roles_can_update_supplier_name(self, data_api_client):
-        for role in ('admin', 'admin-ccs-category'):
-            self.user_role = role
-            data_api_client.get_supplier.return_value = {"suppliers": {"id": 1234, "name": "Something Old"}}
-            response = self.client.post(
-                '/admin/suppliers/1234/edit/name',
-                data={'new_supplier_name': 'Something New'}
-            )
-            assert response.status_code == 302
-            assert response.location == 'http://localhost/admin/suppliers?supplier_id=1234'
-            data_api_client.update_supplier.assert_called_with(1234, {'name': "Something New"}, "test@example.com")
+
+    @pytest.mark.parametrize("allowed_role", ["admin", "admin-ccs-category"])
+    def test_admin_and_ccs_category_roles_can_update_supplier_name(self, data_api_client, allowed_role):
+        self.user_role = allowed_role
+        data_api_client.get_supplier.return_value = {"suppliers": {"id": 1234, "name": "Something Old"}}
+        response = self.client.post(
+            '/admin/suppliers/1234/edit/name',
+            data={'new_supplier_name': 'Something New'}
+        )
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/suppliers?supplier_id=1234'
+        data_api_client.update_supplier.assert_called_once_with(1234, {'name': "Something New"}, "test@example.com")
 
     def test_ccs_sourcing_role_can_not_update_supplier_name(self, data_api_client):
         self.user_role = 'admin-ccs-sourcing'
