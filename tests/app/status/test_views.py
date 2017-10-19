@@ -10,7 +10,7 @@ class TestStatus(BaseApplicationTest):
     def test_should_return_200_from_elb_status_check(self, data_api_client):
         status_response = self.client.get('/admin/_status?ignore-dependencies')
         assert status_response.status_code == 200
-        assert data_api_client.called is False
+        assert data_api_client.call_args_list == []
 
     @mock.patch('app.status.views.data_api_client')
     def test_status_ok(self, data_api_client):

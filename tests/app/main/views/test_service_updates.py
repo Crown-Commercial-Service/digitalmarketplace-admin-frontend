@@ -127,13 +127,11 @@ class TestServiceUpdates(LoggedInApplicationTest):
         response = self.client.post('/admin/services/123/updates/321/approve')
         assert response.status_code == 404
 
-    def test_should_403_forbidden_user_roles(self, data_api_client):
-        roles_not_allowed = ('admin', 'admin-ccs-sourcing')
-
-        for role in roles_not_allowed:
-            self.user_role = role
-            response = self.client.post('/admin/services/123/updates/321/approve')
-            assert response.status_code == 403
+    @pytest.mark.parametrize("role_not_allowed", ["admin", "admin-ccs-sourcing"])
+    def test_should_403_forbidden_user_roles(self, data_api_client, role_not_allowed):
+        self.user_role = role_not_allowed
+        response = self.client.post('/admin/services/123/updates/321/approve')
+        assert response.status_code == 403
 
     def test_should_410_already_acknowledged_event(self, data_api_client):
         audit_event = {

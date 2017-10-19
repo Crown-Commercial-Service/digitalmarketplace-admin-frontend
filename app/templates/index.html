@@ -148,36 +148,44 @@
     {% endfor %}
   {% endif %}
 
-  {% if current_user.has_any_role('admin') %}
+  {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
+    {% set items = [
+        {
+          "body": "Manage G-Cloud 8 communications",
+          "link": url_for(".manage_communications", framework_slug="g-cloud-8"),
+          "title": "G-Cloud 8 communications"
+        },
+        {
+          "body": "Manage Digital Outcomes and Specialists 2 communications",
+          "link": url_for(".manage_communications", framework_slug="digital-outcomes-and-specialists-2"),
+          "title": "Digital Outcomes and Specialists 2 communications"
+        },
+        {
+          "body": "Manage G-Cloud 9 communications",
+          "link": url_for(".manage_communications", framework_slug="g-cloud-9"),
+          "title": "G-Cloud 9 communications"
+        }
+      ]
+    %}
+
+    {% if current_user.has_role('admin') %}
+      {% set items = items + [
+        {
+          "body": "Download a list of users for frameworks that are open, pending or live",
+          "link": url_for(".list_frameworks_with_users"),
+          "title": "Download user lists"
+        }]
+      %}
+    {% endif %}
+
     {% with
         smaller = True,
         heading = "Communications"
     %}
       {% include "toolkit/page-heading.html" %}
     {% endwith %}
-    {% with items = [
-      {
-        "body": "Manage G-Cloud 8 communications",
-        "link": "/admin/communications/g-cloud-8",
-        "title": "G-Cloud 8 communications"
-      },
-      {
-          "body": "Manage Digital Outcomes and Specialists 2 communications",
-          "link": "/admin/communications/digital-outcomes-and-specialists-2",
-          "title": "Digital Outcomes and Specialists 2 communications"
-      },
-      {
-        "body": "Manage G-Cloud 9 communications",
-        "link": "/admin/communications/g-cloud-9",
-        "title": "G-Cloud 9 communications"
-      },
-      {
-          "body": "Download a list of users for frameworks that are open, pending or live",
-          "link": url_for(".list_frameworks_with_users"),
-          "title": "Download user lists"
-      }
-    ]
-    %}
+
+    {% with items = items %}
       {% include "toolkit/browse-list.html" %}
     {% endwith %}
   {% endif %}

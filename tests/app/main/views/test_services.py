@@ -422,7 +422,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
         )
 
         data_api_client.get_service.assert_called_with('1')
-        assert data_api_client.update_service.called is False
+        assert data_api_client.update_service.call_args_list == []
 
         assert response.status_code == 302
         assert urlsplit(response.location).path == "/admin/services/1"
@@ -481,7 +481,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
 
         data_api_client.get_service.assert_called_with('7654')
-        assert data_api_client.update_service.called is False
+        assert data_api_client.update_service.call_args_list == []
         assert response.status_code == 400
 
         assert document.xpath(
