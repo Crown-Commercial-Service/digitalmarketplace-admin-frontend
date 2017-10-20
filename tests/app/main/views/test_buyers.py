@@ -1,4 +1,7 @@
 import mock
+import pytest
+
+from dmapiclient import HTTPError
 from ...helpers import LoggedInApplicationTest
 from lxml import html
 
@@ -61,3 +64,83 @@ class TestBuyersView(LoggedInApplicationTest):
         assert name == "Test Buyer"
         assert email == "test_buyer@example.com"
         assert phone == "02078888888"
+
+
+@mock.patch('app.main.views.buyers.data_api_client')
+class TestAddBuyerDomainsView(LoggedInApplicationTest):
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 200),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 403),
+    ])
+    def test_get_page_should_only_be_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        response = self.client.get('/admin/buyers/add-buyer-domains')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
+
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 302),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 403)
+    ])
+    def test_post_page_should_only_be_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        response = self.client.post('/admin/buyers/add-buyer-domains',
+                                    data={
+                                        'new_buyer_domain': 'something.org.uk',
+                                    }
+                                    )
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
+
+    def test_admin_user_can_add_a_new_buyer_domain(self, data_api_client):
+        response = self.client.post('/admin/buyers/add-buyer-domains',
+                                    data={'new_buyer_domain': 'kev.uk'},
+                                    follow_redirects=True
+                                    )
+        assert response.status_code == 200
+        assert data_api_client.create_buyer_email_domain.call_args_list == [mock.call("kev.uk", "test@example.com")]
+        assert "You’ve added kev.uk" in response.get_data(as_text=True)
+
+    def test_post_empty_form_error(self, data_api_client):
+        response = self.client.post('/admin/buyers/add-buyer-domains',
+                                    data={'new_buyer_domain': ''}
+                                    )
+        assert response.status_code == 400
+        assert "Domain can not be empty" in response.get_data(as_text=True)
+        assert data_api_client.create_buyer_email_domain.call_args_list == []
+
+    def test_post_duplicate_domain_error(self, data_api_client):
+        mock_api_error = mock.Mock(status_code=400)
+        mock_api_error.json.return_value = {"error": "Domain name already-exists.org has already been approved"}
+        data_api_client.create_buyer_email_domain.side_effect = HTTPError(mock_api_error)
+        response = self.client.post('/admin/buyers/add-buyer-domains',
+                                    data={'new_buyer_domain': 'already-exists.org'}
+                                    )
+        assert response.status_code == 400
+        assert "You cannot add this domain because it already exists." in response.get_data(as_text=True)
+        assert data_api_client.create_buyer_email_domain.call_args_list == [
+            mock.call("already-exists.org", "test@example.com")]
+
+    def test_post_bad_domain_error(self, data_api_client):
+        mock_api_error = mock.Mock(status_code=400)
+        mock_api_error.json.return_value = {"error": "JSON was not a valid format: 'inv@lid.co' does not match..."}
+        data_api_client.create_buyer_email_domain.side_effect = HTTPError(mock_api_error)
+        response = self.client.post('/admin/buyers/add-buyer-domains',
+                                    data={'new_buyer_domain': 'inv@lid.co'}
+                                    )
+        assert response.status_code == 400
+        assert "The domain inv@lid.co is not a valid format" in response.get_data(as_text=True)
+        assert data_api_client.create_buyer_email_domain.call_args_list == [mock.call("inv@lid.co", "test@example.com")]
+
+    def test_raises_unexpected_api_error(self, data_api_client):
+        mock_api_error = mock.Mock(status_code=418)
+        mock_api_error.json.return_value = {"error": "Something happened that we don't understand"}
+        data_api_client.create_buyer_email_domain.side_effect = HTTPError(mock_api_error)
+        response = self.client.post('/admin/buyers/add-buyer-domains',
+                                    data={'new_buyer_domain': 'coffee.gov'}
+                                    )
+        assert response.status_code == 418
+        assert "Sorry, we’re experiencing technical difficulties" in response.get_data(as_text=True)
+        assert data_api_client.create_buyer_email_domain.call_args_list == [mock.call("coffee.gov", "test@example.com")]
