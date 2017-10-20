@@ -38,7 +38,7 @@ def find_buyer_by_brief_id():
 @role_required('admin')
 def add_buyer_domains():
     email_domain_form = EmailDomainForm()
-
+    status_code = 200
     if email_domain_form.validate_on_submit():
         try:
             new_domain = request.form.get('new_buyer_domain')
@@ -46,12 +46,17 @@ def add_buyer_domains():
             flash('You’ve added {}.'.format(new_domain), 'message')
             return redirect(url_for('.add_buyer_domains'))
         except HTTPError as e:
+            status_code = 400
             if "has already been approved" in e.message:
                 flash('You cannot add this domain because it already exists.', 'error')
             elif "was not a valid format" in e.message:
                 flash('The domain {} is not a valid format'.format(new_domain), 'error')
+            else:
+                raise e
+    elif email_domain_form.new_buyer_domain.errors:
+        status_code = 400
 
     return render_template(
         "add_buyer_email_domain.html",
         email_domain_form=email_domain_form
-    ), 400 if email_domain_form.new_buyer_domain.errors else 200
+    ), status_code
