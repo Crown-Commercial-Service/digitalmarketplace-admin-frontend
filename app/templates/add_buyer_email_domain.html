@@ -34,7 +34,7 @@
   {% endif %}
   {% endwith %}
 
-  {% with heading = "Add buyer email domains" %}
+  {% with heading = "Add a buyer email domain" %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
 
@@ -50,7 +50,7 @@
 
         {%
           with
-          question = email_domain_form.new_buyer_domain.label,
+          question = "",
           hint = "For example police.uk",
           name = email_domain_form.new_buyer_domain.name,
           value = email_domain_form.new_buyer_domain.data,
