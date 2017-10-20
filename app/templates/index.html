@@ -89,6 +89,19 @@
 <div class="grid-row">
     <div class="column-two-thirds">
 
+  {% if current_user.has_role('admin') %}
+      {% with items = [
+          {
+
+              "link": url_for('.add_buyer_domains'),
+              "title": "Add a buyer email domain"
+          },
+      ]
+      %}
+        {% include "toolkit/browse-list.html" %}
+      {% endwith %}
+  {% endif %}
+
   {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
       {% with
           smaller = True,
