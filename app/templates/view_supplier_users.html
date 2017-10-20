@@ -23,35 +23,30 @@
 {% endblock %}
 
 {% block main_content %}
-
-
-  {% with heading = supplier.name %}
-  {% include "toolkit/page-heading.html" %}
-  {% endwith %}
-
+{% set flash_messages_content = {
+        'user_invited': 'User invited',
+        'user_not_invited': 'Not invited',
+        'user_moved': 'User moved to this supplier',
+        'user_not_moved': 'User not moved to this supplier - please check you entered the address of an existing supplier user'
+    }
+%}
 
   {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
-  {% for category, message in messages %}
-  {% if category == 'error' %}
-    <div class="banner-destructive-without-action">
-  {% elif category == 'success' %}
-    <div class="banner-success-without-action">
+      {% for category, message in messages %}
+          {%
+          with
+              message = flash_messages_content[message],
+              type = "destructive" if category == 'error' else 'success'
+          %}
+          {% include "toolkit/notification-banner.html" %}
+          {% endwith %}
+      {% endfor %}
   {% endif %}
-        <p class="banner-message">
-  {% if message == 'user_invited' %}
-      User invited
-  {% elif message == 'user_not_invited' %}
-      Not Invited
-  {% elif message == 'user_moved' %}
-      User moved to this supplier
-  {% elif message == 'user_not_moved' %}
-      User not moved to this supplier - please check you entered the address of an existing supplier user
-  {% endif %}
-        </p>
-    </div>
-  {% endfor %}
-  {% endif %}
+  {% endwith %}
+
+  {% with heading = supplier.name %}
+  {% include "toolkit/page-heading.html" %}
   {% endwith %}
 
   <div class='page-section'>
