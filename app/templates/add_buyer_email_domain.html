@@ -1,0 +1,72 @@
+{% extends "_base_page.html" %}
+{% block page_title %}
+  Add buyer email domains – Digital Marketplace admin
+{% endblock %}
+
+{% block breadcrumb %}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      },
+      {
+        "label": "Add buyer email domains"
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+      {% for category, message in messages %}
+          {%
+          with
+              message = message,
+              type = "destructive" if category == 'error' else 'success'
+          %}
+          {% include "toolkit/notification-banner.html" %}
+          {% endwith %}
+      {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  {% with heading = "Add buyer email domains" %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+
+  <form method="post">
+    <div class="grid-row">
+      <div class="column-two-thirds">
+        <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+        <p>
+          <a href="https://www.gov.uk/government/publications/public-sector-organisations-eligible-to-use-cloudstore">
+            Check 'Public sector organisations eligible to use Digital Marketplace'
+          </a> before you add a domain.
+        </p>
+
+        {%
+          with
+          question = email_domain_form.new_buyer_domain.label,
+          hint = "For example police.uk",
+          name = email_domain_form.new_buyer_domain.name,
+          value = email_domain_form.new_buyer_domain.data,
+          error = email_domain_form.new_buyer_domain.errors[0]
+        %}
+          {% include "toolkit/forms/textbox.html" %}
+        {% endwith %}
+
+        {%
+          with
+          type = "save",
+          label = "Add"
+        %}
+          {% include "toolkit/button.html" %}
+        {% endwith %}
+      </div>
+    </div>
+  </form>
+{% endblock %}
