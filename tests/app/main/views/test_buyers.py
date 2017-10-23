@@ -2,6 +2,8 @@ import mock
 import pytest
 
 from dmapiclient import HTTPError
+
+from tests.app.main.helpers.flash_tester import assert_flashes
 from ...helpers import LoggedInApplicationTest
 from lxml import html
 
@@ -95,13 +97,15 @@ class TestAddBuyerDomainsView(LoggedInApplicationTest):
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
 
     def test_admin_user_can_add_a_new_buyer_domain(self, data_api_client):
-        response = self.client.post('/admin/buyers/add-buyer-domains',
-                                    data={'new_buyer_domain': 'kev.uk'},
-                                    follow_redirects=True
-                                    )
-        assert response.status_code == 200
+        response1 = self.client.post('/admin/buyers/add-buyer-domains',
+                                     data={'new_buyer_domain': 'kev.uk'}
+                                     )
+        assert response1.status_code == 302
+        assert_flashes(self, "You’ve added kev.uk", "message")
         assert data_api_client.create_buyer_email_domain.call_args_list == [mock.call("kev.uk", "test@example.com")]
-        assert "You’ve added kev.uk" in response.get_data(as_text=True)
+
+        response2 = self.client.get(response1.location)
+        assert "You’ve added kev.uk" in response2.get_data(as_text=True)
 
     def test_post_empty_form_error(self, data_api_client):
         response = self.client.post('/admin/buyers/add-buyer-domains',
