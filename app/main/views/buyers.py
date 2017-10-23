@@ -48,9 +48,13 @@ def add_buyer_domains():
         except HTTPError as e:
             status_code = 400
             if "has already been approved" in e.message:
-                flash('You cannot add this domain because it already exists.', 'error')
+                email_domain_form.new_buyer_domain.errors.append(
+                    'You cannot add this domain because it already exists.'
+                )
             elif "was not a valid format" in e.message:
-                flash('The domain {} is not a valid format'.format(new_domain), 'error')
+                email_domain_form.new_buyer_domain.errors.append(
+                    "‘{}’ is not a valid format.".format(new_domain)
+                )
             else:
                 raise e
     elif email_domain_form.new_buyer_domain.errors:

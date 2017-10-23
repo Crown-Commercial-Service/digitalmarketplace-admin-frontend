@@ -25,14 +25,24 @@
       {% for category, message in messages %}
           {%
           with
-              message = message,
-              type = "destructive" if category == 'error' else 'success'
+            message = message,
+            type = "destructive" if category == 'error' else 'success'
           %}
           {% include "toolkit/notification-banner.html" %}
           {% endwith %}
       {% endfor %}
   {% endif %}
   {% endwith %}
+
+  {% for error in email_domain_form.new_buyer_domain.errors %}
+    {%
+      with
+        message = error,
+        type = "destructive"
+    %}
+      {% include "toolkit/notification-banner.html" %}
+    {% endwith %}
+  {% endfor %}
 
   {% with heading = "Add a buyer email domain" %}
     {% include "toolkit/page-heading.html" %}
@@ -54,7 +64,7 @@
           hint = "For example police.uk",
           name = email_domain_form.new_buyer_domain.name,
           value = email_domain_form.new_buyer_domain.data,
-          error = email_domain_form.new_buyer_domain.errors[0]
+          error = ""
         %}
           {% include "toolkit/forms/textbox.html" %}
         {% endwith %}

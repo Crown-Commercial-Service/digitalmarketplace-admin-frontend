@@ -131,7 +131,7 @@ class TestAddBuyerDomainsView(LoggedInApplicationTest):
                                     data={'new_buyer_domain': 'inv@lid.co'}
                                     )
         assert response.status_code == 400
-        assert "The domain inv@lid.co is not a valid format" in response.get_data(as_text=True)
+        assert "‘inv@lid.co’ is not a valid format" in response.get_data(as_text=True)
         assert data_api_client.create_buyer_email_domain.call_args_list == [mock.call("inv@lid.co", "test@example.com")]
 
     def test_raises_unexpected_api_error(self, data_api_client):
