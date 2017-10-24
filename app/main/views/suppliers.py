@@ -320,7 +320,7 @@ def reset_password(user_id):
 
     token = generate_token(
         {
-            "user": user_id,
+            "user_id": user_id,
             "email_address": user['users']['emailAddress']
         },
         current_app.config['SECRET_KEY'],
