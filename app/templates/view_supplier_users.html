@@ -23,35 +23,30 @@
 {% endblock %}
 
 {% block main_content %}
-
-
-  {% with heading = supplier.name %}
-  {% include "toolkit/page-heading.html" %}
-  {% endwith %}
-
+{% set flash_messages_content = {
+        'user_invited': 'User invited',
+        'user_not_invited': 'Not invited',
+        'user_moved': 'User moved to this supplier',
+        'user_not_moved': 'User not moved to this supplier - please check you entered the address of an existing supplier user'
+    }
+%}
 
   {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
-  {% for category, message in messages %}
-  {% if category == 'error' %}
-    <div class="banner-destructive-without-action">
-  {% elif category == 'success' %}
-    <div class="banner-success-without-action">
+      {% for category, message in messages %}
+          {%
+          with
+              message = flash_messages_content[message],
+              type = "destructive" if category == 'error' else 'success'
+          %}
+          {% include "toolkit/notification-banner.html" %}
+          {% endwith %}
+      {% endfor %}
   {% endif %}
-        <p class="banner-message">
-  {% if message == 'user_invited' %}
-      User invited
-  {% elif message == 'user_not_invited' %}
-      Not Invited
-  {% elif message == 'user_moved' %}
-      User moved to this supplier
-  {% elif message == 'user_not_moved' %}
-      User not moved to this supplier - please check you entered the address of an existing supplier user
-  {% endif %}
-        </p>
-    </div>
-  {% endfor %}
-  {% endif %}
+  {% endwith %}
+
+  {% with heading = supplier.name %}
+  {% include "toolkit/page-heading.html" %}
   {% endwith %}
 
   <div class='page-section'>
@@ -156,24 +151,17 @@
           <div class="grid-row">
               <div class="column-two-thirds">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                  {% if invite_form.email_address.errors %}
-                  <div class="validation-wrapper">
-                      {% endif %}
-                      <div class="question">
-                          {{ invite_form.email_address.label(class="question-heading") }}
-                          <p class="hint">
-                              Enter the email address of the person you wish to invite
-                          </p>
-                          {% if invite_form.email_address.errors %}
-                          <p class="validation-message" id="error-email-address-textbox">
-                              {% for error in invite_form.email_address.errors %}{{ error }}{% endfor %}
-                          </p>
-                          {% endif %}
-                          {{ invite_form.email_address(class="text-box", autocomplete="off") }}
-                      </div>
-                      {% if invite_form.email_address.errors %}
-                  </div>
-                  {% endif %}
+                  {%
+                    with
+                    question = invite_form.email_address.label,
+                    hint = "Enter the email address of the person you wish to invite",
+                    name = invite_form.email_address.name,
+                    value = invite_form.email_address.data,
+                    error = invite_form.email_address.errors[0]
+                  %}
+                    {% include "toolkit/forms/textbox.html" %}
+                  {% endwith %}
+
                  <button class="button-save">Send invitation</button>
               </div>
           </div>
@@ -185,24 +173,17 @@
             <div class="grid-row">
                 <div class="column-two-thirds">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    {% if move_user_form.user_to_move_email_address.errors %}
-                    <div class="validation-wrapper">
-                        {% endif %}
-                        <div class="question">
-                            {{ move_user_form.user_to_move_email_address.label(class="question-heading") }}
-                            <p class="hint">
-                                Enter the email address of the existing user you wish to move to this supplier
-                            </p>
-                            {% if move_user_form.user_to_move_email_address.errors %}
-                            <p class="validation-message" id="error-email-address-textbox">
-                                {% for error in move_user_form.user_to_move_email_address.errors %}{{ error }}{% endfor %}
-                            </p>
-                            {% endif %}
-                            {{ move_user_form.user_to_move_email_address(class="text-box", autocomplete="off") }}
-                        </div>
-                        {% if move_user_form.user_to_move_email_address.errors %}
-                    </div>
-                    {% endif %}
+                    {%
+                      with
+                      question = move_user_form.user_to_move_email_address.label,
+                      hint = "Enter the email address of the existing user you wish to move to this supplier",
+                      name = move_user_form.user_to_move_email_address.name,
+                      value = move_user_form.user_to_move_email_address.data,
+                      error = move_user_form.user_to_move_email_address.errors[0]
+                    %}
+                      {% include "toolkit/forms/textbox.html" %}
+                    {% endwith %}
+
                     <button class="button-save">Move user to this supplier</button>
                 </div>
             </div>
