@@ -6,7 +6,6 @@ import pytest
 
 from ...helpers import LoggedInApplicationTest
 from io import BytesIO
-from dmutils import s3
 
 
 @mock.patch('app.main.views.communications.data_api_client.get_framework', return_value={"frameworks": []})
@@ -32,8 +31,6 @@ class TestCommunicationsView(LoggedInApplicationTest):
 
     @pytest.mark.parametrize("allowed_role", ["admin", "admin-ccs-category"])
     def test_post_documents_for_framework(self, data_api_client, allowed_role):
-        # check we are mocking s3 as we must not actually post there!
-        assert isinstance(s3.S3, mock.Mock)
 
         self.user_role = allowed_role
 
@@ -54,8 +51,6 @@ class TestCommunicationsView(LoggedInApplicationTest):
         assert response.status_code == 302
 
     def test_ccs_sourcing_can_not_post_documents_for_framework(self, data_api_client):
-        # check we are mocking s3 as we must not actually post there!
-        assert isinstance(s3.S3, mock.Mock)
 
         self.user_role = "admin-ccs-sourcing"
 
@@ -84,7 +79,6 @@ class TestCommunicationsView(LoggedInApplicationTest):
         assert flash_messages.get('not_pdf') == 'clarification'
 
     def test_communications_file_saves_with_correct_path(self, data_api_client):
-        assert isinstance(s3.S3, mock.Mock)
 
         response = self.client.post(
             "/admin/communications/{}".format(self.framework_slug),
@@ -95,13 +89,12 @@ class TestCommunicationsView(LoggedInApplicationTest):
 
         assert response.status_code == 302
         self.s3.return_value.save.assert_called_once_with(
-            'g-cloud-8/communications/updates/communications/test-comm.pdf',
-            mock.ANY,
+            '{}/communications/updates/communications/test-comm.pdf'.format(self.framework_slug),
+            mock.ANY,  # werkzeug.datastructures.FileStorage object we are saving to s3
             download_filename='test-comm.pdf'
         )
 
     def test_clarification_file_saves_with_correct_path(self, data_api_client):
-        assert isinstance(s3.S3, mock.Mock)
 
         response = self.client.post(
             "/admin/communications/{}".format(self.framework_slug),
@@ -112,7 +105,7 @@ class TestCommunicationsView(LoggedInApplicationTest):
 
         assert response.status_code == 302
         self.s3.return_value.save.assert_called_once_with(
-            'g-cloud-8/communications/updates/clarifications/test-comm.pdf',
-            mock.ANY,
+            '{}/communications/updates/clarifications/test-comm.pdf'.format(self.framework_slug),
+            mock.ANY,  # werkzeug.datastructures.FileStorage object we are saving to s3
             download_filename='test-comm.pdf'
         )
