@@ -31,28 +31,19 @@
   %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
+
   {% if errors %}
-    <div class="validation-masthead">
-      <h2 class="validation-masthead-heading">
-        There were problems with your response to the following questions:
-      </h2>
-      <ul>
-        {% for question in section.questions %}
-          {% if question.id in errors %}
-            <li>
-              <a class="validation-masthead-link" href="#{{ question.id }}">{{ question.question }}</a>
-            </li>
-          {% endif %}
-        {% endfor %}
-      </ul>
-    </div>
+    {% with errors = errors.values() %}
+      {% include 'toolkit/forms/validation.html' %}
+    {% endwith %}
   {% endif %}
+
   <form method="post" enctype="multipart/form-data">
     <div class="grid-row">
       <div class="column-two-thirds">
         <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
         {% for question in section.questions %}
-          {% if errors and errors[question.id] %}
+          {% if errors and errors[question.id] or question.type == 'multiquestion' %}
             {{ forms[question.type](question, service_data, errors) }}
           {% else %}
             {{ forms[question.type](question, service_data, {}) }}
