@@ -574,6 +574,56 @@ class TestServiceUpdate(LoggedInApplicationTest):
         assert response.status_code == 302
 
     @mock.patch('app.main.views.services.data_api_client')
+    def test_service_update_with_multiquestion_validation_error(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'id': 1,
+            'supplierId': 2,
+            'frameworkSlug': 'g-cloud-9',
+            'lot': 'cloud-hosting',
+            'serviceFeatures': [
+                "bar",
+            ],
+            'serviceBenefits': [
+                "foo",
+            ],
+        }}
+        mock_api_error = mock.Mock(status_code=400)
+        mock_api_error.json.return_value = {
+            "error": {"serviceBenefits": "under_10_words", "serviceFeatures": "under_10_words"}
+        }
+        data_api_client.update_service.side_effect = HTTPError(mock_api_error)
+
+        response = self.client.post(
+            '/admin/services/1/edit/service-features-and-benefits',
+            data={
+                'serviceFeatures': 'one 2 three 4 five 6 seven 8 nine 10 eleven',
+                'serviceBenefits': '11 10 9 8 7 6 5 4 3 2 1',
+            },
+            follow_redirects=True
+        )
+        assert data_api_client.update_service.call_args_list == [(
+            (
+                '1',
+                {
+                    'serviceFeatures': ['one 2 three 4 five 6 seven 8 nine 10 eleven'],
+                    'serviceBenefits': ['11 10 9 8 7 6 5 4 3 2 1'],
+                },
+                'test@example.com',
+            ),
+            {},
+        )]
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        validation_banner = document.xpath("//div[@class='validation-masthead']//text()[normalize-space(.) != '']")
+        validation_banner_text = ' '.join([elem.strip() for elem in validation_banner])
+        validation_errors = [error.strip() for error in document.xpath("//span[@class='validation-message']//text()")]
+        assert response.status_code == 400
+        assert validation_banner_text == "There was a problem with your answer to: Service benefits Service features"
+        assert "You can’t write more than 10 words for each feature." in validation_errors
+        assert "You can’t write more than 10 words for each benefit." in validation_errors
+
+    @mock.patch('app.main.views.services.data_api_client')
     def test_service_update_with_assurance_questions(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 567,
