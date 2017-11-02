@@ -601,6 +601,8 @@ class TestServiceUpdate(LoggedInApplicationTest):
             },
             follow_redirects=True
         )
+
+        assert response.status_code == 400
         assert data_api_client.update_service.call_args_list == [(
             (
                 '1',
