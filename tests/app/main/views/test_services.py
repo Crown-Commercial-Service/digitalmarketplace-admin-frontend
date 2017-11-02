@@ -574,6 +574,68 @@ class TestServiceUpdate(LoggedInApplicationTest):
         assert response.status_code == 302
 
     @mock.patch('app.main.views.services.data_api_client')
+    def test_service_update_with_multiquestion_validation_error(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'id': 1,
+            'supplierId': 2,
+            'frameworkSlug': 'g-cloud-9',
+            'lot': 'cloud-hosting',
+            'serviceFeatures': [
+                "bar",
+            ],
+            'serviceBenefits': [
+                "foo",
+            ],
+        }}
+        mock_api_error = mock.Mock(status_code=400)
+        mock_api_error.json.return_value = {
+            "error": {"serviceBenefits": "under_10_words", "serviceFeatures": "under_10_words"}
+        }
+        data_api_client.update_service.side_effect = HTTPError(mock_api_error)
+
+        response = self.client.post(
+            '/admin/services/1/edit/service-features-and-benefits',
+            data={
+                'serviceFeatures': 'one 2 three 4 five 6 seven 8 nine 10 eleven',
+                'serviceBenefits': '11 10 9 8 7 6 5 4 3 2 1',
+            },
+            follow_redirects=True
+        )
+
+        assert response.status_code == 400
+        assert data_api_client.update_service.call_args_list == [(
+            (
+                '1',
+                {
+                    'serviceFeatures': ['one 2 three 4 five 6 seven 8 nine 10 eleven'],
+                    'serviceBenefits': ['11 10 9 8 7 6 5 4 3 2 1'],
+                },
+                'test@example.com',
+            ),
+            {},
+        )]
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        validation_banner_h1 = document.xpath("//h1[@class='validation-masthead-heading']//text()")[0].strip()
+        assert validation_banner_h1 == "There was a problem with your answer to:"
+
+        validation_banner_links = [
+            (anchor.text_content(), anchor.get('href')) for anchor in
+            document.xpath("//a[@class='validation-masthead-link']")
+        ]
+        assert validation_banner_links == [
+            ("Service benefits", "#serviceBenefits"),
+            ("Service features", "#serviceFeatures")
+        ]
+
+        validation_errors = [error.strip() for error in document.xpath("//span[@class='validation-message']//text()")]
+        assert validation_errors == [
+            "You can’t write more than 10 words for each feature.",
+            "You can’t write more than 10 words for each benefit."
+        ]
+
+    @mock.patch('app.main.views.services.data_api_client')
     def test_service_update_with_assurance_questions(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 567,
