@@ -3,7 +3,7 @@
 
 {% extends "_base_page.html" %}
 {% block page_title %}
-  {{ service_data['serviceName'] }} – Digital Marketplace admin
+  {{ service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName'] }} – Digital Marketplace admin
 {% endblock %}
 
 {% block breadcrumb %}
@@ -53,7 +53,7 @@
         {%
           with
           context = service_data['supplierName'],
-          heading = service_data['serviceName'],
+          heading = service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName'],
           smaller = True
         %}
           {% include "toolkit/page-heading.html" %}
