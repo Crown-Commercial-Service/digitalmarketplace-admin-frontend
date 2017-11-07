@@ -96,14 +96,19 @@ def update_service_status(service_id):
 
 
 @main.route('/services/<service_id>/edit/<section_id>', methods=['GET'])
+@main.route('/services/<service_id>/edit/<section_id>/<question_slug>', methods=['GET'])
 @role_required('admin', 'admin-ccs-category')
-def edit(service_id, section_id):
+def edit(service_id, section_id, question_slug=None):
     service_data = data_api_client.get_service(service_id)['services']
 
     content = content_loader.get_manifest(service_data['frameworkSlug'], 'edit_service_as_admin').filter(service_data)
 
     section = content.get_section(section_id)
-    if section is None:
+
+    if question_slug is not None:
+        # Overwrite section with single question section for 'question per page' editing.
+        section = section.get_question_as_section(question_slug)
+    if section is None or not section.editable:
         abort(404)
     # handle sections with assurance fields
     service_data = section.unformat_data(service_data)
@@ -208,8 +213,9 @@ def service_updates(service_id):
 
 
 @main.route('/services/<service_id>/edit/<section_id>', methods=['POST'])
+@main.route('/services/<service_id>/edit/<section_id>/<question_slug>', methods=['POST'])
 @role_required('admin', 'admin-ccs-category')
-def update(service_id, section_id):
+def update(service_id, section_id, question_slug=None):
     service = data_api_client.get_service(service_id)
     if service is None:
         abort(404)
@@ -217,6 +223,9 @@ def update(service_id, section_id):
 
     content = content_loader.get_manifest(service['frameworkSlug'], 'edit_service_as_admin').filter(service)
     section = content.get_section(section_id)
+    if question_slug is not None:
+        # Overwrite section with single question section for 'question per page' editing.
+        section = section.get_question_as_section(question_slug)
     if section is None or not section.editable:
         abort(404)
 
