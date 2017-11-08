@@ -427,7 +427,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
         data_api_client.update_service.assert_called_with('1', {
             'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/documents/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
             'sfiaRateDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/documents/2/1-sfia-rate-card-2015-01-01-1200.pdf',  # noqa
-        }, 'test@example.com', by_admin=True)
+        }, 'test@example.com', user_role='admin')
 
         assert response.status_code == 302
 
@@ -515,7 +515,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
                         "assurance": posted_assurances["dataProtectionBetweenServices--assurance"],
                     },
                 },
-                'test@example.com', by_admin=True)
+                'test@example.com', user_role='admin')
         ]
         for key, values in posted_values.items():
             assert sorted(document.xpath("//form//input[@type='checkbox'][@name=$n][@checked]/@value", n=key)) == \
@@ -562,7 +562,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
                     'serviceFeatures': ['baz'],
                     'serviceBenefits': ['foo'],
                 },
-                'test@example.com', by_admin=True)
+                'test@example.com', user_role='admin')
         ]
         assert response.status_code == 302
 
@@ -602,7 +602,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
                 '1',
                 {'serviceFeatures': ['one 2 three 4 five 6 seven 8 nine 10 eleven'],
                  'serviceBenefits': ['11 10 9 8 7 6 5 4 3 2 1']},
-                'test@example.com', by_admin=True)
+                'test@example.com', user_role='admin')
         ]
 
         document = html.fromstring(response.get_data(as_text=True))
@@ -663,7 +663,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
                         "assurance": "Service provider assertion",
                     },
                 },
-                'test@example.com', by_admin=True)
+                'test@example.com', user_role='admin')
         ]
         assert response.status_code == 302
 

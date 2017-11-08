@@ -240,7 +240,7 @@ def update(service_id, section_id):
                 service_id,
                 posted_data,
                 current_user.email_address,
-                by_admin=True,
+                user_role='admin',
             )
         except HTTPError as e:
             errors = section.get_error_messages(e.message)
