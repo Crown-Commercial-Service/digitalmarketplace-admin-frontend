@@ -260,7 +260,7 @@ class TestServiceView(LoggedInApplicationTest):
 
 class TestServiceEdit(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
-    def test_edit_dos1_service_title(self, data_api_client):
+    def test_edit_dos_service_title(self, data_api_client):
         service = {
             "id": 123,
             "frameworkSlug": "digital-outcomes-and-specialists",
