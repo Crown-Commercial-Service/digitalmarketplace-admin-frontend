@@ -596,7 +596,6 @@ class TestServiceUpdate(LoggedInApplicationTest):
         )
 
         assert response.status_code == 400
-        print("EXPECTED: {}".format(data_api_client.update_service.call_args_list))
         assert data_api_client.update_service.call_args_list == [
             mock.call(
                 '1',
