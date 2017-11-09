@@ -427,7 +427,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
         data_api_client.update_service.assert_called_with('1', {
             'pricingDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/documents/2/1-pricing-document-2015-01-01-1200.pdf',  # noqa
             'sfiaRateDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/documents/2/1-sfia-rate-card-2015-01-01-1200.pdf',  # noqa
-        }, 'test@example.com')
+        }, 'test@example.com', user_role='admin')
 
         assert response.status_code == 302
 
@@ -500,28 +500,23 @@ class TestServiceUpdate(LoggedInApplicationTest):
         assert response.status_code == 400
         data_api_client.get_service.assert_called_with('7654')
         assert data_api_client.update_service.call_args_list == [
-            (
-                (
-                    "7654",
-                    {
-                        "dataProtectionBetweenUserAndService": {
-                            "value": posted_values["dataProtectionBetweenUserAndService"],
-                            "assurance": posted_assurances["dataProtectionBetweenUserAndService--assurance"],
-                        },
-                        "dataProtectionWithinService": {
-                            "assurance": posted_assurances["dataProtectionWithinService--assurance"],
-                        },
-                        "dataProtectionBetweenServices": {
-                            "value": posted_values["dataProtectionBetweenServices"],
-                            "assurance": posted_assurances["dataProtectionBetweenServices--assurance"],
-                        },
+            mock.call(
+                '7654',
+                {
+                    "dataProtectionBetweenUserAndService": {
+                        "value": posted_values["dataProtectionBetweenUserAndService"],
+                        "assurance": posted_assurances["dataProtectionBetweenUserAndService--assurance"],
                     },
-                    "test@example.com",
-                ),
-                {},
-            )
+                    "dataProtectionWithinService": {
+                        "assurance": posted_assurances["dataProtectionWithinService--assurance"],
+                    },
+                    "dataProtectionBetweenServices": {
+                        "value": posted_values["dataProtectionBetweenServices"],
+                        "assurance": posted_assurances["dataProtectionBetweenServices--assurance"],
+                    },
+                },
+                'test@example.com', user_role='admin')
         ]
-
         for key, values in posted_values.items():
             assert sorted(document.xpath("//form//input[@type='checkbox'][@name=$n][@checked]/@value", n=key)) == \
                 sorted(values)
@@ -560,17 +555,15 @@ class TestServiceUpdate(LoggedInApplicationTest):
                 'serviceBenefits': 'foo',
             }
         )
-        assert data_api_client.update_service.call_args_list == [(
-            (
+        assert data_api_client.update_service.call_args_list == [
+            mock.call(
                 '1',
                 {
                     'serviceFeatures': ['baz'],
                     'serviceBenefits': ['foo'],
                 },
-                'test@example.com',
-            ),
-            {},
-        )]
+                'test@example.com', user_role='admin')
+        ]
         assert response.status_code == 302
 
     @mock.patch('app.main.views.services.data_api_client')
@@ -603,17 +596,13 @@ class TestServiceUpdate(LoggedInApplicationTest):
         )
 
         assert response.status_code == 400
-        assert data_api_client.update_service.call_args_list == [(
-            (
+        assert data_api_client.update_service.call_args_list == [
+            mock.call(
                 '1',
-                {
-                    'serviceFeatures': ['one 2 three 4 five 6 seven 8 nine 10 eleven'],
-                    'serviceBenefits': ['11 10 9 8 7 6 5 4 3 2 1'],
-                },
-                'test@example.com',
-            ),
-            {},
-        )]
+                {'serviceFeatures': ['one 2 three 4 five 6 seven 8 nine 10 eleven'],
+                 'serviceBenefits': ['11 10 9 8 7 6 5 4 3 2 1']},
+                'test@example.com', user_role='admin')
+        ]
 
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -660,8 +649,8 @@ class TestServiceUpdate(LoggedInApplicationTest):
                 'interconnectionMethods--assurance': "Service provider assertion",
             },
         )
-        assert data_api_client.update_service.call_args_list == [(
-            (
+        assert data_api_client.update_service.call_args_list == [
+            mock.call(
                 '567',
                 {
                     'onboardingGuidance': {
@@ -673,10 +662,8 @@ class TestServiceUpdate(LoggedInApplicationTest):
                         "assurance": "Service provider assertion",
                     },
                 },
-                'test@example.com',
-            ),
-            {},
-        )]
+                'test@example.com', user_role='admin')
+        ]
         assert response.status_code == 302
 
     @mock.patch('app.main.views.services.data_api_client')

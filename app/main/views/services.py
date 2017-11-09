@@ -239,7 +239,9 @@ def update(service_id, section_id):
             data_api_client.update_service(
                 service_id,
                 posted_data,
-                current_user.email_address)
+                current_user.email_address,
+                user_role='admin',
+            )
         except HTTPError as e:
             errors = section.get_error_messages(e.message)
 
