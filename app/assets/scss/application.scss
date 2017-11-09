@@ -95,15 +95,12 @@ $path: "/admin/static/images/";
   margin-bottom: 40px;
 }
 
-.summary-item-field-first {
-  width: 15%;
-}
-
-.summary-item-field {
-  width: 15%;
+.summary-item-field-heading, .summary-item-field {
   padding-left: 10px;
 }
 
-.summary-item-field-heading {
-  padding-left: 10px;
+.six-columns-fixed-width-table {
+  .summary-item-field-first, .summary-item-field {
+    width: 16.666%;
+  }
 }
