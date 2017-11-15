@@ -1,4 +1,6 @@
 from collections import OrderedDict
+from itertools import groupby
+from operator import itemgetter
 
 from flask import render_template, request, redirect, url_for, abort, current_app
 from flask_login import current_user, flash
@@ -498,12 +500,19 @@ def find_supplier_services():
     if not request.args.get('supplier_id'):
         abort(404)
 
+    frameworks = data_api_client.find_frameworks()
     supplier = data_api_client.get_supplier(request.args['supplier_id'])
     services = data_api_client.find_services(request.args.get("supplier_id"))
+    frameworks_services = {
+        framework_slug: list(framework_services)
+        for framework_slug, framework_services in
+        groupby(sorted(services['services'], key=itemgetter('frameworkSlug')), key=itemgetter('frameworkSlug'))
+    }
 
     return render_template(
         "view_supplier_services.html",
-        services=services["services"],
+        frameworks=frameworks['frameworks'],
+        frameworks_services=frameworks_services,
         supplier=supplier["suppliers"]
     )
 
