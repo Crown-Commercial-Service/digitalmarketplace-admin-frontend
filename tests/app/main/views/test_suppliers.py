@@ -284,6 +284,9 @@ class TestSupplierServicesView(LoggedInApplicationTest):
     def test_should_show_service_details_on_page(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_services.return_value = self.load_example_listing("services_response")
+        data_api_client.find_frameworks.return_value = {
+            'frameworks': [self.load_example_listing("framework_response")['frameworks']]
+        }
 
         response = self.client.get('/admin/suppliers/services?supplier_id=1000')
 
@@ -291,7 +294,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert "Contract Management" in response.get_data(as_text=True)
         assert '<a href="/g-cloud/services/5687123785023488">' in response.get_data(as_text=True)
         assert "5687123785023488" in response.get_data(as_text=True)
-        assert "G-Cloud 6" in response.get_data(as_text=True)
+        assert "G-Cloud 8" in response.get_data(as_text=True)
         assert "Software as a Service" in response.get_data(as_text=True)
         assert "Public" in response.get_data(as_text=True)
         assert '<a href="/admin/services/5687123785023488">' in response.get_data(as_text=True)
@@ -300,10 +303,13 @@ class TestSupplierServicesView(LoggedInApplicationTest):
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_correct_fields_for_disabled_service(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_frameworks.return_value = {
+            'frameworks': [self.load_example_listing("framework_response")['frameworks']]
+        }
 
-        services = self.load_example_listing("services_response")
-        services["services"][0]["status"] = "disabled"
-        data_api_client.find_services.return_value = services
+        service = self.load_example_listing("services_response")["services"][0]
+        service["status"] = "disabled"
+        data_api_client.find_services.return_value = {'services': [service]}
 
         response = self.client.get('/admin/suppliers/services?supplier_id=1000')
 
@@ -314,16 +320,53 @@ class TestSupplierServicesView(LoggedInApplicationTest):
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_correct_fields_for_enabled_service(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_frameworks.return_value = {
+            'frameworks': [self.load_example_listing("framework_response")['frameworks']]
+        }
 
-        services = self.load_example_listing("services_response")
-        services["services"][0]["status"] = "enabled"
-        data_api_client.find_services.return_value = services
+        service = self.load_example_listing("services_response")["services"][0]
+        service["status"] = "enabled"
+        data_api_client.find_services.return_value = {'services': [service]}
 
         response = self.client.get('/admin/suppliers/services?supplier_id=1000')
 
         assert response.status_code == 200
         assert "Private" in response.get_data(as_text=True)
         assert "Edit" in response.get_data(as_text=True)
+
+    @mock.patch('app.main.views.suppliers.data_api_client')
+    def test_should_show_separate_tables_for_frameworks_if_supplier_has_service_on_framework(self, data_api_client):
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+
+        service_1 = self.load_example_listing("services_response")['services'][0]
+        service_2 = service_1.copy()
+        service_3 = service_1.copy()
+        service_2['frameworkSlug'] = 'digital-outcomes-and-specialists-2'
+        service_3['frameworkSlug'] = 'g-cloud-11'
+        data_api_client.find_services.return_value = {'services': [service_1, service_2, service_3]}
+
+        framework_1 = self.load_example_listing("framework_response")['frameworks']
+        framework_2 = framework_1.copy()
+        framework_3 = framework_1.copy()
+        framework_2['slug'] = 'digital-outcomes-and-specialists-2'
+        framework_2['id'] = 5
+        framework_3['slug'] = 'g-cloud-11'
+        framework_3['id'] = 22
+        data_api_client.find_frameworks.return_value = {'frameworks': [framework_1, framework_2, framework_3]}
+
+        response = self.client.get('/admin/suppliers/services?supplier_id=1000')
+
+        assert response.status_code == 200
+
+        response_data = response.get_data(as_text=True)
+        assert 'g-cloud-11_services' in response_data
+        assert 'g-cloud-8_services' in response_data
+        assert 'digital-outcomes-and-specialists-2_services' in response_data
+
+        gcloud8_table_index = response_data.find('g-cloud-8_services')
+        dos_table_index = response_data.find('digital-outcomes-and-specialists-2_services')
+        gcloud11_table_index = response_data.find('g-cloud-11_services')
+        assert gcloud11_table_index < gcloud8_table_index < dos_table_index
 
 
 class TestSupplierInviteUserView(LoggedInApplicationTest):

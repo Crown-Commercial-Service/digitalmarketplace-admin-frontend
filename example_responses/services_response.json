@@ -71,8 +71,9 @@
         "assurance": "Service provider assertion",
         "value": true
       },
-      "frameworkName": "G-Cloud 6",
+      "frameworkName": "G-Cloud 8",
       "frameworkFramework": "g-cloud",
+      "frameworkSlug": "g-cloud-8",
       "freeOption": false,
       "governanceFramework": {
         "assurance": "Independent validation of assertion",
