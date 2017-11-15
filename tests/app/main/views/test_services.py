@@ -1177,7 +1177,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                             # fae_page_len (find_audit_events implicit page_len)
                             5,
                             # exp_summ_text (expected summary text)
-                            "1 unapproved edit by someone@example.com on Wednesday 3 February 2010.",
+                            "someone@example.com made 1 edit on Wednesday 3 February 2010.",
                         ),
                     ),
                 ),
@@ -1233,22 +1233,19 @@ class TestServiceUpdates(LoggedInApplicationTest):
                         (
                             5,
                             (
-                                "3 unapproved edits by 2 users between Tuesday 3 February 2015 and Sunday 22 "
-                                "March 2015."
+                                "The last user to edit this page was florrie@example.com on Sunday 22 March 2015."
                             ),
                         ),
                         (
                             2,
                             (
-                                "3 unapproved edits by 2 users between Tuesday 3 February 2015 and Sunday 22 "
-                                "March 2015."
+                                "The last user to edit this page was florrie@example.com on Sunday 22 March 2015."
                             ),
                         ),
                         (
                             1,
                             (
-                                "Multiple unapproved edits between Tuesday 3 February 2015 and Sunday 22 March "
-                                "2015."
+                                "The last user to edit this page was florrie@example.com on Sunday 22 March 2015."
                             ),
                         ),
                     ),
@@ -1293,15 +1290,15 @@ class TestServiceUpdates(LoggedInApplicationTest):
                     (
                         (
                             5,
-                            "2 unapproved edits by marion@example.com on Saturday 30 June 2012.",
+                            "marion@example.com made 2 edits on Saturday 30 June 2012.",
                         ),
                         (
                             2,
-                            "2 unapproved edits by marion@example.com on Saturday 30 June 2012.",
+                            "marion@example.com made 2 edits on Saturday 30 June 2012.",
                         ),
                         (
                             1,
-                            "Multiple unapproved edits on Saturday 30 June 2012.",
+                            "marion@example.com made 2 edits on Saturday 30 June 2012.",
                         ),
                     ),
                 ),
@@ -1368,22 +1365,19 @@ class TestServiceUpdates(LoggedInApplicationTest):
                         (
                             5,
                             (
-                                "4 unapproved edits by 2 users between Saturday 12 November 2005 and Saturday 17 "
-                                "December 2005."
+                                "The last user to edit this page was private.carr@example.com on Saturday 17 December 2005."
                             ),
                         ),
                         (
                             3,
                             (
-                                "4 unapproved edits by 2 users between Saturday 12 November 2005 and Saturday 17 "
-                                "December 2005."
+                                "The last user to edit this page was private.carr@example.com on Saturday 17 December 2005."
                             ),
                         ),
                         (
                             2,
                             (
-                                "Multiple unapproved edits between Saturday 12 November 2005 and Saturday 17 "
-                                "December 2005."
+                                "The last user to edit this page was private.carr@example.com on Saturday 17 December 2005."
                             ),
                         ),
                     ),
