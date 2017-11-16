@@ -1351,11 +1351,12 @@ class TestServiceUpdates(LoggedInApplicationTest):
         None,
         ((5,"0 unapproved edits.",),)
     )
+
     @pytest.mark.parametrize(
-        "find_audit_events_api_response,old_version_of_service,service_status,expected_oldest_edit_info,find_audit_events_page_length,expected_latest_edit_info",
+        "find_audit_events_api_response,old_version_of_service,service_status,expected_oldest_edit_info,find_audit_events_page_length",
         chain.from_iterable(
             (
-                (fae_r_s, avail_a_s, svc_s, exp_ov_c_t, fae_p_l, exp_s_t,)
+                (fae_r_s, avail_a_s, svc_s, exp_ov_c_t, fae_p_l,)
                 for fae_p_l, exp_s_t in variant_params
             )
             for fae_r_s, avail_a_s, svc_s, exp_ov_c_t, variant_params in (
@@ -1373,7 +1374,6 @@ class TestServiceUpdates(LoggedInApplicationTest):
         service_status,
         expected_oldest_edit_info,
         find_audit_events_page_length,
-        expected_latest_edit_info,
         resultant_diff,
     ):
         data_api_client.get_service.side_effect = partial(self._mock_get_service_side_effect, service_status)
@@ -1409,8 +1409,6 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         assert doc.xpath("normalize-space(string(//header//*[@class='context']))") == "Barrington's"
         assert doc.xpath("normalize-space(string(//header//h1))") == "Lemonflavoured soap"
-
-        assert doc.xpath("//p[normalize-space(string())=$expected_text]", expected_text=expected_latest_edit_info)
 
         assert len(doc.xpath("//*[@class='dummy-diff-table']")) == (1 if find_audit_events_api_response and resultant_diff else 0)
         assert len(doc.xpath(
@@ -1472,3 +1470,45 @@ class TestServiceUpdates(LoggedInApplicationTest):
             mailto="mailto:sir.jonah.barrington@example.com",
             email="sir.jonah.barrington@example.com",
         )
+
+    @pytest.mark.parametrize(
+        "find_audit_events_api_response,old_version_of_service,service_status,find_audit_events_page_length,expected_latest_edit_info",
+        chain.from_iterable(
+            (
+                (fae_r_s, avail_a_s, svc_s, fae_p_l, exp_s_t,)
+                for fae_p_l, exp_s_t in variant_params
+            )
+            for fae_r_s, avail_a_s, svc_s, exp_ov_c_t, variant_params in (
+                    SCENARIO_1, SCENARIO_2, SCENARIO_3, SCENARIO_4, SCENARIO_5,
+            )
+        )
+    )
+    def test_service_edit_page_displays_last_user_to_edit_a_service(
+        self,
+        data_api_client,
+        html_diff_tables_from_sections_iter,
+        find_audit_events_api_response,
+        old_version_of_service,
+        service_status,
+        find_audit_events_page_length,
+        expected_latest_edit_info,
+    ):
+        data_api_client.get_service.side_effect = partial(self._mock_get_service_side_effect, service_status)
+        data_api_client.find_audit_events.side_effect = partial(
+            self._mock_find_audit_events_side_effect,
+            find_audit_events_api_response,
+            find_audit_events_page_length,
+        )
+        data_api_client.get_archived_service.side_effect = partial(
+            self._mock_get_archived_service_side_effect,
+            old_version_of_service,
+        )
+        data_api_client.get_supplier.side_effect = self._mock_get_supplier_side_effect
+
+        self.user_role = "admin-ccs-category"
+        response = self.client.get('/admin/services/151/updates')
+
+        assert response.status_code == 200
+        doc = html.fromstring(response.get_data(as_text=True))
+
+        assert doc.xpath("//p[normalize-space(string())=$expected_text]", expected_text=expected_latest_edit_info)
