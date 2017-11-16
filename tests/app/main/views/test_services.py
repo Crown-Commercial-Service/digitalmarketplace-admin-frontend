@@ -1156,26 +1156,13 @@ class TestServiceUpdates(LoggedInApplicationTest):
     }
     EXPECTED_OLDEST_EDIT_INFO_1 = "Changed on Wednesday 3 February 2010 at 10:11am"
     EXPECTED_LATEST_EDIT_INFO_1 = "someone@example.com made 1 edit on Wednesday 3 February 2010."
-    SCENARIO_1 = (
-        # find_audit_events_api_response (find_audit_events response source data)
+
+    DISABLED_SERVICE_ONE_EDIT = (
         FIND_AUDIT_EVENTS_API_RESPONSE_1,
-        # old_version_of_service (available archived services)
         OLD_VERSION_OF_SERVICE_1,
-        # service_status (service status)
         "disabled",
-        # expected_oldest_edit_info (expected oldversion title context text)
         EXPECTED_OLDEST_EDIT_INFO_1,
-        # sets of (find_audit_events_page_length, expected_latest_edit_info) combinations to be flattened and joined against the above
-        # parameters^. this lets us reuse a long-winded description of the "universe" against many different
-        # implicit page_len values to test it with
-        (
-            (
-                # find_audit_events_page_length (find_audit_events implicit page_len)
-                5,
-                # expected_latest_edit_info (expected summary text)
-                EXPECTED_LATEST_EDIT_INFO_1,
-            ),
-        ),
+        ((5, EXPECTED_LATEST_EDIT_INFO_1,),),
     )
 
     FIND_AUDIT_EVENTS_API_RESPONSE_2 = (
@@ -1225,7 +1212,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
     }
     EXPECTED_OLDEST_EDIT_INFO_2 = "Changed on Tuesday 3 February 2015 at 8:11pm"
     EXPECTED_LATEST_EDIT_INFO_2 = "The last user to edit this page was florrie@example.com on Sunday 22 March 2015."
-    SCENARIO_2 = (
+
+    PUBLISHED_SERVICE_MULTIPLE_EDITS = (
         FIND_AUDIT_EVENTS_API_RESPONSE_2,
         OLD_VERSION_OF_SERVICE_2,
         "published",
@@ -1269,12 +1257,13 @@ class TestServiceUpdates(LoggedInApplicationTest):
     }
     EXPECTED_OLDEST_EDIT_INFO_3 = "Changed on Saturday 30 June 2012 at 9:01pm"
     EXPECTED_LATEST_EDIT_INFO_3 = "marion@example.com made 2 edits on Saturday 30 June 2012."
-    SCENARIO_3 = (
+
+    ENABLED_SERVICE_MULTIPLE_EDITS_BY_SAME_USER = (
         FIND_AUDIT_EVENTS_API_RESPONSE_3,
         OLD_VERSION_OF_SERVICE_3,
         "enabled",
         EXPECTED_OLDEST_EDIT_INFO_3,
-        ((5, EXPECTED_LATEST_EDIT_INFO_3),(2,EXPECTED_LATEST_EDIT_INFO_3),(1,EXPECTED_LATEST_EDIT_INFO_3))
+        ((5, EXPECTED_LATEST_EDIT_INFO_3), (2, EXPECTED_LATEST_EDIT_INFO_3), (1, EXPECTED_LATEST_EDIT_INFO_3))
     )
 
     FIND_AUDIT_EVENTS_API_RESPONSE_4 = (
@@ -1334,33 +1323,39 @@ class TestServiceUpdates(LoggedInApplicationTest):
         },
     }
     EXPECTED_OLDEST_EDIT_INFO_4 = "Changed on Saturday 12 November 2005 at 3:01pm"
-    EXPECTED_LATEST_EDIT_INFO_4 = "The last user to edit this page was private.carr@example.com on Saturday 17 December 2005."
+    EXPECTED_LATEST_EDIT_INFO_4 = "The last user to edit this page was private.carr@example.com " \
+        "on Saturday 17 December 2005."
 
-    SCENARIO_4 = (
+    ENABLED_SERVICE_WITH_MULTIPLE_USER_EDITS = (
         FIND_AUDIT_EVENTS_API_RESPONSE_4,
         OLD_VERSION_OF_SERVICE_4,
         "enabled",
         EXPECTED_OLDEST_EDIT_INFO_4,
-        ((5,EXPECTED_LATEST_EDIT_INFO_4),(3,EXPECTED_LATEST_EDIT_INFO_4),(2,EXPECTED_LATEST_EDIT_INFO_4))
+        ((5, EXPECTED_LATEST_EDIT_INFO_4), (3, EXPECTED_LATEST_EDIT_INFO_4), (2, EXPECTED_LATEST_EDIT_INFO_4))
     )
 
-    SCENARIO_5 = (
+    ENABLED_SERVICE_WITH_NO_EDITS = (
         (),
         {},
         "enabled",
         None,
-        ((5,"0 unapproved edits.",),)
+        ((5, "0 unapproved edits.",),)
     )
 
     @pytest.mark.parametrize(
-        "find_audit_events_api_response,old_version_of_service,service_status,expected_oldest_edit_info,find_audit_events_page_length",
+        "find_audit_events_api_response,old_version_of_service,service_status,"
+        "expected_oldest_edit_info,find_audit_events_page_length",
         chain.from_iterable(
             (
                 (fae_r_s, avail_a_s, svc_s, exp_ov_c_t, fae_p_l,)
                 for fae_p_l, exp_s_t in variant_params
             )
             for fae_r_s, avail_a_s, svc_s, exp_ov_c_t, variant_params in (
-                SCENARIO_1,SCENARIO_2,SCENARIO_3,SCENARIO_4,SCENARIO_5,
+                DISABLED_SERVICE_ONE_EDIT,
+                PUBLISHED_SERVICE_MULTIPLE_EDITS,
+                ENABLED_SERVICE_MULTIPLE_EDITS_BY_SAME_USER,
+                ENABLED_SERVICE_WITH_MULTIPLE_USER_EDITS,
+                ENABLED_SERVICE_WITH_NO_EDITS,
             )
         )
     )
@@ -1410,7 +1405,9 @@ class TestServiceUpdates(LoggedInApplicationTest):
         assert doc.xpath("normalize-space(string(//header//*[@class='context']))") == "Barrington's"
         assert doc.xpath("normalize-space(string(//header//h1))") == "Lemonflavoured soap"
 
-        assert len(doc.xpath("//*[@class='dummy-diff-table']")) == (1 if find_audit_events_api_response and resultant_diff else 0)
+        assert len(doc.xpath(
+            "//*[@class='dummy-diff-table']"
+        )) == (1 if find_audit_events_api_response and resultant_diff else 0)
         assert len(doc.xpath(
             # an element that has the textual contents $reverted_text but doesn't have any children that have *exactly*
             # that text (this stops us getting multiple results for a single appearance of the text, because it includes
@@ -1424,7 +1421,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
             assert html_diff_tables_from_sections_iter.call_args_list == [
                 ((), {
                     "sections": mock.ANY,  # test separately later?
-                    "revision_1": old_version_of_service[find_audit_events_api_response[0]["data"]["oldArchivedServiceId"]],
+                    "revision_1":
+                        old_version_of_service[find_audit_events_api_response[0]["data"]["oldArchivedServiceId"]],
                     "revision_2": self._mock_get_service_side_effect(service_status, "151")["services"],
                     "table_preamble_template": "diff_table/_table_preamble.html",
                 },),
@@ -1472,14 +1470,19 @@ class TestServiceUpdates(LoggedInApplicationTest):
         )
 
     @pytest.mark.parametrize(
-        "find_audit_events_api_response,old_version_of_service,service_status,find_audit_events_page_length,expected_latest_edit_info",
+        "find_audit_events_api_response,old_version_of_service,service_status,"
+        "find_audit_events_page_length,expected_latest_edit_info",
         chain.from_iterable(
             (
                 (fae_r_s, avail_a_s, svc_s, fae_p_l, exp_s_t,)
                 for fae_p_l, exp_s_t in variant_params
             )
             for fae_r_s, avail_a_s, svc_s, exp_ov_c_t, variant_params in (
-                    SCENARIO_1, SCENARIO_2, SCENARIO_3, SCENARIO_4, SCENARIO_5,
+                DISABLED_SERVICE_ONE_EDIT,
+                PUBLISHED_SERVICE_MULTIPLE_EDITS,
+                ENABLED_SERVICE_MULTIPLE_EDITS_BY_SAME_USER,
+                ENABLED_SERVICE_WITH_MULTIPLE_USER_EDITS,
+                ENABLED_SERVICE_WITH_NO_EDITS,
             )
         )
     )
