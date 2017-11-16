@@ -3,7 +3,7 @@
 
 {% extends "_base_page.html" %}
 {% block page_title %}
-  {{ service_data['serviceName'] }} – Digital Marketplace admin
+  {{ service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName'] }} – Digital Marketplace admin
 {% endblock %}
 
 {% block breadcrumb %}
@@ -53,15 +53,17 @@
         {%
           with
           context = service_data['supplierName'],
-          heading = service_data['serviceName'],
+          heading = service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName'],
           smaller = True
         %}
           {% include "toolkit/page-heading.html" %}
         {% endwith %}
       </div>
-      <div class="service-view">
-        <a href="/g-cloud/services/{{ service_id }}">View service</a>
-      </div>
+      {% if service_data['frameworkFramework'] == 'g-cloud' %}
+        <div class="service-view">
+            <a href="/{{ service_data['frameworkFramework'] }}/services/{{ service_id }}">View service</a>
+        </div>
+      {% endif %}
     </div>
 
     {% for section in sections %}
@@ -82,6 +84,10 @@
         {% call summary.row() %}
           {{ summary.field_name(question.label) }}
           {{ summary[question.type](question.value, question.assurance) }}
+          {% if section.edit_questions %}
+            {{ summary.edit_link('Add' if question.is_empty else 'Edit', url_for('.edit', service_id=service_id, section_id=section.id, question_slug=question.slug)) }}
+          {% endif %}
+
         {% endcall %}
       {% endcall %}
     {% endfor %}

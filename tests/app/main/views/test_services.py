@@ -36,6 +36,7 @@ class TestServiceView(LoggedInApplicationTest):
     def test_service_view_no_features_or_benefits_status_disabled(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
+            'serviceName': 'test',
             'lot': 'iaas',
             'id': "314159265",
             "status": "disabled",
@@ -62,6 +63,7 @@ class TestServiceView(LoggedInApplicationTest):
     def test_service_view_no_features_or_benefits_status_enabled(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-7',
+            'serviceName': 'test',
             'lot': 'iaas',
             'id': "1412",
             "status": "enabled",
@@ -166,6 +168,7 @@ class TestServiceView(LoggedInApplicationTest):
         self.user_role = "admin-ccs-category"
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-7',
+            'serviceName': 'test',
             'id': "271828",
             "status": "published",
         }}
@@ -219,6 +222,7 @@ class TestServiceView(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'SCS',
             'frameworkSlug': 'g-cloud-8',
+            'serviceName': 'test',
             'id': "1",
         }}
         response = self.client.get('/admin/services/1')
@@ -227,6 +231,7 @@ class TestServiceView(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'SaaS',
             'frameworkSlug': 'g-cloud-8',
+            'serviceName': 'test',
             'id': "1",
         }}
         response = self.client.get('/admin/services/1')
@@ -235,6 +240,7 @@ class TestServiceView(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'SCS',
             'frameworkSlug': 'g-cloud-8',
+            'serviceName': 'test',
             'id': "1",
         }}
         response = self.client.get('/admin/services/1')
@@ -244,6 +250,7 @@ class TestServiceView(LoggedInApplicationTest):
     def test_service_status_update_widgets_not_visible_when_not_permitted(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'paas',
+            'serviceName': 'test',
             'frameworkSlug': 'g-cloud-8',
             'id': "1",
         }}
@@ -274,6 +281,82 @@ class TestServiceEdit(LoggedInApplicationTest):
             "//nav//a[@href='/admin/services/123'][normalize-space(string())=$t]",
             t=service["serviceName"],
         )
+
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_no_link_to_edit_dos2_service_essentials(self, data_api_client):
+        service = {
+            "id": 123,
+            "frameworkSlug": "digital-outcomes-and-specialists-2",
+            "serviceName": "Test",
+            "lot": "digital-outcomes",
+        }
+        data_api_client.get_service.return_value = {'services': service}
+
+        response = self.client.get('/admin/services/123')
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        all_links_on_page = [i.values()[0] for i in document.xpath('(//body//a)')]
+        assert '/admin/services/123/edit/service-essentials' not in all_links_on_page
+
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_add_link_for_empty_multiquestion(self, data_api_client):
+        service = {
+            "id": 123,
+            "frameworkSlug": "digital-outcomes-and-specialists-2",
+            "serviceName": "Test",
+            "lot": "digital-outcomes",
+            "performanceAnalysisAndData": '',
+        }
+
+        data_api_client.get_service.return_value = {'services': service}
+
+        response = self.client.get('/admin/services/123')
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        performance_analysis_and_data_link = "/admin/services/123/edit/team-capabilities/performance-analysis-and-data"
+        performance_analysis_and_data_link_text = document.xpath(
+            '//a[contains(@href, "{}")]//text()'.format(performance_analysis_and_data_link)
+        )[0]
+        assert performance_analysis_and_data_link_text == 'Add'
+
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_edit_link_for_populated_multiquestion(self, data_api_client):
+        service = {
+            "id": 123,
+            "frameworkSlug": "digital-outcomes-and-specialists-2",
+            "serviceName": "Test",
+            "lot": "digital-outcomes",
+            "performanceAnalysisTypes": 'some value',
+        }
+
+        data_api_client.get_service.return_value = {'services': service}
+
+        response = self.client.get('/admin/services/123')
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        performance_analysis_and_data_link = "/admin/services/123/edit/team-capabilities/performance-analysis-and-data"
+        performance_analysis_and_data_link_text = document.xpath(
+            '//a[contains(@href, "{}")]//text()'.format(performance_analysis_and_data_link)
+        )[0]
+        assert performance_analysis_and_data_link_text == 'Edit'
+
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_multiquestion_get_route(self, data_api_client):
+        service = {
+            "id": 123,
+            "frameworkSlug": "digital-outcomes-and-specialists-2",
+            "serviceName": "Test",
+            "lot": "digital-specialists",
+            "performanceAnalysisAndData": '',
+        }
+
+        data_api_client.get_service.return_value = {'services': service}
+        response = self.client.get('/admin/services/123/edit/individual-specialist-roles/business-analyst')
+
+        assert response.status_code == 200
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_documents_get_response(self, data_api_client):
@@ -555,16 +638,39 @@ class TestServiceUpdate(LoggedInApplicationTest):
                 'serviceBenefits': 'foo',
             }
         )
+
         assert data_api_client.update_service.call_args_list == [
             mock.call(
                 '1',
-                {
-                    'serviceFeatures': ['baz'],
-                    'serviceBenefits': ['foo'],
-                },
-                'test@example.com', user_role='admin')
-        ]
+                {'serviceFeatures': ['baz'], 'serviceBenefits': ['foo']},
+                'test@example.com',
+                user_role='admin'
+            )]
         assert response.status_code == 302
+
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_service_update_multiquestion_post_route(self, data_api_client):
+        service = {
+            "id": 123,
+            "frameworkSlug": "digital-outcomes-and-specialists-2",
+            "serviceName": "Test",
+            "lot": "digital-specialists",
+            "businessAnalyst": '',
+        }
+        data_api_client.get_service.return_value = {'services': service}
+
+        data = {
+            'businessAnalystLocations': ["London", "Offsite", "Scotland", "Wales"],
+            'businessAnalystPriceMin': '100',
+            'businessAnalystPriceMax': '150',
+        }
+        response = self.client.post(
+            '/admin/services/123/edit/individual-specialist-roles/business-analyst',
+            data=data
+        )
+
+        assert response.status_code == 302
+        assert data_api_client.update_service.called_once_with('123', data, 'test@example.com')
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_update_with_multiquestion_validation_error(self, data_api_client):
@@ -707,13 +813,15 @@ class TestServiceUpdate(LoggedInApplicationTest):
         data_api_client.get_service.assert_called_with('234')
         assert response.status_code == 404
 
+    @pytest.mark.parametrize('framework_slug', ('g-cloud-7', 'digital-outcomes-and-specialists-2'))
     @mock.patch('app.main.views.services.data_api_client')
-    def test_service_update_with_no_section_returns_404(self, data_api_client):
+    def test_service_update_with_no_section_returns_404(self, data_api_client, framework_slug):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
+            'serviceName': 'test',
             'supplierId': 2,
             'lot': 'SCS',
-            'frameworkSlug': 'g-cloud-7',
+            'frameworkSlug': framework_slug,
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
             'sfiaRateDocumentURL': None
         }}
@@ -736,6 +844,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
     def test_cannot_make_removed_service_public(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
+            'serviceName': 'test',
             'frameworkSlug': 'g-cloud-8',
             'supplierId': 2,
             'status': 'disabled'
@@ -748,6 +857,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
     def test_can_make_private_service_public_or_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
+            'serviceName': 'test',
             'frameworkSlug': 'g-cloud-8',
             'supplierId': 2,
             'status': 'enabled'
@@ -760,6 +870,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
     def test_can_make_public_service_private_or_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
+            'serviceName': 'test',
             'frameworkSlug': 'g-cloud-8',
             'supplierId': 2,
             'status': 'published'
@@ -772,6 +883,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
     def test_status_update_to_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-7',
+            'serviceName': 'test',
         }}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'removed'})
@@ -785,6 +897,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
     def test_status_update_to_private(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
+            'serviceName': 'test',
         }}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'private'})
@@ -798,6 +911,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
     def test_status_update_to_published(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'digital-outcomes-and-specialists',
+            'serviceName': 'test',
         }}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'public'})
@@ -811,6 +925,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
     def test_bad_status_gives_error_message(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-7',
+            'serviceName': 'test',
         }}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'suspended'})
