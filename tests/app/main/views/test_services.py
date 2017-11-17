@@ -364,6 +364,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             "lot": "digital-outcomes",
         }
         data_api_client.get_service.return_value = {'services': service}
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
 
         response = self.client.get('/admin/services/123')
         assert response.status_code == 200
@@ -383,6 +384,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         }
 
         data_api_client.get_service.return_value = {'services': service}
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
 
         response = self.client.get('/admin/services/123')
         assert response.status_code == 200
@@ -405,6 +407,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         }
 
         data_api_client.get_service.return_value = {'services': service}
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
 
         response = self.client.get('/admin/services/123')
         assert response.status_code == 200
@@ -734,7 +737,9 @@ class TestServiceUpdate(LoggedInApplicationTest):
         )
 
         assert response.status_code == 302
-        assert data_api_client.update_service.called_once_with('123', data, 'test@example.com')
+        assert data_api_client.update_service.call_args_list == [
+            mock.call('123', data, 'test@example.com', user_role='admin')
+        ]
 
     def test_service_update_with_multiquestion_validation_error(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -908,6 +913,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'supplierId': 2,
             'status': 'disabled'
         }}
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
         response = self.client.get('/admin/services/1')
         assert b'<input type="radio" name="service_status" id="service_status_disabled" value="removed" checked="checked" />' in response.data  # noqa
         assert b'<input type="radio" name="service_status" id="service_status_private" value="private"  />' in response.data  # noqa
@@ -921,6 +927,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'supplierId': 2,
             'status': 'enabled'
         }}
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
         response = self.client.get('/admin/services/1')
         assert b'<input type="radio" name="service_status" id="service_status_disabled" value="removed"  />' in response.data  # noqa
         assert b'<input type="radio" name="service_status" id="service_status_private" value="private" checked="checked" />' in response.data  # noqa
@@ -934,6 +941,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'supplierId': 2,
             'status': 'published'
         }}
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
         response = self.client.get('/admin/services/1')
         assert b'<input type="radio" name="service_status" id="service_status_disabled" value="removed"  />' in response.data  # noqa
         assert b'<input type="radio" name="service_status" id="service_status_private" value="private"  />' in response.data  # noqa
@@ -945,6 +953,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'serviceName': 'test',
             'supplierId': 1000,
         }}
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'removed'})
         data_api_client.update_service_status.assert_called_with(
@@ -960,6 +969,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'serviceName': 'test',
             'supplierId': 1000,
         }}
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'private'})
         data_api_client.update_service_status.assert_called_with(
@@ -975,6 +985,8 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'serviceName': 'test',
             'supplierId': 1000,
         }}
+
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'public'})
         data_api_client.update_service_status.assert_called_with(
@@ -990,6 +1002,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'serviceName': 'test',
             'supplierId': 1000,
         }}
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'suspended'})
         assert response1.status_code == 302
