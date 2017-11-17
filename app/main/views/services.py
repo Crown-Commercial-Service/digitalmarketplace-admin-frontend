@@ -217,7 +217,9 @@ def service_updates(service_id):
         all_update_events=all_update_events,
         latest_update_events=latest_update_events,
         oldest_update_events=oldest_update_events,
-        number_of_users_who_made_edits=len(frozenset(audit_event["user"] for audit_event in chain(
+        # below number of users who made edits might not be reliable if over 2 default length pages
+        # (100 edits per page at the time of writing) of unapproved edits per service were made
+        min_number_of_users_who_made_edits=len(frozenset(audit_event["user"] for audit_event in chain(
             latest_update_events,
             oldest_update_events,
         ))),
