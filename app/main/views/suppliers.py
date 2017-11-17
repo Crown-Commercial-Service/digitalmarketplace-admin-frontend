@@ -530,6 +530,28 @@ def find_supplier_services(supplier_id):
     )
 
 
+@main.route('/suppliers/<int:supplier_id>/services', methods=['POST'])
+@role_required('admin', 'admin-ccs-category')
+def disable_supplier_services(supplier_id):
+    remove_services_for_framework = request.args.get('remove')
+    if not remove_services_for_framework:
+        abort(400, 'Invalid framework')
+
+    services = data_api_client.find_services(
+        supplier_id=supplier_id,
+        framework=remove_services_for_framework,
+        status='published'
+    )['services']
+    if not services:
+        abort(400, 'No published services on framework')
+
+    for service in services:
+        data_api_client.update_service_status(service['id'], 'disabled', current_user.email_address)
+
+    flash("You removed all of {}'s '{}' services".format(services[0]['supplierName'], services[0]['frameworkName']))
+    return redirect(url_for('.find_supplier_services', supplier_id=supplier_id))
+
+
 @main.route('/suppliers/<int:supplier_id>/invite-user', methods=['POST'])
 @role_required('admin')
 def invite_user(supplier_id):
