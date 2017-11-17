@@ -715,20 +715,22 @@ class TestServiceUpdate(LoggedInApplicationTest):
         validation_banner_h1 = document.xpath("//h1[@class='validation-masthead-heading']//text()")[0].strip()
         assert validation_banner_h1 == "There was a problem with your answer to:"
 
-        validation_banner_links = [
+        validation_banner_links = sorted([
             (anchor.text_content(), anchor.get('href')) for anchor in
             document.xpath("//a[@class='validation-masthead-link']")
-        ]
-        assert validation_banner_links == [
+        ])
+        assert validation_banner_links == sorted([
             ("Service benefits", "#serviceBenefits"),
             ("Service features", "#serviceFeatures")
-        ]
+        ])
 
-        validation_errors = [error.strip() for error in document.xpath("//span[@class='validation-message']//text()")]
-        assert validation_errors == [
+        validation_errors = sorted(
+            [error.strip() for error in document.xpath("//span[@class='validation-message']//text()")]
+        )
+        assert validation_errors == sorted([
             "You can’t write more than 10 words for each feature.",
             "You can’t write more than 10 words for each benefit."
-        ]
+        ])
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_update_with_assurance_questions(self, data_api_client):
