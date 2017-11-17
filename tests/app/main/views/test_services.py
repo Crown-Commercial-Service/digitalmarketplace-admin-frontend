@@ -32,6 +32,18 @@ class TestServiceFind(LoggedInApplicationTest):
 
 
 class TestServiceView(LoggedInApplicationTest):
+
+    find_audit_events_api_response = {'auditEvents': [
+        {
+            'createdAt': '2017-11-17T11:22:09.459945Z',
+            'user': 'anne.admin@example.com'
+        },
+        {
+            'createdAt': '2017-11-16T11:22:09.459945Z',
+            'user': 'bob.admin@example.com'
+        },
+    ]}
+
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_view_no_features_or_benefits_status_disabled(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -190,6 +202,59 @@ class TestServiceView(LoggedInApplicationTest):
 
         # shouldn't be able to see this
         assert not document.xpath("//input[@name='service_status']")
+
+    @pytest.mark.parametrize('service_status', ['disabled', 'enabled'])
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_service_view_shows_info_banner_for_removed_and_private_services(self, data_api_client, service_status):
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-8',
+            'serviceName': 'test',
+            'lot': 'iaas',
+            'id': "314159265",
+            "status": service_status,
+        }}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+
+        response = self.client.get('/admin/services/314159265')
+        page_content = response.get_data(as_text=True)
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert len(document.xpath("//div[@class='banner-temporary-message-without-action']/h2")) == 1
+        # Xpath doesn't handle non-breaking spaces well, so assert against page_content
+        assert 'Removed by anne.admin@example.com on Friday&nbsp;17&nbsp;November&nbsp;2017.' in page_content
+
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_service_view_does_not_show_info_banner_for_public_services(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-8',
+            'serviceName': 'test',
+            'lot': 'iaas',
+            'id': "314159265",
+            "status": 'published',
+        }}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+
+        response = self.client.get('/admin/services/314159265')
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert len(document.xpath("//div[@class='banner-temporary-message-without-action']/h2")) == 0
+
+    @pytest.mark.parametrize('service_status', ['disabled', 'enabled', 'published'])
+    @mock.patch('app.main.views.services.data_api_client')
+    def test_service_view_hides_information_banner_if_no_audit_events(self, data_api_client, service_status):
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-8',
+            'serviceName': 'test',
+            'lot': 'iaas',
+            'id': "314159265",
+            "status": service_status,
+        }}
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
+
+        response = self.client.get('/admin/services/314159265')
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert len(document.xpath("//div[@class='banner-temporary-message-without-action']/h2")) == 0
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_redirect_with_flash_for_api_client_404(self, data_api_client):
