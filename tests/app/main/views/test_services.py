@@ -31,6 +31,7 @@ class TestServiceFind(LoggedInApplicationTest):
         assert response.status_code == 404
 
 
+@mock.patch('app.main.views.services.data_api_client', autospec=True)
 class TestServiceView(LoggedInApplicationTest):
 
     find_audit_events_api_response = {'auditEvents': [
@@ -44,7 +45,6 @@ class TestServiceView(LoggedInApplicationTest):
         },
     ]}
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_view_no_features_or_benefits_status_disabled(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
@@ -54,6 +54,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "314159265",
             "status": "disabled",
         }}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/314159265')
 
         assert data_api_client.get_service.call_args_list == [
@@ -72,7 +73,6 @@ class TestServiceView(LoggedInApplicationTest):
         ))
         assert document.xpath("//input[@type='radio'][@name='service_status'][@checked]/@value") == ["removed"]
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_view_no_features_or_benefits_status_enabled(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-7',
@@ -82,6 +82,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "1412",
             "status": "enabled",
         }}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/1412')
 
         assert data_api_client.get_service.call_args_list == [
@@ -101,7 +102,6 @@ class TestServiceView(LoggedInApplicationTest):
         ))
         assert document.xpath("//input[@type='radio'][@name='service_status'][@checked]/@value") == ["private"]
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_view_with_data(self, data_api_client):
         service = {
             'frameworkSlug': 'g-cloud-8',
@@ -127,6 +127,7 @@ class TestServiceView(LoggedInApplicationTest):
             },
         }
         data_api_client.get_service.return_value = {'services': service}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/151')
 
         assert data_api_client.get_service.call_args_list == [
@@ -178,7 +179,6 @@ class TestServiceView(LoggedInApplicationTest):
             **xpath_kwargs
         )
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_view_no_features_or_benefits_not_service_status_authorized(self, data_api_client):
         self.user_role = "admin-ccs-category"
         data_api_client.get_service.return_value = {'services': {
@@ -188,6 +188,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "271828",
             "status": "published",
         }}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/271828')
 
         assert data_api_client.get_service.call_args_list == [
@@ -204,7 +205,6 @@ class TestServiceView(LoggedInApplicationTest):
         assert not document.xpath("//input[@name='service_status']")
 
     @pytest.mark.parametrize('service_status', ['disabled', 'enabled'])
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_view_shows_info_banner_for_removed_and_private_services(self, data_api_client, service_status):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
@@ -223,7 +223,6 @@ class TestServiceView(LoggedInApplicationTest):
         # Xpath doesn't handle non-breaking spaces well, so assert against page_content
         assert 'Removed by anne.admin@example.com on Friday&nbsp;17&nbsp;November&nbsp;2017.' in page_content
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_view_does_not_show_info_banner_for_public_services(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
@@ -240,7 +239,6 @@ class TestServiceView(LoggedInApplicationTest):
         assert len(document.xpath("//div[@class='banner-temporary-message-without-action']/h2")) == 0
 
     @pytest.mark.parametrize('service_status', ['disabled', 'enabled', 'published'])
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_view_hides_information_banner_if_no_audit_events(self, data_api_client, service_status):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
@@ -256,11 +254,11 @@ class TestServiceView(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
         assert len(document.xpath("//div[@class='banner-temporary-message-without-action']/h2")) == 0
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_redirect_with_flash_for_api_client_404(self, data_api_client):
         response = mock.Mock()
         response.status_code = 404
         data_api_client.get_service.side_effect = HTTPError(response)
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
 
         response1 = self.client.get('/admin/services/1')
         assert response1.status_code == 302
@@ -268,7 +266,6 @@ class TestServiceView(LoggedInApplicationTest):
         response2 = self.client.get(response1.location)
         assert b'Error trying to retrieve service with ID: 1' in response2.data
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_not_found_flash_message_injection(self, data_api_client):
         """
         Asserts that raw HTML in a bad service ID cannot be injected into a flash message.
@@ -277,6 +274,7 @@ class TestServiceView(LoggedInApplicationTest):
         api_response = mock.Mock()
         api_response.status_code = 404
         data_api_client.get_service.side_effect = HTTPError(api_response)
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
 
         response1 = self.client.get('/admin/services/1%3Cimg%20src%3Da%20onerror%3Dalert%281%29%3E')
         response2 = self.client.get(response1.location)
@@ -286,8 +284,8 @@ class TestServiceView(LoggedInApplicationTest):
         assert "1<img src=a onerror=alert(1)>" not in html_response
         assert "1&lt;img src=a onerror=alert(1)&gt;" in html_response
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_independence_of_viewing_services(self, data_api_client):
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         data_api_client.get_service.return_value = {'services': {
             'lot': 'SCS',
             'frameworkSlug': 'g-cloud-8',
@@ -318,7 +316,6 @@ class TestServiceView(LoggedInApplicationTest):
         response = self.client.get('/admin/services/1')
         assert b'Termination cost' in response.data
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_status_update_widgets_not_visible_when_not_permitted(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'paas',
@@ -327,12 +324,14 @@ class TestServiceView(LoggedInApplicationTest):
             'frameworkSlug': 'g-cloud-8',
             'id': "1",
         }}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/1')
         assert b'Termination cost' in response.data
 
 
+@mock.patch('app.main.views.services.data_api_client', autospec=True)
 class TestServiceEdit(LoggedInApplicationTest):
-    @mock.patch('app.main.views.services.data_api_client')
+
     def test_edit_dos_service_title(self, data_api_client):
         service = {
             "id": 123,
@@ -356,7 +355,6 @@ class TestServiceEdit(LoggedInApplicationTest):
             t=service["serviceName"],
         )
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_no_link_to_edit_dos2_service_essentials(self, data_api_client):
         service = {
             "id": 123,
@@ -374,7 +372,6 @@ class TestServiceEdit(LoggedInApplicationTest):
         all_links_on_page = [i.values()[0] for i in document.xpath('(//body//a)')]
         assert '/admin/services/123/edit/service-essentials' not in all_links_on_page
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_add_link_for_empty_multiquestion(self, data_api_client):
         service = {
             "id": 123,
@@ -397,7 +394,6 @@ class TestServiceEdit(LoggedInApplicationTest):
         )[0]
         assert performance_analysis_and_data_link_text == 'Add'
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_edit_link_for_populated_multiquestion(self, data_api_client):
         service = {
             "id": 123,
@@ -420,7 +416,6 @@ class TestServiceEdit(LoggedInApplicationTest):
         )[0]
         assert performance_analysis_and_data_link_text == 'Edit'
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_multiquestion_get_route(self, data_api_client):
         service = {
             "id": 123,
@@ -436,7 +431,6 @@ class TestServiceEdit(LoggedInApplicationTest):
 
         assert response.status_code == 200
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_documents_get_response(self, data_api_client):
         service = {
             "id": 321,
@@ -460,7 +454,6 @@ class TestServiceEdit(LoggedInApplicationTest):
             t=service["serviceName"],
         )
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_with_no_features_or_benefits(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'saas',
@@ -476,7 +469,6 @@ class TestServiceEdit(LoggedInApplicationTest):
             response.get_data(as_text=True)
         )
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_with_one_service_feature(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -498,7 +490,6 @@ class TestServiceEdit(LoggedInApplicationTest):
         assert 'id="input-serviceFeatures-0"class="text-box"value="bar"' in stripped_page
         assert 'id="input-serviceFeatures-1"class="text-box"value=""' in stripped_page
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_assurance_questions(self, data_api_client):
         service = {
             'frameworkSlug': 'g-cloud-8',
@@ -525,7 +516,6 @@ class TestServiceEdit(LoggedInApplicationTest):
         assert document.xpath("//input[@name='dataManagementLocations']")
         assert document.xpath("//input[@name='dataManagementLocations--assurance']")
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_with_no_section_returns_404(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'saas',
@@ -538,8 +528,9 @@ class TestServiceEdit(LoggedInApplicationTest):
         assert response.status_code == 404
 
 
+@mock.patch('app.main.views.services.data_api_client', autospec=True)
 class TestServiceUpdate(LoggedInApplicationTest):
-    @mock.patch('app.main.views.services.data_api_client')
+
     def test_service_update_documents_empty_post(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -562,7 +553,6 @@ class TestServiceUpdate(LoggedInApplicationTest):
         assert response.status_code == 302
         assert urlsplit(response.location).path == "/admin/services/1"
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_update_documents(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -592,7 +582,6 @@ class TestServiceUpdate(LoggedInApplicationTest):
 
         assert response.status_code == 302
 
-    @mock.patch("app.main.views.services.data_api_client")
     def test_service_update_documents_with_validation_errors(
             self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -628,7 +617,6 @@ class TestServiceUpdate(LoggedInApplicationTest):
             t="Return without saving",
         ) == ["/admin/services/7654"]
 
-    @mock.patch("app.main.views.services.data_api_client")
     def test_service_update_assurance_questions_when_API_returns_error(
             self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -695,7 +683,6 @@ class TestServiceUpdate(LoggedInApplicationTest):
             t="Return without saving",
         ) == ["/admin/services/7654"]
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_update_with_one_service_feature(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -726,7 +713,6 @@ class TestServiceUpdate(LoggedInApplicationTest):
             )]
         assert response.status_code == 302
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_update_multiquestion_post_route(self, data_api_client):
         service = {
             "id": 123,
@@ -750,7 +736,6 @@ class TestServiceUpdate(LoggedInApplicationTest):
         assert response.status_code == 302
         assert data_api_client.update_service.called_once_with('123', data, 'test@example.com')
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_update_with_multiquestion_validation_error(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -808,7 +793,6 @@ class TestServiceUpdate(LoggedInApplicationTest):
             "You can’t write more than 10 words for each benefit."
         ]
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_update_with_assurance_questions(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 567,
@@ -850,7 +834,6 @@ class TestServiceUpdate(LoggedInApplicationTest):
         ]
         assert response.status_code == 302
 
-    @mock.patch('app.main.views.services.data_api_client')
     @mock.patch('app.main.views.services.upload_service_documents')
     def test_service_update_when_API_returns_error(self, upload_service_documents, data_api_client):
         assert isinstance(s3.S3, mock.Mock)
@@ -876,7 +859,6 @@ class TestServiceUpdate(LoggedInApplicationTest):
         )
         assert 'There was a problem with the answer to this question' in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_update_with_no_service_returns_404(self, data_api_client):
         data_api_client.get_service.return_value = None
         response = self.client.post(
@@ -892,7 +874,6 @@ class TestServiceUpdate(LoggedInApplicationTest):
         assert response.status_code == 404
 
     @pytest.mark.parametrize('framework_slug', ('g-cloud-7', 'digital-outcomes-and-specialists-2'))
-    @mock.patch('app.main.views.services.data_api_client')
     def test_service_update_with_no_section_returns_404(self, data_api_client, framework_slug):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -916,7 +897,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
         assert response.status_code == 404
 
 
-@mock.patch('app.main.views.services.data_api_client')
+@mock.patch('app.main.views.services.data_api_client', autospec=True)
 class TestServiceStatusUpdate(LoggedInApplicationTest):
 
     def test_cannot_make_removed_service_public(self, data_api_client):
