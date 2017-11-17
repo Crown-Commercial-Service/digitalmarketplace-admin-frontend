@@ -22,9 +22,32 @@
   {% endwith %}
 {% endblock %}
 {% block main_content %}
-  {% with heading = "Services" %}
-    {% include "toolkit/page-heading.html" %}
-  {% endwith %}
+
+  {% block before_heading %}
+    {% if remove_services_for_framework %}
+      <div class="column-one-whole">
+        <form action="{{ url_for('main.disable_supplier_services', supplier_id=supplier.id, remove=remove_services_for_framework.slug) }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          {%
+            with
+            message = "Are you sure you want to remove {}'s '{}' services?".format(supplier.name, remove_services_for_framework.name ),
+            type = "destructive",
+            action = '<button type="submit" class="button-destructive banner-action">Remove all services</button>'|safe
+          %}
+            {% include "toolkit/notification-banner.html" %}
+          {% endwith %}
+        </form>
+      </div>
+    {% endif %}
+
+  <div class="grid-row">
+    <div class="column-one-whole">
+      {% with heading = "Services" %}
+        {% include "toolkit/page-heading.html" %}
+      {% endwith %}
+    </div>
+  </div>
+
   {% if not frameworks_services %}
     {% call(item) summary.list_table(
       empty_message="This supplier has no services on the Digital Marketplace."
