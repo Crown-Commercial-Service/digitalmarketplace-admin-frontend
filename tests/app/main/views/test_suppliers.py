@@ -244,7 +244,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_404_if_supplier_does_not_exist_on_services(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
-        response = self.client.get('/admin/suppliers/services?supplier_id=999')
+        response = self.client.get('/admin/suppliers/999/services')
         assert response.status_code == 404
 
     def test_should_404_if_no_supplier_id_on_services(self):
@@ -254,18 +254,18 @@ class TestSupplierServicesView(LoggedInApplicationTest):
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_service_apis_with_supplier_id(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        response = self.client.get('/admin/suppliers/services?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/1000/services')
 
         assert response.status_code == 200
 
-        data_api_client.get_supplier.assert_called_once_with('1000')
-        data_api_client.find_services.assert_called_once_with('1000')
+        data_api_client.get_supplier.assert_called_once_with(1000)
+        data_api_client.find_services.assert_called_once_with(1000)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_indicate_if_supplier_has_no_services(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_services.return_value = {'services': []}
-        response = self.client.get('/admin/suppliers/services?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/1000/services')
 
         assert response.status_code == 200
         assert "This supplier has no services on the Digital Marketplace" in response.get_data(as_text=True)
@@ -275,7 +275,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_services.return_value = {'services': []}
 
-        response = self.client.get('/admin/suppliers/services?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/1000/services')
 
         assert response.status_code == 200
         assert "Supplier Name" in response.get_data(as_text=True)
@@ -288,7 +288,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
             'frameworks': [self.load_example_listing("framework_response")['frameworks']]
         }
 
-        response = self.client.get('/admin/suppliers/services?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/1000/services')
 
         assert response.status_code == 200
         assert "Contract Management" in response.get_data(as_text=True)
@@ -311,7 +311,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         service["status"] = "disabled"
         data_api_client.find_services.return_value = {'services': [service]}
 
-        response = self.client.get('/admin/suppliers/services?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/1000/services')
 
         assert response.status_code == 200
         assert "Removed" in response.get_data(as_text=True)
@@ -328,7 +328,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         service["status"] = "enabled"
         data_api_client.find_services.return_value = {'services': [service]}
 
-        response = self.client.get('/admin/suppliers/services?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/1000/services')
 
         assert response.status_code == 200
         assert "Private" in response.get_data(as_text=True)
@@ -354,7 +354,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         framework_3['id'] = 22
         data_api_client.find_frameworks.return_value = {'frameworks': [framework_1, framework_2, framework_3]}
 
-        response = self.client.get('/admin/suppliers/services?supplier_id=1000')
+        response = self.client.get('/admin/suppliers/1000/services')
 
         assert response.status_code == 200
 

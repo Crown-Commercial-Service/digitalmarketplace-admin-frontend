@@ -493,16 +493,13 @@ def move_user_to_new_supplier(supplier_id):
         ), 400
 
 
-@main.route('/suppliers/services', methods=['GET'])
+@main.route('/suppliers/<int:supplier_id>/services', methods=['GET'])
 @role_required('admin', 'admin-ccs-category')
-def find_supplier_services():
-
-    if not request.args.get('supplier_id'):
-        abort(404)
+def find_supplier_services(supplier_id):
 
     frameworks = data_api_client.find_frameworks()
-    supplier = data_api_client.get_supplier(request.args['supplier_id'])
-    services = data_api_client.find_services(request.args.get("supplier_id"))
+    supplier = data_api_client.get_supplier(supplier_id)
+    services = data_api_client.find_services(supplier_id)
     frameworks_services = {
         framework_slug: list(framework_services)
         for framework_slug, framework_services in

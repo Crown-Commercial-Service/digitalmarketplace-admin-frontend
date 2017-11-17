@@ -37,6 +37,7 @@ class TestServiceView(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
             'serviceName': 'test',
+            'supplierId': 1000,
             'lot': 'iaas',
             'id': "314159265",
             "status": "disabled",
@@ -64,6 +65,7 @@ class TestServiceView(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-7',
             'serviceName': 'test',
+            'supplierId': 1000,
             'lot': 'iaas',
             'id': "1412",
             "status": "enabled",
@@ -103,6 +105,7 @@ class TestServiceView(LoggedInApplicationTest):
             "serviceBenefits": [
                 "Mentioned in court and fashionable intelligence",
             ],
+            "supplierId": 1000,
             "deviceAccessMethod": {
                 "value": [
                     "Corporate/enterprise devices",
@@ -169,6 +172,7 @@ class TestServiceView(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-7',
             'serviceName': 'test',
+            'supplierId': 1000,
             'id': "271828",
             "status": "published",
         }}
@@ -223,6 +227,7 @@ class TestServiceView(LoggedInApplicationTest):
             'lot': 'SCS',
             'frameworkSlug': 'g-cloud-8',
             'serviceName': 'test',
+            'supplierId': 1000,
             'id': "1",
         }}
         response = self.client.get('/admin/services/1')
@@ -232,6 +237,7 @@ class TestServiceView(LoggedInApplicationTest):
             'lot': 'SaaS',
             'frameworkSlug': 'g-cloud-8',
             'serviceName': 'test',
+            'supplierId': 1000,
             'id': "1",
         }}
         response = self.client.get('/admin/services/1')
@@ -241,6 +247,7 @@ class TestServiceView(LoggedInApplicationTest):
             'lot': 'SCS',
             'frameworkSlug': 'g-cloud-8',
             'serviceName': 'test',
+            'supplierId': 1000,
             'id': "1",
         }}
         response = self.client.get('/admin/services/1')
@@ -251,6 +258,7 @@ class TestServiceView(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'paas',
             'serviceName': 'test',
+            'supplierId': 1000,
             'frameworkSlug': 'g-cloud-8',
             'id': "1",
         }}
@@ -265,6 +273,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             "id": 123,
             "frameworkSlug": "digital-outcomes-and-specialists",
             "serviceName": "Larry O'Rourke's",
+            "supplierId": 1000,
             "lot": "user-research-studios",
         }
         data_api_client.get_service.return_value = {'services': service}
@@ -288,6 +297,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             "id": 123,
             "frameworkSlug": "digital-outcomes-and-specialists-2",
             "serviceName": "Test",
+            "supplierId": 1000,
             "lot": "digital-outcomes",
         }
         data_api_client.get_service.return_value = {'services': service}
@@ -305,6 +315,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             "id": 123,
             "frameworkSlug": "digital-outcomes-and-specialists-2",
             "serviceName": "Test",
+            "supplierId": 1000,
             "lot": "digital-outcomes",
             "performanceAnalysisAndData": '',
         }
@@ -327,6 +338,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             "id": 123,
             "frameworkSlug": "digital-outcomes-and-specialists-2",
             "serviceName": "Test",
+            "supplierId": 1000,
             "lot": "digital-outcomes",
             "performanceAnalysisTypes": 'some value',
         }
@@ -349,6 +361,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             "id": 123,
             "frameworkSlug": "digital-outcomes-and-specialists-2",
             "serviceName": "Test",
+            "supplierId": 1000,
             "lot": "digital-specialists",
             "performanceAnalysisAndData": '',
         }
@@ -884,6 +897,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-7',
             'serviceName': 'test',
+            'supplierId': 1000,
         }}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'removed'})
@@ -898,6 +912,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
             'serviceName': 'test',
+            'supplierId': 1000,
         }}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'private'})
@@ -912,6 +927,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'digital-outcomes-and-specialists',
             'serviceName': 'test',
+            'supplierId': 1000,
         }}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'public'})
@@ -926,6 +942,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-7',
             'serviceName': 'test',
+            'supplierId': 1000,
         }}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'suspended'})
