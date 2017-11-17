@@ -211,6 +211,7 @@ class TestServiceView(LoggedInApplicationTest):
             'serviceName': 'test',
             'lot': 'iaas',
             'id': "314159265",
+            'supplierId': 1000,
             "status": service_status,
         }}
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
@@ -222,6 +223,14 @@ class TestServiceView(LoggedInApplicationTest):
         assert len(document.xpath("//div[@class='banner-temporary-message-without-action']/h2")) == 1
         # Xpath doesn't handle non-breaking spaces well, so assert against page_content
         assert 'Removed by anne.admin@example.com on Friday&nbsp;17&nbsp;November&nbsp;2017.' in page_content
+        assert data_api_client.find_audit_events.call_args_list == [
+            mock.call(
+                latest_first="true",
+                object_id='314159265',
+                object_type="services",
+                audit_type=AuditTypes.update_service_status
+            )
+        ]
 
     def test_service_view_does_not_show_info_banner_for_public_services(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -229,6 +238,7 @@ class TestServiceView(LoggedInApplicationTest):
             'serviceName': 'test',
             'lot': 'iaas',
             'id': "314159265",
+            'supplierId': 1000,
             "status": 'published',
         }}
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
@@ -237,6 +247,7 @@ class TestServiceView(LoggedInApplicationTest):
 
         document = html.fromstring(response.get_data(as_text=True))
         assert len(document.xpath("//div[@class='banner-temporary-message-without-action']/h2")) == 0
+        assert data_api_client.find_audit_events.called is False
 
     @pytest.mark.parametrize('service_status', ['disabled', 'enabled', 'published'])
     def test_service_view_hides_information_banner_if_no_audit_events(self, data_api_client, service_status):
@@ -245,6 +256,7 @@ class TestServiceView(LoggedInApplicationTest):
             'serviceName': 'test',
             'lot': 'iaas',
             'id': "314159265",
+            'supplierId': 1000,
             "status": service_status,
         }}
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
@@ -292,6 +304,7 @@ class TestServiceView(LoggedInApplicationTest):
             'serviceName': 'test',
             'supplierId': 1000,
             'id': "1",
+            'status': 'published'
         }}
         response = self.client.get('/admin/services/1')
         assert b'Termination cost' in response.data
@@ -302,6 +315,7 @@ class TestServiceView(LoggedInApplicationTest):
             'serviceName': 'test',
             'supplierId': 1000,
             'id': "1",
+            'status': 'published'
         }}
         response = self.client.get('/admin/services/1')
         assert b'Termination cost' not in response.data
@@ -312,6 +326,7 @@ class TestServiceView(LoggedInApplicationTest):
             'serviceName': 'test',
             'supplierId': 1000,
             'id': "1",
+            'status': 'published'
         }}
         response = self.client.get('/admin/services/1')
         assert b'Termination cost' in response.data
@@ -323,6 +338,7 @@ class TestServiceView(LoggedInApplicationTest):
             'supplierId': 1000,
             'frameworkSlug': 'g-cloud-8',
             'id': "1",
+            'status': 'published'
         }}
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/1')
@@ -362,6 +378,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             "serviceName": "Test",
             "supplierId": 1000,
             "lot": "digital-outcomes",
+            'status': 'published'
         }
         data_api_client.get_service.return_value = {'services': service}
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
@@ -381,6 +398,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             "supplierId": 1000,
             "lot": "digital-outcomes",
             "performanceAnalysisAndData": '',
+            'status': 'published'
         }
 
         data_api_client.get_service.return_value = {'services': service}
@@ -404,6 +422,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             "supplierId": 1000,
             "lot": "digital-outcomes",
             "performanceAnalysisTypes": 'some value',
+            'status': 'published'
         }
 
         data_api_client.get_service.return_value = {'services': service}
@@ -952,6 +971,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'frameworkSlug': 'g-cloud-7',
             'serviceName': 'test',
             'supplierId': 1000,
+            'status': 'published',
         }}
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
         response1 = self.client.post('/admin/services/status/1',
@@ -968,6 +988,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'frameworkSlug': 'g-cloud-8',
             'serviceName': 'test',
             'supplierId': 1000,
+            'status': 'published',
         }}
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
         response1 = self.client.post('/admin/services/status/1',
@@ -984,6 +1005,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'frameworkSlug': 'digital-outcomes-and-specialists',
             'serviceName': 'test',
             'supplierId': 1000,
+            'status': 'enabled',
         }}
 
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
@@ -1001,6 +1023,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'frameworkSlug': 'g-cloud-7',
             'serviceName': 'test',
             'supplierId': 1000,
+            'status': 'published',
         }}
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
         response1 = self.client.post('/admin/services/status/1',
