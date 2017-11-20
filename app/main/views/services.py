@@ -51,7 +51,7 @@ def view(service_id):
         flash({'api_error': service_id}, 'error')
         return redirect(url_for('.index'))
 
-    last_updated_by = last_updated_date = None
+    removed_by = removed_at = None
     if service_data['status'] != 'published':
         most_recent_audit_events = data_api_client.find_audit_events(
             latest_first="true",
@@ -60,8 +60,8 @@ def view(service_id):
             audit_type=AuditTypes.update_service_status
         )
         if most_recent_audit_events.get('auditEvents'):
-            last_updated_by = most_recent_audit_events['auditEvents'][0]['user']
-            last_updated_date = most_recent_audit_events['auditEvents'][0]['createdAt']
+            removed_by = most_recent_audit_events['auditEvents'][0]['user']
+            removed_at = most_recent_audit_events['auditEvents'][0]['createdAt']
 
     service_data['priceString'] = format_service_price(service_data)
     content = content_loader.get_manifest(service_data['frameworkSlug'], 'edit_service_as_admin').filter(service_data)
@@ -71,8 +71,8 @@ def view(service_id):
         sections=content.summary(service_data),
         service_data=service_data,
         service_id=service_id,
-        last_updated_by=last_updated_by,
-        last_updated_date=last_updated_date,
+        removed_by=removed_by,
+        removed_at=removed_at,
     )
 
 

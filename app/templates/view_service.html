@@ -47,13 +47,13 @@
     {% endif %}
   {% endwith %}
 
-{% if service_data['status'] != 'published' and last_updated_by %}
+{% if service_data['status'] != 'published' and removed_by %}
 <div class="grid-row">
   <div class="column-one-whole">
     {%
       with
       type = "temporary-message",
-      heading = "Removed by {} on ".format(last_updated_by) + "{}.".format(last_updated_date|dateformat)|nbsp
+      heading = "Removed by {} on ".format(removed_by) + "{}.".format(removed_at|dateformat)|nbsp
     %}
       {% include "toolkit/notification-banner.html" %}
     {% endwith %}
