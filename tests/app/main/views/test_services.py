@@ -37,11 +37,23 @@ class TestServiceView(LoggedInApplicationTest):
     find_audit_events_api_response = {'auditEvents': [
         {
             'createdAt': '2017-11-17T11:22:09.459945Z',
-            'user': 'anne.admin@example.com'
+            'user': 'anne.admin@example.com',
+            'type': 'update_service_status',
+            'data': {
+                'new_status': "disabled",
+                'old_status': 'published',
+                'serviceId': '314159265'
+            }
         },
         {
             'createdAt': '2017-11-16T11:22:09.459945Z',
-            'user': 'bob.admin@example.com'
+            'user': 'bob.admin@example.com',
+            'type': 'update_service_status',
+            'data': {
+                'new_status': "published",
+                'old_status': 'private',
+                'serviceId': '314159265'
+            }
         },
     ]}
 
@@ -57,10 +69,18 @@ class TestServiceView(LoggedInApplicationTest):
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/314159265')
 
+        assert response.status_code == 200
         assert data_api_client.get_service.call_args_list == [
             (("314159265",), {}),
         ]
-        assert response.status_code == 200
+        assert data_api_client.find_audit_events.call_args_list == [
+            mock.call(
+                audit_type=AuditTypes.update_service_status,
+                latest_first='true',
+                object_id='314159265',
+                object_type='services'
+            )
+        ]
 
         document = html.fromstring(response.get_data(as_text=True))
         assert document.xpath(
@@ -85,10 +105,18 @@ class TestServiceView(LoggedInApplicationTest):
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/1412')
 
+        assert response.status_code == 200
         assert data_api_client.get_service.call_args_list == [
             (("1412",), {}),
         ]
-        assert response.status_code == 200
+        assert data_api_client.find_audit_events.call_args_list == [
+            mock.call(
+                audit_type=AuditTypes.update_service_status,
+                latest_first='true',
+                object_id='1412',
+                object_type='services'
+            )
+        ]
 
         document = html.fromstring(response.get_data(as_text=True))
         assert document.xpath(
@@ -133,6 +161,7 @@ class TestServiceView(LoggedInApplicationTest):
         assert data_api_client.get_service.call_args_list == [
             (("151",), {}),
         ]
+        assert data_api_client.find_audit_events.called is False
         assert response.status_code == 200
 
         document = html.fromstring(response.get_data(as_text=True))
@@ -194,6 +223,7 @@ class TestServiceView(LoggedInApplicationTest):
         assert data_api_client.get_service.call_args_list == [
             (("271828",), {}),
         ]
+        assert data_api_client.find_audit_events.called is False
         assert response.status_code == 200
 
         document = html.fromstring(response.get_data(as_text=True))
