@@ -22,9 +22,41 @@
   {% endwith %}
 {% endblock %}
 {% block main_content %}
-  {% with heading = "Services" %}
-    {% include "toolkit/page-heading.html" %}
-  {% endwith %}
+
+  {% block before_heading %}
+    {% if remove_services_for_framework %}
+      <div class="column-one-whole">
+        <form action="{{ url_for('main.disable_supplier_services', supplier_id=supplier.id, remove=remove_services_for_framework.slug) }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          {%
+            with
+            message = "Are you sure you want to remove {}'s '{}' services?".format(supplier.name, remove_services_for_framework.name ),
+            type = "destructive",
+            action = '<button type="submit" class="button-destructive banner-action">Remove all services</button>'|safe
+          %}
+            {% include "toolkit/notification-banner.html" %}
+          {% endwith %}
+        </form>
+      </div>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        {% with message = message, type = "destructive" if category == 'error' else 'success' %}
+          {% include "toolkit/notification-banner.html" %}
+        {% endwith %}
+      {% endfor %}
+    {% endwith %}
+  {% endblock %}
+
+  <div class="grid-row">
+    <div class="column-one-whole">
+      {% with heading = "Services" %}
+        {% include "toolkit/page-heading.html" %}
+      {% endwith %}
+    </div>
+  </div>
+
   {% if not frameworks_services %}
     {% call(item) summary.list_table(
       empty_message="This supplier has no services on the Digital Marketplace."
@@ -35,6 +67,9 @@
       {% if framework['slug'] in frameworks_services %}
 
         {{ summary.heading(framework['name'], id="{}_services".format(framework['slug'])) }}
+        {% if 'published' in frameworks_services[framework['slug']]|map(attribute='status')|list %}
+          {{ summary.top_link("Remove services", url_for(".find_supplier_services", supplier_id=supplier.id, remove=framework.slug)) }}
+        {% endif %}
         {% call(item) summary.list_table(
           frameworks_services[framework['slug']],
           caption="Services",
