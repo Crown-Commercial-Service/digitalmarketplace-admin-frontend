@@ -47,6 +47,20 @@
     {% endif %}
   {% endwith %}
 
+{% if service_data['status'] != 'published' and removed_by %}
+<div class="grid-row">
+  <div class="column-one-whole">
+    {%
+      with
+      type = "temporary-message",
+      heading = "Removed by {} on ".format(removed_by) + "{}.".format(removed_at|dateformat)|nbsp
+    %}
+      {% include "toolkit/notification-banner.html" %}
+    {% endwith %}
+  </div>
+</div>
+{% endif %}
+
   {% if service_data %}
     <div class="grid-row">
       <div class="service-title">
