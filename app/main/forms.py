@@ -1,5 +1,5 @@
 from flask.ext.wtf import Form
-from wtforms import validators
+from wtforms import RadioField, validators
 
 from dmutils.forms import StripWhitespaceStringField
 
@@ -34,3 +34,29 @@ class EmailDomainForm(Form):
     new_buyer_domain = StripWhitespaceStringField('Add a buyer email domain', validators=[
         validators.DataRequired(message="The domain field can not be empty.")
     ])
+
+
+class InviteAdminForm(Form):
+    role_choices = [
+        ('admin-ccs-category', 'Category'),
+        ('admin-ccs-sourcing', 'Sourcing'),
+        ('admin', 'Support'),
+    ]
+
+    email_address = StripWhitespaceStringField(
+        'Email address',
+        validators=[
+            validators.DataRequired(message='You must provide an email address'),
+            validators.Email(message='Please enter a valid email address'),
+            AdminEmailAddressValidator(message='The email address must belong to an approved domain')
+        ]
+    )
+    role = RadioField(
+        'Permissions',
+        validators=[validators.InputRequired(message='You must choose a permission')],
+        choices=role_choices
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(InviteAdminForm, self).__init__(*args, **kwargs)
+        self.role.toolkit_macro_options = [{'value': i[0], 'label': i[1]} for i in self.role_choices]
