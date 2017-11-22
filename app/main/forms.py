@@ -3,6 +3,18 @@ from wtforms import validators
 
 from dmutils.forms import StripWhitespaceStringField
 
+from .. import data_api_client
+
+
+class AdminEmailAddressValidator(object):
+
+    def __init__(self, message=None):
+        self.message = message
+
+    def __call__(self, form, field):
+        if not data_api_client.email_is_valid_for_admin_user(field.data):
+            raise validators.StopValidation(self.message)
+
 
 class EmailAddressForm(Form):
     email_address = StripWhitespaceStringField('Email address', validators=[
