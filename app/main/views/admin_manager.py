@@ -1,8 +1,11 @@
-from flask import render_template
+from flask import render_template, request, redirect, url_for, flash
+from flask_login import current_user
+
+from dmutils.email.user_account_email import send_user_account_email
 
 from ... import data_api_client
 from .. import main
-
+from ..forms import InviteAdminForm
 from ..auth import role_required
 
 
@@ -28,3 +31,35 @@ def manage_admin_users():
 
     return render_template("view_admin_users.html",
                            admin_users=admin_users)
+
+
+@main.route('/admin-users/invite', methods=['GET', 'POST'])
+@role_required('admin-manager')
+def invite_admin_user():
+    notify_template_id = '08ab7791-6038-4ad2-9560-740bbcb675b7'
+
+    form = InviteAdminForm(request.form)
+
+    if request.method == 'POST' and form.validate_on_submit():
+        email_address = form.data.get('email_address')
+        role = form.data.get('role')
+
+        send_user_account_email(
+            role,
+            email_address,
+            notify_template_id,
+            personalisation={'name': current_user.name}
+        )
+        flash('An invitation has been sent to {}.'.format(email_address), category='success')
+        return redirect(url_for('main.manage_admin_users'))
+
+    errors = {
+        key: {'question': form[key].label.text, 'input_name': key, 'message': form[key].errors[0]}
+        for key, value in form.errors.items()
+    }
+
+    return render_template(
+        "invite_admin_user.html",
+        form=form,
+        errors=errors,
+    ), 200 if not errors else 400
