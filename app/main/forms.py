@@ -19,5 +19,5 @@ class MoveUserForm(Form):
 
 class EmailDomainForm(Form):
     new_buyer_domain = StripWhitespaceStringField('Add a buyer email domain', validators=[
-        DataRequired(message="Domain can not be empty")
+        DataRequired(message="The domain field can not be empty.")
     ])
