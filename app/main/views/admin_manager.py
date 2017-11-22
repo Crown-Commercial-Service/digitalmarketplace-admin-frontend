@@ -5,9 +5,10 @@ from dmutils.email.user_account_email import send_user_account_email
 
 from ... import data_api_client
 from .. import main
-from ..forms import InviteAdminForm
-from ..auth import role_required
 
+from ..forms import InviteAdminForm
+from dmapiclient import HTTPError, APIError
+from ..auth import role_required
 
 @main.route('/admin-users', methods=['GET'])
 @role_required('admin-manager')
@@ -63,3 +64,15 @@ def invite_admin_user():
         form=form,
         errors=errors,
     ), 200 if not errors else 400
+
+
+
+@role_required('admin')
+@main.route('/admin-users/<string:admin_user_id>/edit', methods=['GET'])
+@role_required('admin-manager')
+def edit_admin_users(admin_user_id):
+    admin_user = data_api_client.get_user(admin_user_id)
+    return render_template(
+        "edit_admin_user.html",
+        admin_user=admin_user["users"],
+    )

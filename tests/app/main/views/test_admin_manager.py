@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+from lxml import html
 import mock
 import pytest
 from lxml import html
@@ -198,9 +200,67 @@ class TestInviteAdminUserView(LoggedInApplicationTest):
             personalisation={'name': 'tester'}
         )
 
+
     @mock.patch('app.main.views.admin_manager.send_user_account_email')
     def test_successful_post_flashes(self, data_api_client, send_user_account_email):
         data_api_client.email_is_valid_for_admin_user.return_value = True
         res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
         assert res.status_code == 302
         assert_flashes(self, 'An invitation has been sent to test@test.com.', 'success')
+
+
+@mock.patch('app.main.views.admin_manager.data_api_client')
+class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
+
+    admin_user_to_edit = {
+        "users": {
+            "active": True,
+            "emailAddress": "@digital.cabinet-office.gov.uk",
+            "id": 2345,
+            "locked": False,
+            "name": "Auditor of Reality",
+            "role": "admin-ccs-category",
+            "updatedAt": "2017-11-22T14:42:27.043468Z"
+        }
+    }
+
+    def test_should_load_edit_admin_users_page_correctly(self, data_api_client):
+        self.user_role = "admin-manager"
+        admin_user_id = 2345
+        data_api_client.get_user.return_value = self.admin_user_to_edit
+
+        response = self.client.get('/admin/admin-users/2345/edit')
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert "Auditor of Reality" in document.text_content()
+
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin-manager", 200),
+        ("admin", 403),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 403),
+    ])
+    def test_get_page_should_only_be_accessible_to_admin_manager(self, data_api_client, role, expected_code):
+        self.user_role = role
+        admin_user_id = 2345
+        data_api_client.get_user.return_value = self.admin_user_to_edit
+
+        response = self.client.get('/admin/admin-users/2345/edit')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
+
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin-manager", 200),
+        ("admin", 403),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 403),
+    ])
+    def test_post_page_should_only_be_accessible_to_admin_manager(self, data_api_client, role, expected_code):
+        self.user_role = role
+        admin_user_id = 2345
+        data_api_client.get_user.return_value = self.admin_user_to_edit
+
+        response = self.client.post('/admin/admin-users/2345/edit')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
