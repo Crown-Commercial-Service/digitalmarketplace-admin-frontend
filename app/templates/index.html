@@ -29,6 +29,19 @@
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
 
+  {% if current_user.has_role('admin-manager') %}
+      {% with items = [
+          {
+
+              "link": url_for('.manage_admin_users'),
+              "title": "Manage users"
+          },
+      ]
+      %}
+        {% include "toolkit/browse-list.html" %}
+      {% endwith %}
+  {% endif %}
+
   {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-sourcing') %}
       <div class="grid-row">
           <div class="column-two-thirds">
@@ -121,22 +134,25 @@
       {% endwith %}
   {% endif %}
 
-  {% with
-      smaller = True,
-      heading = "Statistics"
-  %}
-    {% include "toolkit/page-heading.html" %}
-  {% endwith %}
-  {% with items = [
-      {
-          "body": "View G-Cloud 9 statistics",
-          "link": "/admin/statistics/g-cloud-9",
-          "title": "G-Cloud 9 statistics"
-      }
-  ]
-  %}
-    {% include "toolkit/browse-list.html" %}
-  {% endwith %}
+   {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-sourcing') %}
+      {% with
+          smaller = True,
+          heading = "Statistics"
+      %}
+        {% include "toolkit/page-heading.html" %}
+      {% endwith %}
+      {% with items = [
+          {
+              "body": "View G-Cloud 9 statistics",
+              "link": "/admin/statistics/g-cloud-9",
+              "title": "G-Cloud 9 statistics"
+          }
+      ]
+      %}
+        {% include "toolkit/browse-list.html" %}
+      {% endwith %}
+
+   {% endif %}
 
   {% if current_user.has_any_role('admin', 'admin-ccs-sourcing') %}
     {% with
