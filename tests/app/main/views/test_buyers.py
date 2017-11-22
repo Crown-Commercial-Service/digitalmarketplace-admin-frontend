@@ -112,7 +112,7 @@ class TestAddBuyerDomainsView(LoggedInApplicationTest):
                                     data={'new_buyer_domain': ''}
                                     )
         assert response.status_code == 400
-        assert "Domain can not be empty" in response.get_data(as_text=True)
+        assert "The domain field can not be empty." in response.get_data(as_text=True)
         assert data_api_client.create_buyer_email_domain.call_args_list == []
 
     def test_post_duplicate_domain_error(self, data_api_client):
