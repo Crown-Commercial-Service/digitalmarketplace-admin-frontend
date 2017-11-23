@@ -1167,7 +1167,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
     )
 
     expected_message_about_latest_edit_2 = "More than one user has edited this service. " \
-        "The last user to edit this page was florrie@example.com on Sunday 22 March 2015."
+        "The last user to edit this service was florrie@example.com on Sunday 22 March 2015."
     published_service_multiple_edits = (
         # find_audit_events api response:
         (
@@ -1279,7 +1279,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
     )
 
     expected_message_about_latest_edit_4 = "More than one user has edited this service. " \
-        "The last user to edit this page was private.carr@example.com on Saturday 17 December 2005."
+        "The last user to edit this service was private.carr@example.com on Saturday 17 December 2005."
     enabled_service_with_multiple_user_edits = (
         # find_audit_events api response:
         (
@@ -1356,7 +1356,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         {},
         "enabled",
         None,
-        ((5, "0 unapproved edits.",),)
+        ((5, "This service has no unapproved edits.",),)
     )
 
     @pytest.mark.parametrize(
