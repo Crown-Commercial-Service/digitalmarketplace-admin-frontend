@@ -23,8 +23,10 @@ class TestIndex(LoggedInApplicationTest):
         assert 'Approve Framework 2 agreements for countersigning' in data
 
         # Agreements should be in reverse-chronological order.
-        assert data.index('Approve Framework 2 agreements for countersigning') < \
+        assert (
+            data.index('Approve Framework 2 agreements for countersigning') <
             data.index('Download Framework 1 agreements')
+        )
 
         # Only standstill/live agreements should be listed.
         assert 'Download Framework 3 agreements' not in data
@@ -40,8 +42,9 @@ class TestIndex(LoggedInApplicationTest):
         data = response.get_data(as_text=True)
         link_is_visible = "Add a buyer email domain" in data
 
-        assert link_is_visible is link_should_be_visible, \
+        assert link_is_visible is link_should_be_visible, (
             "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+        )
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
         ("admin", False),
@@ -55,5 +58,6 @@ class TestIndex(LoggedInApplicationTest):
         data = response.get_data(as_text=True)
         link_is_visible = "Manage users" in data
 
-        assert link_is_visible is link_should_be_visible, \
+        assert link_is_visible is link_should_be_visible, (
             "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+        )
