@@ -30,134 +30,130 @@
   {% endwith %}
 
   {% if current_user.has_role('admin-manager') %}
-      {% with items = [
-          {
-
-              "link": url_for('.manage_admin_users'),
-              "title": "Manage users"
-          },
-      ]
-      %}
-        {% include "toolkit/browse-list.html" %}
-      {% endwith %}
+    {% with items = [
+      {
+        "link": url_for('.manage_admin_users'),
+        "title": "Manage users"
+      },
+    ]
+    %}
+      {% include "toolkit/browse-list.html" %}
+    {% endwith %}
   {% endif %}
 
   {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-sourcing') %}
-      <div class="grid-row">
-          <div class="column-two-thirds">
-              {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
-              <form action="{{ url_for('.find') }}" method="get" class="question">
-                  <label class="question-heading" for="service_id">Find a service by service ID</label>
-                  <p class='hint'>
-                    eg 1234567890123456
-                  </p>
-                  <input type="text" name="service_id" id="service_id" class="text-box">
-                  <input type="submit" value="Search" class="button-save">
-              </form>
-              {% endif %}
+    <div class="grid-row">
+      <div class="column-two-thirds">
+        {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
+        <form action="{{ url_for('.find') }}" method="get" class="question">
+          <label class="question-heading" for="service_id">Find a service by service ID</label>
+          <p class='hint'>
+            eg 1234567890123456
+          </p>
+          <input type="text" name="service_id" id="service_id" class="text-box">
+          <input type="submit" value="Search" class="button-save">
+        </form>
+        {% endif %}
 
-              <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
-                <label class="question-heading" for="supplier_name_prefix">Find suppliers by name prefix</label>
-                <p class="hint">
-                  eg searching for c would give all suppliers starting with c
-                </p>
-                <input type="text" name="supplier_name_prefix" id="supplier_name_prefix" class="text-box">
-                <input type="submit" value="Search" class="button-save">
-              </form>
+        <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+          <label class="question-heading" for="supplier_name_prefix">Find suppliers by name prefix</label>
+          <p class="hint">
+            eg searching for c would give all suppliers starting with c
+          </p>
+          <input type="text" name="supplier_name_prefix" id="supplier_name_prefix" class="text-box">
+          <input type="submit" value="Search" class="button-save">
+        </form>
 
-              <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
-                <label class="question-heading" for="supplier_duns_number">Find suppliers by DUNS number</label>
-                <p class="hint">
-                  DUNS numbers are usually 9 digits long, eg 234554321
-                </p>
-                <input type="text" name="supplier_duns_number" id="supplier_duns_number" class="text-box">
-                <input type="submit" value="Search" class="button-save">
-              </form>
+        <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+          <label class="question-heading" for="supplier_duns_number">Find suppliers by DUNS number</label>
+          <p class="hint">
+            DUNS numbers are usually 9 digits long, eg 234554321
+          </p>
+          <input type="text" name="supplier_duns_number" id="supplier_duns_number" class="text-box">
+          <input type="submit" value="Search" class="button-save">
+        </form>
 
-              {% if current_user.has_any_role('admin') %}
+        {% if current_user.has_any_role('admin') %}
 
-              <form action="{{ url_for('.find_user_by_email_address') }}" method="get" class="question">
-                  <label class="question-heading" for="email_address">Find users by email address</label>
-                  <p class='hint'>
-                    eg john@smokeyjoes.com
-                  </p>
-                  <input type="text" name="email_address" id="email_address" class="text-box">
-                  <input type="submit" value="Search" class="button-save">
-              </form>
+        <form action="{{ url_for('.find_user_by_email_address') }}" method="get" class="question">
+          <label class="question-heading" for="email_address">Find users by email address</label>
+          <p class='hint'>
+            eg john@smokeyjoes.com
+          </p>
+          <input type="text" name="email_address" id="email_address" class="text-box">
+          <input type="submit" value="Search" class="button-save">
+        </form>
 
-              <form action="{{ url_for('.find_buyer_by_brief_id') }}" method="get" class="question">
-                  <label class="question-heading" for="brief_id">Find buyer by opportunity ID</label>
-                  <p class='hint'>
-                    You can find this number at the end of the opportunities’ URL.
-                  </p>
-                  <input type="text" name="brief_id" id="brief_id" class="text-box">
-                  <input type="submit" value="Search" class="button-save">
-              </form>
+        <form action="{{ url_for('.find_buyer_by_brief_id') }}" method="get" class="question">
+          <label class="question-heading" for="brief_id">Find buyer by opportunity ID</label>
+          <p class='hint'>
+            You can find this number at the end of the opportunities’ URL.
+          </p>
+          <input type="text" name="brief_id" id="brief_id" class="text-box">
+          <input type="submit" value="Search" class="button-save">
+        </form>
 
-              {% endif %}
-          </div>
+        {% endif %}
       </div>
+    </div>
   {% endif %}
 
 <div class="grid-row">
     <div class="column-two-thirds">
 
   {% if current_user.has_role('admin') %}
-      {% with items = [
-          {
-
-              "link": url_for('.add_buyer_domains'),
-              "title": "Add a buyer email domain"
-          },
-      ]
-      %}
-        {% include "toolkit/browse-list.html" %}
-      {% endwith %}
+    {% with items = [
+      {
+        "link": url_for('.add_buyer_domains'),
+        "title": "Add a buyer email domain"
+      },
+    ]
+    %}
+      {% include "toolkit/browse-list.html" %}
+    {% endwith %}
   {% endif %}
 
   {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
-      {% with
-          smaller = True,
-          heading = "Service edits"
-      %}
-        {% include "toolkit/page-heading.html" %}
-      {% endwith %}
-      {% with items = [
-          {
-
-              "link": url_for('.service_update_audits'),
-              "title": "Check edits to services"
-          },
-      ]
-      %}
-        {% include "toolkit/browse-list.html" %}
-      {% endwith %}
+    {% with
+      smaller = True,
+      heading = "Service edits"
+    %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
+    {% with items = [
+      {
+        "link": url_for('.service_update_audits'),
+        "title": "Check edits to services"
+      },
+    ]
+    %}
+      {% include "toolkit/browse-list.html" %}
+    {% endwith %}
   {% endif %}
 
-   {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-sourcing') %}
-      {% with
-          smaller = True,
-          heading = "Statistics"
-      %}
-        {% include "toolkit/page-heading.html" %}
-      {% endwith %}
-      {% with items = [
-          {
-              "body": "View G-Cloud 9 statistics",
-              "link": "/admin/statistics/g-cloud-9",
-              "title": "G-Cloud 9 statistics"
-          }
-      ]
-      %}
-        {% include "toolkit/browse-list.html" %}
-      {% endwith %}
-
-   {% endif %}
+  {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-sourcing') %}
+    {% with
+      smaller = True,
+      heading = "Statistics"
+    %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
+    {% with items = [
+      {
+        "body": "View G-Cloud 9 statistics",
+        "link": "/admin/statistics/g-cloud-9",
+        "title": "G-Cloud 9 statistics"
+      }
+    ]
+    %}
+     {% include "toolkit/browse-list.html" %}
+    {% endwith %}
+  {% endif %}
 
   {% if current_user.has_any_role('admin', 'admin-ccs-sourcing') %}
     {% with
-        smaller = True,
-        heading = "Agreements"
+      smaller = True,
+      heading = "Agreements"
     %}
       {% include "toolkit/page-heading.html" %}
     {% endwith %}
@@ -179,22 +175,22 @@
 
   {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
     {% set items = [
-        {
-          "body": "Manage G-Cloud 8 communications",
-          "link": url_for(".manage_communications", framework_slug="g-cloud-8"),
-          "title": "G-Cloud 8 communications"
-        },
-        {
-          "body": "Manage Digital Outcomes and Specialists 2 communications",
-          "link": url_for(".manage_communications", framework_slug="digital-outcomes-and-specialists-2"),
-          "title": "Digital Outcomes and Specialists 2 communications"
-        },
-        {
-          "body": "Manage G-Cloud 9 communications",
-          "link": url_for(".manage_communications", framework_slug="g-cloud-9"),
-          "title": "G-Cloud 9 communications"
-        }
-      ]
+      {
+        "body": "Manage G-Cloud 8 communications",
+        "link": url_for(".manage_communications", framework_slug="g-cloud-8"),
+        "title": "G-Cloud 8 communications"
+      },
+      {
+        "body": "Manage Digital Outcomes and Specialists 2 communications",
+        "link": url_for(".manage_communications", framework_slug="digital-outcomes-and-specialists-2"),
+        "title": "Digital Outcomes and Specialists 2 communications"
+      },
+      {
+        "body": "Manage G-Cloud 9 communications",
+        "link": url_for(".manage_communications", framework_slug="g-cloud-9"),
+        "title": "G-Cloud 9 communications"
+      }
+    ]
     %}
 
     {% if current_user.has_role('admin') %}
@@ -208,8 +204,8 @@
     {% endif %}
 
     {% with
-        smaller = True,
-        heading = "Communications"
+      smaller = True,
+      heading = "Communications"
     %}
       {% include "toolkit/page-heading.html" %}
     {% endwith %}
