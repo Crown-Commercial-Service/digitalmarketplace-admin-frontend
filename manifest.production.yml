@@ -1,0 +1,7 @@
+applications:
+    - name: dm-dev-admin
+      command: python application.py runprodserver
+      buildpack: python_buildpack
+      memory: 512M
+      disk_quota: 1G
+      instances: 2
