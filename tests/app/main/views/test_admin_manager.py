@@ -1,10 +1,11 @@
 import mock
 import pytest
-
-from dmapiclient import HTTPError
 from lxml import html
 
+from dmapiclient import HTTPError
+
 from ...helpers import LoggedInApplicationTest, Response
+from ..helpers.flash_tester import assert_flashes
 
 
 @mock.patch("app.main.views.admin_manager.data_api_client")
@@ -108,3 +109,85 @@ class TestAdminManagerListView(LoggedInApplicationTest):
         assert "Active" not in rows[5].text_content()
         assert "Suspended" in rows[5].text_content()
         assert "Has-been Sourcing Support" in rows[5].text_content()
+
+
+@mock.patch('app.main.forms.data_api_client', autospec=True)
+class TestInviteAdminUserView(LoggedInApplicationTest):
+    user_role = 'admin-manager'
+
+    def get_validation_message(self, res):
+        validation_message_xpath = '//span[@class="validation-message"]//text()'
+        return html.fromstring(res.get_data(as_text=True)).xpath(validation_message_xpath)[0].strip()
+
+    def test_get_with_correct_login_returns_200(self, data_api_client):
+        res = self.client.get('/admin/admin-users/invite')
+        assert res.status_code == 200
+
+    def test_post_requires_email(self, data_api_client):
+        res = self.client.post('/admin/admin-users/invite', data={'role': 'admin'})
+
+        assert res.status_code == 400
+        assert self.get_validation_message(res) == "You must provide an email address"
+
+    def test_post_requires_valid_email(self, data_api_client):
+        res = self.client.post(
+            '/admin/admin-users/invite',
+            data={'role': 'admin', 'email_address': 'not_a_valid_email'}
+        )
+        assert res.status_code == 400
+        assert self.get_validation_message(res) == "Please enter a valid email address"
+
+    def test_post_requires_valid_admin_email(self, data_api_client):
+        data_api_client.email_is_valid_for_admin_user.return_value = False
+        res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
+
+        assert res.status_code == 400
+        assert self.get_validation_message(res) == "The email address must belong to an approved domain"
+
+    def test_post_requires_role(self, data_api_client):
+        res = self.client.post('/admin/admin-users/invite', data={'email_address': 'test@test.com'})
+        assert res.status_code == 400
+        assert self.get_validation_message(res) == "You must choose a permission"
+
+    def test_post_requires_valid_role(self, data_api_client):
+        """This case won't happen unless they mess with the post."""
+        res = self.client.post(
+            '/admin/admin-users/invite',
+            data={'email_address': 'test@test.com', 'role': 'not_a_valid_role'}
+        )
+        assert res.status_code == 400
+        assert self.get_validation_message(res) == "Not a valid choice"
+
+    @mock.patch('app.main.views.admin_manager.send_user_account_email')
+    def test_successful_post_redirects(self, send_user_account_email, data_api_client):
+        data_api_client.email_is_valid_for_admin_user.return_value = True
+        res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
+        assert res.status_code == 302
+        assert res.location == "http://localhost/admin/admin-users"
+
+    @mock.patch('app.main.views.admin_manager.send_user_account_email')
+    @pytest.mark.parametrize('role', ('admin', 'admin-ccs-sourcing', 'admin-ccs-category'))
+    def test_post_is_successful_for_valid_roles(self, send_user_account_email, data_api_client, role):
+        data_api_client.email_is_valid_for_admin_user.return_value = True
+        res = self.client.post('/admin/admin-users/invite', data={'role': role, 'email_address': 'test@test.com'})
+        assert res.status_code == 302
+
+    @mock.patch('app.main.views.admin_manager.send_user_account_email')
+    def test_successful_post_sends_email(self, send_user_account_email, data_api_client):
+        data_api_client.email_is_valid_for_admin_user.return_value = True
+        res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
+
+        assert res.status_code == 302
+        send_user_account_email.assert_called_once_with(
+            'admin',
+            'test@test.com',
+            '08ab7791-6038-4ad2-9560-740bbcb675b7',
+            personalisation={'name': 'tester'}
+        )
+
+    @mock.patch('app.main.views.admin_manager.send_user_account_email')
+    def test_successful_post_flashes(self, data_api_client, send_user_account_email):
+        data_api_client.email_is_valid_for_admin_user.return_value = True
+        res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
+        assert res.status_code == 302
+        assert_flashes(self, 'An invitation has been sent to test@test.com.', 'success')
