@@ -1364,10 +1364,10 @@ class TestServiceUpdates(LoggedInApplicationTest):
         "expected_oldest_edit_info,find_audit_events_page_length",
         chain.from_iterable(
             (
-                (fae_r_s, avail_a_s, svc_s, exp_ov_c_t, fae_p_l,)
-                for fae_p_l, exp_s_t in variant_params
+                (fae_api_response, old_vers_of_services, service_status, expected_oldest_edit_info, fae_page_length)
+                for fae_page_length, expected_message_about_latest_edit in variant_params
             )
-            for fae_r_s, avail_a_s, svc_s, exp_ov_c_t, variant_params in (
+            for fae_api_response, old_vers_of_services, service_status, expected_oldest_edit_info, variant_params in (
                 disabled_service_one_edit,
                 published_service_multiple_edits,
                 enabled_service_multiple_edits_by_same_user,
@@ -1491,10 +1491,16 @@ class TestServiceUpdates(LoggedInApplicationTest):
         "find_audit_events_page_length,expected_latest_edit_info",
         chain.from_iterable(
             (
-                (fae_r_s, avail_a_s, svc_s, fae_p_l, exp_s_t,)
-                for fae_p_l, exp_s_t in variant_params
+                (
+                    fae_api_response,
+                    old_vers_of_services,
+                    service_status,
+                    find_audit_events_page_length,
+                    expected_message_about_latest_edit,
+                )
+                for find_audit_events_page_length, expected_message_about_latest_edit in variant_params
             )
-            for fae_r_s, avail_a_s, svc_s, exp_ov_c_t, variant_params in (
+            for fae_api_response, old_vers_of_services, service_status, expected_oldest_edit_info, variant_params in (
                 disabled_service_one_edit,
                 published_service_multiple_edits,
                 enabled_service_multiple_edits_by_same_user,
