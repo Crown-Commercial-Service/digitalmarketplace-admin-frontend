@@ -110,6 +110,19 @@ class TestAdminManagerListView(LoggedInApplicationTest):
         assert "Suspended" in rows[5].text_content()
         assert "Has-been Sourcing Support" in rows[5].text_content()
 
+    def test_should_have_invite_user_link(self, data_api_client):
+        self.user_role = "admin-manager"
+        response = self.client.get("/admin/admin-users")
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert response.status_code == 200
+
+        expected_link_text = "Invite user"
+        expected_href = '/admin/admin-users/invite'
+        expected_link = document.xpath('.//a[contains(@href,"{}")]'.format(expected_href))[0]
+
+        assert expected_link.text == expected_link_text
+
 
 @mock.patch('app.main.forms.data_api_client', autospec=True)
 class TestInviteAdminUserView(LoggedInApplicationTest):
