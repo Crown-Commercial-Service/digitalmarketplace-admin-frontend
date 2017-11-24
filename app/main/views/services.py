@@ -19,7 +19,7 @@ from ..helpers.diff_tools import html_diff_tables_from_sections_iter
 
 
 @main.route('', methods=['GET'])
-@role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
+@role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-manager')
 def index():
     frameworks = data_api_client.find_frameworks()
     frameworks = [fw for fw in frameworks['frameworks'] if fw['status'] in ('standstill', 'live')]

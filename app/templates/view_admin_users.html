@@ -1,0 +1,62 @@
+{% import "toolkit/summary-table.html" as summary %}
+
+{% extends "_base_page.html" %}
+
+{% block breadcrumb %}
+  {%
+      with items = [
+          {
+              "link": url_for('.index'),
+              "label": "Admin home"
+          }
+      ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+      {% for category, message in messages %}
+          {%
+          with
+              message = message,
+              type = "destructive" if category == 'error' else 'success'
+          %}
+          {% include "toolkit/notification-banner.html" %}
+          {% endwith %}
+      {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  {% with heading = "Manage users" %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+
+<div class="page-section">
+  {% set role_descriptors = {
+      "admin": "Support",
+      "admin-ccs-category": "Category",
+      "admin-ccs-sourcing": "Sourcing",
+    }
+  %}
+
+  {% call(item) summary.list_table(
+    admin_users,
+    caption="Admin users",
+    empty_message="No suppliers were found",
+    field_headings=["Name", "Email", "Permissions", "Status", summary.hidden_field_heading("Action")],
+    field_headings_visible=True)
+  %}
+    {% call summary.row() %}
+      {{ summary.field_name(item.name) }}
+      {{ summary.text(item.emailAddress) }}
+      {{ summary.text(role_descriptors[item.role]) }}
+      {{ summary.text("Active" if item.active else "Suspended") }}
+      {{ summary.edit_link("Edit", "http://url_for(....)") }}
+    {% endcall %}
+  {% endcall %}
+</div>
+{% endblock %}
