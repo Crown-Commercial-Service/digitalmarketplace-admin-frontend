@@ -1092,8 +1092,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
         }[service_id]}
 
     @staticmethod
-    def _mock_get_archived_service_side_effect(available_archived_services, archived_service_id):
-        return {"services": available_archived_services[archived_service_id]}
+    def _mock_get_archived_service_side_effect(old_versions_of_services, archived_service_id):
+        return {"services": old_versions_of_services[archived_service_id]}
 
     @staticmethod
     def _mock_get_supplier_side_effect(supplier_id):
@@ -1110,19 +1110,19 @@ class TestServiceUpdates(LoggedInApplicationTest):
         }[supplier_id]}
 
     @staticmethod
-    def _mock_find_audit_events_side_effect(fae_response_src, implicit_page_len, **kwargs):
+    def _mock_find_audit_events_side_effect(find_audit_events_api_response, implicit_page_len, **kwargs):
         if kwargs.get("page") or kwargs.get("page_len"):
             raise NotImplementedError
 
         links = {
             "self": "http://example.com/dummy",
         }
-        if len(fae_response_src) > implicit_page_len:
+        if len(find_audit_events_api_response) > implicit_page_len:
             links["next"] = "http://example.com/dummy_next"
         if kwargs.get("latest_first") == "true":
-            fae_response_src = fae_response_src[::-1]
+            find_audit_events_api_response = find_audit_events_api_response[::-1]
         return {
-            "auditEvents": fae_response_src[:implicit_page_len],
+            "auditEvents": find_audit_events_api_response[:implicit_page_len],
             "links": links,
         }
 
@@ -1132,274 +1132,247 @@ class TestServiceUpdates(LoggedInApplicationTest):
         "published": "Public",
     }
 
+    expected_message_about_latest_edit_1 = "someone@example.com made 1 edit on Wednesday 3 February 2010."
+    disabled_service_one_edit = (
+        # find_audit_events api response:
+        [
+            {
+                "id": 567567,
+                "type": "update_service",
+                "acknowledged": False,
+                "data": {
+                    "oldArchivedServiceId": "789",
+                    "newArchivedServiceId": "678",
+                },
+                "createdAt": "2010-02-03T10:11:12.345Z",
+                "user": "someone@example.com",
+            }
+        ],
+        # old versions of edited services:
+        {
+            "789": {
+                "frameworkSlug": "g-cloud-9",
+                "lot": "cloud-hosting",
+                "supplierId": 909090,
+                "supplierName": "Barrington's",
+                "serviceName": "Melonflavoured soap",
+            },
+        },
+        # service status:
+        "disabled",
+        # expected message about the oldest unapproved edit:
+        "Changed on Wednesday 3 February 2010 at 10:11am",
+        # number of audit events per page in API response + expected message about latest edit:
+        ((5, expected_message_about_latest_edit_1,),),
+    )
+
+    expected_message_about_latest_edit_2 = "More than one user has edited this service. " \
+        "The last user to edit this service was florrie@example.com on Sunday 22 March 2015."
+    published_service_multiple_edits = (
+        # find_audit_events api response:
+        (
+            {
+                "id": 1928374,
+                "type": "update_service",
+                "acknowledged": False,
+                "data": {
+                    "oldArchivedServiceId": "111",
+                    "newArchivedServiceId": "222",
+                },
+                "createdAt": "2015-02-03T20:11:12.345Z",
+                "user": "lynch@example.com",
+            },
+            {
+                "id": 293847,
+                "type": "update_service",
+                "acknowledged": False,
+                "data": {
+                    "oldArchivedServiceId": "222",
+                    "newArchivedServiceId": "333",
+                },
+                "createdAt": "2015-03-22T12:55:12.345Z",
+                "user": "lynch@example.com",
+            },
+            {
+                "id": 948576,
+                "type": "update_service",
+                "acknowledged": False,
+                "data": {
+                    "oldArchivedServiceId": "333",
+                    "newArchivedServiceId": "444",
+                },
+                "createdAt": "2015-03-22T12:57:12.345Z",
+                "user": "florrie@example.com",
+            },
+        ),
+        # old versions of edited services:
+        {
+            "111": {
+                "frameworkSlug": "g-cloud-9",
+                "lot": "cloud-hosting",
+                "supplierId": 909090,
+                "supplierName": "Mr Lambe from London",
+                "serviceName": "Lamb of London, who takest away the sins of our world.",
+                "somethingIrrelevant": "Soiled personal linen, wrong side up with care.",
+            },
+        },
+        # service status:
+        "published",
+        # expected message about the oldest unapproved edit:
+        "Changed on Tuesday 3 February 2015 at 8:11pm",
+        # number of audit events per page in API response + expected message about latest edit:
+        (
+            (5, expected_message_about_latest_edit_2),
+            (2, expected_message_about_latest_edit_2),
+            (1, expected_message_about_latest_edit_2)
+        )
+    )
+
+    expected_message_about_latest_edit_3 = "marion@example.com made 2 edits on Saturday 30 June 2012."
+    enabled_service_multiple_edits_by_same_user = (
+        # find_audit_events api response:
+        (
+            {
+                "id": 65432,
+                "type": "update_service",
+                "acknowledged": False,
+                "data": {
+                    "oldArchivedServiceId": "4444",
+                    "newArchivedServiceId": "5555",
+                },
+                "createdAt": "2012-06-30T20:01:12.345Z",
+                "user": "marion@example.com",
+            },
+            {
+                "id": 76543,
+                "type": "update_service",
+                "acknowledged": False,
+                "data": {
+                    "oldArchivedServiceId": "5555",
+                    "newArchivedServiceId": "6666",
+                },
+                "createdAt": "2012-06-30T22:55:12.345Z",
+                "user": "marion@example.com",
+            },
+        ),
+        # old versions of edited services:
+        {
+            "4444": {
+                "id": "151",
+                "frameworkSlug": "g-cloud-9",
+                "lot": "cloud-hosting",
+                "supplierId": 909090,
+                "supplierName": "Barrington's",
+                "serviceName": "Lemonflavoured soap",
+            },
+        },
+        # service status:
+        "enabled",
+        # expected message about the oldest unapproved edit:
+        "Changed on Saturday 30 June 2012 at 9:01pm",
+        # number of audit events per page in API response + expected message about latest edit:
+        (
+            (5, expected_message_about_latest_edit_3),
+            (2, expected_message_about_latest_edit_3),
+            (1, expected_message_about_latest_edit_3)
+        )
+    )
+
+    expected_message_about_latest_edit_4 = "More than one user has edited this service. " \
+        "The last user to edit this service was private.carr@example.com on Saturday 17 December 2005."
+    enabled_service_with_multiple_user_edits = (
+        # find_audit_events api response:
+        (
+            {
+                "id": 556677,
+                "type": "update_service",
+                "acknowledged": False,
+                "data": {
+                    "oldArchivedServiceId": "3535",
+                    "newArchivedServiceId": "6767",
+                },
+                "createdAt": "2005-11-12T15:01:12.345Z",
+                "user": "private.carr@example.com",
+            },
+            {
+                "id": 668833,
+                "type": "update_service",
+                "acknowledged": False,
+                "data": {
+                    "oldArchivedServiceId": "6767",
+                    "newArchivedServiceId": "7373",
+                },
+                "createdAt": "2005-12-10T11:55:12.345Z",
+                "user": "private.carr@example.com",
+            },
+            {
+                "id": 449966,
+                "type": "update_service",
+                "acknowledged": False,
+                "data": {
+                    "oldArchivedServiceId": "7373",
+                    "newArchivedServiceId": "4747",
+                },
+                "createdAt": "2005-12-11T12:55:12.345Z",
+                "user": "cissy@example.com",
+            },
+            {
+                "id": 221188,
+                "type": "update_service",
+                "acknowledged": False,
+                "data": {
+                    "oldArchivedServiceId": "4747",
+                    "newArchivedServiceId": "9292",
+                },
+                "createdAt": "2005-12-17T09:22:12.345Z",
+                "user": "private.carr@example.com",
+            },
+        ),
+        # old versions of edited services:
+        {
+            "3535": {
+                "id": "151",
+                "frameworkSlug": "g-cloud-9",
+                "lot": "cloud-hosting",
+                "supplierId": 909090,
+                "supplierName": "Barrington's",
+                "serviceName": "Lemonflavoured soup",
+            },
+        },
+        # service status:
+        "enabled",
+        # expected message about the oldest unapproved edit:
+        "Changed on Saturday 12 November 2005 at 3:01pm",
+        # number of audit events per page in API response + expected message about latest edit:
+        (
+            (5, expected_message_about_latest_edit_4),
+            (3, expected_message_about_latest_edit_4),
+            (2, expected_message_about_latest_edit_4)
+        )
+    )
+
+    enabled_service_with_no_edits = (
+        (),
+        {},
+        "enabled",
+        None,
+        ((5, "This service has no unapproved edits.",),)
+    )
+
     @pytest.mark.parametrize(
-        "fae_response_src,avail_arch_svcs,svc_status,exp_oldver_ctxt_text,fae_page_len,exp_summ_text",
+        "find_audit_events_api_response,old_versions_of_services,service_status,"
+        "expected_oldest_edit_info,find_audit_events_page_length",
         chain.from_iterable(
             (
-                (fae_r_s, avail_a_s, svc_s, exp_ov_c_t, fae_p_l, exp_s_t,)
-                for fae_p_l, exp_s_t in variant_params
+                (fae_api_response, old_vers_of_services, service_status, expected_oldest_edit_info, fae_page_length)
+                for fae_page_length, expected_message_about_latest_edit in variant_params
             )
-            for fae_r_s, avail_a_s, svc_s, exp_ov_c_t, variant_params in (
-                (
-                    # fae_response_src (find_audit_events response source data)
-                    (
-                        {
-                            "id": 567567,
-                            "type": "update_service",
-                            "acknowledged": False,
-                            "data": {
-                                "oldArchivedServiceId": "789",
-                                "newArchivedServiceId": "678",
-                            },
-                            "createdAt": "2010-02-03T10:11:12.345Z",
-                            "user": "someone@example.com",
-                        },
-                    ),
-                    # avail_arch_svcs (available archived services)
-                    {
-                        "789": {
-                            "frameworkSlug": "g-cloud-9",
-                            "lot": "cloud-hosting",
-                            "supplierId": 909090,
-                            "supplierName": "Barrington's",
-                            "serviceName": "Melonflavoured soap",
-                        },
-                    },
-                    # svc_status (service status)
-                    "disabled",
-                    # exp_oldver_ctxt_text (expected oldversion title context text)
-                    "Changed on Wednesday 3 February 2010 at 10:11am",
-                    # sets of (fae_page_len, exp_summ_text) combinations to be flattened and joined against the above
-                    # parameters^. this lets us reuse a long-winded description of the "universe" against many different
-                    # implicit page_len values to test it with
-                    (
-                        (
-                            # fae_page_len (find_audit_events implicit page_len)
-                            5,
-                            # exp_summ_text (expected summary text)
-                            "1 unapproved edit by someone@example.com on Wednesday 3 February 2010.",
-                        ),
-                    ),
-                ),
-                (
-                    (
-                        {
-                            "id": 1928374,
-                            "type": "update_service",
-                            "acknowledged": False,
-                            "data": {
-                                "oldArchivedServiceId": "111",
-                                "newArchivedServiceId": "222",
-                            },
-                            "createdAt": "2015-02-03T20:11:12.345Z",
-                            "user": "lynch@example.com",
-                        },
-                        {
-                            "id": 293847,
-                            "type": "update_service",
-                            "acknowledged": False,
-                            "data": {
-                                "oldArchivedServiceId": "222",
-                                "newArchivedServiceId": "333",
-                            },
-                            "createdAt": "2015-03-22T12:55:12.345Z",
-                            "user": "lynch@example.com",
-                        },
-                        {
-                            "id": 948576,
-                            "type": "update_service",
-                            "acknowledged": False,
-                            "data": {
-                                "oldArchivedServiceId": "333",
-                                "newArchivedServiceId": "444",
-                            },
-                            "createdAt": "2015-03-22T12:57:12.345Z",
-                            "user": "florrie@example.com",
-                        },
-                    ),
-                    {
-                        "111": {
-                            "frameworkSlug": "g-cloud-9",
-                            "lot": "cloud-hosting",
-                            "supplierId": 909090,
-                            "supplierName": "Mr Lambe from London",
-                            "serviceName": "Lamb of London, who takest away the sins of our world.",
-                            "somethingIrrelevant": "Soiled personal linen, wrong side up with care.",
-                        },
-                    },
-                    "published",
-                    "Changed on Tuesday 3 February 2015 at 8:11pm",
-                    (
-                        (
-                            5,
-                            (
-                                "3 unapproved edits by 2 users between Tuesday 3 February 2015 and Sunday 22 "
-                                "March 2015."
-                            ),
-                        ),
-                        (
-                            2,
-                            (
-                                "3 unapproved edits by 2 users between Tuesday 3 February 2015 and Sunday 22 "
-                                "March 2015."
-                            ),
-                        ),
-                        (
-                            1,
-                            (
-                                "Multiple unapproved edits between Tuesday 3 February 2015 and Sunday 22 March "
-                                "2015."
-                            ),
-                        ),
-                    ),
-                ),
-                (
-                    (
-                        {
-                            "id": 65432,
-                            "type": "update_service",
-                            "acknowledged": False,
-                            "data": {
-                                "oldArchivedServiceId": "4444",
-                                "newArchivedServiceId": "5555",
-                            },
-                            "createdAt": "2012-06-30T20:01:12.345Z",
-                            "user": "marion@example.com",
-                        },
-                        {
-                            "id": 76543,
-                            "type": "update_service",
-                            "acknowledged": False,
-                            "data": {
-                                "oldArchivedServiceId": "5555",
-                                "newArchivedServiceId": "6666",
-                            },
-                            "createdAt": "2012-06-30T22:55:12.345Z",
-                            "user": "marion@example.com",
-                        },
-                    ),
-                    {
-                        "4444": {
-                            "id": "151",
-                            "frameworkSlug": "g-cloud-9",
-                            "lot": "cloud-hosting",
-                            "supplierId": 909090,
-                            "supplierName": "Barrington's",
-                            "serviceName": "Lemonflavoured soap",
-                        },
-                    },
-                    "enabled",
-                    "Changed on Saturday 30 June 2012 at 9:01pm",
-                    (
-                        (
-                            5,
-                            "2 unapproved edits by marion@example.com on Saturday 30 June 2012.",
-                        ),
-                        (
-                            2,
-                            "2 unapproved edits by marion@example.com on Saturday 30 June 2012.",
-                        ),
-                        (
-                            1,
-                            "Multiple unapproved edits on Saturday 30 June 2012.",
-                        ),
-                    ),
-                ),
-                (
-                    (
-                        {
-                            "id": 556677,
-                            "type": "update_service",
-                            "acknowledged": False,
-                            "data": {
-                                "oldArchivedServiceId": "3535",
-                                "newArchivedServiceId": "6767",
-                            },
-                            "createdAt": "2005-11-12T15:01:12.345Z",
-                            "user": "private.carr@example.com",
-                        },
-                        {
-                            "id": 668833,
-                            "type": "update_service",
-                            "acknowledged": False,
-                            "data": {
-                                "oldArchivedServiceId": "6767",
-                                "newArchivedServiceId": "7373",
-                            },
-                            "createdAt": "2005-12-10T11:55:12.345Z",
-                            "user": "private.carr@example.com",
-                        },
-                        {
-                            "id": 449966,
-                            "type": "update_service",
-                            "acknowledged": False,
-                            "data": {
-                                "oldArchivedServiceId": "7373",
-                                "newArchivedServiceId": "4747",
-                            },
-                            "createdAt": "2005-12-11T12:55:12.345Z",
-                            "user": "cissy@example.com",
-                        },
-                        {
-                            "id": 221188,
-                            "type": "update_service",
-                            "acknowledged": False,
-                            "data": {
-                                "oldArchivedServiceId": "4747",
-                                "newArchivedServiceId": "9292",
-                            },
-                            "createdAt": "2005-12-17T09:22:12.345Z",
-                            "user": "private.carr@example.com",
-                        },
-                    ),
-                    {
-                        "3535": {
-                            "id": "151",
-                            "frameworkSlug": "g-cloud-9",
-                            "lot": "cloud-hosting",
-                            "supplierId": 909090,
-                            "supplierName": "Barrington's",
-                            "serviceName": "Lemonflavoured soup",
-                        },
-                    },
-                    "enabled",
-                    "Changed on Saturday 12 November 2005 at 3:01pm",
-                    (
-                        (
-                            5,
-                            (
-                                "4 unapproved edits by 2 users between Saturday 12 November 2005 and Saturday 17 "
-                                "December 2005."
-                            ),
-                        ),
-                        (
-                            3,
-                            (
-                                "4 unapproved edits by 2 users between Saturday 12 November 2005 and Saturday 17 "
-                                "December 2005."
-                            ),
-                        ),
-                        (
-                            2,
-                            (
-                                "Multiple unapproved edits between Saturday 12 November 2005 and Saturday 17 "
-                                "December 2005."
-                            ),
-                        ),
-                    ),
-                ),
-                (
-                    (),
-                    {},
-                    "enabled",
-                    None,
-                    (
-                        (
-                            5,
-                            "0 unapproved edits.",
-                        ),
-                    ),
-                ),
+            for fae_api_response, old_vers_of_services, service_status, expected_oldest_edit_info, variant_params in (
+                disabled_service_one_edit,
+                published_service_multiple_edits,
+                enabled_service_multiple_edits_by_same_user,
+                enabled_service_with_multiple_user_edits,
+                enabled_service_with_no_edits,
             )
         )
     )
@@ -1408,23 +1381,22 @@ class TestServiceUpdates(LoggedInApplicationTest):
         self,
         data_api_client,
         html_diff_tables_from_sections_iter,
-        fae_response_src,
-        avail_arch_svcs,
-        svc_status,
-        exp_oldver_ctxt_text,
-        fae_page_len,
-        exp_summ_text,
+        find_audit_events_api_response,
+        old_versions_of_services,
+        service_status,
+        expected_oldest_edit_info,
+        find_audit_events_page_length,
         resultant_diff,
     ):
-        data_api_client.get_service.side_effect = partial(self._mock_get_service_side_effect, svc_status)
+        data_api_client.get_service.side_effect = partial(self._mock_get_service_side_effect, service_status)
         data_api_client.find_audit_events.side_effect = partial(
             self._mock_find_audit_events_side_effect,
-            fae_response_src,
-            fae_page_len,
+            find_audit_events_api_response,
+            find_audit_events_page_length,
         )
         data_api_client.get_archived_service.side_effect = partial(
             self._mock_get_archived_service_side_effect,
-            avail_arch_svcs,
+            old_versions_of_services,
         )
         data_api_client.get_supplier.side_effect = self._mock_get_supplier_side_effect
         html_diff_tables_from_sections_iter.side_effect = lambda *a, **ka: iter((
@@ -1450,9 +1422,9 @@ class TestServiceUpdates(LoggedInApplicationTest):
         assert doc.xpath("normalize-space(string(//header//*[@class='context']))") == "Barrington's"
         assert doc.xpath("normalize-space(string(//header//h1))") == "Lemonflavoured soap"
 
-        assert doc.xpath("//p[normalize-space(string())=$expected_text]", expected_text=exp_summ_text)
-
-        assert len(doc.xpath("//*[@class='dummy-diff-table']")) == (1 if fae_response_src and resultant_diff else 0)
+        assert len(doc.xpath(
+            "//*[@class='dummy-diff-table']"
+        )) == (1 if find_audit_events_api_response and resultant_diff else 0)
         assert len(doc.xpath(
             # an element that has the textual contents $reverted_text but doesn't have any children that have *exactly*
             # that text (this stops us getting multiple results for a single appearance of the text, because it includes
@@ -1460,14 +1432,15 @@ class TestServiceUpdates(LoggedInApplicationTest):
             # contains the target text)
             "//*[normalize-space(string())=$reverted_text][not(.//*[normalize-space(string())=$reverted_text])]",
             reverted_text="All changes were reversed.",
-        )) == (1 if fae_response_src and not resultant_diff else 0)
+        )) == (1 if find_audit_events_api_response and not resultant_diff else 0)
 
-        if fae_response_src:
+        if find_audit_events_api_response:
             assert html_diff_tables_from_sections_iter.call_args_list == [
                 ((), {
                     "sections": mock.ANY,  # test separately later?
-                    "revision_1": avail_arch_svcs[fae_response_src[0]["data"]["oldArchivedServiceId"]],
-                    "revision_2": self._mock_get_service_side_effect(svc_status, "151")["services"],
+                    "revision_1":
+                        old_versions_of_services[find_audit_events_api_response[0]["data"]["oldArchivedServiceId"]],
+                    "revision_2": self._mock_get_service_side_effect(service_status, "151")["services"],
                     "table_preamble_template": "diff_table/_table_preamble.html",
                 },),
             ]
@@ -1475,12 +1448,12 @@ class TestServiceUpdates(LoggedInApplicationTest):
             # in this case we want a strict assertion that *all* of the following are true about the ack_form
             ack_forms = doc.xpath(
                 "//form[.//input[@type='submit' and @value=$ack_text]]",
-                ack_text="Approve edit{}".format("" if len(fae_response_src) == 1 else "s"),
+                ack_text="Approve edit{}".format("" if len(find_audit_events_api_response) == 1 else "s"),
             )
             assert len(ack_forms) == 1
             assert ack_forms[0].method == "POST"
             assert ack_forms[0].action == "/admin/services/151/updates/{}/approve".format(
-                text_type(fae_response_src[-1]["id"])
+                text_type(find_audit_events_api_response[-1]["id"])
             )
             assert sorted(ack_forms[0].form_values()) == [
                 ("csrf_token", mock.ANY),
@@ -1490,7 +1463,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 "normalize-space(string(//h3[normalize-space(string())=$oldver_title]/ancestor::" +
                 "*[contains(@class, 'column')][1]))",
                 oldver_title="Previously approved version",
-            ) == "Previously approved version " + exp_oldver_ctxt_text) == bool(resultant_diff)
+            ) == "Previously approved version " + expected_oldest_edit_info) == bool(resultant_diff)
         else:
             # in this case we want a loose assertion that nothing exists that has anything like any of these properties
             assert not doc.xpath(
@@ -1512,3 +1485,56 @@ class TestServiceUpdates(LoggedInApplicationTest):
             mailto="mailto:sir.jonah.barrington@example.com",
             email="sir.jonah.barrington@example.com",
         )
+
+    @pytest.mark.parametrize(
+        "find_audit_events_api_response,old_versions_of_services,service_status,"
+        "find_audit_events_page_length,expected_latest_edit_info",
+        chain.from_iterable(
+            (
+                (
+                    fae_api_response,
+                    old_vers_of_services,
+                    service_status,
+                    find_audit_events_page_length,
+                    expected_message_about_latest_edit,
+                )
+                for find_audit_events_page_length, expected_message_about_latest_edit in variant_params
+            )
+            for fae_api_response, old_vers_of_services, service_status, expected_oldest_edit_info, variant_params in (
+                disabled_service_one_edit,
+                published_service_multiple_edits,
+                enabled_service_multiple_edits_by_same_user,
+                enabled_service_with_multiple_user_edits,
+                enabled_service_with_no_edits,
+            )
+        )
+    )
+    def test_service_edit_page_displays_last_user_to_edit_a_service(
+        self,
+        data_api_client,
+        html_diff_tables_from_sections_iter,
+        find_audit_events_api_response,
+        old_versions_of_services,
+        service_status,
+        find_audit_events_page_length,
+        expected_latest_edit_info,
+    ):
+        data_api_client.get_service.side_effect = partial(self._mock_get_service_side_effect, service_status)
+        data_api_client.find_audit_events.side_effect = partial(
+            self._mock_find_audit_events_side_effect,
+            find_audit_events_api_response,
+            find_audit_events_page_length,
+        )
+        data_api_client.get_archived_service.side_effect = partial(
+            self._mock_get_archived_service_side_effect,
+            old_versions_of_services,
+        )
+        data_api_client.get_supplier.side_effect = self._mock_get_supplier_side_effect
+
+        self.user_role = "admin-ccs-category"
+        response = self.client.get('/admin/services/151/updates')
+
+        assert response.status_code == 200
+        doc = html.fromstring(response.get_data(as_text=True))
+
+        assert doc.xpath("//p[normalize-space(string())=$expected_text]", expected_text=expected_latest_edit_info)
