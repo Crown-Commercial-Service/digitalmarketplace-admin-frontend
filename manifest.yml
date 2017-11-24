@@ -4,7 +4,8 @@ instances: 1
 memory: 512M
 disk_quota: 1G
 services:
-- ups-dm-dev-shared
+- ups-dm-dev-common
+- ups-dm-dev-admin
 routes:
 - route: dm-dev-admin.apps.z.cld.gov.au
 applications:
