@@ -43,6 +43,7 @@
     }
   %}
 
+  {{ summary.top_link("Invite user", url_for(".invite_admin_user")) }}
   {% call(item) summary.list_table(
     admin_users,
     caption="Admin users",
