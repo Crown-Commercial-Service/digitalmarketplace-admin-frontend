@@ -127,8 +127,8 @@ class Live(Config):
     DM_DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
     DM_MAIN_SERVER_NAME = 'marketplace.service.gov.au'
 
-    REACT_BUNDLE_URL = 'https://dm-frontend.apps.platform.digital.gov.au/bundle/'
-    REACT_RENDER_URL = 'https://dm-frontend.apps.platform.digital.gov.au/render'
+    REACT_BUNDLE_URL = 'https://dm-frontend.apps.b.cld.gov.au/bundle/'
+    REACT_RENDER_URL = 'https://dm-frontend.apps.b.cld.gov.au/render'
     REACT_RENDER = True
 
 
