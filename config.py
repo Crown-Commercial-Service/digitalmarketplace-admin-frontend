@@ -65,8 +65,8 @@ class Config(object):
     CREATE_USER_PATH = 'sellers/create-user'
     CREATE_APPLICANT_PATH = 'sellers/signup/create-user'
 
-    REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.z.cld.gov.au/bundle/'
-    REACT_RENDER_URL = 'https://dm-dev-frontend.apps.z.cld.gov.au/render'
+    REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.y.cld.gov.au/bundle/'
+    REACT_RENDER_URL = 'https://dm-dev-frontend.apps.y.cld.gov.au/render'
     REACT_RENDER = not DEBUG
 
     ROLLBAR_TOKEN = None
@@ -93,8 +93,8 @@ class Test(Config):
     DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-communications-dev-dev'
     DM_AGREEMENTS_BUCKET = 'digitalmarketplace-documents-dev-dev'
 
-    REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.z.cld.gov.au/bundle/'
-    REACT_RENDER_URL = 'https://dm-dev-frontend.apps.z.cld.gov.au/render'
+    REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.y.cld.gov.au/bundle/'
+    REACT_RENDER_URL = 'https://dm-dev-frontend.apps.y.cld.gov.au/render'
     REACT_RENDER = False
 
 
@@ -114,8 +114,8 @@ class Development(Config):
     DM_AGREEMENTS_BUCKET = "digitalmarketplace-agreements-dev-dev"
     DM_COMMUNICATIONS_BUCKET = "digitalmarketplace-communications-dev-dev"
 
-    REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.z.cld.gov.au/bundle/'
-    REACT_RENDER_URL = 'https://dm-dev-frontend.apps.z.cld.gov.au/render'
+    REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.y.cld.gov.au/bundle/'
+    REACT_RENDER_URL = 'https://dm-dev-frontend.apps.y.cld.gov.au/render'
 
     REACT_RENDER = True
 
@@ -136,10 +136,10 @@ class Staging(Config):
     DEBUG = False
     AUTHENTICATION = True
     DM_DOCUMENTS_URL = 'https://assets.digitalmarketplace.service.gov.uk'
-    REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.z.cld.gov.au/bundle/'
-    REACT_RENDER_URL = 'https://dm-dev-frontend.apps.z.cld.gov.au/render'
+    REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.y.cld.gov.au/bundle/'
+    REACT_RENDER_URL = 'https://dm-dev-frontend.apps.y.cld.gov.au/render'
     REACT_RENDER = True
-    DM_MAIN_SERVER_NAME = "dm-dev.apps.z.cld.gov.au"
+    DM_MAIN_SERVER_NAME = "dm-dev.apps.y.cld.gov.au"
 
 configs = {
     'development': Development,

@@ -7,6 +7,6 @@ services:
 - ups-dm-dev-common
 - ups-dm-dev-admin
 routes:
-- route: dm-dev-admin.apps.z.cld.gov.au
+- route: dm-dev-admin.apps.y.cld.gov.au
 applications:
 - name: dm-dev-admin
