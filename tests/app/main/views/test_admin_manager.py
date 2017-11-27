@@ -234,6 +234,10 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
 
         document = html.fromstring(response.get_data(as_text=True))
         assert "Auditor of Reality" in document.text_content()
+        assert document.xpath('//span[@class="question-heading"]')[0].text.strip() == "Name"
+        assert document.xpath('//span[@class="question-heading"]')[1].text.strip() == "Permissions"
+        assert document.xpath('//span[@class="question-heading"]')[2].text.strip() == "Status"
+        assert document.xpath('//input[@class="button-save"]')[0].value.strip() == "Update user"
 
     @pytest.mark.parametrize("role,expected_code", [
         ("admin-manager", 200),

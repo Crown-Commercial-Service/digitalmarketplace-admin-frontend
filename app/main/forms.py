@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 from flask.ext.wtf import Form
 from wtforms import RadioField, validators
 
+=======
+from flask_wtf import Form
+from wtforms.validators import DataRequired, Email
+from wtforms.fields import SelectField
+>>>>>>> Create form for editing admin user details - still needs default selection
 from dmutils.forms import StripWhitespaceStringField
 
 from .. import data_api_client
@@ -60,3 +66,20 @@ class InviteAdminForm(Form):
     def __init__(self, *args, **kwargs):
         super(InviteAdminForm, self).__init__(*args, **kwargs)
         self.role.toolkit_macro_options = [{'value': i[0], 'label': i[1]} for i in self.role_choices]
+
+
+class EditAdminUserForm(Form):
+    edit_admin_name = StripWhitespaceStringField('Name', validators=[
+        DataRequired(message="You must provide a name.")
+    ])
+
+    edit_admin_permissions = SelectField('Permissions', choices=[
+        {"label": "Category", "value": "admin-ccs-category"},
+        {"label": "Sourcing", "value": "admin-ccs-sourcing"},
+        {"label": "Support", "value": "admin"},
+    ])
+
+    edit_admin_status = SelectField('Status', choices=[
+        {"label": "Active", "value": "True"},
+        {"label": "Suspended", "value": "False"},
+    ])

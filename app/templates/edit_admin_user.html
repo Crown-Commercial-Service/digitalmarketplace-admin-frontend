@@ -1,3 +1,69 @@
-<body>
-{{ admin_user.name }}
-</body>
+{% extends "_base_page.html" %}
+{% block page_title %}
+  Edit details of admin user: {{ admin_user.emailAddress }} – Digital Marketplace admin
+{% endblock %}
+
+{% block breadcrumb %}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      },
+      {
+        "label": "Edit an admin user"
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+{% block main_content %}
+  {% with heading = admin_user.emailAddress %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+  <form method="post">
+    <div class="grid-row">
+      <div class="column-two-thirds">
+        <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+        {%
+          with
+          question = "Name",
+          name = edit_admin_user_form.edit_admin_name.name,
+          value = admin_user.name,
+          error = ""
+        %}
+          {% include "toolkit/forms/textbox.html" %}
+        {% endwith %}
+
+        {%
+          with
+          question = "Permissions",
+          type = "radio",
+          name = edit_admin_user_form.edit_admin_permissions.name,
+          options = edit_admin_user_form.edit_admin_permissions.choices
+        %}
+          {% include "toolkit/forms/selection-buttons.html" %}
+        {% endwith %}
+
+        {%
+          with
+          question = "Status",
+          type = "radio",
+          name = edit_admin_user_form.edit_admin_status.name,
+          options = edit_admin_user_form.edit_admin_status.choices
+        %}
+          {% include "toolkit/forms/selection-buttons.html" %}
+        {% endwith %}
+
+        {%
+          with
+          type = "save",
+          label = "Update user"
+        %}
+          {% include "toolkit/button.html" %}
+        {% endwith %}
+      </div>
+    </div>
+  </form>
+{% endblock %}
