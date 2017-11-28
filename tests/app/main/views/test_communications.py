@@ -16,18 +16,17 @@ class TestCommunicationsView(LoggedInApplicationTest):
         self.dummy_file = BytesIO(u'Lorem ipsum dolor sit amet'.encode('utf8'))
         self.framework_slug = self.load_example_listing('framework_response')['frameworks']['slug']
 
-    @pytest.mark.parametrize("allowed_role", ["admin", "admin-ccs-category"])
-    def test_get_document_upload_page_for_framework(self, data_api_client, allowed_role):
-        self.user_role = allowed_role
-
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 200),
+        ("admin-ccs-sourcing", 403),
+        ("admin-manager", 403),
+    ])
+    def test_get_page_should_only_be_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
         response = self.client.get("/admin/communications/{}".format(self.framework_slug))
-        assert response.status_code == 200
-
-    def test_get_document_upload_page_not_allowed_for_ccs_sourcing(self, data_api_client):
-        self.user_role = "admin-ccs-sourcing"
-
-        response = self.client.get("/admin/communications/{}".format(self.framework_slug))
-        assert response.status_code == 403
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
 
     @pytest.mark.parametrize("allowed_role", ["admin", "admin-ccs-category"])
     def test_post_documents_for_framework(self, data_api_client, allowed_role):

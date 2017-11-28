@@ -42,7 +42,7 @@ def find_user_by_email_address():
 
 
 @main.route('/users/download', methods=['GET'])
-@role_required('admin')
+@role_required('admin-framework-manager')
 def list_frameworks_with_users(errors=None):
     bad_statuses = ['coming', 'expired']
     frameworks = [framework for framework in data_api_client.find_frameworks()['frameworks']

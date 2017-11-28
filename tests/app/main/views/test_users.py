@@ -253,6 +253,7 @@ class TestUsersExport(LoggedInApplicationTest):
 
     ##########################################################################
     def test_get_form_with_valid_framework(self, data_api_client):
+        self.user_role = 'admin-framework-manager'
         frameworks = [self._valid_framework]
         response = self._return_get_user_export_response(data_api_client, frameworks)
         assert response.status_code == 200
