@@ -374,6 +374,44 @@ class TestServiceView(LoggedInApplicationTest):
         response = self.client.get('/admin/services/1')
         assert b'Termination cost' in response.data
 
+    def test_view_service_link_appears_for_gcloud_framework(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'lot': 'paas',
+            'serviceName': 'test',
+            'supplierId': 1000,
+            'frameworkSlug': 'g-cloud-8',
+            'frameworkFramework': 'g-cloud',
+            'id': "1",
+            'status': 'published'
+        }}
+        response = self.client.get('/admin/services/1')
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        expected_link_text = "View service"
+        expected_href = '/g-cloud/services/1'
+        expected_link = document.xpath('.//a[contains(@href,"{}")]'.format(expected_href))[0]
+
+        assert expected_link.text == expected_link_text
+
+    def test_view_service_link_does_not_appear_for_dos_framework(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'lot': 'paas',
+            'serviceName': 'test',
+            'supplierId': 1000,
+            'frameworkSlug': 'digital-outcomes-and-specialists-2',
+            'frameworkFramework': 'digital-outcomes-and-specialists',
+            'id': "1",
+            'status': 'published'
+        }}
+        response = self.client.get('/admin/services/1')
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        unexpected_href = '/g-cloud/services/1'
+
+        assert not document.xpath('.//a[contains(@href,"{}")]'.format(unexpected_href))
+
 
 @mock.patch('app.main.views.services.data_api_client', autospec=True)
 class TestServiceEdit(LoggedInApplicationTest):

@@ -62,23 +62,24 @@
 {% endif %}
 
   {% if service_data %}
-    <div class="grid-row">
-      <div class="service-title">
-        {%
-          with
-          context = service_data['supplierName'],
-          heading = service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName'],
-          smaller = True
-        %}
-          {% include "toolkit/page-heading.html" %}
-        {% endwith %}
-      </div>
-      {% if service_data['frameworkFramework'] == 'g-cloud' %}
-        <div class="service-view">
-            <a href="/{{ service_data['frameworkFramework'] }}/services/{{ service_id }}">View service</a>
-        </div>
-      {% endif %}
-    </div>
+    {%
+      with
+      context = service_data['supplierName'],
+      heading = service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName'],
+      smaller = True
+    %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
+
+    {% if service_data['frameworkFramework'] == 'g-cloud' %}
+      {%
+        with
+        url = "/{}/services/{}".format(service_data['frameworkFramework'], service_id),
+        text = "View service"
+      %}
+        {% include "toolkit/secondary-action-link.html" %}
+      {% endwith %}
+    {% endif %}
 
     {% for section in sections %}
       {{ summary.heading(section.name) }}
