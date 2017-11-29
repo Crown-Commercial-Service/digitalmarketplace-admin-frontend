@@ -36,6 +36,7 @@ class TestIndex(LoggedInApplicationTest):
         ("admin", True),
         ("admin-ccs-category", False),
         ("admin-ccs-sourcing", False),
+        ("admin-manager", False),
     ])
     def test_add_buyer_email_domain_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
@@ -58,6 +59,22 @@ class TestIndex(LoggedInApplicationTest):
         response = self.client.get('/admin')
         data = response.get_data(as_text=True)
         link_is_visible = "Manage users" in data
+
+        assert link_is_visible is link_should_be_visible, (
+            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+        )
+
+    @pytest.mark.parametrize("role, link_should_be_visible", [
+        ("admin", False),
+        ("admin-ccs-category", True),
+        ("admin-ccs-sourcing", False),
+        ("admin-manager", False),
+    ])
+    def test_check_service_edits_link_is_shown_to_users_with_the_right_role(self, role, link_should_be_visible):
+        self.user_role = role
+        response = self.client.get('/admin')
+        data = response.get_data(as_text=True)
+        link_is_visible = "Check edits to services" in data
 
         assert link_is_visible is link_should_be_visible, (
             "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")

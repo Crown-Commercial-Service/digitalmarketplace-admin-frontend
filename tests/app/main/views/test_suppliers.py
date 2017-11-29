@@ -1652,7 +1652,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
         response = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8")
         actual_code = response.status_code
-        assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
     def test_buttons_shown_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client, next_status):

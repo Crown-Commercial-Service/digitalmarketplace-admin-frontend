@@ -79,7 +79,7 @@ class TestAddBuyerDomainsView(LoggedInApplicationTest):
         self.user_role = role
         response = self.client.get('/admin/buyers/add-buyer-domains')
         actual_code = response.status_code
-        assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 302),
@@ -94,7 +94,7 @@ class TestAddBuyerDomainsView(LoggedInApplicationTest):
                                     }
                                     )
         actual_code = response.status_code
-        assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     def test_admin_user_can_add_a_new_buyer_domain(self, data_api_client):
         response1 = self.client.post('/admin/buyers/add-buyer-domains',

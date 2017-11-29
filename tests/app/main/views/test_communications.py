@@ -26,7 +26,7 @@ class TestCommunicationsView(LoggedInApplicationTest):
         self.user_role = role
         response = self.client.get("/admin/communications/{}".format(self.framework_slug))
         actual_code = response.status_code
-        assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     @pytest.mark.parametrize("allowed_role", ["admin", "admin-ccs-category"])
     def test_post_documents_for_framework(self, data_api_client, allowed_role):

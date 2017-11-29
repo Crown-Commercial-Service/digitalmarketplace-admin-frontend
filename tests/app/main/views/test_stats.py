@@ -22,7 +22,7 @@ class TestStats(LoggedInApplicationTest):
         self.user_role = role
         response = self.client.get('/admin/statistics/g-cloud-7')
         actual_code = response.status_code
-        assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     def test_get_stats_page(self, data_api_client):
         data_api_client.find_audit_events.return_value = {

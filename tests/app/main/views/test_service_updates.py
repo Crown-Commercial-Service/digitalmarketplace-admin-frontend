@@ -11,6 +11,18 @@ from ...helpers import LoggedInApplicationTest
 class TestServiceUpdates(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
 
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 200),
+        ("admin-ccs-sourcing", 403),
+        ("admin-manager", 403),
+    ])
+    def test_view_service_updates_only_for_allowed_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        response = self.client.get('/admin/services/updates/unapproved')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
     @pytest.mark.parametrize('audit_events,expected_table_contents,expected_count', (
         (
             (
@@ -127,8 +139,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
         response = self.client.post('/admin/services/123/updates/321/approve')
         assert response.status_code == 404
 
-    @pytest.mark.parametrize("role_not_allowed", ["admin", "admin-ccs-sourcing"])
-    def test_should_403_forbidden_user_roles(self, data_api_client, role_not_allowed):
+    @pytest.mark.parametrize("role_not_allowed", ["admin", "admin-ccs-sourcing", "admin-manager"])
+    def test_post_should_403_forbidden_user_roles(self, data_api_client, role_not_allowed):
         self.user_role = role_not_allowed
         response = self.client.post('/admin/services/123/updates/321/approve')
         assert response.status_code == 403

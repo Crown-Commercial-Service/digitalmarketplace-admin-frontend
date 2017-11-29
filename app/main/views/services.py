@@ -135,7 +135,7 @@ def edit(service_id, section_id, question_slug=None):
 
 
 @main.route('/services/<service_id>/updates', methods=['GET'])
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin-ccs-category')
 def service_updates(service_id):
     service_response = data_api_client.get_service(service_id)
     if service_response is None:

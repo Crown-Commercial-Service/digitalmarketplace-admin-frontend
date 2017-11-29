@@ -1109,7 +1109,23 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
 @mock.patch("app.main.views.services.html_diff_tables_from_sections_iter", autospec=True)
 @mock.patch('app.main.views.services.data_api_client', autospec=True)
 class TestServiceUpdates(LoggedInApplicationTest):
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 200),
+        ("admin-ccs-sourcing", 403),
+        ("admin-manager", 403),
+    ])
+    def test_view_service_updates_is_only_accessible_to_specific_user_roles(
+            self, data_api_client, html_diff_tables_from_sections_iter, role, expected_code
+    ):
+        self.user_role = role
+        data_api_client.get_service.return_value = self._mock_get_service_side_effect("published", "151")
+        response = self.client.get('/admin/services/31415/updates')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
     def test_nonexistent_service(self, data_api_client, html_diff_tables_from_sections_iter):
+        self.user_role = 'admin-ccs-category'
         data_api_client.get_service.return_value = None
         response = self.client.get('/admin/services/31415/updates')
         assert response.status_code == 404
