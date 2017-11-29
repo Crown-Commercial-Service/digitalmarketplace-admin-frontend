@@ -1,14 +1,13 @@
 import mock
 import pytest
+from dmapiclient import HTTPError, APIError
+from dmapiclient.audit import AuditTypes
+from dmutils.email.exceptions import EmailError
+from flask import current_app
 from freezegun import freeze_time
 from lxml import html
-from flask import current_app
 from six import BytesIO
 from six.moves.urllib.parse import urlparse, parse_qs
-
-from dmapiclient import HTTPError, APIError
-from dmutils.email.exceptions import EmailError
-from dmapiclient.audit import AuditTypes
 
 from ..helpers.flash_tester import assert_flashes
 from ...helpers import LoggedInApplicationTest, Response
@@ -16,6 +15,23 @@ from ...helpers import LoggedInApplicationTest, Response
 
 @mock.patch('app.main.views.suppliers.data_api_client')
 class TestSuppliersListView(LoggedInApplicationTest):
+
+    @pytest.mark.parametrize("role, link_should_be_visible", [
+        ("admin", False),
+        ("admin-ccs-category", True),
+    ])
+    def test_services_link_is_shown_to_users_with_right_roles(self, data_api_client, role, link_should_be_visible):
+        self.user_role = role
+        data_api_client.find_suppliers.return_value = {
+            "suppliers": [{"id": "12345"}]
+        }
+        response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
+        data = response.get_data(as_text=True)
+        link_is_visible = "Services" in data and "/admin/suppliers/12345/services" in data
+
+        assert link_is_visible is link_should_be_visible, (
+            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+        )
 
     def test_should_raise_http_error_from_api(self, data_api_client):
         data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
@@ -240,6 +256,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
 
 class TestSupplierServicesView(LoggedInApplicationTest):
+    user_role = 'admin-ccs-category'
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_404_if_supplier_does_not_exist_on_services(self, data_api_client):
@@ -413,6 +430,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
 
 @mock.patch('app.main.views.suppliers.data_api_client')
 class TestSupplierServicesViewWithRemoveParam(LoggedInApplicationTest):
+    user_role = 'admin-ccs-category'
 
     def test_400_if_supplier_has_no_services(self, data_api_client):
         framework = 'digital-outcomes-and-specialists-2'
@@ -480,6 +498,7 @@ class TestSupplierServicesViewWithRemoveParam(LoggedInApplicationTest):
 
 @mock.patch('app.main.views.suppliers.data_api_client')
 class TestDisableSupplierServicesView(LoggedInApplicationTest):
+    user_role = 'admin-ccs-category'
 
     @pytest.mark.parametrize('url_suffix', ['', '?remove=', '?foo=bar'])
     def test_400_if_no_framework_provided(self, data_api_client, url_suffix):

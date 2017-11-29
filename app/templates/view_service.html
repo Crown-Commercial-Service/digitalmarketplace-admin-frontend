@@ -83,7 +83,7 @@
 
     {% for section in sections %}
       {{ summary.heading(section.name) }}
-      {% if section.editable and current_user.has_any_role('admin', 'admin-ccs-category') %}
+      {% if section.editable %}
         {{ summary.top_link("Edit", url_for('.edit', service_id=service_id, section_id=section.id)) }}
       {% endif %}
       {% call(question) summary.list_table(
@@ -107,31 +107,29 @@
       {% endcall %}
     {% endfor %}
 
-    {% if current_user.has_role('admin') %}
-      <form action="{{ url_for('.update_service_status', service_id=service_id ) }}" method="post">
-          <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
-          <fieldset class="question">
-              <legend class="question-heading">
-                  Service status
-              </legend>
-              <label class="selection-button">
-                  <input type="radio" name="service_status" id="service_status_disabled" value="removed" {% if service_data['status'] == 'disabled' %}checked="checked"{% endif %} />
-                  Removed
-              </label>
-              <label class="selection-button">
-                  <input type="radio" name="service_status" id="service_status_private" value="private" {% if service_data['status'] == 'enabled' %}checked="checked"{% endif %} />
-                  Private
-              </label>
-              {% if service_data.status != 'disabled' %}
-              <label class="selection-button">
-                  <input type="radio" name="service_status" id="service_status_published" value="public" {% if service_data['status'] == 'published' %}checked="checked"{% endif %} />
-                  Public
-              </label>
-              {% endif %}
-          </fieldset>
-          <button type="submit" class="button-save">Update status</button>
-      </form>
-    {% endif %}
+    <form action="{{ url_for('.update_service_status', service_id=service_id ) }}" method="post">
+        <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
+        <fieldset class="question">
+            <legend class="question-heading">
+                Service status
+            </legend>
+            <label class="selection-button">
+                <input type="radio" name="service_status" id="service_status_disabled" value="removed" {% if service_data['status'] == 'disabled' %}checked="checked"{% endif %} />
+                Removed
+            </label>
+            <label class="selection-button">
+                <input type="radio" name="service_status" id="service_status_private" value="private" {% if service_data['status'] == 'enabled' %}checked="checked"{% endif %} />
+                Private
+            </label>
+            {% if service_data.status != 'disabled' %}
+            <label class="selection-button">
+                <input type="radio" name="service_status" id="service_status_published" value="public" {% if service_data['status'] == 'published' %}checked="checked"{% endif %} />
+                Public
+            </label>
+            {% endif %}
+        </fieldset>
+        <button type="submit" class="button-save">Update status</button>
+    </form>
 
   {% else %}
     <h1>Error</h1>

@@ -1,5 +1,7 @@
-import pytest
 from functools import partial
+
+import pytest
+
 try:
     from urlparse import urlsplit
     from StringIO import StringIO
@@ -33,6 +35,7 @@ class TestServiceFind(LoggedInApplicationTest):
 
 @mock.patch('app.main.views.services.data_api_client', autospec=True)
 class TestServiceView(LoggedInApplicationTest):
+    user_role = 'admin-ccs-category'
 
     find_audit_events_api_response = {'auditEvents': [
         {
@@ -207,32 +210,6 @@ class TestServiceView(LoggedInApplicationTest):
             n_lis=len(service["deviceAccessMethod"]),
             **xpath_kwargs
         )
-
-    def test_service_view_no_features_or_benefits_not_service_status_authorized(self, data_api_client):
-        self.user_role = "admin-ccs-category"
-        data_api_client.get_service.return_value = {'services': {
-            'frameworkSlug': 'g-cloud-7',
-            'serviceName': 'test',
-            'supplierId': 1000,
-            'id': "271828",
-            "status": "published",
-        }}
-        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
-        response = self.client.get('/admin/services/271828')
-
-        assert data_api_client.get_service.call_args_list == [
-            (("271828",), {}),
-        ]
-        assert data_api_client.find_audit_events.called is False
-        assert response.status_code == 200
-
-        document = html.fromstring(response.get_data(as_text=True))
-        assert document.xpath(
-            "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
-        ) == "271828"
-
-        # shouldn't be able to see this
-        assert not document.xpath("//input[@name='service_status']")
 
     @pytest.mark.parametrize('service_status', ['disabled', 'enabled'])
     def test_service_view_shows_info_banner_for_removed_and_private_services(self, data_api_client, service_status):
@@ -415,6 +392,7 @@ class TestServiceView(LoggedInApplicationTest):
 
 @mock.patch('app.main.views.services.data_api_client', autospec=True)
 class TestServiceEdit(LoggedInApplicationTest):
+    user_role = 'admin-ccs-category'
 
     def test_edit_dos_service_title(self, data_api_client):
         service = {
@@ -620,6 +598,7 @@ class TestServiceEdit(LoggedInApplicationTest):
 
 @mock.patch('app.main.views.services.data_api_client', autospec=True)
 class TestServiceUpdate(LoggedInApplicationTest):
+    user_role = 'admin-ccs-category'
 
     def test_service_update_documents_empty_post(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -991,6 +970,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
 
 @mock.patch('app.main.views.services.data_api_client', autospec=True)
 class TestServiceStatusUpdate(LoggedInApplicationTest):
+    user_role = 'admin-ccs-category'
 
     def test_cannot_make_removed_service_public(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -1044,10 +1024,11 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'removed'})
-        data_api_client.update_service_status.assert_called_with(
-            '1', 'disabled', 'test@example.com')
         assert response1.status_code == 302
         assert response1.location == 'http://localhost/admin/services/1'
+        data_api_client.update_service_status.assert_called_with(
+            '1', 'disabled', 'test@example.com')
+
         response2 = self.client.get(response1.location)
         assert b'Service status has been updated to: Removed' in response2.data
 
@@ -1061,10 +1042,11 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'private'})
-        data_api_client.update_service_status.assert_called_with(
-            '1', 'enabled', 'test@example.com')
         assert response1.status_code == 302
         assert response1.location == 'http://localhost/admin/services/1'
+        data_api_client.update_service_status.assert_called_with(
+            '1', 'enabled', 'test@example.com')
+
         response2 = self.client.get(response1.location)
         assert b'Service status has been updated to: Private' in response2.data
 
@@ -1079,10 +1061,11 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
         response1 = self.client.post('/admin/services/status/1',
                                      data={'service_status': 'public'})
-        data_api_client.update_service_status.assert_called_with(
-            '1', 'published', 'test@example.com')
         assert response1.status_code == 302
         assert response1.location == 'http://localhost/admin/services/1'
+        data_api_client.update_service_status.assert_called_with(
+            '1', 'published', 'test@example.com')
+
         response2 = self.client.get(response1.location)
         assert b'Service status has been updated to: Public' in response2.data
 
@@ -1098,6 +1081,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
                                      data={'service_status': 'suspended'})
         assert response1.status_code == 302
         assert response1.location == 'http://localhost/admin/services/1'
+
         response2 = self.client.get(response1.location)
         assert b"Not a valid status: 'suspended'" in response2.data
 
