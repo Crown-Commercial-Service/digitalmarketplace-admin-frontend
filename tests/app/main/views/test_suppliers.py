@@ -1639,39 +1639,20 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             qd_matches is None or parse_qs(parsed_url.query) == qd_matches
         )
 
-    @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
-    @pytest.mark.parametrize("agreement_status", ("signed", "on-hold", "approved", "countersigned",))
-    def test_none_shown_if_user_not_ccs_admin(self, s3, get_signed_url, data_api_client, next_status, agreement_status):
-        self.user_role = 'admin'
-        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status=agreement_status)
-
-        res = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8{}".format(
-            "" if next_status is None else "?next_status={}".format(next_status)
-        ))
-        assert res.status_code == 200
-
-        data = res.get_data(as_text=True)
-        document = html.fromstring(data)
-
-        # none of the action buttons should be shown for the 'admin' user in any agreement_status
-
-        assert "Accept and continue" not in data
-        assert "Put on hold and continue" not in data
-        assert "Cancel acceptance" not in data
-
-        assert document.xpath("//form//input[@type='submit']/@value") == ['Log out']
-
-        assert bool(document.xpath("//h2[normalize-space(string())='Accepted by']")) == (
-            agreement_status in ("approved", "countersigned",)
-        )
-
-        next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
-        assert len(next_a_elems) == 1
-        assert self._parsed_url_matches(
-            next_a_elems[0].attrib["href"],
-            "/admin/suppliers/1234/agreements/g-cloud-8/next",
-            {} if next_status is None else {"status": [next_status]},
-        )
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 200),
+        ("admin-manager", 403),
+    ])
+    def test_get_page_should_only_be_accessible_to_specific_user_roles(
+            self, s3, get_signed_url, data_api_client, role, expected_code
+    ):
+        self.user_role = role
+        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
+        response = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8")
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
 
     @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
     def test_buttons_shown_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client, next_status):

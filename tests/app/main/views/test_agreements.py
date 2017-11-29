@@ -212,7 +212,7 @@ class TestListAgreements(LoggedInApplicationTest):
 
 @mock.patch('app.main.views.agreements.data_api_client')
 class TestNextAgreementRedirect(LoggedInApplicationTest):
-    user_role = 'admin'
+    user_role = 'admin-ccs-sourcing'
 
     @property
     def dummy_supplier_frameworks(self):

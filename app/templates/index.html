@@ -150,7 +150,7 @@
     {% endwith %}
   {% endif %}
 
-  {% if current_user.has_any_role('admin', 'admin-ccs-sourcing') %}
+  {% if current_user.has_any_role('admin-ccs-sourcing') %}
     {% with
       smaller = True,
       heading = "Agreements"

@@ -90,7 +90,7 @@ def view_supplier_declaration(supplier_id, framework_slug):
 
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>', methods=['GET'])
-@role_required('admin', 'admin-ccs-sourcing')
+@role_required('admin-ccs-sourcing')
 def view_signed_agreement(supplier_id, framework_slug):
     # not properly validating this - all we do is pass it through
     next_status = request.args.get("next_status")
@@ -206,7 +206,7 @@ def download_signed_agreement_file(supplier_id, framework_slug):
 
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>/<document_name>', methods=['GET'])
-@role_required('admin', 'admin-ccs-sourcing')
+@role_required('admin-ccs-sourcing')
 def download_agreement_file(supplier_id, framework_slug, document_name):
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
     if supplier_framework is None or not supplier_framework.get("declaration"):

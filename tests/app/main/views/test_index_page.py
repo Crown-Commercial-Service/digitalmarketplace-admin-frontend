@@ -7,6 +7,7 @@ from ...helpers import LoggedInApplicationTest
 class TestIndex(LoggedInApplicationTest):
     @mock.patch('app.main.views.services.data_api_client')
     def test_index_shows_frameworks_in_standstill_or_live(self, data_api_client):
+        self.user_role = 'admin-ccs-sourcing'
         data_api_client.find_frameworks.return_value = {'frameworks': [
             {'id': 1, 'frameworkAgreementVersion': None, 'name': 'Framework 1', 'slug': 'framework-1',
              'status': 'standstill'},

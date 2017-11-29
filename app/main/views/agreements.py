@@ -30,7 +30,7 @@ def _get_supplier_frameworks(framework_slug, status=None):
 
 
 @main.route('/agreements/<framework_slug>', methods=['GET'])
-@role_required('admin', 'admin-ccs-sourcing')
+@role_required('admin-ccs-sourcing')
 def list_agreements(framework_slug):
     framework = data_api_client.get_framework(framework_slug)['frameworks']
 
@@ -56,7 +56,7 @@ def list_agreements(framework_slug):
 
 
 @main.route('/suppliers/<int:supplier_id>/agreements/<framework_slug>/next', methods=('GET',))
-@role_required('admin', 'admin-ccs-sourcing')
+@role_required('admin-ccs-sourcing')
 def next_agreement(supplier_id, framework_slug):
     status = request.args.get("status")
     if status and status not in status_labels:
