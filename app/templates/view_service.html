@@ -62,18 +62,14 @@
 {% endif %}
 
   {% if service_data %}
-    <div class="grid-row">
-      <div class="service-title">
-        {%
-          with
-          context = service_data['supplierName'],
-          heading = service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName'],
-          smaller = True
-        %}
-          {% include "toolkit/page-heading.html" %}
-        {% endwith %}
-      </div>
-    </div>
+    {%
+      with
+      context = service_data['supplierName'],
+      heading = service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName'],
+      smaller = True
+    %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
 
     {% for section in sections %}
       {{ summary.heading(section.name) }}
