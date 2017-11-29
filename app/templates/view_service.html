@@ -71,6 +71,16 @@
       {% include "toolkit/page-heading.html" %}
     {% endwith %}
 
+    {% if service_data['frameworkFramework'] == 'g-cloud' %}
+      {%
+        with
+        url = "/{}/services/{}".format(service_data['frameworkFramework'], service_id),
+        text = "View service"
+      %}
+        {% include "toolkit/secondary-action-link.html" %}
+      {% endwith %}
+    {% endif %}
+
     {% for section in sections %}
       {{ summary.heading(section.name) }}
       {% if section.editable and current_user.has_any_role('admin', 'admin-ccs-category') %}
