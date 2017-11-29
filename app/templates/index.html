@@ -73,7 +73,7 @@
           <input type="submit" value="Search" class="button-save">
         </form>
 
-        {% if current_user.has_any_role('admin') %}
+        {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
 
         <form action="{{ url_for('.find_user_by_email_address') }}" method="get" class="question">
           <label class="question-heading" for="email_address">Find users by email address</label>

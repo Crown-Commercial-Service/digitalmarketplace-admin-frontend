@@ -2,13 +2,13 @@
 from __future__ import unicode_literals
 
 import copy
+from datetime import datetime
+
 import mock
 import pytest
 import six
-from datetime import datetime
-from lxml import html
-
 from dmapiclient import HTTPError
+from lxml import html
 
 from app.main.views.users import CLOSED_BRIEF_STATUSES
 from ...helpers import LoggedInApplicationTest
@@ -16,6 +16,18 @@ from ...helpers import LoggedInApplicationTest
 
 @mock.patch('app.main.views.users.data_api_client')
 class TestUsersView(LoggedInApplicationTest):
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 200),
+        ("admin-ccs-category", 200),
+        ("admin-ccs-sourcing", 403),
+        ("admin-manager", 403),
+    ])
+    def test_find_users_page_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.get_user.return_value = self.load_example_listing("user_response")
+        response = self.client.get('/admin/users?email_address=some@email.com')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     def test_should_be_a_404_if_user_not_found(self, data_api_client):
         data_api_client.get_user.return_value = None
