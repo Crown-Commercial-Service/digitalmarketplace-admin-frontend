@@ -18,10 +18,36 @@
     {% include "toolkit/breadcrumb.html" %}
   {% endwith %}
 {% endblock %}
+
 {% block main_content %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+      {% for category, message in messages %}
+          {%
+          with
+            message = message,
+            type = "destructive" if category == 'error' else 'success'
+          %}
+          {% include "toolkit/notification-banner.html" %}
+          {% endwith %}
+      {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  {% for error in edit_admin_user_form.edit_admin_name.errors %}
+    {%
+      with
+        message = error,
+        type = "destructive"
+    %}
+      {% include "toolkit/notification-banner.html" %}
+    {% endwith %}
+  {% endfor %}
+
   {% with heading = admin_user.emailAddress %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
+
   <form method="post">
     <div class="grid-row">
       <div class="column-two-thirds">
@@ -30,7 +56,7 @@
           with
           question = "Name",
           name = edit_admin_user_form.edit_admin_name.name,
-          value = admin_user.name,
+          value = edit_admin_user_form.edit_admin_name.data,
           error = ""
         %}
           {% include "toolkit/forms/textbox.html" %}
@@ -41,7 +67,8 @@
           question = "Permissions",
           type = "radio",
           name = edit_admin_user_form.edit_admin_permissions.name,
-          options = edit_admin_user_form.edit_admin_permissions.choices
+          value = edit_admin_user_form.edit_admin_permissions.data,
+          options = edit_admin_user_form.edit_admin_permissions.toolkit_macro_options
         %}
           {% include "toolkit/forms/selection-buttons.html" %}
         {% endwith %}
@@ -51,7 +78,8 @@
           question = "Status",
           type = "radio",
           name = edit_admin_user_form.edit_admin_status.name,
-          options = edit_admin_user_form.edit_admin_status.choices
+          value = edit_admin_user_form.edit_admin_status.data,
+          options = edit_admin_user_form.edit_admin_status.toolkit_macro_options
         %}
           {% include "toolkit/forms/selection-buttons.html" %}
         {% endwith %}

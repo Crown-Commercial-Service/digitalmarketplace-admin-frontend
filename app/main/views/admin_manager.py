@@ -6,10 +6,11 @@ from dmutils.email.user_account_email import send_user_account_email
 from ... import data_api_client
 from .. import main
 
-from ..forms import InviteAdminForm
-from dmapiclient import HTTPError, APIError
+from ..forms import InviteAdminForm, EditAdminUserForm
+from dmapiclient import HTTPError
 from ..auth import role_required
-from ..forms import EditAdminUserForm
+from ..helpers.common_helpers import string_to_bool
+
 
 @main.route('/admin-users', methods=['GET'])
 @role_required('admin-manager')
@@ -67,22 +68,38 @@ def invite_admin_user():
     ), 200 if not errors else 400
 
 
-
-
-@main.route('/admin-users/<string:admin_user_id>/edit', methods=['GET', 'POST'])
-@role_required('admin-manager')
+@main.route("/admin-users/<string:admin_user_id>/edit", methods=["GET", "POST"])
+@role_required("admin-manager")
 def edit_admin_users(admin_user_id):
     admin_user = (data_api_client.get_user(admin_user_id))["users"]
-    edit_admin_user_form = EditAdminUserForm()
+    status_code = 200
+    edit_admin_user_form = EditAdminUserForm(
+        edit_admin_name=admin_user["name"],
+        edit_admin_permissions=admin_user["role"],
+        edit_admin_status=admin_user["active"])
 
-    for choice in edit_admin_user_form.edit_admin_permissions.choices:
-        choice["input_value"] = admin_user["role"]
+    if edit_admin_user_form.validate_on_submit():
+        try:
+            edited_admin_name = request.form.get("edit_admin_name")
+            edited_admin_permissions = request.form.get("edit_admin_permissions")
+            edited_admin_status = string_to_bool(request.form.get("edit_admin_status"))
 
-    for choice in edit_admin_user_form.edit_admin_status.choices:
-        choice["input_value"] = str(admin_user["active"])
+            data_api_client.update_user(
+                admin_user_id,
+                name=edited_admin_name,
+                role=edited_admin_permissions,
+                active=edited_admin_status
+            )
+            flash("{} has been updated.".format(admin_user["emailAddress"]), "message")
+            return redirect(url_for('.manage_admin_users'))
+        except HTTPError as e:
+            status_code = 400
+            raise e
+    elif edit_admin_user_form.edit_admin_name.errors:
+        status_code = 400
 
     return render_template(
         "edit_admin_user.html",
         admin_user=admin_user,
         edit_admin_user_form=edit_admin_user_form,
-    )
+    ), status_code

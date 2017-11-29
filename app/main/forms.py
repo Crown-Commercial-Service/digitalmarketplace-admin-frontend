@@ -1,12 +1,6 @@
-<<<<<<< HEAD
-from flask.ext.wtf import Form
 from wtforms import RadioField, validators
-
-=======
-from flask_wtf import Form
-from wtforms.validators import DataRequired, Email
-from wtforms.fields import SelectField
->>>>>>> Create form for editing admin user details - still needs default selection
+from flask.ext.wtf import Form
+from wtforms.validators import DataRequired
 from dmutils.forms import StripWhitespaceStringField
 
 from .. import data_api_client
@@ -73,13 +67,26 @@ class EditAdminUserForm(Form):
         DataRequired(message="You must provide a name.")
     ])
 
-    edit_admin_permissions = SelectField('Permissions', choices=[
-        {"label": "Category", "value": "admin-ccs-category"},
-        {"label": "Sourcing", "value": "admin-ccs-sourcing"},
-        {"label": "Support", "value": "admin"},
-    ])
+    permissions_choices = [
+        ("admin-ccs-category", "Category"),
+        ("admin-ccs-sourcing", "Sourcing"),
+        ("admin", "Support"),
+    ]
 
-    edit_admin_status = SelectField('Status', choices=[
-        {"label": "Active", "value": "True"},
-        {"label": "Suspended", "value": "False"},
-    ])
+    edit_admin_permissions = RadioField('Permissions', choices=permissions_choices)
+
+    status_choices = [
+        ("True", "Active"),
+        ("False", "Suspended"),
+    ]
+
+    edit_admin_status = RadioField('Status', choices=status_choices)
+
+    def __init__(self, *args, **kwargs):
+        super(EditAdminUserForm, self).__init__(*args, **kwargs)
+        self.edit_admin_permissions.toolkit_macro_options = [
+            {'value': choice[0], 'label': choice[1]} for choice in self.permissions_choices
+        ]
+        self.edit_admin_status.toolkit_macro_options = [
+            {'value': choice[0], 'label': choice[1]} for choice in self.status_choices
+        ]
