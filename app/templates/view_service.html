@@ -63,6 +63,7 @@
 
   {% if service_data %}
     <div class="grid-row">
+<<<<<<< Updated upstream
       <div class="service-title">
         {%
           with
@@ -73,6 +74,21 @@
           {% include "toolkit/page-heading.html" %}
         {% endwith %}
       </div>
+=======
+      {%
+        with
+        context = service_data['supplierName'],
+        heading = service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName'],
+        smaller = True
+      %}
+        {% include "toolkit/page-heading.html" %}
+      {% endwith %}
+      {% if service_data['frameworkFramework'] == 'g-cloud' %}
+        <div class="service-view">
+            <a href="/{{ service_data['frameworkFramework'] }}/services/{{ service_id }}">View service</a>
+        </div>
+      {% endif %}
+>>>>>>> Stashed changes
     </div>
 
     {% for section in sections %}
