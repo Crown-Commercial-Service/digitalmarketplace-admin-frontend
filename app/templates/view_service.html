@@ -73,11 +73,6 @@
           {% include "toolkit/page-heading.html" %}
         {% endwith %}
       </div>
-      {% if service_data['frameworkFramework'] == 'g-cloud' %}
-        <div class="service-view">
-            <a href="/{{ service_data['frameworkFramework'] }}/services/{{ service_id }}">View service</a>
-        </div>
-      {% endif %}
     </div>
 
     {% for section in sections %}
