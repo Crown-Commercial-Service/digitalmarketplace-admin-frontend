@@ -76,19 +76,18 @@ class TestSuppliersListView(LoggedInApplicationTest):
         data_api_client.get_supplier.assert_called_once_with("12345")
 
 
+@mock.patch('app.main.views.suppliers.data_api_client')
 class TestSupplierUsersView(LoggedInApplicationTest):
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_404_if_no_supplier_does_not_exist(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers/users?supplier_id=999')
         assert response.status_code == 404
 
-    def test_should_404_if_no_supplier_id(self):
+    def test_should_404_if_no_supplier_id(self, data_api_client):
         response = self.client.get('/admin/suppliers/users')
         assert response.status_code == 404
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_apis_with_supplier_id(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
@@ -98,7 +97,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         data_api_client.get_supplier.assert_called_once_with('1000')
         data_api_client.find_users.assert_called_once_with('1000')
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_have_supplier_name_on_page(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
@@ -106,7 +104,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 200
         assert "Supplier Name" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_indicate_if_there_are_no_users(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_users.return_value = {'users': {}}
@@ -116,7 +113,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 200
         assert "This supplier has no users on the Digital Marketplace" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_user_details_on_page(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_users.return_value = self.load_example_listing("users_response")
@@ -139,7 +135,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert '<form action="/admin/suppliers/1234/move-existing-user" method="post">' in \
             response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_unlock_button_if_user_locked(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
 
@@ -153,7 +148,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert '<form action="/admin/suppliers/users/999/unlock" method="post">' in response.get_data(as_text=True)
         assert '<input type="submit" class="button-secondary"  value="Unlock" />' in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_activate_button_if_user_deactivated(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
 
@@ -167,7 +161,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert '<form action="/admin/suppliers/users/999/activate" method="post">' in response.get_data(as_text=True)
         assert '<input type="submit" class="button-secondary"  value="Activate" />' in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_unlock_user(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.update_user.return_value = self.load_example_listing("user_response")
@@ -179,7 +172,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_activate_user(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.update_user.return_value = self.load_example_listing("user_response")
@@ -191,7 +183,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_activate_user_and_redirect_to_source_if_present(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.update_user.return_value = self.load_example_listing("user_response")
@@ -206,7 +197,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == "http://example.com"
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_deactivate_user(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.update_user.return_value = self.load_example_listing("user_response")
@@ -221,7 +211,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_deactivate_user_and_redirect_to_source_if_present(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.update_user.return_value = self.load_example_listing("user_response")
@@ -236,7 +225,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == "http://example.com"
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_move_user_to_another_supplier(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.get_user.return_value = self.load_example_listing("user_response")
@@ -255,20 +243,19 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
 
+@mock.patch('app.main.views.suppliers.data_api_client')
 class TestSupplierServicesView(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_404_if_supplier_does_not_exist_on_services(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers/999/services')
         assert response.status_code == 404
 
-    def test_should_404_if_no_supplier_id_on_services(self):
+    def test_should_404_if_no_supplier_id_on_services(self, data_api_client):
         response = self.client.get('/admin/suppliers/services')
         assert response.status_code == 404
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_service_apis_with_supplier_id(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         response = self.client.get('/admin/suppliers/1000/services')
@@ -278,7 +265,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         data_api_client.get_supplier.assert_called_once_with(1000)
         data_api_client.find_services.assert_called_once_with(1000)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_indicate_if_supplier_has_no_services(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_services.return_value = {'services': []}
@@ -287,7 +273,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert response.status_code == 200
         assert "This supplier has no services on the Digital Marketplace" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_have_supplier_name_on_services_page(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_services.return_value = {'services': []}
@@ -297,7 +282,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert response.status_code == 200
         assert "Supplier Name" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_service_details_on_page(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_services.return_value = self.load_example_listing("services_response")
@@ -317,7 +301,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert '<a href="/admin/services/5687123785023488">' in response.get_data(as_text=True)
         assert "Edit" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_correct_fields_for_disabled_service(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_frameworks.return_value = {
@@ -334,7 +317,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert "Removed" in response.get_data(as_text=True)
         assert "Edit" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_correct_fields_for_enabled_service(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_frameworks.return_value = {
@@ -351,7 +333,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert "Private" in response.get_data(as_text=True)
         assert "Edit" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_separate_tables_for_frameworks_if_supplier_has_service_on_framework(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
 
@@ -385,7 +366,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         gcloud11_table_index = response_data.find('g-cloud-11_services')
         assert gcloud11_table_index < gcloud8_table_index < dos_table_index
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_remove_all_services_link_if_supplier_has_a_published_service_on_framework(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
         data_api_client.find_frameworks.return_value = {
@@ -409,7 +389,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert expected_link.text == expected_link_text
 
     @pytest.mark.parametrize('service_status', ['enabled', 'disabled', 'a_new_status'])
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_no_remove_all_services_link_if_supplier_service_not_published(self, data_api_client, service_status):
         service = self.load_example_listing('services_response')['services'][0]
         service["status"] = service_status
