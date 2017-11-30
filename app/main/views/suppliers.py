@@ -494,7 +494,7 @@ def move_user_to_new_supplier(supplier_id):
 
 
 @main.route('/suppliers/<int:supplier_id>/services', methods=['GET'])
-@role_required('admin-ccs-category')
+@role_required('admin-ccs-category', 'admin-framework-manager')
 def find_supplier_services(supplier_id):
     remove_services_for_framework_slug = request.args.get('remove', None)
 

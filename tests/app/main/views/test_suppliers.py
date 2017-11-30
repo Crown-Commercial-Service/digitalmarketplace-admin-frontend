@@ -263,6 +263,41 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 class TestSupplierServicesView(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
 
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 200),
+        ("admin-ccs-sourcing", 403),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_supplier_services_accessible_to_users_with_right_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+
+        response = self.client.get('/admin/suppliers/1000/services')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
+    @pytest.mark.parametrize("role, can_edit", [
+        ("admin-ccs-category", True),
+        ("admin-framework-manager", False),
+    ])
+    def test_supplier_services_can_only_edit_users_with_right_roles(self, data_api_client, role, can_edit):
+        self.user_role = role
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_services.return_value = self.load_example_listing("services_response")
+        data_api_client.find_frameworks.return_value = {
+            'frameworks': [self.load_example_listing("framework_response")['frameworks']]
+        }
+
+        response = self.client.get('/admin/suppliers/1000/services')
+        assert response.status_code == 200
+        document = html.fromstring(response.get_data(as_text=True))
+        remove_all_links = document.xpath('.//a[contains(text(), "Remove services")]')
+        assert len(remove_all_links) == (1 if can_edit else 0)
+        edit_service_links = document.xpath('.//a[contains(text(), "Edit")]')
+        assert len(edit_service_links) == (1 if can_edit else 0)
+
     def test_should_404_if_supplier_does_not_exist_on_services(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers/999/services')
