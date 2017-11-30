@@ -84,7 +84,6 @@ def update_service_status(service_id):
     translate_frontend_to_api = {
         'removed': 'disabled',
         'public': 'published',
-        'private': 'enabled'
     }
 
     if frontend_status in translate_frontend_to_api.keys():
