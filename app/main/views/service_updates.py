@@ -48,7 +48,7 @@ def service_status_update_audits(day=None, page=1):
 
 
 @main.route('/services/updates/unapproved', methods=['GET'])
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin-ccs-category')
 def service_update_audits():
     audit_events_response = data_api_client.find_audit_events(
         audit_type=AuditTypes.update_service,

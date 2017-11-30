@@ -1,14 +1,13 @@
 import mock
 import pytest
+from dmapiclient import HTTPError, APIError
+from dmapiclient.audit import AuditTypes
+from dmutils.email.exceptions import EmailError
+from flask import current_app
 from freezegun import freeze_time
 from lxml import html
-from flask import current_app
 from six import BytesIO
 from six.moves.urllib.parse import urlparse, parse_qs
-
-from dmapiclient import HTTPError, APIError
-from dmutils.email.exceptions import EmailError
-from dmapiclient.audit import AuditTypes
 
 from ..helpers.flash_tester import assert_flashes
 from ...helpers import LoggedInApplicationTest, Response
@@ -16,6 +15,23 @@ from ...helpers import LoggedInApplicationTest, Response
 
 @mock.patch('app.main.views.suppliers.data_api_client')
 class TestSuppliersListView(LoggedInApplicationTest):
+
+    @pytest.mark.parametrize("role, link_should_be_visible", [
+        ("admin", False),
+        ("admin-ccs-category", True),
+    ])
+    def test_services_link_is_shown_to_users_with_right_roles(self, data_api_client, role, link_should_be_visible):
+        self.user_role = role
+        data_api_client.find_suppliers.return_value = {
+            "suppliers": [{"id": "12345"}]
+        }
+        response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
+        data = response.get_data(as_text=True)
+        link_is_visible = "Services" in data and "/admin/suppliers/12345/services" in data
+
+        assert link_is_visible is link_should_be_visible, (
+            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+        )
 
     def test_should_raise_http_error_from_api(self, data_api_client):
         data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
@@ -240,6 +256,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
 
 class TestSupplierServicesView(LoggedInApplicationTest):
+    user_role = 'admin-ccs-category'
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_404_if_supplier_does_not_exist_on_services(self, data_api_client):
@@ -413,6 +430,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
 
 @mock.patch('app.main.views.suppliers.data_api_client')
 class TestSupplierServicesViewWithRemoveParam(LoggedInApplicationTest):
+    user_role = 'admin-ccs-category'
 
     def test_400_if_supplier_has_no_services(self, data_api_client):
         framework = 'digital-outcomes-and-specialists-2'
@@ -480,6 +498,7 @@ class TestSupplierServicesViewWithRemoveParam(LoggedInApplicationTest):
 
 @mock.patch('app.main.views.suppliers.data_api_client')
 class TestDisableSupplierServicesView(LoggedInApplicationTest):
+    user_role = 'admin-ccs-category'
 
     @pytest.mark.parametrize('url_suffix', ['', '?remove=', '?foo=bar'])
     def test_400_if_no_framework_provided(self, data_api_client, url_suffix):
@@ -1639,39 +1658,20 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             qd_matches is None or parse_qs(parsed_url.query) == qd_matches
         )
 
-    @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
-    @pytest.mark.parametrize("agreement_status", ("signed", "on-hold", "approved", "countersigned",))
-    def test_none_shown_if_user_not_ccs_admin(self, s3, get_signed_url, data_api_client, next_status, agreement_status):
-        self.user_role = 'admin'
-        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status=agreement_status)
-
-        res = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8{}".format(
-            "" if next_status is None else "?next_status={}".format(next_status)
-        ))
-        assert res.status_code == 200
-
-        data = res.get_data(as_text=True)
-        document = html.fromstring(data)
-
-        # none of the action buttons should be shown for the 'admin' user in any agreement_status
-
-        assert "Accept and continue" not in data
-        assert "Put on hold and continue" not in data
-        assert "Cancel acceptance" not in data
-
-        assert document.xpath("//form//input[@type='submit']/@value") == ['Log out']
-
-        assert bool(document.xpath("//h2[normalize-space(string())='Accepted by']")) == (
-            agreement_status in ("approved", "countersigned",)
-        )
-
-        next_a_elems = document.xpath("//a[normalize-space(string())='Next agreement']")
-        assert len(next_a_elems) == 1
-        assert self._parsed_url_matches(
-            next_a_elems[0].attrib["href"],
-            "/admin/suppliers/1234/agreements/g-cloud-8/next",
-            {} if next_status is None else {"status": [next_status]},
-        )
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 200),
+        ("admin-manager", 403),
+    ])
+    def test_get_page_should_only_be_accessible_to_specific_user_roles(
+            self, s3, get_signed_url, data_api_client, role, expected_code
+    ):
+        self.user_role = role
+        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
+        response = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8")
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
     def test_buttons_shown_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client, next_status):

@@ -1,21 +1,19 @@
-from flask import abort, current_app, flash, redirect, render_template, request, url_for
-from flask_login import current_user
 from collections import OrderedDict
 from itertools import chain, dropwhile, islice
 
 from dmapiclient import HTTPError
 from dmapiclient.audit import AuditTypes
 from dmcontent.formats import format_service_price
-from dmutils.documents import upload_service_documents
 from dmutils import s3  # this style of import so we only have to mock once
+from dmutils.documents import upload_service_documents
+from flask import abort, current_app, flash, redirect, render_template, request, url_for
+from flask_login import current_user
 
-
-from ... import data_api_client
-from ... import content_loader
 from .. import main
-
 from ..auth import role_required
 from ..helpers.diff_tools import html_diff_tables_from_sections_iter
+from ... import content_loader
+from ... import data_api_client
 
 
 @main.route('', methods=['GET'])
@@ -39,7 +37,7 @@ def find():
 
 
 @main.route('/services/<service_id>', methods=['GET'])
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin-ccs-category')
 def view(service_id):
     try:
         service = data_api_client.get_service(service_id)
@@ -77,7 +75,7 @@ def view(service_id):
 
 
 @main.route('/services/status/<string:service_id>', methods=['POST'])
-@role_required('admin')
+@role_required('admin-ccs-category')
 def update_service_status(service_id):
     frontend_status = request.form['service_status']
 
@@ -111,7 +109,7 @@ def update_service_status(service_id):
 
 @main.route('/services/<service_id>/edit/<section_id>', methods=['GET'])
 @main.route('/services/<service_id>/edit/<section_id>/<question_slug>', methods=['GET'])
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin-ccs-category')
 def edit(service_id, section_id, question_slug=None):
     service_data = data_api_client.get_service(service_id)['services']
 
@@ -135,7 +133,7 @@ def edit(service_id, section_id, question_slug=None):
 
 
 @main.route('/services/<service_id>/updates', methods=['GET'])
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin-ccs-category')
 def service_updates(service_id):
     service_response = data_api_client.get_service(service_id)
     if service_response is None:
@@ -229,7 +227,7 @@ def service_updates(service_id):
 
 @main.route('/services/<service_id>/edit/<section_id>', methods=['POST'])
 @main.route('/services/<service_id>/edit/<section_id>/<question_slug>', methods=['POST'])
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin-ccs-category')
 def update(service_id, section_id, question_slug=None):
     service = data_api_client.get_service(service_id)
     if service is None:

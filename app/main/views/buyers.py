@@ -2,14 +2,14 @@ from dmapiclient import HTTPError
 from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
-from ..forms import EmailDomainForm
 from .. import main
-from ... import data_api_client
 from ..auth import role_required
+from ..forms import EmailDomainForm
+from ... import data_api_client
 
 
 @main.route('/buyers', methods=['GET'])
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def find_buyer_by_brief_id():
     brief_id = request.args.get('brief_id')
 

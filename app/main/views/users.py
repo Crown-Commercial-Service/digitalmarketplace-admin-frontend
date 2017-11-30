@@ -1,23 +1,23 @@
 from __future__ import unicode_literals
 
-from itertools import chain
 from collections import OrderedDict
+from datetime import datetime
+from itertools import chain
 
+from dmutils import csv_generator
 from flask import render_template, request, Response
 from flask_login import flash
-from datetime import datetime
-from dmutils import csv_generator
 from six import itervalues, iterkeys
 
 from .. import main
-from ... import data_api_client
 from ..auth import role_required
+from ... import data_api_client
 
 CLOSED_BRIEF_STATUSES = ['closed', 'awarded', 'cancelled', 'unsuccessful']
 
 
 @main.route('/users', methods=['GET'])
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def find_user_by_email_address():
     template = "view_users.html"
     users = None
@@ -42,7 +42,7 @@ def find_user_by_email_address():
 
 
 @main.route('/users/download', methods=['GET'])
-@role_required('admin')
+@role_required('admin-framework-manager')
 def list_frameworks_with_users(errors=None):
     bad_statuses = ['coming', 'expired']
     frameworks = [framework for framework in data_api_client.find_frameworks()['frameworks']

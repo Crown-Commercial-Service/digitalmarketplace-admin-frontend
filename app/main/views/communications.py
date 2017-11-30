@@ -1,3 +1,5 @@
+from dmutils import s3  # this style of import so we only have to mock once
+from dmutils.documents import file_is_pdf, file_is_csv, file_is_open_document_format
 from flask import render_template, redirect, url_for, current_app, \
     request, flash
 
@@ -5,12 +7,9 @@ from .. import main
 from ..auth import role_required
 from ... import data_api_client
 
-from dmutils import s3  # this style of import so we only have to mock once
-from dmutils.documents import file_is_pdf, file_is_csv, file_is_open_document_format
-
 
 @main.route('/communications/<framework_slug>', methods=['GET'])
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin-framework-manager')
 def manage_communications(framework_slug):
     communications_bucket = s3.S3(current_app.config['DM_COMMUNICATIONS_BUCKET'])
     framework = data_api_client.get_framework(framework_slug)['frameworks']
@@ -31,7 +30,7 @@ def manage_communications(framework_slug):
 
 
 @main.route('/communications/<framework_slug>', methods=['POST'])
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin-framework-manager')
 def upload_communication(framework_slug):
     communications_bucket = s3.S3(current_app.config['DM_COMMUNICATIONS_BUCKET'])
     errors = {}

@@ -73,7 +73,7 @@
           <input type="submit" value="Search" class="button-save">
         </form>
 
-        {% if current_user.has_any_role('admin') %}
+        {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
 
         <form action="{{ url_for('.find_user_by_email_address') }}" method="get" class="question">
           <label class="question-heading" for="email_address">Find users by email address</label>
@@ -113,7 +113,7 @@
     {% endwith %}
   {% endif %}
 
-  {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
+  {% if current_user.has_any_role('admin-ccs-category') %}
     {% with
       smaller = True,
       heading = "Service edits"
@@ -131,7 +131,7 @@
     {% endwith %}
   {% endif %}
 
-  {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-sourcing') %}
+  {% if current_user.has_any_role('admin-ccs-sourcing') %}
     {% with
       smaller = True,
       heading = "Statistics"
@@ -150,7 +150,7 @@
     {% endwith %}
   {% endif %}
 
-  {% if current_user.has_any_role('admin', 'admin-ccs-sourcing') %}
+  {% if current_user.has_any_role('admin-ccs-sourcing') %}
     {% with
       smaller = True,
       heading = "Agreements"
@@ -173,7 +173,7 @@
     {% endfor %}
   {% endif %}
 
-  {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
+  {% if current_user.has_role('admin-framework-manager') %}
     {% set items = [
       {
         "body": "Manage G-Cloud 8 communications",
@@ -189,19 +189,14 @@
         "body": "Manage G-Cloud 9 communications",
         "link": url_for(".manage_communications", framework_slug="g-cloud-9"),
         "title": "G-Cloud 9 communications"
-      }
+      },
+      {
+        "body": "Download a list of users for frameworks that are open, pending or live",
+        "link": url_for(".list_frameworks_with_users"),
+        "title": "Download user lists"
+      },
     ]
     %}
-
-    {% if current_user.has_role('admin') %}
-      {% set items = items + [
-        {
-          "body": "Download a list of users for frameworks that are open, pending or live",
-          "link": url_for(".list_frameworks_with_users"),
-          "title": "Download user lists"
-        }]
-      %}
-    {% endif %}
 
     {% with
       smaller = True,

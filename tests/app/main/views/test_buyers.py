@@ -1,15 +1,25 @@
 import mock
 import pytest
-
 from dmapiclient import HTTPError
+from lxml import html
 
 from tests.app.main.helpers.flash_tester import assert_flashes
 from ...helpers import LoggedInApplicationTest
-from lxml import html
 
 
 @mock.patch('app.main.views.buyers.data_api_client')
 class TestBuyersView(LoggedInApplicationTest):
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 200),
+        ("admin-ccs-category", 200),
+        ("admin-ccs-sourcing", 403),
+        ("admin-manager", 403),
+    ])
+    def test_find_buyers_page_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        response = self.client.get('/admin/buyers?brief_id=1')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     def test_should_be_a_404_if_no_brief_found(self, data_api_client):
         data_api_client.get_brief.return_value = None
@@ -79,7 +89,7 @@ class TestAddBuyerDomainsView(LoggedInApplicationTest):
         self.user_role = role
         response = self.client.get('/admin/buyers/add-buyer-domains')
         actual_code = response.status_code
-        assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 302),
@@ -94,7 +104,7 @@ class TestAddBuyerDomainsView(LoggedInApplicationTest):
                                     }
                                     )
         actual_code = response.status_code
-        assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     def test_admin_user_can_add_a_new_buyer_domain(self, data_api_client):
         response1 = self.client.post('/admin/buyers/add-buyer-domains',

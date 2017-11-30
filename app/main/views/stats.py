@@ -12,7 +12,7 @@ from ..auth import role_required
 
 
 @main.route('/statistics/<string:framework_slug>', methods=['GET'])
-@role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
+@role_required('admin-ccs-category', 'admin-ccs-sourcing')
 def view_statistics(framework_slug):
 
     snapshots = data_api_client.find_audit_events(

@@ -2,24 +2,24 @@ from collections import OrderedDict
 from itertools import groupby
 from operator import itemgetter
 
-from flask import render_template, request, redirect, url_for, abort, current_app
-from flask_login import current_user, flash
 from dateutil.parser import parse as parse_date
-
-from .. import main
-from ... import data_api_client, content_loader
-from ..forms import EmailAddressForm, MoveUserForm
-from ..auth import role_required
 from dmapiclient import HTTPError, APIError
 from dmapiclient.audit import AuditTypes
-from dmutils.email import send_user_account_email
+from dmutils import s3
 from dmutils.documents import (
     AGREEMENT_FILENAME, COUNTERPART_FILENAME,
     file_is_pdf, get_document_path, get_extension, get_signed_url,
     generate_timestamped_document_upload_path, degenerate_document_path_and_return_doc_name,
     generate_download_filename)
-from dmutils import s3
+from dmutils.email import send_user_account_email
 from dmutils.formats import datetimeformat
+from flask import render_template, request, redirect, url_for, abort, current_app
+from flask_login import current_user, flash
+
+from .. import main
+from ..auth import role_required
+from ..forms import EmailAddressForm, MoveUserForm
+from ... import data_api_client, content_loader
 
 
 @main.route('/suppliers', methods=['GET'])
@@ -90,7 +90,7 @@ def view_supplier_declaration(supplier_id, framework_slug):
 
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>', methods=['GET'])
-@role_required('admin', 'admin-ccs-sourcing')
+@role_required('admin-ccs-sourcing')
 def view_signed_agreement(supplier_id, framework_slug):
     # not properly validating this - all we do is pass it through
     next_status = request.args.get("next_status")
@@ -206,7 +206,7 @@ def download_signed_agreement_file(supplier_id, framework_slug):
 
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>/<document_name>', methods=['GET'])
-@role_required('admin', 'admin-ccs-sourcing')
+@role_required('admin-ccs-sourcing')
 def download_agreement_file(supplier_id, framework_slug, document_name):
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
     if supplier_framework is None or not supplier_framework.get("declaration"):
@@ -494,7 +494,7 @@ def move_user_to_new_supplier(supplier_id):
 
 
 @main.route('/suppliers/<int:supplier_id>/services', methods=['GET'])
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin-ccs-category')
 def find_supplier_services(supplier_id):
     remove_services_for_framework_slug = request.args.get('remove', None)
 
@@ -531,7 +531,7 @@ def find_supplier_services(supplier_id):
 
 
 @main.route('/suppliers/<int:supplier_id>/services', methods=['POST'])
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin-ccs-category')
 def disable_supplier_services(supplier_id):
     remove_services_for_framework = request.args.get('remove')
     if not remove_services_for_framework:
