@@ -600,6 +600,30 @@ class TestServiceEdit(LoggedInApplicationTest):
 class TestServiceUpdate(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
 
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 302),
+        ("admin-ccs-sourcing", 403),
+        ("admin-manager", 403),
+    ])
+    def test_post_service_update_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.get_service.return_value = {'services': {
+            'id': 1,
+            'supplierId': 2,
+            'frameworkSlug': 'g-cloud-8',
+            'lot': 'IaaS',
+        }}
+        response = self.client.post(
+            '/admin/services/1/edit/features-and-benefits',
+            data={
+                'serviceFeatures': 'baz',
+                'serviceBenefits': 'foo',
+            }
+        )
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
     def test_service_update_documents_empty_post(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'id': 1,
@@ -971,6 +995,26 @@ class TestServiceUpdate(LoggedInApplicationTest):
 @mock.patch('app.main.views.services.data_api_client', autospec=True)
 class TestServiceStatusUpdate(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
+
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 302),
+        ("admin-ccs-sourcing", 403),
+        ("admin-manager", 403),
+    ])
+    def test_post_status_update_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-9',
+            'serviceName': 'bad service',
+            'supplierId': 1000,
+            'status': 'published',
+        }}
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
+        response = self.client.post('/admin/services/status/1',
+                                    data={'service_status': 'removed'})
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     def test_cannot_make_removed_service_public(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
