@@ -17,8 +17,10 @@ from six import text_type
 
 from dmapiclient import HTTPError
 from dmapiclient.audit import AuditTypes
-from ...helpers import LoggedInApplicationTest
 from dmutils import s3
+
+from tests.app.main.helpers.flash_tester import assert_flashes
+from ...helpers import LoggedInApplicationTest
 
 
 class TestServiceFind(LoggedInApplicationTest):
@@ -90,12 +92,6 @@ class TestServiceView(LoggedInApplicationTest):
             "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
         ) == "314159265"
 
-        assert frozenset(document.xpath("//input[@type='radio'][@name='service_status']/@value")) == frozenset((
-            "removed",
-            "private",
-        ))
-        assert document.xpath("//input[@type='radio'][@name='service_status'][@checked]/@value") == ["removed"]
-
     def test_service_view_no_features_or_benefits_status_enabled(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-7',
@@ -125,13 +121,6 @@ class TestServiceView(LoggedInApplicationTest):
         assert document.xpath(
             "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
         ) == "1412"
-
-        assert frozenset(document.xpath("//input[@type='radio'][@name='service_status']/@value")) == frozenset((
-            "removed",
-            "private",
-            "public",
-        ))
-        assert document.xpath("//input[@type='radio'][@name='service_status'][@checked]/@value") == ["private"]
 
     def test_service_view_with_data(self, data_api_client):
         service = {
@@ -171,13 +160,6 @@ class TestServiceView(LoggedInApplicationTest):
         assert document.xpath(
             "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
         ) == "151"
-
-        assert frozenset(document.xpath("//input[@type='radio'][@name='service_status']/@value")) == frozenset((
-            "removed",
-            "private",
-            "public",
-        ))
-        assert document.xpath("//input[@type='radio'][@name='service_status'][@checked]/@value") == ["public"]
 
         # check all serviceFeatures appear in an ul
         xpath_kwargs = {"a{}".format(i): term for i, term in enumerate(service["serviceFeatures"])}
@@ -238,6 +220,29 @@ class TestServiceView(LoggedInApplicationTest):
                 audit_type=AuditTypes.update_service_status
             )
         ]
+
+    @pytest.mark.parametrize('service_status', ['disabled', 'enabled'])
+    def test_info_banner_contains_publish_link_for_ccs_category(self, data_api_client, service_status):
+        self.user_role = 'admin-ccs-category'
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-8',
+            'serviceName': 'test',
+            'lot': 'iaas',
+            'id': "314159265",
+            'supplierId': 1000,
+            "status": service_status,
+        }}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+
+        response = self.client.get('/admin/services/314159265')
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        expected_link_text = "Publish service"
+        expected_href = '/admin/services/314159265?publish=True'
+        expected_link = document.xpath('.//a[contains(@href,"{}")]'.format(expected_href))[0]
+
+        assert expected_link.text == expected_link_text
 
     def test_service_view_does_not_show_info_banner_for_public_services(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -388,6 +393,101 @@ class TestServiceView(LoggedInApplicationTest):
         unexpected_href = '/g-cloud/services/1'
 
         assert not document.xpath('.//a[contains(@href,"{}")]'.format(unexpected_href))
+
+    @pytest.mark.parametrize('url_suffix', ('', '?remove=True'))
+    def test_remove_service_link_appears_for_correct_role_and_status(self, data_api_client, url_suffix):
+        self.user_role = 'admin-ccs-category'
+        data_api_client.get_service.return_value = {'services': {
+            'lot': 'paas',
+            'serviceName': 'test',
+            'supplierId': 1000,
+            'frameworkSlug': 'digital-outcomes-and-specialists-2',
+            'frameworkFramework': 'digital-outcomes-and-specialists',
+            'id': "1",
+            'status': 'published'
+        }}
+        response = self.client.get('/admin/services/1{}'.format(url_suffix))
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        expected_link_text = "Remove service"
+        expected_href = '/admin/services/1?remove=True'
+        expected_link = document.xpath('.//a[contains(@href,"{}")]'.format(expected_href))[0]
+
+        assert expected_link.text == expected_link_text
+
+    @pytest.mark.parametrize('user_role', ('admin-ccs-sourcing', 'admin', 'admin-manager'))
+    def test_remove_service_does_not_appear_for_certain_roles(self, data_api_client, user_role):
+        self.user_role = user_role
+        data_api_client.get_service.return_value = {'services': {
+            'lot': 'paas',
+            'serviceName': 'test',
+            'supplierId': 1000,
+            'frameworkSlug': 'digital-outcomes-and-specialists-2',
+            'frameworkFramework': 'digital-outcomes-and-specialists',
+            'id': "1",
+            'status': 'published'
+        }}
+        response = self.client.get('/admin/services/1')
+        assert response.status_code == 403
+
+    @pytest.mark.parametrize('service_status', ['disabled', 'enabled'])
+    def test_remove_service_does_not_appear_for_certain_statuses(self, data_api_client, service_status):
+        data_api_client.get_service.return_value = {'services': {
+            'lot': 'paas',
+            'serviceName': 'test',
+            'supplierId': 1000,
+            'frameworkSlug': 'digital-outcomes-and-specialists-2',
+            'frameworkFramework': 'digital-outcomes-and-specialists',
+            'id': "1",
+            'status': service_status
+        }}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+        response = self.client.get('/admin/services/1')
+
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        unexpected_href = '/admin/services/1?remove=True'
+        assert not document.xpath('.//a[contains(@href,"{}")]'.format(unexpected_href))
+
+    def test_service_view_with_publish_param_shows_publish_banner(self, data_api_client):
+        self.user_role = 'admin-ccs-category'
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-8',
+            'serviceName': 'test',
+            'lot': 'iaas',
+            'id': "314159265",
+            'supplierId': 1000,
+            "status": 'disabled',
+        }}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+
+        response = self.client.get('/admin/services/314159265?publish=True')
+        document = html.fromstring(response.get_data(as_text=True))
+        banner_text = document.xpath("//div[@class='banner-destructive-with-action']/p")[0].text.strip()
+        expected_text = "Are you sure you want to publish ‘test’?"
+
+        assert banner_text == expected_text
+
+    def test_service_view_with_remove_param_shows_remove_banner(self, data_api_client):
+        self.user_role = 'admin-ccs-category'
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-8',
+            'serviceName': 'test',
+            'lot': 'iaas',
+            'id': "314159265",
+            'supplierId': 1000,
+            "status": 'published',
+        }}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+
+        response = self.client.get('/admin/services/314159265?remove=True')
+        document = html.fromstring(response.get_data(as_text=True))
+        banner_text = document.xpath("//div[@class='banner-destructive-with-action']/p")[0].text.strip()
+        expected_text = "Are you sure you want to remove ‘test’?"
+
+        assert banner_text == expected_text
 
 
 @mock.patch('app.main.views.services.data_api_client', autospec=True)
@@ -1014,49 +1114,8 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         response = self.client.post('/admin/services/status/1',
                                     data={'service_status': 'removed'})
         actual_code = response.status_code
+
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
-
-    def test_cannot_make_removed_service_public(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {
-            'id': 1,
-            'serviceName': 'test',
-            'frameworkSlug': 'g-cloud-8',
-            'supplierId': 2,
-            'status': 'disabled'
-        }}
-        data_api_client.find_audit_events.return_value = {'auditEvents': []}
-        response = self.client.get('/admin/services/1')
-        assert b'<input type="radio" name="service_status" id="service_status_disabled" value="removed" checked="checked" />' in response.data  # noqa
-        assert b'<input type="radio" name="service_status" id="service_status_private" value="private"  />' in response.data  # noqa
-        assert b'<input type="radio" name="service_status" id="service_status_published" value="public"  />' not in response.data  # noqa
-
-    def test_can_make_private_service_public_or_removed(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {
-            'id': 1,
-            'serviceName': 'test',
-            'frameworkSlug': 'g-cloud-8',
-            'supplierId': 2,
-            'status': 'enabled'
-        }}
-        data_api_client.find_audit_events.return_value = {'auditEvents': []}
-        response = self.client.get('/admin/services/1')
-        assert b'<input type="radio" name="service_status" id="service_status_disabled" value="removed"  />' in response.data  # noqa
-        assert b'<input type="radio" name="service_status" id="service_status_private" value="private" checked="checked" />' in response.data  # noqa
-        assert b'<input type="radio" name="service_status" id="service_status_published" value="public"  />' in response.data  # noqa
-
-    def test_can_make_public_service_private_or_removed(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {
-            'id': 1,
-            'serviceName': 'test',
-            'frameworkSlug': 'g-cloud-8',
-            'supplierId': 2,
-            'status': 'published'
-        }}
-        data_api_client.find_audit_events.return_value = {'auditEvents': []}
-        response = self.client.get('/admin/services/1')
-        assert b'<input type="radio" name="service_status" id="service_status_disabled" value="removed"  />' in response.data  # noqa
-        assert b'<input type="radio" name="service_status" id="service_status_private" value="private"  />' in response.data  # noqa
-        assert b'<input type="radio" name="service_status" id="service_status_published" value="public" checked="checked" />' in response.data  # noqa
 
     def test_status_update_to_removed(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -1066,17 +1125,14 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'status': 'published',
         }}
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
-        response1 = self.client.post('/admin/services/status/1',
-                                     data={'service_status': 'removed'})
-        assert response1.status_code == 302
-        assert response1.location == 'http://localhost/admin/services/1'
-        data_api_client.update_service_status.assert_called_with(
-            '1', 'disabled', 'test@example.com')
+        response = self.client.post('/admin/services/status/1', data={'service_status': 'removed'})
+        data_api_client.update_service_status.assert_called_with('1', 'disabled', 'test@example.com')
 
-        response2 = self.client.get(response1.location)
-        assert b'Service status has been updated to: Removed' in response2.data
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/services/1'
+        assert_flashes(self, 'status_updated')
 
-    def test_status_update_to_private(self, data_api_client):
+    def test_cannot_update_status_to_private(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
             'serviceName': 'test',
@@ -1084,15 +1140,12 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'status': 'published',
         }}
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
-        response1 = self.client.post('/admin/services/status/1',
-                                     data={'service_status': 'private'})
-        assert response1.status_code == 302
-        assert response1.location == 'http://localhost/admin/services/1'
-        data_api_client.update_service_status.assert_called_with(
-            '1', 'enabled', 'test@example.com')
+        response = self.client.post('/admin/services/status/1', data={'service_status': 'private'})
 
-        response2 = self.client.get(response1.location)
-        assert b'Service status has been updated to: Private' in response2.data
+        assert not data_api_client.update_service_status.called
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/services/1'
+        assert_flashes(self, 'bad_status', 'error')
 
     def test_status_update_to_published(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -1103,17 +1156,15 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         }}
 
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
-        response1 = self.client.post('/admin/services/status/1',
-                                     data={'service_status': 'public'})
-        assert response1.status_code == 302
-        assert response1.location == 'http://localhost/admin/services/1'
-        data_api_client.update_service_status.assert_called_with(
-            '1', 'published', 'test@example.com')
+        response = self.client.post('/admin/services/status/1', data={'service_status': 'public'})
+        data_api_client.update_service_status.assert_called_with('1', 'published', 'test@example.com')
 
-        response2 = self.client.get(response1.location)
-        assert b'Service status has been updated to: Public' in response2.data
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/services/1'
+        assert_flashes(self, 'status_updated')
 
     def test_bad_status_gives_error_message(self, data_api_client):
+        self.user_role = 'admin-ccs-category'
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-7',
             'serviceName': 'test',
@@ -1121,16 +1172,15 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'status': 'published',
         }}
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
-        response1 = self.client.post('/admin/services/status/1',
-                                     data={'service_status': 'suspended'})
-        assert response1.status_code == 302
-        assert response1.location == 'http://localhost/admin/services/1'
+        response = self.client.post('/admin/services/status/1', data={'service_status': 'suspended'})
 
-        response2 = self.client.get(response1.location)
-        assert b"Not a valid status: 'suspended'" in response2.data
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/services/1'
+        assert_flashes(self, 'bad_status', 'error')
 
     def test_services_with_missing_id(self, data_api_client):
         response = self.client.get('/admin/services')
+
         assert response.status_code == 404
 
 
