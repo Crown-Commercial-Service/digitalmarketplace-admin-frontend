@@ -1,18 +1,17 @@
 from datetime import datetime
 
-from flask import render_template, request
-
 from dmapiclient.audit import AuditTypes
 from dmutils.formats import DATETIME_FORMAT
+from flask import render_template, request
 
-from ..helpers.sum_counts import format_snapshots
 from .. import main
-from ... import data_api_client
 from ..auth import role_required
+from ..helpers.sum_counts import format_snapshots
+from ... import data_api_client
 
 
 @main.route('/statistics/<string:framework_slug>', methods=['GET'])
-@role_required('admin-ccs-category', 'admin-ccs-sourcing')
+@role_required('admin-ccs-sourcing')
 def view_statistics(framework_slug):
 
     snapshots = data_api_client.find_audit_events(
