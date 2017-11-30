@@ -71,6 +71,8 @@ def view(service_id):
         service_id=service_id,
         removed_by=removed_by,
         removed_at=removed_at,
+        remove=request.args.get('remove', None),
+        publish=request.args.get('publish', None),
     )
 
 
