@@ -25,6 +25,19 @@ from ...helpers import LoggedInApplicationTest
 
 class TestServiceFind(LoggedInApplicationTest):
 
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 302),
+        ("admin-ccs-category", 302),
+        ("admin-ccs-sourcing", 403),
+        ("admin-framework-manager", 302),
+        ("admin-manager", 403),
+    ])
+    def test_service_find_is_only_accessible_to_specific_user_roles(self, role, expected_code):
+        self.user_role = role
+        response = self.client.get('/admin/services?service_id=314159265')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
     def test_service_find_redirects_to_view_for_valid_service_id(self):
         response = self.client.get('/admin/services?service_id=314159265')
         assert response.status_code == 302
@@ -62,65 +75,88 @@ class TestServiceView(LoggedInApplicationTest):
         },
     ]}
 
-    # def test_service_view_status_disabled(self, data_api_client):
-    #     data_api_client.get_service.return_value = {'services': {
-    #         'frameworkSlug': 'g-cloud-8',
-    #         'serviceName': 'test',
-    #         'supplierId': 1000,
-    #         'lot': 'iaas',
-    #         'id': "314159265",
-    #         "status": "disabled",
-    #     }}
-    #     data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
-    #     response = self.client.get('/admin/services/314159265')
-    #
-    #     assert response.status_code == 200
-    #     assert data_api_client.get_service.call_args_list == [
-    #         (("314159265",), {}),
-    #     ]
-    #     assert data_api_client.find_audit_events.call_args_list == [
-    #         mock.call(
-    #             audit_type=AuditTypes.update_service_status,
-    #             latest_first='true',
-    #             object_id='314159265',
-    #             object_type='services'
-    #         )
-    #     ]
-    #
-    #     document = html.fromstring(response.get_data(as_text=True))
-    #     assert document.xpath(
-    #         "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
-    #     ) == "314159265"
-    #
-    # def test_service_view_status_enabled(self, data_api_client):
-    #     data_api_client.get_service.return_value = {'services': {
-    #         'frameworkSlug': 'g-cloud-7',
-    #         'serviceName': 'test',
-    #         'supplierId': 1000,
-    #         'lot': 'iaas',
-    #         'id': "1412",
-    #         "status": "enabled",
-    #     }}
-    #     data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
-    #     response = self.client.get('/admin/services/1412')
-    #
-    #     assert response.status_code == 200
-    #     assert data_api_client.get_service.call_args_list == [
-    #         (("1412",), {}),
-    #     ]
-    #     assert data_api_client.find_audit_events.call_args_list == [
-    #         mock.call(
-    #             audit_type=AuditTypes.update_service_status,
-    #             latest_first='true',
-    #             object_id='1412',
-    #             object_type='services'
-    #         )
-    #     ]
-    #
-    #     document = html.fromstring(response.get_data(as_text=True))
-    #     assert document.xpath(
-    #         "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
-    #     ) == "1412"
+    def test_service_view_status_disabled(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-8',
+            'serviceName': 'test',
+            'supplierId': 1000,
+            'lot': 'iaas',
+            'id': "314159265",
+            "status": "disabled",
+        }}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+        response = self.client.get('/admin/services/314159265')
+
+        assert response.status_code == 200
+        assert data_api_client.get_service.call_args_list == [
+            (("314159265",), {}),
+        ]
+        assert data_api_client.find_audit_events.call_args_list == [
+            mock.call(
+                audit_type=AuditTypes.update_service_status,
+                latest_first='true',
+                object_id='314159265',
+                object_type='services'
+            )
+        ]
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert document.xpath(
+            "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
+        ) == "314159265"
+
+    def test_service_view_status_enabled(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-7',
+            'serviceName': 'test',
+            'supplierId': 1000,
+            'lot': 'iaas',
+            'id': "1412",
+            "status": "enabled",
+        }}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+        response = self.client.get('/admin/services/1412')
+
+        assert response.status_code == 200
+        assert data_api_client.get_service.call_args_list == [
+            (("1412",), {}),
+        ]
+        assert data_api_client.find_audit_events.call_args_list == [
+            mock.call(
+                audit_type=AuditTypes.update_service_status,
+                latest_first='true',
+                object_id='1412',
+                object_type='services'
+            )
+        ]
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert document.xpath(
+            "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
+        ) == "1412"
+
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 200),
+        ("admin-ccs-category", 200),
+        ("admin-ccs-sourcing", 403),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_view_service_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-8',
+            'serviceName': 'test',
+            'supplierId': 1000,
+            'lot': 'iaas',
+            'id': "314159265",
+            "status": "disabled",
+        }}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+        response = self.client.get('/admin/services/314159265')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
     @pytest.mark.parametrize('service_status', ['disabled', 'enabled', 'published'])
     def test_service_view_with_data(self, data_api_client, service_status):
         service = {
@@ -452,7 +488,7 @@ class TestServiceView(LoggedInApplicationTest):
 
         assert expected_link.text == expected_link_text
 
-    @pytest.mark.parametrize('user_role', ('admin-ccs-sourcing', 'admin-framework-manager', 'admin-manager'))
+    @pytest.mark.parametrize('user_role', ('admin-ccs-sourcing', 'admin-manager'))
     def test_no_access_for_certain_roles(self, data_api_client, user_role):
         self.user_role = user_role
         data_api_client.get_service.return_value = {'services': {

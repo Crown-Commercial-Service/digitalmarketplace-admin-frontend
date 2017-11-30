@@ -28,7 +28,7 @@ def index():
 
 
 @main.route('/services', methods=['GET'])
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin', 'admin-ccs-category', 'admin-framework-manager')
 def find():
     if request.args.get("service_id") is None:
         return render_template("index.html"), 404
@@ -37,7 +37,7 @@ def find():
 
 
 @main.route('/services/<service_id>', methods=['GET'])
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin', 'admin-ccs-category', 'admin-framework-manager')
 def view(service_id):
     try:
         service = data_api_client.get_service(service_id)
