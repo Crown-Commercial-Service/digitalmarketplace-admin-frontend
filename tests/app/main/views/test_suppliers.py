@@ -950,12 +950,23 @@ class TestDownloadSignedAgreementFile(LoggedInApplicationTest):
 class TestDownloadAgreementFile(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
-    def test_category_admin_user_should_not_be_able_to_download(self, s3, data_api_client):
-        self.user_role = 'admin-ccs-category'
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 302),
+        ("admin-framework-manager", 302),
+        ("admin-manager", 403),
+    ])
+    def test_download_agreement_file_accessible_to_specific_user_roles(self, s3, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.get_supplier_framework_info.return_value = {
+            'frameworkInterest': {'declaration': {'key': 'Supplier name'}}
+        }
+        s3.S3.return_value.get_signed_url.return_value = 'http://foo/blah?extra'
 
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
-
-        assert response.status_code == 403
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     def test_should_404_if_no_supplier_framework_declaration(self, s3, data_api_client):
         data_api_client.get_supplier_framework_info.return_value = {
@@ -1290,6 +1301,24 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
 class TestViewingSignedAgreement(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
+    services_response = (
+        {
+            "id": 1111,
+            "lotSlug": "dried-fruit",
+            "lotName": "Raisins & dates",
+        },
+        {
+            "id": 2222,
+            "lotSlug": "salad",
+            "lotName": "Lettuce & cucumber",
+        },
+        {
+            "id": 3333,
+            "lotSlug": "dried-fruit",
+            "lotName": "Raisins & dates",
+        },
+    )
+
     def test_should_404_if_supplier_does_not_exist(self, s3, data_api_client):
         data_api_client.get_supplier.side_effect = APIError(Response(404))
 
@@ -1338,23 +1367,7 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
             'supplier_framework_response'
         )
 
-        data_api_client.find_services_iter.return_value = iter((
-            {
-                "id": 1111,
-                "lotSlug": "dried-fruit",
-                "lotName": "Raisins & dates",
-            },
-            {
-                "id": 2222,
-                "lotSlug": "salad",
-                "lotName": "Lettuce & cucumber",
-            },
-            {
-                "id": 3333,
-                "lotSlug": "dried-fruit",
-                "lotName": "Raisins & dates",
-            },
-        ))
+        data_api_client.find_services_iter.return_value = iter(self.services_response)
 
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
             mock_get_url.return_value = "http://example.com/document/1234.pdf"
@@ -1420,6 +1433,28 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
             assert response.status_code == 200
             assert len(document.xpath('//img[@src="http://example.com/document/1234.png"]')) == 1
             assert len(document.xpath('//embed[@src="http://example.com/document/1234.png"]')) == 0
+
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 200),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_view_signed_agreement_accessible_to_specific_user_roles(self, s3, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
+            'supplier_framework_response'
+        )
+
+        with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
+            mock_get_url.return_value = "http://example.com/document/1234.pdf"
+
+            response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+            actual_code = response.status_code
+            assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
 
 @mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
