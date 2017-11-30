@@ -35,6 +35,7 @@ class TestSuppliersListView(LoggedInApplicationTest):
     @pytest.mark.parametrize("role, link_should_be_visible", [
         ("admin", False),
         ("admin-ccs-category", True),
+        ("admin-framework-manager", True),
     ])
     def test_services_link_is_shown_to_users_with_right_roles(self, data_api_client, role, link_should_be_visible):
         self.user_role = role
@@ -44,6 +45,24 @@ class TestSuppliersListView(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
         data = response.get_data(as_text=True)
         link_is_visible = "Services" in data and "/admin/suppliers/12345/services" in data
+
+        assert link_is_visible is link_should_be_visible, (
+            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+        )
+
+    @pytest.mark.parametrize("role, link_should_be_visible", [
+        ("admin", False),
+        ("admin-ccs-category", True),
+        ("admin-framework-manager", False),
+    ])
+    def test_change_name_link_is_shown_to_users_with_right_roles(self, data_api_client, role, link_should_be_visible):
+        self.user_role = role
+        data_api_client.find_suppliers.return_value = {
+            "suppliers": [{"id": "12345"}]
+        }
+        response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
+        data = response.get_data(as_text=True)
+        link_is_visible = "Change name" in data and "/admin/suppliers/12345/edit/name" in data
 
         assert link_is_visible is link_should_be_visible, (
             "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
