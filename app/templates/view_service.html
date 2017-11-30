@@ -71,15 +71,16 @@
       {% include "toolkit/page-heading.html" %}
     {% endwith %}
 
-    {% if service_data['frameworkFramework'] == 'g-cloud' %}
-      {%
-        with
-        url = "/{}/services/{}".format(service_data['frameworkFramework'], service_id),
-        text = "View service"
-      %}
-        {% include "toolkit/secondary-action-link.html" %}
-      {% endwith %}
-    {% endif %}
+    {# links #}
+    <ul class="list-no-bullet">
+      {% if service_data['frameworkFramework'] == 'g-cloud' %}
+        <li><a href="{{ "/{}/services/{}".format(service_data['frameworkFramework'], service_id) }}">View service</a></li>
+      {% endif %}
+      {% if current_user.has_role('admin-ccs-category') and service_data['status'] == 'published' %}
+        <li><a href="{{ url_for('.view', service_id=service_id, remove=True) }}">Remove service</a></li>
+      {% endif %}
+    </ul>
+    {# endlinks #}
 
     {% for section in sections %}
       {{ summary.heading(section.name) }}
