@@ -204,6 +204,17 @@ class TestUsersExport(LoggedInApplicationTest):
         'status': 'coming'
     }
 
+    _supplier_user = {
+        "application_result": "fail",
+        "application_status": "no_application",
+        "declaration_status": "unstarted",
+        "framework_agreement": False,
+        "supplier_id": 1,
+        "email address": "test.user@sme.com",
+        "user_name": "Test User",
+        "variations_agreed": "var1"
+    }
+
     def _return_get_user_export_response(self, data_api_client, frameworks):
             data_api_client.find_frameworks.return_value = {"frameworks": frameworks}
             return self.client.get('/admin/users/download')
@@ -271,38 +282,50 @@ class TestUsersExport(LoggedInApplicationTest):
         assert response.status_code == 200
         self._assert_things_about_frameworks(response, frameworks)
 
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 200),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 403),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_download_users_page_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        frameworks = [self._valid_framework]
+        response = self._return_get_user_export_response(data_api_client, frameworks)
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
     def test_user_export_with_one_user(self, data_api_client):
         framework = self._valid_framework
-        users = [{
-            "application_result": "fail",
-            "application_status": "no_application",
-            "declaration_status": "unstarted",
-            "framework_agreement": False,
-            "supplier_id": 1,
-            "email address": "test.user@sme.com",
-            "user_name": "Test User",
-            "variations_agreed": "var1"
-        }]
+        users = [self._supplier_user]
 
         response = self._return_user_export_response(data_api_client, framework, users)
         assert response.status_code == 200
 
     def test_download_csv(self, data_api_client):
         framework = self._valid_framework
-        users = [{
-            "application_result": "fail",
-            "application_status": "no_application",
-            "declaration_status": "unstarted",
-            "framework_agreement": False,
-            "supplier_id": 1,
-            "email address": "test.user@sme.com",
-            "user_name": "Test User",
-            "variations_agreed": "var1"
-        }]
+        users = [self._supplier_user]
 
         response = self._return_user_export_response(data_api_client, framework, users)
         assert response.status_code == 200
         self._assert_things_about_user_export(response, users)
+
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 200),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 403),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_supplier_csv_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        framework = self._valid_framework
+        users = [self._supplier_user]
+
+        response = self._return_user_export_response(data_api_client, framework, users)
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
 
 @mock.patch('app.main.views.users.data_api_client')
@@ -712,3 +735,26 @@ class TestBuyersExport(LoggedInApplicationTest):
             response = self.client.get('/admin/users/download/buyers')
 
             assert response.headers['Content-Disposition'] == 'attachment;filename=buyers_20160805T160000.csv'
+
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 200),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 403),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_buyer_csv_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.find_users_iter.return_value = [
+            {
+                'id': 1,
+                "name": "Chris",
+                "emailAddress": "chris@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "2016-08-04T12:00:00.000000Z",
+            }
+        ]
+
+        response = self.client.get('/admin/users/download/buyers')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)

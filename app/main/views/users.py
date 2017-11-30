@@ -42,7 +42,7 @@ def find_user_by_email_address():
 
 
 @main.route('/users/download', methods=['GET'])
-@role_required('admin-framework-manager')
+@role_required('admin', 'admin-framework-manager')
 def list_frameworks_with_users(errors=None):
     bad_statuses = ['coming', 'expired']
     frameworks = [framework for framework in data_api_client.find_frameworks()['frameworks']
@@ -60,7 +60,7 @@ def list_frameworks_with_users(errors=None):
 
 
 @main.route('/users/download/<framework_slug>', methods=['GET'])
-@role_required('admin')
+@role_required('admin', 'admin-framework-manager')
 def download_users(framework_slug):
     supplier_rows = data_api_client.export_users(framework_slug).get('users', [])
     supplier_headers = [
@@ -90,7 +90,7 @@ def download_users(framework_slug):
 
 
 @main.route('/users/download/buyers', methods=['GET'])
-@role_required('admin')
+@role_required('admin', 'admin-framework-manager')
 def download_buyers_and_briefs():
     users = {user["id"]: dict(user, briefs=[]) for user in data_api_client.find_users_iter(role="buyer")}
 
