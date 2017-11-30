@@ -17,7 +17,7 @@ from ... import data_api_client
 
 
 @main.route('', methods=['GET'])
-@role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-manager')
+@role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager', 'admin-manager')
 def index():
     frameworks = data_api_client.find_frameworks()
     frameworks = [fw for fw in frameworks['frameworks'] if fw['status'] in ('standstill', 'live')]
