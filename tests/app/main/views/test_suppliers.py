@@ -16,6 +16,22 @@ from ...helpers import LoggedInApplicationTest, Response
 @mock.patch('app.main.views.suppliers.data_api_client')
 class TestSuppliersListView(LoggedInApplicationTest):
 
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 200),
+        ("admin-ccs-category", 200),
+        ("admin-ccs-sourcing", 200),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_supplier_list_is_shown_to_users_with_right_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.find_suppliers.return_value = {
+            "suppliers": [{"id": "12345"}]
+        }
+        response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
     @pytest.mark.parametrize("role, link_should_be_visible", [
         ("admin", False),
         ("admin-ccs-category", True),

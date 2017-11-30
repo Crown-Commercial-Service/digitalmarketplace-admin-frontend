@@ -23,7 +23,7 @@ from ... import data_api_client, content_loader
 
 
 @main.route('/suppliers', methods=['GET'])
-@role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
+@role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager')
 def find_suppliers():
     if request.args.get("supplier_id"):
         suppliers = [data_api_client.get_supplier(request.args.get("supplier_id"))['suppliers']]
