@@ -95,6 +95,38 @@ class TestSuppliersListView(LoggedInApplicationTest):
 @mock.patch('app.main.views.suppliers.data_api_client')
 class TestSupplierUsersView(LoggedInApplicationTest):
 
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 200),
+        ("admin-ccs-category", 200),
+        ("admin-ccs-sourcing", 403),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_supplier_users_accessible_to_users_with_right_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_users.return_value = self.load_example_listing("users_response")
+
+        response = self.client.get('/admin/suppliers/users?supplier_id=1000')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
+    @pytest.mark.parametrize("role, can_edit", [
+        ("admin", True),
+        ("admin-ccs-category", False),
+        ("admin-framework-manager", False),
+    ])
+    def test_supplier_users_only_editable_for_users_with_right_roles(self, data_api_client, role, can_edit):
+        self.user_role = role
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_users.return_value = self.load_example_listing("users_response")
+
+        response = self.client.get('/admin/suppliers/users?supplier_id=1000')
+        assert response.status_code == 200
+        document = html.fromstring(response.get_data(as_text=True))
+        deactivate_buttons = document.xpath('.//input[contains(@value, "Deactivate")]')
+        assert len(deactivate_buttons) == (1 if can_edit else 0)
+
     def test_should_404_if_no_supplier_does_not_exist(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers/users?supplier_id=999')

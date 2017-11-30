@@ -404,7 +404,7 @@ def update_supplier_declaration_section(supplier_id, framework_slug, section_id)
 
 
 @main.route('/suppliers/users', methods=['GET'])
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin', 'admin-ccs-category', 'admin-framework-manager')
 def find_supplier_users():
 
     if not request.args.get('supplier_id'):
