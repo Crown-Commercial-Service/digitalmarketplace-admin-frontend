@@ -56,7 +56,7 @@
       {{ summary.text(item.emailAddress) }}
       {{ summary.text(role_descriptors[item.role]) }}
       {{ summary.text("Active" if item.active else "Suspended") }}
-      {{ summary.edit_link("Edit", "http://url_for(....)") }}
+      {{ summary.edit_link("Edit", url_for(".edit_admin_user", admin_user_id=item.id)) }}
     {% endcall %}
   {% endcall %}
 </div>

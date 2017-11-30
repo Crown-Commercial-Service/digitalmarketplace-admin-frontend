@@ -9,7 +9,7 @@ from .. import main
 from ..forms import InviteAdminForm, EditAdminUserForm
 from dmapiclient import HTTPError
 from ..auth import role_required
-from ..helpers.common_helpers import string_to_bool
+from distutils.util import strtobool
 
 
 @main.route('/admin-users', methods=['GET'])
@@ -70,8 +70,8 @@ def invite_admin_user():
 
 @main.route("/admin-users/<string:admin_user_id>/edit", methods=["GET", "POST"])
 @role_required("admin-manager")
-def edit_admin_users(admin_user_id):
-    admin_user = (data_api_client.get_user(admin_user_id))["users"]
+def edit_admin_user(admin_user_id):
+    admin_user = data_api_client.get_user(admin_user_id)["users"]
     status_code = 200
     edit_admin_user_form = EditAdminUserForm(
         edit_admin_name=admin_user["name"],
@@ -82,7 +82,7 @@ def edit_admin_users(admin_user_id):
         try:
             edited_admin_name = request.form.get("edit_admin_name")
             edited_admin_permissions = request.form.get("edit_admin_permissions")
-            edited_admin_status = string_to_bool(request.form.get("edit_admin_status"))
+            edited_admin_status = strtobool(request.form.get("edit_admin_status"))
 
             data_api_client.update_user(
                 admin_user_id,
