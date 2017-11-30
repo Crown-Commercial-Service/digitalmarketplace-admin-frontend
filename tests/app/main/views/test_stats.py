@@ -1,8 +1,8 @@
 import mock
 import pytest
-
 from dmapiclient import HTTPError
 from dmapiclient.audit import AuditTypes
+
 from ...helpers import LoggedInApplicationTest
 
 
@@ -14,7 +14,7 @@ class TestStats(LoggedInApplicationTest):
 
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 403),
-        ("admin-ccs-category", 200),
+        ("admin-ccs-category", 403),
         ("admin-ccs-sourcing", 200),
         ("admin-manager", 403),
     ])
