@@ -11,7 +11,7 @@ from ... import data_api_client
 
 
 @main.route('/statistics/<string:framework_slug>', methods=['GET'])
-@role_required('admin-ccs-sourcing')
+@role_required('admin-ccs-sourcing', 'admin-framework-manager')
 def view_statistics(framework_slug):
 
     snapshots = data_api_client.find_audit_events(
