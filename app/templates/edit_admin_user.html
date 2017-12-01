@@ -1,0 +1,97 @@
+{% extends "_base_page.html" %}
+{% block page_title %}
+  Edit details of admin user: {{ admin_user.emailAddress }} – Digital Marketplace admin
+{% endblock %}
+
+{% block breadcrumb %}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      },
+      {
+        "label": "Edit an admin user"
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+      {% for category, message in messages %}
+          {%
+          with
+            message = message,
+            type = "destructive" if category == 'error' else 'success'
+          %}
+          {% include "toolkit/notification-banner.html" %}
+          {% endwith %}
+      {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  {% for error in edit_admin_user_form.edit_admin_name.errors %}
+    {%
+      with
+        message = error,
+        type = "destructive"
+    %}
+      {% include "toolkit/notification-banner.html" %}
+    {% endwith %}
+  {% endfor %}
+
+  {% with heading = admin_user.emailAddress %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+
+  <form method="post">
+    <div class="grid-row">
+      <div class="column-two-thirds">
+        <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+        {%
+          with
+          question = "Name",
+          name = edit_admin_user_form.edit_admin_name.name,
+          value = edit_admin_user_form.edit_admin_name.data,
+          error = ""
+        %}
+          {% include "toolkit/forms/textbox.html" %}
+        {% endwith %}
+
+        {%
+          with
+          question = "Permissions",
+          type = "radio",
+          name = edit_admin_user_form.edit_admin_permissions.name,
+          value = edit_admin_user_form.edit_admin_permissions.data,
+          options = edit_admin_user_form.edit_admin_permissions.toolkit_macro_options
+        %}
+          {% include "toolkit/forms/selection-buttons.html" %}
+        {% endwith %}
+
+        {%
+          with
+          question = "Status",
+          type = "radio",
+          name = edit_admin_user_form.edit_admin_status.name,
+          value = edit_admin_user_form.edit_admin_status.data,
+          options = edit_admin_user_form.edit_admin_status.toolkit_macro_options
+        %}
+          {% include "toolkit/forms/selection-buttons.html" %}
+        {% endwith %}
+
+        {%
+          with
+          type = "save",
+          label = "Update user"
+        %}
+          {% include "toolkit/button.html" %}
+        {% endwith %}
+      </div>
+    </div>
+  </form>
+{% endblock %}

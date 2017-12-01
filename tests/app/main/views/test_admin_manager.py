@@ -1,6 +1,6 @@
+from lxml import html
 import mock
 import pytest
-from lxml import html
 
 from dmapiclient import HTTPError
 
@@ -14,11 +14,13 @@ class TestAdminManagerListView(LoggedInApplicationTest):
     SUPPORT_USERS = [
         {"active": True,
          "emailAddress": "support-1@example.com",
+         "id": 9087,
          "name": "Rashguy Support",
          "role": "admin",
          },
         {"active": True,
          "emailAddress": "support-2@example.com",
+         "id": 9088,
          "name": "Extra Support",
          "role": "admin",
          },
@@ -26,11 +28,13 @@ class TestAdminManagerListView(LoggedInApplicationTest):
     CATEGORY_USERS = [
         {"active": True,
          "emailAddress": "category-support@example.com",
+         "id": 9089,
          "name": "CCS Category Support",
          "role": "admin-ccs-category",
          },
         {"active": False,
          "emailAddress": "retired-category-support@example.com",
+         "id": 9090,
          "name": "CCS Category Support - Retired",
          "role": "admin-ccs-category",
          },
@@ -38,11 +42,13 @@ class TestAdminManagerListView(LoggedInApplicationTest):
     SOURCING_USERS = [
         {"active": False,
          "emailAddress": "old-sourcing-support@example.com",
+         "id": 9091,
          "name": "Has-been Sourcing Support",
          "role": "admin-ccs-sourcing",
          },
         {"active": True,
          "emailAddress": "sourcing-support@example.com",
+         "id": 9092,
          "name": "Sourcing Support",
          "role": "admin-ccs-sourcing",
          },
@@ -109,6 +115,27 @@ class TestAdminManagerListView(LoggedInApplicationTest):
         assert "Active" not in rows[5].text_content()
         assert "Suspended" in rows[5].text_content()
         assert "Has-been Sourcing Support" in rows[5].text_content()
+
+    def test_should_link_to_edit_admin_user_page(self, data_api_client):
+        self.user_role = "admin-manager"
+        data_api_client.find_users_iter.side_effect = [
+            iter(self.SUPPORT_USERS),
+            iter(self.CATEGORY_USERS),
+            iter(self.SOURCING_USERS)
+        ]
+        response = self.client.get("/admin/admin-users")
+        document = html.fromstring(response.get_data(as_text=True))
+
+        links = document.xpath("//td[@class='summary-item-field-with-action']//a/@href")
+
+        assert links == [
+            "/admin/admin-users/9089/edit",
+            "/admin/admin-users/9088/edit",
+            "/admin/admin-users/9087/edit",
+            "/admin/admin-users/9092/edit",
+            "/admin/admin-users/9090/edit",
+            "/admin/admin-users/9091/edit"
+        ]
 
     def test_should_have_invite_user_link(self, data_api_client):
         self.user_role = "admin-manager"
@@ -204,3 +231,151 @@ class TestInviteAdminUserView(LoggedInApplicationTest):
         res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
         assert res.status_code == 302
         assert_flashes(self, 'An invitation has been sent to test@test.com.', 'success')
+
+
+@mock.patch("app.main.views.admin_manager.data_api_client")
+class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
+
+    admin_user_to_edit = {
+        "users": {
+            "active": True,
+            "emailAddress": "reality.auditor@digital.cabinet-office.gov.uk",
+            "id": 2345,
+            "locked": False,
+            "name": "Auditor of Reality",
+            "role": "admin-ccs-category",
+            "updatedAt": "2017-11-22T14:42:27.043468Z"
+        }
+    }
+
+    def test_should_load_edit_admin_user_page_heading_and_submit_button_correctly(self, data_api_client):
+        self.user_role = "admin-manager"
+        data_api_client.get_user.return_value = self.admin_user_to_edit
+
+        response = self.client.get("/admin/admin-users/2345/edit")
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert document.xpath('//h1')[0].text.strip() == "reality.auditor@digital.cabinet-office.gov.uk"
+        assert document.xpath('//input[@class="button-save"]')[0].value.strip() == "Update user"
+
+    def test_edit_admin_user_form_prefills_edit_name_with_user_name(self, data_api_client):
+        self.user_role = "admin-manager"
+        data_api_client.get_user.return_value = self.admin_user_to_edit
+
+        response = self.client.get("/admin/admin-users/2345/edit")
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert document.xpath('//span[@class="question-heading"]')[0].text.strip() == "Name"
+        assert document.cssselect('#input-edit_admin_name')[0].value == "Auditor of Reality"
+
+    def test_edit_admin_user_form_prefills_permission_for_category_user(self, data_api_client):
+        self.user_role = "admin-manager"
+        data_api_client.get_user.return_value = self.admin_user_to_edit
+
+        response = self.client.get("/admin/admin-users/2345/edit")
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert document.xpath('//span[@class="question-heading"]')[1].text.strip() == "Permissions"
+
+        assert document.cssselect('#input-edit_admin_permissions-1')[0].label.text.strip() == "Category"
+        assert document.cssselect('#input-edit_admin_permissions-1')[0].checked
+
+        assert document.cssselect('#input-edit_admin_permissions-2')[0].label.text.strip() == "Sourcing"
+        assert not document.cssselect('#input-edit_admin_permissions-2')[0].checked
+
+        assert document.cssselect('#input-edit_admin_permissions-3')[0].label.text.strip() == "Support"
+        assert not document.cssselect('#input-edit_admin_permissions-3')[0].checked
+
+    def test_edit_admin_user_form_prefills_status_with_active(self, data_api_client):
+        self.user_role = "admin-manager"
+        data_api_client.get_user.return_value = self.admin_user_to_edit
+
+        response = self.client.get("/admin/admin-users/2345/edit")
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert document.xpath('//span[@class="question-heading"]')[2].text.strip() == "Status"
+
+        assert document.cssselect('#input-edit_admin_status-1')[0].label.text.strip() == "Active"
+        assert document.cssselect('#input-edit_admin_status-1')[0].checked
+
+        assert document.cssselect('#input-edit_admin_status-2')[0].label.text.strip() == "Suspended"
+        assert not document.cssselect('#input-edit_admin_status-2')[0].checked
+
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin-manager", 200),
+        ("admin", 403),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 403),
+    ])
+    def test_get_page_should_only_be_accessible_to_admin_manager(self, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.get_user.return_value = self.admin_user_to_edit
+
+        response = self.client.get("/admin/admin-users/2345/edit")
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
+
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin-manager", 302),
+        ("admin", 403),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 403),
+    ])
+    def test_post_page_should_only_be_accessible_to_admin_manager(self, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.get_user.return_value = self.admin_user_to_edit
+
+        response = self.client.post(
+            "/admin/admin-users/2345/edit",
+            data={
+                "edit_admin_name": "Lady Myria Lejean",
+                "edit_admin_permissions": "admin",
+                "edit_admin_status": "True"
+            }
+        )
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
+
+    def test_admin_manager_can_edit_admin_user_details(self, data_api_client):
+        self.user_role = "admin-manager"
+        data_api_client.get_user.return_value = self.admin_user_to_edit
+        response1 = self.client.post(
+            "/admin/admin-users/2345/edit",
+            data={
+                "edit_admin_name": "Lady Myria Lejean",
+                "edit_admin_permissions": "admin",
+                "edit_admin_status": "False"
+            }
+        )
+        assert response1.status_code == 302
+        assert_flashes(self, "reality.auditor@digital.cabinet-office.gov.uk has been updated", "message")
+        assert data_api_client.update_user.call_args_list == [mock.call(
+            "2345", name="Lady Myria Lejean", role="admin", active=False
+        )]
+
+        assert response1.location == "http://localhost/admin/admin-users"
+        response2 = self.client.get(response1.location)
+        assert "reality.auditor@digital.cabinet-office.gov.uk has been updated" in response2.get_data(as_text=True)
+
+    def test_admin_user_name_cannot_be_submitted_when_empty(self, data_api_client):
+        self.user_role = "admin-manager"
+        data_api_client.get_user.return_value = self.admin_user_to_edit
+        response = self.client.post(
+            "/admin/admin-users/2345/edit",
+            data={
+                "edit_admin_name": "",
+                "edit_admin_permissions": "admin",
+                "edit_admin_status": "True"
+            }
+        )
+        assert response.status_code == 400
+        assert "You must provide a name." in response.get_data(as_text=True)
+        assert data_api_client.update_user.call_args_list == []

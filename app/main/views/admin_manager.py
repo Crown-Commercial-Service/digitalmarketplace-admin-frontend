@@ -5,8 +5,11 @@ from dmutils.email.user_account_email import send_user_account_email
 
 from ... import data_api_client
 from .. import main
-from ..forms import InviteAdminForm
+
+from ..forms import InviteAdminForm, EditAdminUserForm
+from dmapiclient import HTTPError
 from ..auth import role_required
+from distutils.util import strtobool
 
 
 @main.route('/admin-users', methods=['GET'])
@@ -63,3 +66,40 @@ def invite_admin_user():
         form=form,
         errors=errors,
     ), 200 if not errors else 400
+
+
+@main.route("/admin-users/<string:admin_user_id>/edit", methods=["GET", "POST"])
+@role_required("admin-manager")
+def edit_admin_user(admin_user_id):
+    admin_user = data_api_client.get_user(admin_user_id)["users"]
+    status_code = 200
+    edit_admin_user_form = EditAdminUserForm(
+        edit_admin_name=admin_user["name"],
+        edit_admin_permissions=admin_user["role"],
+        edit_admin_status=admin_user["active"])
+
+    if edit_admin_user_form.validate_on_submit():
+        try:
+            edited_admin_name = request.form.get("edit_admin_name")
+            edited_admin_permissions = request.form.get("edit_admin_permissions")
+            edited_admin_status = strtobool(request.form.get("edit_admin_status"))
+
+            data_api_client.update_user(
+                admin_user_id,
+                name=edited_admin_name,
+                role=edited_admin_permissions,
+                active=edited_admin_status
+            )
+            flash("{} has been updated.".format(admin_user["emailAddress"]), "message")
+            return redirect(url_for('.manage_admin_users'))
+        except HTTPError as e:
+            status_code = 400
+            raise e
+    elif edit_admin_user_form.edit_admin_name.errors:
+        status_code = 400
+
+    return render_template(
+        "edit_admin_user.html",
+        admin_user=admin_user,
+        edit_admin_user_form=edit_admin_user_form,
+    ), status_code
