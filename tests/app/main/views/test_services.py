@@ -604,6 +604,27 @@ class TestServiceView(LoggedInApplicationTest):
 class TestServiceEdit(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
 
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 200),
+        ("admin-ccs-sourcing", 403),
+        ("admin-framework-manager", 403),
+        ("admin-manager", 403),
+    ])
+    def test_edit_service_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        service = {
+            "id": 123,
+            "frameworkSlug": "digital-outcomes-and-specialists",
+            "serviceName": "Larry O'Rourke's",
+            "supplierId": 1000,
+            "lot": "user-research-studios",
+        }
+        data_api_client.get_service.return_value = {'services': service}
+        response = self.client.get('/admin/services/123/edit/description')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
     def test_edit_dos_service_title(self, data_api_client):
         service = {
             "id": 123,
