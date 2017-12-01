@@ -315,11 +315,14 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         assert document.cssselect('#input-edit_admin_permissions-1')[0].label.text.strip() == "Category"
         assert document.cssselect('#input-edit_admin_permissions-1')[0].checked
 
-        assert document.cssselect('#input-edit_admin_permissions-2')[0].label.text.strip() == "Sourcing"
+        assert document.cssselect('#input-edit_admin_permissions-2')[0].label.text.strip() == "Framework Manager"
         assert not document.cssselect('#input-edit_admin_permissions-2')[0].checked
 
-        assert document.cssselect('#input-edit_admin_permissions-3')[0].label.text.strip() == "Support"
+        assert document.cssselect('#input-edit_admin_permissions-3')[0].label.text.strip() == "Sourcing"
         assert not document.cssselect('#input-edit_admin_permissions-3')[0].checked
+
+        assert document.cssselect('#input-edit_admin_permissions-4')[0].label.text.strip() == "Support"
+        assert not document.cssselect('#input-edit_admin_permissions-4')[0].checked
 
     def test_edit_admin_user_form_prefills_status_with_active(self, data_api_client):
         self.user_role = "admin-manager"
@@ -343,6 +346,7 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         ("admin", 403),
         ("admin-ccs-category", 403),
         ("admin-ccs-sourcing", 403),
+        ("admin-framework-manager", 403),
     ])
     def test_get_page_should_only_be_accessible_to_admin_manager(self, data_api_client, role, expected_code):
         self.user_role = role
@@ -357,6 +361,7 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         ("admin", 403),
         ("admin-ccs-category", 403),
         ("admin-ccs-sourcing", 403),
+        ("admin-framework-manager", 403),
     ])
     def test_post_page_should_only_be_accessible_to_admin_manager(self, data_api_client, role, expected_code):
         self.user_role = role
@@ -373,21 +378,22 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
 
-    def test_admin_manager_can_edit_admin_user_details(self, data_api_client):
+    @pytest.mark.parametrize('role', ['admin', 'admin-ccs-sourcing', 'admin-ccs-category', 'admin-framework-manager'])
+    def test_admin_manager_can_edit_admin_user_details(self, data_api_client, role):
         self.user_role = "admin-manager"
         data_api_client.get_user.return_value = self.admin_user_to_edit
         response1 = self.client.post(
             "/admin/admin-users/2345/edit",
             data={
                 "edit_admin_name": "Lady Myria Lejean",
-                "edit_admin_permissions": "admin",
+                "edit_admin_permissions": role,
                 "edit_admin_status": "False"
             }
         )
         assert response1.status_code == 302
         assert_flashes(self, "reality.auditor@digital.cabinet-office.gov.uk has been updated", "message")
         assert data_api_client.update_user.call_args_list == [mock.call(
-            "2345", name="Lady Myria Lejean", role="admin", active=False
+            "2345", name="Lady Myria Lejean", role=role, active=False
         )]
 
         assert response1.location == "http://localhost/admin/admin-users"
