@@ -39,6 +39,20 @@ class TestAdminManagerListView(LoggedInApplicationTest):
          "role": "admin-ccs-category",
          },
     ]
+    FRAMEWORK_MANAGER_USERS = [
+        {"active": True,
+         "emailAddress": "admin-framework-manager@example.com",
+         "name": "Wonderful Framework Manager",
+         "role": "admin-framework-manager",
+         "id": 9093,
+         },
+        {"active": False,
+         "emailAddress": "retired-admin-framework-manager@example.com",
+         "name": "Has-been Framework Manager",
+         "role": "admin-framework-manager",
+         "id": 9094,
+         },
+    ]
     SOURCING_USERS = [
         {"active": False,
          "emailAddress": "old-sourcing-support@example.com",
@@ -54,7 +68,9 @@ class TestAdminManagerListView(LoggedInApplicationTest):
          },
     ]
 
-    @pytest.mark.parametrize("role_not_allowed", ["admin", "admin-ccs-category", "admin-ccs-sourcing"])
+    @pytest.mark.parametrize(
+        "role_not_allowed", ["admin", "admin-ccs-category", "admin-ccs-sourcing", "admin-framework-manager"]
+    )
     def test_should_403_forbidden_user_roles(self, data_api_client, role_not_allowed):
         self.user_role = role_not_allowed
         response = self.client.get("/admin/admin-users")
@@ -71,20 +87,22 @@ class TestAdminManagerListView(LoggedInApplicationTest):
         data_api_client.find_users_iter.side_effect = [
             iter(self.SUPPORT_USERS),
             iter(self.CATEGORY_USERS),
-            iter(self.SOURCING_USERS)
+            iter(self.SOURCING_USERS),
+            iter(self.FRAMEWORK_MANAGER_USERS),
         ]
         response = self.client.get("/admin/admin-users")
         document = html.fromstring(response.get_data(as_text=True))
 
         assert response.status_code == 200
-        assert len(document.cssselect(".summary-item-row")) == 6
+        assert len(document.cssselect(".summary-item-row")) == 8
 
     def test_should_list_alphabetically_with_all_suspended_users_below_active_users(self, data_api_client):
         self.user_role = "admin-manager"
         data_api_client.find_users_iter.side_effect = [
             iter(self.SUPPORT_USERS),
             iter(self.CATEGORY_USERS),
-            iter(self.SOURCING_USERS)
+            iter(self.SOURCING_USERS),
+            iter(self.FRAMEWORK_MANAGER_USERS),
         ]
         response = self.client.get("/admin/admin-users")
         document = html.fromstring(response.get_data(as_text=True))
@@ -107,21 +125,30 @@ class TestAdminManagerListView(LoggedInApplicationTest):
         assert "Suspended" not in rows[3].text_content()
         assert "Sourcing Support" in rows[3].text_content()
 
-        # Deactivated users in alphabetical order
-        assert "Active" not in rows[4].text_content()
-        assert "Suspended" in rows[4].text_content()
-        assert "CCS Category Support - Retired" in rows[4].text_content()
+        assert "Active" in rows[4].text_content()
+        assert "Suspended" not in rows[4].text_content()
+        assert "Wonderful Framework Manager" in rows[4].text_content()
 
+        # Deactivated users in alphabetical order
         assert "Active" not in rows[5].text_content()
         assert "Suspended" in rows[5].text_content()
-        assert "Has-been Sourcing Support" in rows[5].text_content()
+        assert "CCS Category Support - Retired" in rows[5].text_content()
+
+        assert "Active" not in rows[6].text_content()
+        assert "Suspended" in rows[6].text_content()
+        assert "Has-been Framework Manager" in rows[6].text_content()
+
+        assert "Active" not in rows[7].text_content()
+        assert "Suspended" in rows[7].text_content()
+        assert "Has-been Sourcing Support" in rows[7].text_content()
 
     def test_should_link_to_edit_admin_user_page(self, data_api_client):
         self.user_role = "admin-manager"
         data_api_client.find_users_iter.side_effect = [
             iter(self.SUPPORT_USERS),
             iter(self.CATEGORY_USERS),
-            iter(self.SOURCING_USERS)
+            iter(self.SOURCING_USERS),
+            iter(self.FRAMEWORK_MANAGER_USERS),
         ]
         response = self.client.get("/admin/admin-users")
         document = html.fromstring(response.get_data(as_text=True))
@@ -133,8 +160,10 @@ class TestAdminManagerListView(LoggedInApplicationTest):
             "/admin/admin-users/9088/edit",
             "/admin/admin-users/9087/edit",
             "/admin/admin-users/9092/edit",
+            "/admin/admin-users/9093/edit",
             "/admin/admin-users/9090/edit",
-            "/admin/admin-users/9091/edit"
+            "/admin/admin-users/9094/edit",
+            "/admin/admin-users/9091/edit",
         ]
 
     def test_should_have_invite_user_link(self, data_api_client):
