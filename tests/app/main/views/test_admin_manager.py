@@ -235,7 +235,7 @@ class TestInviteAdminUserView(LoggedInApplicationTest):
         assert res.location == "http://localhost/admin/admin-users"
 
     @mock.patch('app.main.views.admin_manager.send_user_account_email')
-    @pytest.mark.parametrize('role', ('admin', 'admin-ccs-sourcing', 'admin-ccs-category'))
+    @pytest.mark.parametrize('role', ('admin', 'admin-ccs-sourcing', 'admin-ccs-category', 'admin-framework-manager'))
     def test_post_is_successful_for_valid_roles(self, send_user_account_email, data_api_client, role):
         data_api_client.email_is_valid_for_admin_user.return_value = True
         res = self.client.post('/admin/admin-users/invite', data={'role': role, 'email_address': 'test@test.com'})
