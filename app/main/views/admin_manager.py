@@ -82,7 +82,7 @@ def edit_admin_user(admin_user_id):
         try:
             edited_admin_name = request.form.get("edit_admin_name")
             edited_admin_permissions = request.form.get("edit_admin_permissions")
-            edited_admin_status = strtobool(request.form.get("edit_admin_status"))
+            edited_admin_status = bool(strtobool(request.form.get("edit_admin_status")))
 
             data_api_client.update_user(
                 admin_user_id,
