@@ -36,16 +36,6 @@
           <a href="{{ url_for('main.applications_review_all') }}" role="button">View All Seller Applications</a>
           <a href="{{ url_for('main.assessments_review') }}" role="button">View Seller Assessments</a>
 
-              {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
-              <form action="{{ url_for('.find') }}" method="get" class="question">
-                  <label class="question-heading" for="service_id">Find a service by service ID</label>
-                  <p class='hint'>
-                    eg 1234567890123456
-                  </p>
-                  <input type="text" name="service_id" id="service_id" class="text-box">
-                  <input type="submit" value="Search" class="button-save">
-              </form>
-              {% endif %}
 
               <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
                 <label class="question-heading" for="supplier_name_prefix">Find suppliers by name prefix</label>
@@ -68,7 +58,7 @@
               </form>
 
               <form action="{{ url_for('.find_buyer_by_brief_id') }}" method="get" class="question">
-                  <label class="question-heading" for="brief_id">Find buyer by opportunity ID</label>
+                  <label class="question-heading" for="brief_id">Edit a brief</label>
                   <p class='hint'>
                     You can find this number at the end of the opportunities’ URL.
                   </p>
@@ -97,58 +87,5 @@
   %}
     {% include "toolkit/browse-list.html" %}
   {% endwith %}
-
-  {% if current_user.has_any_role('admin', 'admin-ccs-sourcing') %}
-    {% with
-        smaller = True,
-        heading = "Agreements"
-    %}
-      {% include "toolkit/page-heading.html" %}
-    {% endwith %}
-    {% with items = [
-        {
-            "body": "Download G-Cloud 7 agreements",
-            "link": "/admin/agreements/g-cloud-7",
-            "title": "G-Cloud 7 agreements"
-        },
-        {
-            "body": "Download Digital Outcomes and Specialists agreements",
-            "link": "/admin/agreements/digital-outcomes-and-specialists",
-            "title": "Digital Outcomes and Specialists agreements"
-        }
-      ]
-    %}
-      {% include "toolkit/browse-list.html" %}
-    {% endwith %}
-  {% endif %}
-
-  {% if current_user.has_any_role('admin') %}
-    {% with
-        smaller = True,
-        heading = "Communications"
-    %}
-      {% include "toolkit/page-heading.html" %}
-    {% endwith %}
-    {% with items = [
-      {
-          "body": "Manage Digital Outcomes and Specialists communications",
-          "link": "/admin/communications/digital-outcomes-and-specialists",
-          "title": "Digital Outcomes and Specialists communications"
-      },
-      {
-        "body": "Manage G-Cloud 8 communications",
-        "link": "/admin/communications/g-cloud-8",
-        "title": "G-Cloud 8 communications"
-      },
-      {
-          "body": "Download a list of users for frameworks that are open, pending or live",
-          "link": url_for(".list_frameworks_with_users"),
-          "title": "Download user lists"
-      }
-    ]
-    %}
-      {% include "toolkit/browse-list.html" %}
-    {% endwith %}
-  {% endif %}
 
 {% endblock %}

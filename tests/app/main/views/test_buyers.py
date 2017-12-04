@@ -25,7 +25,8 @@ class TestBuyersView(LoggedInApplicationTest):
         data_api_client.get_brief.return_value = {
             'briefs': {
                 'title': 'No users in here',
-                'users': list()
+                'users': list(),
+                'dates': {}
             }
         }
         response = self.client.get('admin/buyers?brief_id=1')

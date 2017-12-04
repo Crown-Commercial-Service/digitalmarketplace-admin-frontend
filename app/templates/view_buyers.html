@@ -25,19 +25,25 @@
       {% for category, message in messages %}
           {% if message == 'no_brief' %}
               {% set displayed_message = "There are no opportunities with ID {}".format(brief_id) %}
-          {% endif %}
+          {% elif message == 'brief_updated' %}
+{% set displayed_message = "Brief updated ID {}".format(brief_id) %}
+{% else %}
+{% set displayed_message = message %}
+{% endif %}
           {%
           with
               message = displayed_message,
               type = "destructive" if category == 'error' else "success"
           %}
+<div class={{ "callout--warning" if category == 'error' else "callout" }}>
           {% include "toolkit/notification-banner.html" %}
+</div>
           {% endwith %}
       {% endfor %}
   {% endif %}
   {% endwith %}
 
-  {% with heading = brief_id + ' - ' + title if title %}
+  {% with heading = brief_id|string + ' - ' + title if title %}
   {% include "toolkit/page-heading.html" %}
   {% endwith %}
 
@@ -71,7 +77,18 @@
   {% endcall %}
 
   <br>
+{% if brief %}
+<form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
 
+    <label class="question-heading" for="questions_closed_at">Set new question date (YYYY-MM-DD)</label>
+    <input type="text" name="questions_closed_at" id="questions_closed_at" class="text-box"  value="{{brief.dates.questions_closing_date}}">
+
+    <label class="question-heading" for="closed_at">Set new closing date (YYYY-MM-DD)</label>
+    <input type="text" name="closed_at" id="closed_at" class="text-box" value="{{brief.dates.closing_date}}">
+
+    <input type="submit" value="Save" class="button-save">
+</form>
+{% endif %}
   <form action="{{ url_for('.find_buyer_by_brief_id') }}" method="get" class="question">
       <label class="question-heading" for="brief_id">Find buyer by opportunity ID</label>
       <p class='hint'>
