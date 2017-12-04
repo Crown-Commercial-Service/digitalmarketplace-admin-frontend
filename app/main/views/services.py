@@ -37,7 +37,7 @@ def find():
 
 
 @main.route('/services/<service_id>', methods=['GET'])
-@role_required('admin-ccs-category')
+@role_required('admin', 'admin-ccs-category')
 def view(service_id):
     try:
         service = data_api_client.get_service(service_id)
@@ -71,6 +71,8 @@ def view(service_id):
         service_id=service_id,
         removed_by=removed_by,
         removed_at=removed_at,
+        remove=request.args.get('remove', None),
+        publish=request.args.get('publish', None),
     )
 
 
@@ -82,7 +84,6 @@ def update_service_status(service_id):
     translate_frontend_to_api = {
         'removed': 'disabled',
         'public': 'published',
-        'private': 'enabled'
     }
 
     if frontend_status in translate_frontend_to_api.keys():
