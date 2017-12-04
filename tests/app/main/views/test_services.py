@@ -223,7 +223,6 @@ class TestServiceView(LoggedInApplicationTest):
 
     @pytest.mark.parametrize('service_status', ['disabled', 'enabled'])
     def test_info_banner_contains_publish_link_for_ccs_category(self, data_api_client, service_status):
-        self.user_role = 'admin-ccs-category'
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
             'serviceName': 'test',
@@ -396,7 +395,6 @@ class TestServiceView(LoggedInApplicationTest):
 
     @pytest.mark.parametrize('url_suffix', ('', '?remove=True'))
     def test_remove_service_link_appears_for_correct_role_and_status(self, data_api_client, url_suffix):
-        self.user_role = 'admin-ccs-category'
         data_api_client.get_service.return_value = {'services': {
             'lot': 'paas',
             'serviceName': 'test',
@@ -416,8 +414,8 @@ class TestServiceView(LoggedInApplicationTest):
 
         assert expected_link.text == expected_link_text
 
-    @pytest.mark.parametrize('user_role', ('admin-ccs-sourcing', 'admin', 'admin-manager'))
-    def test_remove_service_does_not_appear_for_certain_roles(self, data_api_client, user_role):
+    @pytest.mark.parametrize('user_role', ('admin-ccs-sourcing', 'admin-framework-manager', 'admin-manager'))
+    def test_no_access_for_certain_roles(self, data_api_client, user_role):
         self.user_role = user_role
         data_api_client.get_service.return_value = {'services': {
             'lot': 'paas',
@@ -451,8 +449,47 @@ class TestServiceView(LoggedInApplicationTest):
         unexpected_href = '/admin/services/1?remove=True'
         assert not document.xpath('.//a[contains(@href,"{}")]'.format(unexpected_href))
 
+    def test_publish_service_does_not_appear_for_admin_role(self, data_api_client):
+        self.user_role = 'admin'
+        data_api_client.get_service.return_value = {'services': {
+            'lot': 'paas',
+            'serviceName': 'test',
+            'supplierId': 1000,
+            'frameworkSlug': 'digital-outcomes-and-specialists-2',
+            'frameworkFramework': 'digital-outcomes-and-specialists',
+            'id': "1",
+            'status': 'disabled'
+        }}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+        response = self.client.get('/admin/services/1')
+
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        unexpected_href = '/admin/services/1?publish=True'
+        assert not document.xpath('.//a[contains(@href,"{}")]'.format(unexpected_href))
+
+    def test_remove_service_does_not_appear_for_admin_role(self, data_api_client):
+        self.user_role = 'admin'
+        data_api_client.get_service.return_value = {'services': {
+            'lot': 'paas',
+            'serviceName': 'test',
+            'supplierId': 1000,
+            'frameworkSlug': 'digital-outcomes-and-specialists-2',
+            'frameworkFramework': 'digital-outcomes-and-specialists',
+            'id': "1",
+            'status': 'published'
+        }}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+        response = self.client.get('/admin/services/1')
+
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        unexpected_href = '/admin/services/1?remove=True'
+        assert not document.xpath('.//a[contains(@href,"{}")]'.format(unexpected_href))
+
     def test_service_view_with_publish_param_shows_publish_banner(self, data_api_client):
-        self.user_role = 'admin-ccs-category'
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
             'serviceName': 'test',
@@ -471,7 +508,6 @@ class TestServiceView(LoggedInApplicationTest):
         assert banner_text == expected_text
 
     def test_service_view_with_remove_param_shows_remove_banner(self, data_api_client):
-        self.user_role = 'admin-ccs-category'
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
             'serviceName': 'test',
@@ -1164,7 +1200,6 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         assert_flashes(self, 'status_updated')
 
     def test_bad_status_gives_error_message(self, data_api_client):
-        self.user_role = 'admin-ccs-category'
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-7',
             'serviceName': 'test',

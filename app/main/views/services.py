@@ -37,7 +37,7 @@ def find():
 
 
 @main.route('/services/<service_id>', methods=['GET'])
-@role_required('admin-ccs-category')
+@role_required('admin', 'admin-ccs-category')
 def view(service_id):
     try:
         service = data_api_client.get_service(service_id)
