@@ -33,8 +33,9 @@ class TestSuppliersListView(LoggedInApplicationTest):
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
-        ("admin", False),
+        ("admin", True),
         ("admin-ccs-category", True),
+        ("admin-ccs-sourcing", False),
         ("admin-framework-manager", True),
     ])
     def test_services_link_is_shown_to_users_with_right_roles(self, data_api_client, role, link_should_be_visible):
@@ -315,7 +316,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
 
     @pytest.mark.parametrize("role, expected_code", [
-        ("admin", 403),
+        ("admin", 200),
         ("admin-ccs-category", 200),
         ("admin-ccs-sourcing", 403),
         ("admin-framework-manager", 200),
@@ -330,6 +331,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     @pytest.mark.parametrize("role, can_edit", [
+        ("admin", False),
         ("admin-ccs-category", True),
         ("admin-framework-manager", False),
     ])
@@ -348,6 +350,8 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert len(remove_all_links) == (1 if can_edit else 0)
         edit_service_links = document.xpath('.//a[contains(text(), "Edit")]')
         assert len(edit_service_links) == (1 if can_edit else 0)
+        view_service_links = document.xpath('.//a[contains(text(), "View")]')
+        assert len(view_service_links) == (0 if can_edit else 1)
 
     def test_should_404_if_supplier_does_not_exist_on_services(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
