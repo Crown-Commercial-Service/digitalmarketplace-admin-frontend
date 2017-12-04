@@ -62,72 +62,72 @@ class TestServiceView(LoggedInApplicationTest):
         },
     ]}
 
-    def test_service_view_no_features_or_benefits_status_disabled(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {
-            'frameworkSlug': 'g-cloud-8',
-            'serviceName': 'test',
-            'supplierId': 1000,
-            'lot': 'iaas',
-            'id': "314159265",
-            "status": "disabled",
-        }}
-        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
-        response = self.client.get('/admin/services/314159265')
-
-        assert response.status_code == 200
-        assert data_api_client.get_service.call_args_list == [
-            (("314159265",), {}),
-        ]
-        assert data_api_client.find_audit_events.call_args_list == [
-            mock.call(
-                audit_type=AuditTypes.update_service_status,
-                latest_first='true',
-                object_id='314159265',
-                object_type='services'
-            )
-        ]
-
-        document = html.fromstring(response.get_data(as_text=True))
-        assert document.xpath(
-            "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
-        ) == "314159265"
-
-    def test_service_view_no_features_or_benefits_status_enabled(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {
-            'frameworkSlug': 'g-cloud-7',
-            'serviceName': 'test',
-            'supplierId': 1000,
-            'lot': 'iaas',
-            'id': "1412",
-            "status": "enabled",
-        }}
-        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
-        response = self.client.get('/admin/services/1412')
-
-        assert response.status_code == 200
-        assert data_api_client.get_service.call_args_list == [
-            (("1412",), {}),
-        ]
-        assert data_api_client.find_audit_events.call_args_list == [
-            mock.call(
-                audit_type=AuditTypes.update_service_status,
-                latest_first='true',
-                object_id='1412',
-                object_type='services'
-            )
-        ]
-
-        document = html.fromstring(response.get_data(as_text=True))
-        assert document.xpath(
-            "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
-        ) == "1412"
-
-    def test_service_view_with_data(self, data_api_client):
+    # def test_service_view_status_disabled(self, data_api_client):
+    #     data_api_client.get_service.return_value = {'services': {
+    #         'frameworkSlug': 'g-cloud-8',
+    #         'serviceName': 'test',
+    #         'supplierId': 1000,
+    #         'lot': 'iaas',
+    #         'id': "314159265",
+    #         "status": "disabled",
+    #     }}
+    #     data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+    #     response = self.client.get('/admin/services/314159265')
+    #
+    #     assert response.status_code == 200
+    #     assert data_api_client.get_service.call_args_list == [
+    #         (("314159265",), {}),
+    #     ]
+    #     assert data_api_client.find_audit_events.call_args_list == [
+    #         mock.call(
+    #             audit_type=AuditTypes.update_service_status,
+    #             latest_first='true',
+    #             object_id='314159265',
+    #             object_type='services'
+    #         )
+    #     ]
+    #
+    #     document = html.fromstring(response.get_data(as_text=True))
+    #     assert document.xpath(
+    #         "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
+    #     ) == "314159265"
+    #
+    # def test_service_view_status_enabled(self, data_api_client):
+    #     data_api_client.get_service.return_value = {'services': {
+    #         'frameworkSlug': 'g-cloud-7',
+    #         'serviceName': 'test',
+    #         'supplierId': 1000,
+    #         'lot': 'iaas',
+    #         'id': "1412",
+    #         "status": "enabled",
+    #     }}
+    #     data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+    #     response = self.client.get('/admin/services/1412')
+    #
+    #     assert response.status_code == 200
+    #     assert data_api_client.get_service.call_args_list == [
+    #         (("1412",), {}),
+    #     ]
+    #     assert data_api_client.find_audit_events.call_args_list == [
+    #         mock.call(
+    #             audit_type=AuditTypes.update_service_status,
+    #             latest_first='true',
+    #             object_id='1412',
+    #             object_type='services'
+    #         )
+    #     ]
+    #
+    #     document = html.fromstring(response.get_data(as_text=True))
+    #     assert document.xpath(
+    #         "normalize-space(string(//td[@class='summary-item-field']//*[@class='service-id']))"
+    #     ) == "1412"
+    @pytest.mark.parametrize('service_status', ['disabled', 'enabled', 'published'])
+    def test_service_view_with_data(self, data_api_client, service_status):
         service = {
             'frameworkSlug': 'g-cloud-8',
             'lot': 'iaas',
             'id': "151",
-            "status": "published",
+            "status": service_status,
             "serviceName": "Saint Leopold's",
             "serviceFeatures": [
                 "Rabbitry and fowlrun",
@@ -153,7 +153,6 @@ class TestServiceView(LoggedInApplicationTest):
         assert data_api_client.get_service.call_args_list == [
             (("151",), {}),
         ]
-        assert data_api_client.find_audit_events.called is False
         assert response.status_code == 200
 
         document = html.fromstring(response.get_data(as_text=True))
@@ -192,6 +191,45 @@ class TestServiceView(LoggedInApplicationTest):
             n_lis=len(service["deviceAccessMethod"]),
             **xpath_kwargs
         )
+
+    @pytest.mark.parametrize(
+        ('service_status', 'called'),
+        [
+            ('disabled', True),
+            ('enabled', True),
+            ('published', False)
+        ]
+    )
+    def test_find_audit_events_not_called_for_published(self, data_api_client, service_status, called):
+        service = {
+            'frameworkSlug': 'g-cloud-8',
+            'lot': 'iaas',
+            'id': "151",
+            "status": service_status,
+            "serviceName": "Saint Leopold's",
+            "serviceFeatures": [
+                "Rabbitry and fowlrun",
+                "Dovecote",
+                "Botanical conservatory",
+            ],
+            "serviceBenefits": [
+                "Mentioned in court and fashionable intelligence",
+            ],
+            "supplierId": 1000,
+            "deviceAccessMethod": {
+                "value": [
+                    "Corporate/enterprise devices",
+                    "Unknown devices",
+                ],
+                "assurance": "Independent validation of assertion",
+            },
+        }
+        data_api_client.get_service.return_value = {'services': service}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+        response = self.client.get('/admin/services/151')
+
+        assert response.status_code == 200
+        assert data_api_client.find_audit_events.called is called
 
     @pytest.mark.parametrize('service_status', ['disabled', 'enabled'])
     def test_service_view_shows_info_banner_for_removed_and_private_services(self, data_api_client, service_status):
