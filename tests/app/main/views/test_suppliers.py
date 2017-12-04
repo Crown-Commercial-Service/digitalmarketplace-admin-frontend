@@ -834,7 +834,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
-class TestUpdatintSupplierName(LoggedInApplicationTest):
+class TestUpdatingSupplierName(LoggedInApplicationTest):
 
     @pytest.mark.parametrize("allowed_role", ["admin", "admin-ccs-category"])
     def test_admin_and_ccs_category_roles_can_update_supplier_name(self, data_api_client, allowed_role):
