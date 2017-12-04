@@ -1,0 +1,41 @@
+{% extends "_base_page.html" %}
+
+{% block breadcrumb %}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+  {%
+    with heading = "Download supplier lists for {}".format(framework['name'])
+  %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+
+  {%
+    with
+    items = [
+      {
+          "title": "Suppliers who’ve applied or started an application",
+          "link": url_for('.download_users', framework_slug=framework['slug']),
+          "file_type": "CSV"
+      },
+      {
+          "title": "Suppliers on the framework",
+          "link": url_for('.download_users', framework_slug=framework['slug'], on_framework_only=True),
+          "file_type": "CSV"
+      },
+    ]
+  %}
+    {% include "toolkit/documents.html" %}
+  {% endwith %}
+
+{% endblock %}

@@ -189,6 +189,39 @@ class TestUsersView(LoggedInApplicationTest):
 
 
 @mock.patch('app.main.views.users.data_api_client')
+class TestUserListPage(LoggedInApplicationTest):
+    user_role = 'admin-framework-manager'
+
+    _framework = {
+        'name': 'G-Cloud 9',
+        'slug': 'g-cloud-9',
+        'status': 'live'
+    }
+
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 403),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_get_user_lists_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        response = self.client.get("/admin/frameworks/g-cloud-9/users")
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
+    def test_get_user_lists_shows_framework_name_in_heading(self, data_api_client):
+        data_api_client.get_framework.return_value = {"frameworks": self._framework}
+        response = self.client.get("/admin/frameworks/g-cloud-9/users")
+        document = html.fromstring(response.get_data(as_text=True))
+
+        page_heading = document.xpath(
+            '//h1//text()')[0].strip()
+        assert page_heading == "Download supplier lists for G-Cloud 9"
+
+
+@mock.patch('app.main.views.users.data_api_client')
 class TestUsersExport(LoggedInApplicationTest):
     _bad_statuses = ['coming', 'expired']
 
