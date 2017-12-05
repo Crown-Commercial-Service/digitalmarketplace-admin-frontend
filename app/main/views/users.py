@@ -113,7 +113,7 @@ def download_users(framework_slug):
 
 
 @main.route('/users/download/buyers', methods=['GET'])
-@role_required('admin-framework-manager', 'admin')  # TODO: REMOVE ADMIN
+@role_required('admin-framework-manager')
 def download_buyers_and_briefs():
     users = {user["id"]: dict(user, briefs=[]) for user in data_api_client.find_users_iter(role="buyer")}
 

@@ -399,6 +399,7 @@ class TestUsersExport(LoggedInApplicationTest):
 
 @mock.patch('app.main.views.users.data_api_client')
 class TestBuyersExport(LoggedInApplicationTest):
+    user_role = "admin-framework-manager"
 
     def test_response_data_has_buyer_info(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
