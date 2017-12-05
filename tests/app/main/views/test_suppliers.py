@@ -1778,21 +1778,26 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             qd_matches is None or parse_qs(parsed_url.query) == qd_matches
         )
 
-    @pytest.mark.parametrize("role,expected_code", [
-        ("admin", 403),
-        ("admin-ccs-category", 200),
-        ("admin-ccs-sourcing", 200),
-        ("admin-framework-manager", 200),
-        ("admin-manager", 403),
+    @pytest.mark.parametrize("role, expected_code, read_only", [
+        ("admin", 403, None),
+        ("admin-ccs-category", 200, True),
+        ("admin-ccs-sourcing", 200, False),
+        ("admin-framework-manager", 200, True),
+        ("admin-manager", 403, None),
     ])
     def test_get_page_should_only_be_accessible_to_specific_user_roles(
-            self, s3, get_signed_url, data_api_client, role, expected_code
+            self, s3, get_signed_url, data_api_client, role, expected_code, read_only
     ):
         self.user_role = role
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
         response = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8")
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+        # No action buttons should be shown if read-only
+        if read_only:
+            document = html.fromstring(response.get_data(as_text=True))
+            input_elems = document.xpath("//main//form//input[@type='submit']")
+            assert len(input_elems) == 0
 
     @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
     def test_buttons_shown_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client, next_status):
