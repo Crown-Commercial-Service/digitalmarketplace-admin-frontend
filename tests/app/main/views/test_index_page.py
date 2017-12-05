@@ -102,7 +102,7 @@ class TestIndex(LoggedInApplicationTest):
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
         ("admin", False),
-        ("admin-ccs-category", False),
+        ("admin-ccs-category", True),
         ("admin-ccs-sourcing", True),
         ("admin-framework-manager", True),
         ("admin-manager", False),

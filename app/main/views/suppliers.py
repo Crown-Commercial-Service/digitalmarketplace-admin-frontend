@@ -90,7 +90,7 @@ def view_supplier_declaration(supplier_id, framework_slug):
 
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>', methods=['GET'])
-@role_required('admin-ccs-sourcing', 'admin-framework-manager')
+@role_required('admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager')
 def view_signed_agreement(supplier_id, framework_slug):
     # not properly validating this - all we do is pass it through
     next_status = request.args.get("next_status")
@@ -197,7 +197,7 @@ def unapprove_agreement_for_countersignature(agreement_id):
 
 
 @main.route('/suppliers/<supplier_id>/agreement/<framework_slug>', methods=['GET'])
-@role_required('admin-ccs-sourcing', 'admin-framework-manager')
+@role_required('admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager')
 def download_signed_agreement_file(supplier_id, framework_slug):
     # This route is used for pre-G-Cloud-8 agreement document downloads
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
@@ -206,7 +206,7 @@ def download_signed_agreement_file(supplier_id, framework_slug):
 
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>/<document_name>', methods=['GET'])
-@role_required('admin-ccs-sourcing', 'admin-framework-manager')
+@role_required('admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager')
 def download_agreement_file(supplier_id, framework_slug, document_name):
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
     if supplier_framework is None or not supplier_framework.get("declaration"):
