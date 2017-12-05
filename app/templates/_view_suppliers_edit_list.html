@@ -32,9 +32,7 @@
       {{ summary.edit_link("Change name", url_for(".edit_supplier_name", supplier_id=item.id)) }}
     {% endif %}
     {{ summary.edit_link("Users", url_for(".find_supplier_users", supplier_id=item.id)) }}
-    {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager') %}
-      {{ summary.edit_link("Services", url_for(".find_supplier_services", supplier_id=item.id)) }}
-    {% endif %}
+    {{ summary.edit_link("Services", url_for(".find_supplier_services", supplier_id=item.id)) }}
   {% endcall %}
 
 {% endcall %}
