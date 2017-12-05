@@ -357,7 +357,7 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
 
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 403),
-        ("admin-ccs-category", 403),
+        ("admin-ccs-category", 302),
         ("admin-ccs-sourcing", 302),
         ("admin-framework-manager", 302),
         ("admin-manager", 403),

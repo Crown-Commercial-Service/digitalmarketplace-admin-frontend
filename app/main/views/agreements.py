@@ -56,7 +56,7 @@ def list_agreements(framework_slug):
 
 
 @main.route('/suppliers/<int:supplier_id>/agreements/<framework_slug>/next', methods=('GET',))
-@role_required('admin-ccs-sourcing', 'admin-framework-manager')
+@role_required('admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager')
 def next_agreement(supplier_id, framework_slug):
     status = request.args.get("status")
     if status and status not in status_labels:
