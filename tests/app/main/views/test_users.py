@@ -223,6 +223,7 @@ class TestUserListPage(LoggedInApplicationTest):
 
 @mock.patch('app.main.views.users.data_api_client')
 class TestUsersExport(LoggedInApplicationTest):
+    user_role = 'admin-framework-manager'
     _bad_statuses = ['coming', 'expired']
 
     _valid_framework = {
@@ -277,7 +278,7 @@ class TestUsersExport(LoggedInApplicationTest):
         _assert_things_about_valid_frameworks(options, frameworks)
         _assert_things_about_invalid_frameworks(options, frameworks)
 
-    def _return_user_export_response(self, data_api_client, framework, users, framework_slug=None):
+    def _return_user_export_response(self, data_api_client, framework, users, framework_slug=None, only_on_fwk=False):
         if framework_slug is None:
             framework_slug = framework['slug']
 
@@ -291,7 +292,9 @@ class TestUsersExport(LoggedInApplicationTest):
             data_api_client.get_framework.side_effect = HTTPError(mock.Mock(status_code=404))
 
         return self.client.get(
-            '/admin/users/download/<_valid_framework',
+            '/admin/frameworks/<_valid_framework/users/download{}'.format(
+                '?on_framework_only=True' if only_on_fwk else ''
+            ),
             data={'framework_slug': framework_slug}
         )
 
@@ -359,6 +362,39 @@ class TestUsersExport(LoggedInApplicationTest):
         response = self._return_user_export_response(data_api_client, framework, users)
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
+    def test_download_csv_for_on_framework_only(self, data_api_client):
+        framework = self._valid_framework
+        users = [
+            {
+                "application_result": "fail",
+                "application_status": "no_application",
+                "declaration_status": "unstarted",
+                "framework_agreement": False,
+                "supplier_id": 1,
+                "email address": "test.user@sme.com",
+                "user_name": "Test User",
+                "variations_agreed": "var1"
+            },
+            {
+                "application_result": "pass",
+                "application_status": "application",
+                "declaration_status": "complete",
+                "framework_agreement": False,
+                "supplier_id": 2,
+                "email address": "test.user@sme2.com",
+                "user_name": "Test User 2",
+                "variations_agreed": ""
+            }
+        ]
+
+        response = self._return_user_export_response(data_api_client, framework, users, only_on_fwk=True)
+        assert response.status_code == 200
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+
+        assert len(rows) == 2
+        assert rows[0] == ["email address", "user_name", "supplier_id"]
+        assert rows[1] == ["test.user@sme2.com", "Test User 2", "2"]
 
 
 @mock.patch('app.main.views.users.data_api_client')

@@ -61,7 +61,7 @@ def list_frameworks_with_users(errors=None):
 
 
 @main.route('/frameworks/<framework_slug>/users', methods=['GET'])
-@role_required('admin-framework-manager', 'admin')  # TODO: REMOVE ADMIN
+@role_required('admin-framework-manager')
 def user_list_page_for_framework(framework_slug):
     bad_statuses = ['coming', 'expired']
     framework = data_api_client.get_framework(framework_slug).get("frameworks")
@@ -75,13 +75,16 @@ def user_list_page_for_framework(framework_slug):
 
 
 @main.route('/frameworks/<framework_slug>/users/download', methods=['GET'])
-@role_required('admin-framework-manager', 'admin')  # TODO: REMOVE ADMIN
-def download_users(framework_slug, on_framework_only=False):
+@role_required('admin-framework-manager')
+def download_users(framework_slug):
+    on_framework_only = request.args.get('on_framework_only')
     supplier_rows = data_api_client.export_users(framework_slug).get('users', [])
-    supplier_headers = [
+    on_framework_only_headers = [
         "email address",
         "user_name",
         "supplier_id",
+    ]
+    additional_full_headers = [
         "declaration_status",
         "application_status",
         "application_result",
@@ -89,6 +92,11 @@ def download_users(framework_slug, on_framework_only=False):
         "variations_agreed"
     ]
 
+    if on_framework_only:
+        supplier_headers = on_framework_only_headers
+        supplier_rows = [row for row in supplier_rows if row['application_result'] == 'pass']
+    else:
+        supplier_headers = on_framework_only_headers + additional_full_headers
     formatted_rows = []
     for row in supplier_rows:
         formatted_rows.append([row[heading] for heading in supplier_headers])
