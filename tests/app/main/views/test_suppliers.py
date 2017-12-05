@@ -52,7 +52,7 @@ class TestSuppliersListView(LoggedInApplicationTest):
         )
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
-        ("admin", False),
+        ("admin", True),
         ("admin-ccs-category", True),
         ("admin-framework-manager", False),
     ])
