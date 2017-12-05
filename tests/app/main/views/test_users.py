@@ -292,7 +292,8 @@ class TestUsersExport(LoggedInApplicationTest):
             data_api_client.get_framework.side_effect = HTTPError(mock.Mock(status_code=404))
 
         return self.client.get(
-            '/admin/frameworks/<_valid_framework/users/download{}'.format(
+            '/admin/frameworks/{}/users/download{}'.format(
+                self._valid_framework['slug'],
                 '?on_framework_only=True' if only_on_fwk else ''
             ),
             data={'framework_slug': framework_slug}
@@ -332,12 +333,15 @@ class TestUsersExport(LoggedInApplicationTest):
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
-    def test_user_export_with_one_user(self, data_api_client):
+    def test_user_export_with_one_user_returns_csv_with_correct_filename(self, data_api_client):
         framework = self._valid_framework
         users = [self._supplier_user]
 
         response = self._return_user_export_response(data_api_client, framework, users)
         assert response.status_code == 200
+        assert response.mimetype == 'text/csv'
+        assert (response.headers['Content-Disposition'] ==
+                'attachment;filename=g-cloud-7-suppliers-who-applied-or-started-application.csv')
 
     def test_download_csv(self, data_api_client):
         framework = self._valid_framework
@@ -390,6 +394,9 @@ class TestUsersExport(LoggedInApplicationTest):
 
         response = self._return_user_export_response(data_api_client, framework, users, only_on_fwk=True)
         assert response.status_code == 200
+        assert response.mimetype == 'text/csv'
+        assert response.headers['Content-Disposition'] == 'attachment;filename=suppliers-on-g-cloud-7.csv'
+
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
 
         assert len(rows) == 2
