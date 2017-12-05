@@ -1,3 +1,4 @@
+from dmutils.forms import render_template_with_csrf
 from flask import render_template, request, flash, jsonify
 from flask_login import login_required, current_user
 
@@ -26,7 +27,7 @@ def find_buyer_by_brief_id():
 
     users = brief.get('users')
     title = brief.get('title')
-    return render_template(
+    return render_template_with_csrf(
         "view_buyers.html",
         users=users,
         title=title,
@@ -40,16 +41,24 @@ def find_buyer_by_brief_id():
 @role_required('admin')
 def update_brief(brief_id):
     try:
-        brief = data_api_client.req.briefs(brief_id).admin() \
-            .post({'briefs': {'clarification_questions_closed_at': request.form['questions_closed_at'],
-                              'applications_closed_at': request.form['closed_at']},
-                   'update_details': {'updated_by': current_user.email_address}}).get('briefs')
+        if request.form.get('add_user'):
+            brief = data_api_client.req.briefs(brief_id).users(request.form['add_user'].strip()) \
+                .put({'update_details': {'updated_by': current_user.email_address}}).get('briefs')
+        elif request.form.get('remove_user'):
+            brief = data_api_client.req.briefs(brief_id).users(request.form['remove_user'].strip()) \
+                .delete({'update_details': {'updated_by': current_user.email_address}}).get('briefs')
+        else:
+            brief = data_api_client.req.briefs(brief_id).admin() \
+                .post({'briefs': {'clarification_questions_closed_at': request.form['questions_closed_at'],
+                                  'applications_closed_at': request.form['closed_at']
+                                  },
+                       'update_details': {'updated_by': current_user.email_address}}).get('briefs')
     except HTTPError, e:
         flash(e.message, 'error')
         brief = data_api_client.get_brief(brief_id).get('briefs')
         users = brief.get('users')
         title = brief.get('title')
-        return render_template(
+        return render_template_with_csrf(
             "view_buyers.html",
             users=users,
             title=title,
@@ -60,7 +69,7 @@ def update_brief(brief_id):
     flash('brief_updated', 'info')
     users = brief.get('users')
     title = brief.get('title')
-    return render_template(
+    return render_template_with_csrf(
         "view_buyers.html",
         users=users,
         title=title,
