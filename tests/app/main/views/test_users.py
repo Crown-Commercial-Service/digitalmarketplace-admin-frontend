@@ -189,7 +189,41 @@ class TestUsersView(LoggedInApplicationTest):
 
 
 @mock.patch('app.main.views.users.data_api_client')
+class TestUserListPage(LoggedInApplicationTest):
+    user_role = 'admin-framework-manager'
+
+    _framework = {
+        'name': 'G-Cloud 9',
+        'slug': 'g-cloud-9',
+        'status': 'live'
+    }
+
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 403),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_get_user_lists_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        response = self.client.get("/admin/frameworks/g-cloud-9/users")
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
+    def test_get_user_lists_shows_framework_name_in_heading(self, data_api_client):
+        data_api_client.get_framework.return_value = {"frameworks": self._framework}
+        response = self.client.get("/admin/frameworks/g-cloud-9/users")
+        document = html.fromstring(response.get_data(as_text=True))
+
+        page_heading = document.xpath(
+            '//h1//text()')[0].strip()
+        assert page_heading == "Download supplier lists for G-Cloud 9"
+
+
+@mock.patch('app.main.views.users.data_api_client')
 class TestUsersExport(LoggedInApplicationTest):
+    user_role = 'admin-framework-manager'
     _bad_statuses = ['coming', 'expired']
 
     _valid_framework = {
@@ -244,7 +278,7 @@ class TestUsersExport(LoggedInApplicationTest):
         _assert_things_about_valid_frameworks(options, frameworks)
         _assert_things_about_invalid_frameworks(options, frameworks)
 
-    def _return_user_export_response(self, data_api_client, framework, users, framework_slug=None):
+    def _return_user_export_response(self, data_api_client, framework, users, framework_slug=None, only_on_fwk=False):
         if framework_slug is None:
             framework_slug = framework['slug']
 
@@ -258,21 +292,12 @@ class TestUsersExport(LoggedInApplicationTest):
             data_api_client.get_framework.side_effect = HTTPError(mock.Mock(status_code=404))
 
         return self.client.get(
-            '/admin/users/download/<_valid_framework',
+            '/admin/frameworks/{}/users/download{}'.format(
+                self._valid_framework['slug'],
+                '?on_framework_only=True' if only_on_fwk else ''
+            ),
             data={'framework_slug': framework_slug}
         )
-
-    def _assert_things_about_user_export(self, response, users):
-
-        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
-
-        assert len(rows) == len(users) + 1
-
-        if users:
-            assert sorted(list(users[0].keys())) == sorted(rows[0])
-
-            for index, user in enumerate(users):
-                assert sorted([six.text_type(val) for val in user.values()]) == sorted(rows[index + 1])
 
     ##########################################################################
     def test_get_form_with_valid_framework(self, data_api_client):
@@ -289,30 +314,15 @@ class TestUsersExport(LoggedInApplicationTest):
         ("admin-framework-manager", 200),
         ("admin-manager", 403),
     ])
-    def test_download_users_page_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+    def test_download_users_page_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
         self.user_role = role
         frameworks = [self._valid_framework]
         response = self._return_get_user_export_response(data_api_client, frameworks)
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
-    def test_user_export_with_one_user(self, data_api_client):
-        framework = self._valid_framework
-        users = [self._supplier_user]
-
-        response = self._return_user_export_response(data_api_client, framework, users)
-        assert response.status_code == 200
-
-    def test_download_csv(self, data_api_client):
-        framework = self._valid_framework
-        users = [self._supplier_user]
-
-        response = self._return_user_export_response(data_api_client, framework, users)
-        assert response.status_code == 200
-        self._assert_things_about_user_export(response, users)
-
     @pytest.mark.parametrize("role, expected_code", [
-        ("admin", 200),
+        ("admin", 403),
         ("admin-ccs-category", 403),
         ("admin-ccs-sourcing", 403),
         ("admin-framework-manager", 200),
@@ -327,9 +337,66 @@ class TestUsersExport(LoggedInApplicationTest):
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
+    def test_download_csv_for_all_framework_users(self, data_api_client):
+        framework = self._valid_framework
+        users = [self._supplier_user]
+
+        response = self._return_user_export_response(data_api_client, framework, users)
+
+        assert response.status_code == 200
+        assert response.mimetype == 'text/csv'
+        assert (response.headers['Content-Disposition'] ==
+                'attachment;filename=g-cloud-7-suppliers-who-applied-or-started-application.csv')
+
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+
+        assert len(rows) == len(users) + 1
+        assert rows[0] == [
+            'email address',
+            'user_name',
+            'supplier_id',
+            'declaration_status',
+            'application_status',
+            'application_result',
+            'framework_agreement',
+            'variations_agreed'
+        ]
+        # All users returned from the API should appear in the CSV
+        for index, user in enumerate(users):
+            assert sorted([six.text_type(val) for val in user.values()]) == sorted(rows[index + 1])
+
+    def test_download_csv_for_on_framework_only(self, data_api_client):
+        framework = self._valid_framework
+        users = [
+            self._supplier_user,
+            {
+                "application_result": "pass",
+                "application_status": "application",
+                "declaration_status": "complete",
+                "framework_agreement": False,
+                "supplier_id": 2,
+                "email address": "test.user@sme2.com",
+                "user_name": "Test User 2",
+                "variations_agreed": ""
+            }
+        ]
+
+        response = self._return_user_export_response(data_api_client, framework, users, only_on_fwk=True)
+        assert response.status_code == 200
+        assert response.mimetype == 'text/csv'
+        assert response.headers['Content-Disposition'] == 'attachment;filename=suppliers-on-g-cloud-7.csv'
+
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+
+        assert len(rows) == 2
+        assert rows[0] == ["email address", "user_name", "supplier_id"]
+        # Only users with application_result = "pass" should appear in the CSV
+        assert rows[1] == ["test.user@sme2.com", "Test User 2", "2"]
+
 
 @mock.patch('app.main.views.users.data_api_client')
 class TestBuyersExport(LoggedInApplicationTest):
+    user_role = "admin-framework-manager"
 
     def test_response_data_has_buyer_info(self, data_api_client):
         data_api_client.find_users_iter.return_value = [
@@ -737,7 +804,7 @@ class TestBuyersExport(LoggedInApplicationTest):
             assert response.headers['Content-Disposition'] == 'attachment;filename=buyers_20160805T160000.csv'
 
     @pytest.mark.parametrize("role, expected_code", [
-        ("admin", 200),
+        ("admin", 403),
         ("admin-ccs-category", 403),
         ("admin-ccs-sourcing", 403),
         ("admin-framework-manager", 200),
