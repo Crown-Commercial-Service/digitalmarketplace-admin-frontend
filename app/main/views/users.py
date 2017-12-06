@@ -1,13 +1,11 @@
 from __future__ import unicode_literals
 
-from collections import OrderedDict
 from datetime import datetime
 from itertools import chain
 
 from dmutils import csv_generator
 from flask import abort, render_template, request, Response
 from flask_login import flash
-from six import itervalues, iterkeys
 
 from .. import main
 from ..auth import role_required
@@ -116,77 +114,25 @@ def download_users(framework_slug):
 
 @main.route('/users/download/buyers', methods=['GET'])
 @role_required('admin-framework-manager')
-def download_buyers_and_briefs():
-    users = {user["id"]: dict(user, briefs=[]) for user in data_api_client.find_users_iter(role="buyer")}
+def download_buyers():
 
-    # join users with briefs (a "hash join")
-    for brief in data_api_client.find_briefs_iter(with_users=True):
-        for user in brief["users"]:
-            users[user["id"]]["briefs"].append(brief)
-
-    # not using DATETIME_FORMAT as we'll be using this in a filename and don't want any odd characters
-    timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
-
-    # "verbatim" fields have the same column heading as the dict key they're retrieved from
-    user_verbatim_fields = (
-        "name",
+    user_attributes = (
         "emailAddress",
-        "phoneNumber",
+        "name",
     )
-    # "generated" fields have a column heading "label" and callable to generate the field value given a user(/brief)
-    user_generated_fields = OrderedDict((
-        (
-            "createdAtDate",
-            lambda brief: brief.get("createdAt", "").partition("T")[0],  # cheap truncation of iso timestamp
-        ),
-    ))
-    brief_verbatim_fields = (
-        "id",
-        "title",
-        "location",
-        "lotSlug",
-    )
-    brief_generated_fields = OrderedDict((
-        (
-            "status",
-            lambda brief: "open" if brief.get("status") == "live" else brief.get("status", ""),
-        ),
-        (
-            "applicationsClosedAtDateIfClosed",
-            lambda brief:
-                (
-                    brief.get("applicationsClosedAt", "") if brief.get("status") in CLOSED_BRIEF_STATUSES else ""
-                ).partition("T")[0],
-        ),
-    ))
+    users = data_api_client.find_users_iter(role="buyer")
 
     rows_iter = chain(
         (
             # header row
-            tuple(chain(
-                ("user.{}".format(field_name) for field_name in user_verbatim_fields),
-                ("user.{}".format(field_name) for field_name in iterkeys(user_generated_fields)),
-                ("brief.{}".format(field_name) for field_name in brief_verbatim_fields),
-                ("brief.{}".format(field_name) for field_name in iterkeys(brief_generated_fields)),
-            )),
+            ("email address", "name"),
         ),
         (
             # data rows
             tuple(chain(
-                (user.get(field_name, "") for field_name in user_verbatim_fields),
-                (func(user) for func in itervalues(user_generated_fields)),
-                (brief.get(field_name, "") for field_name in brief_verbatim_fields),
-                (func(brief) for func in itervalues(brief_generated_fields)),
+                (user.get(field_name, "") for field_name in user_attributes),
             ))
-            for user, brief in chain.from_iterable(  # using from_iterable to flatten an iterable of iterables (of
-                                                     # (user, brief) pairs) into a single iterable
-                (
-                    (user, brief) for brief in
-                    (user["briefs"] or ({},))   # if user has an empty seq of briefs add a single fake blank
-                                                # one ("outer join" behaviour)
-                )
-                for user in sorted(itervalues(users), key=lambda user: user["name"])
-            )
+            for user in sorted(users, key=lambda user: user["name"])
         ),
     )
 
@@ -194,7 +140,9 @@ def download_buyers_and_briefs():
         csv_generator.iter_csv(rows_iter),
         mimetype='text/csv',
         headers={
-            "Content-Disposition": "attachment;filename=buyers_{}.csv".format(timestamp),
+            "Content-Disposition": "attachment;filename=buyers_{}.csv".format(
+                datetime.utcnow().strftime('%Y%m%dT%H%M%S')
+            ),
             "Content-Type": "text/csv; header=present"
         }
     )
