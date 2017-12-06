@@ -37,9 +37,26 @@
   {% endif %}
   {% endwith %}
 
-  {% with heading = email_address if email_address %}
+  {% with heading = "Find a user" %}
   {% include "toolkit/page-heading.html" %}
   {% endwith %}
+
+  <form action="{{ url_for('.find_user_by_email_address') }}" method="get" class="question">
+  {%
+    with
+    question = "Find a user by email",
+    name = "email_address"
+  %}
+    {% include "toolkit/forms/textbox.html" %}
+  {% endwith %}
+  {%
+    with
+    type = "save",
+    label = "Search"
+  %}
+    {% include "toolkit/button.html" %}
+  {% endwith %}
+  </form>
 
   {% call(item) summary.list_table(
           users,
@@ -144,14 +161,6 @@
 
       {% endcall %}
       {% endcall %}
-  <form action="{{ url_for('.find_user_by_email_address') }}" method="get" class="question">
-    <label class="question-heading" for="email_address">Find users by email address</label>
-    <p class='hint'>
-      eg name@example.com
-    </p>
-    <input type="text" name="email_address" id="email_address" class="text-box" maxlength="200">
-    <input type="submit" value="Search" class="button-save">
-  </form>
   </div>
 
 {% endblock %}
