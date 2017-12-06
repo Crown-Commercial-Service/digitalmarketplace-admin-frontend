@@ -24,19 +24,19 @@ def find_user_by_email_address():
     if email_address:
         users = data_api_client.get_user(email_address=request.args.get("email_address"))
 
-    if users:
-        return render_template(
-            template,
-            users=[users['users']],
-            email_address=request.args.get("email_address")
-        )
-    else:
+    if not users and 'email_address' in request.args:
         flash('no_users', 'error')
         return render_template(
             template,
             users=list(),
             email_address=None
         ), 404
+    else:
+        return render_template(
+            template,
+            users=[users['users']] if users else list(),
+            email_address=request.args.get("email_address")
+        )
 
 
 # TODO: This page to die once links to framework-specific lists is on index page

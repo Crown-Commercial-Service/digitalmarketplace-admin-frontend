@@ -28,6 +28,18 @@ class TestUsersView(LoggedInApplicationTest):
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
+    def test_should_show_find_users_page(self, data_api_client):
+        data_api_client.get_user.return_value = None
+        response = self.client.get('/admin/users')
+        page_html = response.get_data(as_text=True)
+        document = html.fromstring(page_html)
+        heading = document.xpath(
+            '//header[@class="page-heading page-heading-without-breadcrumb"]//h1/text()')[0].strip()
+
+        assert response.status_code == 200
+        assert "Sorry, we couldn't find an account with that email address" not in page_html
+        assert heading == "Find a user"
+
     def test_should_be_a_404_if_user_not_found(self, data_api_client):
         data_api_client.get_user.return_value = None
         response = self.client.get('/admin/users?email_address=some@email.com')
@@ -58,21 +70,6 @@ class TestUsersView(LoggedInApplicationTest):
             '//p[@class="summary-item-no-content"]//text()')[0].strip()
         assert page_title == "No users to show"
 
-    def test_should_be_a_404_if_no_email_param_provided(self, data_api_client):
-        data_api_client.get_user.return_value = None
-        response = self.client.get('/admin/users')
-        assert response.status_code == 404
-
-        document = html.fromstring(response.get_data(as_text=True))
-
-        page_title = document.xpath(
-            '//p[@class="banner-message"]//text()')[0].strip()
-        assert page_title == "Sorry, we couldn't find an account with that email address"
-
-        page_title = document.xpath(
-            '//p[@class="summary-item-no-content"]//text()')[0].strip()
-        assert page_title == "No users to show"
-
     def test_should_show_buyer_user(self, data_api_client):
         buyer = self.load_example_listing("user_response")
         buyer.pop('supplier', None)
@@ -82,10 +79,6 @@ class TestUsersView(LoggedInApplicationTest):
         assert response.status_code == 200
 
         document = html.fromstring(response.get_data(as_text=True))
-
-        email_address = document.xpath(
-            '//header[@class="page-heading page-heading-without-breadcrumb"]//h1/text()')[0].strip()
-        assert email_address == "test.user@sme.com"
 
         name = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[0].strip()
@@ -130,10 +123,6 @@ class TestUsersView(LoggedInApplicationTest):
         assert response.status_code == 200
 
         document = html.fromstring(response.get_data(as_text=True))
-
-        email_address = document.xpath(
-            '//header[@class="page-heading page-heading-without-breadcrumb"]//h1/text()')[0].strip()
-        assert email_address == "test.user@sme.com"
 
         role = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[1].strip()
