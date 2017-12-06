@@ -75,15 +75,6 @@
 
         {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
 
-        <form action="{{ url_for('.find_user_by_email_address') }}" method="get" class="question">
-          <label class="question-heading" for="email_address">Find users by email address</label>
-          <p class='hint'>
-            eg john@smokeyjoes.com
-          </p>
-          <input type="text" name="email_address" id="email_address" class="text-box">
-          <input type="submit" value="Search" class="button-save">
-        </form>
-
         <form action="{{ url_for('.find_buyer_by_brief_id') }}" method="get" class="question">
           <label class="question-heading" for="brief_id">Find buyer by opportunity ID</label>
           <p class='hint'>
@@ -92,6 +83,23 @@
           <input type="text" name="brief_id" id="brief_id" class="text-box">
           <input type="submit" value="Search" class="button-save">
         </form>
+
+          {% with
+            smaller = True,
+            heading = "User support"
+          %}
+            {% include "toolkit/page-heading.html" %}
+          {% endwith %}
+
+          {% with items = [
+            {
+              "link": url_for('.find_user_by_email_address'),
+              "title": "Find a user by email"
+            },
+          ]
+          %}
+            {% include "toolkit/browse-list.html" %}
+          {% endwith %}
 
         {% endif %}
       </div>
