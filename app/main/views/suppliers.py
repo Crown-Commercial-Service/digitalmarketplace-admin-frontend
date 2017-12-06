@@ -23,7 +23,7 @@ from ... import data_api_client, content_loader
 
 
 @main.route('/suppliers', methods=['GET'])
-@role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing')
+@role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager')
 def find_suppliers():
     if request.args.get("supplier_id"):
         suppliers = [data_api_client.get_supplier(request.args.get("supplier_id"))['suppliers']]
@@ -90,7 +90,7 @@ def view_supplier_declaration(supplier_id, framework_slug):
 
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>', methods=['GET'])
-@role_required('admin-ccs-sourcing')
+@role_required('admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager')
 def view_signed_agreement(supplier_id, framework_slug):
     # not properly validating this - all we do is pass it through
     next_status = request.args.get("next_status")
@@ -197,7 +197,7 @@ def unapprove_agreement_for_countersignature(agreement_id):
 
 
 @main.route('/suppliers/<supplier_id>/agreement/<framework_slug>', methods=['GET'])
-@role_required('admin', 'admin-ccs-sourcing')
+@role_required('admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager')
 def download_signed_agreement_file(supplier_id, framework_slug):
     # This route is used for pre-G-Cloud-8 agreement document downloads
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
@@ -206,7 +206,7 @@ def download_signed_agreement_file(supplier_id, framework_slug):
 
 
 @main.route('/suppliers/<supplier_id>/agreements/<framework_slug>/<document_name>', methods=['GET'])
-@role_required('admin-ccs-sourcing')
+@role_required('admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager')
 def download_agreement_file(supplier_id, framework_slug, document_name):
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
     if supplier_framework is None or not supplier_framework.get("declaration"):
@@ -404,7 +404,7 @@ def update_supplier_declaration_section(supplier_id, framework_slug, section_id)
 
 
 @main.route('/suppliers/users', methods=['GET'])
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin', 'admin-ccs-category', 'admin-framework-manager')
 def find_supplier_users():
 
     if not request.args.get('supplier_id'):
@@ -494,7 +494,7 @@ def move_user_to_new_supplier(supplier_id):
 
 
 @main.route('/suppliers/<int:supplier_id>/services', methods=['GET'])
-@role_required('admin-ccs-category')
+@role_required('admin', 'admin-ccs-category', 'admin-framework-manager')
 def find_supplier_services(supplier_id):
     remove_services_for_framework_slug = request.args.get('remove', None)
 

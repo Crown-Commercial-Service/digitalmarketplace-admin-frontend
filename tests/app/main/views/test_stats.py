@@ -16,6 +16,7 @@ class TestStats(LoggedInApplicationTest):
         ("admin", 403),
         ("admin-ccs-category", 403),
         ("admin-ccs-sourcing", 200),
+        ("admin-framework-manager", 200),
         ("admin-manager", 403),
     ])
     def test_get_page_should_only_be_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):

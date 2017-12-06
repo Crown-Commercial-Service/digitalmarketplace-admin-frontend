@@ -39,6 +39,7 @@ class EmailDomainForm(Form):
 class InviteAdminForm(Form):
     role_choices = [
         ('admin-ccs-category', 'Category'),
+        ('admin-framework-manager', 'Framework Manager'),
         ('admin-ccs-sourcing', 'Sourcing'),
         ('admin', 'Support'),
     ]
@@ -69,6 +70,7 @@ class EditAdminUserForm(Form):
 
     permissions_choices = [
         ("admin-ccs-category", "Category"),
+        ('admin-framework-manager', 'Framework Manager'),
         ("admin-ccs-sourcing", "Sourcing"),
         ("admin", "Support"),
     ]

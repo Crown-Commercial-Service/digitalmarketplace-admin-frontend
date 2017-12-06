@@ -2,11 +2,17 @@
   "Name",
   summary.hidden_field_heading("Change name"),
   summary.hidden_field_heading("Users"),
+  summary.hidden_field_heading("Services")
 ]
 %}
 
-{% if current_user.has_role('admin-ccs-category') %}
-  {% set field_headings = field_headings + [summary.hidden_field_heading("Services")] %}
+{% if current_user.has_role('admin-framework-manager') %}
+  {% set field_headings = [
+      "Name",
+      summary.hidden_field_heading("Users"),
+      summary.hidden_field_heading("Services")
+    ]
+  %}
 {% endif %}
 
 {% call(item) summary.list_table(
@@ -19,11 +25,11 @@
 
   {% call summary.row() %}
     {{ summary.field_name(item.name) }}
-    {{ summary.edit_link("Change name", url_for(".edit_supplier_name", supplier_id=item.id)) }}
-    {{ summary.edit_link("Users", url_for(".find_supplier_users", supplier_id=item.id)) }}
-    {% if current_user.has_role('admin-ccs-category') %}
-      {{ summary.edit_link("Services", url_for(".find_supplier_services", supplier_id=item.id)) }}
+    {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
+      {{ summary.edit_link("Change name", url_for(".edit_supplier_name", supplier_id=item.id)) }}
     {% endif %}
+    {{ summary.edit_link("Users", url_for(".find_supplier_users", supplier_id=item.id)) }}
+    {{ summary.edit_link("Services", url_for(".find_supplier_services", supplier_id=item.id)) }}
   {% endcall %}
 
 {% endcall %}

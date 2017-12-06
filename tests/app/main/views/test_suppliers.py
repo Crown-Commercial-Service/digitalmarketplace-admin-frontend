@@ -16,9 +16,27 @@ from ...helpers import LoggedInApplicationTest, Response
 @mock.patch('app.main.views.suppliers.data_api_client')
 class TestSuppliersListView(LoggedInApplicationTest):
 
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 200),
+        ("admin-ccs-category", 200),
+        ("admin-ccs-sourcing", 200),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_supplier_list_is_shown_to_users_with_right_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.find_suppliers.return_value = {
+            "suppliers": [{"id": "12345"}]
+        }
+        response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
     @pytest.mark.parametrize("role, link_should_be_visible", [
-        ("admin", False),
+        ("admin", True),
         ("admin-ccs-category", True),
+        ("admin-ccs-sourcing", False),
+        ("admin-framework-manager", True),
     ])
     def test_services_link_is_shown_to_users_with_right_roles(self, data_api_client, role, link_should_be_visible):
         self.user_role = role
@@ -28,6 +46,24 @@ class TestSuppliersListView(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
         data = response.get_data(as_text=True)
         link_is_visible = "Services" in data and "/admin/suppliers/12345/services" in data
+
+        assert link_is_visible is link_should_be_visible, (
+            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+        )
+
+    @pytest.mark.parametrize("role, link_should_be_visible", [
+        ("admin", True),
+        ("admin-ccs-category", True),
+        ("admin-framework-manager", False),
+    ])
+    def test_change_name_link_is_shown_to_users_with_right_roles(self, data_api_client, role, link_should_be_visible):
+        self.user_role = role
+        data_api_client.find_suppliers.return_value = {
+            "suppliers": [{"id": "12345"}]
+        }
+        response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
+        data = response.get_data(as_text=True)
+        link_is_visible = "Change name" in data and "/admin/suppliers/12345/edit/name" in data
 
         assert link_is_visible is link_should_be_visible, (
             "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
@@ -76,19 +112,50 @@ class TestSuppliersListView(LoggedInApplicationTest):
         data_api_client.get_supplier.assert_called_once_with("12345")
 
 
+@mock.patch('app.main.views.suppliers.data_api_client')
 class TestSupplierUsersView(LoggedInApplicationTest):
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 200),
+        ("admin-ccs-category", 200),
+        ("admin-ccs-sourcing", 403),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_supplier_users_accessible_to_users_with_right_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_users.return_value = self.load_example_listing("users_response")
+
+        response = self.client.get('/admin/suppliers/users?supplier_id=1000')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
+    @pytest.mark.parametrize("role, can_edit", [
+        ("admin", True),
+        ("admin-ccs-category", False),
+        ("admin-framework-manager", False),
+    ])
+    def test_supplier_users_only_editable_for_users_with_right_roles(self, data_api_client, role, can_edit):
+        self.user_role = role
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_users.return_value = self.load_example_listing("users_response")
+
+        response = self.client.get('/admin/suppliers/users?supplier_id=1000')
+        assert response.status_code == 200
+        document = html.fromstring(response.get_data(as_text=True))
+        deactivate_buttons = document.xpath('.//input[contains(@value, "Deactivate")]')
+        assert len(deactivate_buttons) == (1 if can_edit else 0)
+
     def test_should_404_if_no_supplier_does_not_exist(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers/users?supplier_id=999')
         assert response.status_code == 404
 
-    def test_should_404_if_no_supplier_id(self):
+    def test_should_404_if_no_supplier_id(self, data_api_client):
         response = self.client.get('/admin/suppliers/users')
         assert response.status_code == 404
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_apis_with_supplier_id(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
@@ -98,7 +165,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         data_api_client.get_supplier.assert_called_once_with('1000')
         data_api_client.find_users.assert_called_once_with('1000')
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_have_supplier_name_on_page(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
@@ -106,7 +172,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 200
         assert "Supplier Name" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_indicate_if_there_are_no_users(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_users.return_value = {'users': {}}
@@ -116,7 +181,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 200
         assert "This supplier has no users on the Digital Marketplace" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_user_details_on_page(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_users.return_value = self.load_example_listing("users_response")
@@ -139,7 +203,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert '<form action="/admin/suppliers/1234/move-existing-user" method="post">' in \
             response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_unlock_button_if_user_locked(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
 
@@ -153,7 +216,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert '<form action="/admin/suppliers/users/999/unlock" method="post">' in response.get_data(as_text=True)
         assert '<input type="submit" class="button-secondary"  value="Unlock" />' in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_activate_button_if_user_deactivated(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
 
@@ -167,7 +229,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert '<form action="/admin/suppliers/users/999/activate" method="post">' in response.get_data(as_text=True)
         assert '<input type="submit" class="button-secondary"  value="Activate" />' in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_unlock_user(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.update_user.return_value = self.load_example_listing("user_response")
@@ -179,7 +240,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_activate_user(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.update_user.return_value = self.load_example_listing("user_response")
@@ -191,7 +251,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_activate_user_and_redirect_to_source_if_present(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.update_user.return_value = self.load_example_listing("user_response")
@@ -206,7 +265,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == "http://example.com"
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_deactivate_user(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.update_user.return_value = self.load_example_listing("user_response")
@@ -221,7 +279,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_deactivate_user_and_redirect_to_source_if_present(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.update_user.return_value = self.load_example_listing("user_response")
@@ -236,7 +293,6 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == "http://example.com"
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_move_user_to_another_supplier(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.get_user.return_value = self.load_example_listing("user_response")
@@ -255,20 +311,57 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
 
+@mock.patch('app.main.views.suppliers.data_api_client')
 class TestSupplierServicesView(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 200),
+        ("admin-ccs-category", 200),
+        ("admin-ccs-sourcing", 403),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_supplier_services_accessible_to_users_with_right_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+
+        response = self.client.get('/admin/suppliers/1000/services')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
+    @pytest.mark.parametrize("role, can_edit", [
+        ("admin", False),
+        ("admin-ccs-category", True),
+        ("admin-framework-manager", False),
+    ])
+    def test_supplier_services_can_only_edit_users_with_right_roles(self, data_api_client, role, can_edit):
+        self.user_role = role
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.find_services.return_value = self.load_example_listing("services_response")
+        data_api_client.find_frameworks.return_value = {
+            'frameworks': [self.load_example_listing("framework_response")['frameworks']]
+        }
+
+        response = self.client.get('/admin/suppliers/1000/services')
+        assert response.status_code == 200
+        document = html.fromstring(response.get_data(as_text=True))
+        remove_all_links = document.xpath('.//a[contains(text(), "Remove services")]')
+        assert len(remove_all_links) == (1 if can_edit else 0)
+        edit_service_links = document.xpath('.//a[contains(text(), "Edit")]')
+        assert len(edit_service_links) == (1 if can_edit else 0)
+        view_service_links = document.xpath('.//a[contains(text(), "View")]')
+        assert len(view_service_links) == (0 if can_edit else 1)
+
     def test_should_404_if_supplier_does_not_exist_on_services(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers/999/services')
         assert response.status_code == 404
 
-    def test_should_404_if_no_supplier_id_on_services(self):
+    def test_should_404_if_no_supplier_id_on_services(self, data_api_client):
         response = self.client.get('/admin/suppliers/services')
         assert response.status_code == 404
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_service_apis_with_supplier_id(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         response = self.client.get('/admin/suppliers/1000/services')
@@ -278,7 +371,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         data_api_client.get_supplier.assert_called_once_with(1000)
         data_api_client.find_services.assert_called_once_with(1000)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_indicate_if_supplier_has_no_services(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_services.return_value = {'services': []}
@@ -287,7 +379,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert response.status_code == 200
         assert "This supplier has no services on the Digital Marketplace" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_have_supplier_name_on_services_page(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_services.return_value = {'services': []}
@@ -297,7 +388,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert response.status_code == 200
         assert "Supplier Name" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_service_details_on_page(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_services.return_value = self.load_example_listing("services_response")
@@ -317,7 +407,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert '<a href="/admin/services/5687123785023488">' in response.get_data(as_text=True)
         assert "Edit" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_correct_fields_for_disabled_service(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_frameworks.return_value = {
@@ -334,7 +423,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert "Removed" in response.get_data(as_text=True)
         assert "Edit" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_correct_fields_for_enabled_service(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         data_api_client.find_frameworks.return_value = {
@@ -351,7 +439,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert "Private" in response.get_data(as_text=True)
         assert "Edit" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_show_separate_tables_for_frameworks_if_supplier_has_service_on_framework(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
 
@@ -385,7 +472,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         gcloud11_table_index = response_data.find('g-cloud-11_services')
         assert gcloud11_table_index < gcloud8_table_index < dos_table_index
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_remove_all_services_link_if_supplier_has_a_published_service_on_framework(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
         data_api_client.find_frameworks.return_value = {
@@ -409,7 +495,6 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert expected_link.text == expected_link_text
 
     @pytest.mark.parametrize('service_status', ['enabled', 'disabled', 'a_new_status'])
-    @mock.patch('app.main.views.suppliers.data_api_client')
     def test_no_remove_all_services_link_if_supplier_service_not_published(self, data_api_client, service_status):
         service = self.load_example_listing('services_response')['services'][0]
         service["status"] = service_status
@@ -749,7 +834,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
-class TestUpdatintSupplierName(LoggedInApplicationTest):
+class TestUpdatingSupplierName(LoggedInApplicationTest):
 
     @pytest.mark.parametrize("allowed_role", ["admin", "admin-ccs-category"])
     def test_admin_and_ccs_category_roles_can_update_supplier_name(self, data_api_client, allowed_role):
@@ -950,12 +1035,23 @@ class TestDownloadSignedAgreementFile(LoggedInApplicationTest):
 class TestDownloadAgreementFile(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
-    def test_category_admin_user_should_not_be_able_to_download(self, s3, data_api_client):
-        self.user_role = 'admin-ccs-category'
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 302),
+        ("admin-ccs-sourcing", 302),
+        ("admin-framework-manager", 302),
+        ("admin-manager", 403),
+    ])
+    def test_download_agreement_file_accessible_to_specific_user_roles(self, s3, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.get_supplier_framework_info.return_value = {
+            'frameworkInterest': {'declaration': {'key': 'Supplier name'}}
+        }
+        s3.S3.return_value.get_signed_url.return_value = 'http://foo/blah?extra'
 
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
-
-        assert response.status_code == 403
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     def test_should_404_if_no_supplier_framework_declaration(self, s3, data_api_client):
         data_api_client.get_supplier_framework_info.return_value = {
@@ -1290,6 +1386,24 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
 class TestViewingSignedAgreement(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
+    services_response = (
+        {
+            "id": 1111,
+            "lotSlug": "dried-fruit",
+            "lotName": "Raisins & dates",
+        },
+        {
+            "id": 2222,
+            "lotSlug": "salad",
+            "lotName": "Lettuce & cucumber",
+        },
+        {
+            "id": 3333,
+            "lotSlug": "dried-fruit",
+            "lotName": "Raisins & dates",
+        },
+    )
+
     def test_should_404_if_supplier_does_not_exist(self, s3, data_api_client):
         data_api_client.get_supplier.side_effect = APIError(Response(404))
 
@@ -1338,23 +1452,7 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
             'supplier_framework_response'
         )
 
-        data_api_client.find_services_iter.return_value = iter((
-            {
-                "id": 1111,
-                "lotSlug": "dried-fruit",
-                "lotName": "Raisins & dates",
-            },
-            {
-                "id": 2222,
-                "lotSlug": "salad",
-                "lotName": "Lettuce & cucumber",
-            },
-            {
-                "id": 3333,
-                "lotSlug": "dried-fruit",
-                "lotName": "Raisins & dates",
-            },
-        ))
+        data_api_client.find_services_iter.return_value = iter(self.services_response)
 
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
             mock_get_url.return_value = "http://example.com/document/1234.pdf"
@@ -1420,6 +1518,28 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
             assert response.status_code == 200
             assert len(document.xpath('//img[@src="http://example.com/document/1234.png"]')) == 1
             assert len(document.xpath('//embed[@src="http://example.com/document/1234.png"]')) == 0
+
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 200),
+        ("admin-ccs-sourcing", 200),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_view_signed_agreement_accessible_to_specific_user_roles(self, s3, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
+            'supplier_framework_response'
+        )
+
+        with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
+            mock_get_url.return_value = "http://example.com/document/1234.pdf"
+
+            response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+            actual_code = response.status_code
+            assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
 
 @mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
@@ -1658,20 +1778,26 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             qd_matches is None or parse_qs(parsed_url.query) == qd_matches
         )
 
-    @pytest.mark.parametrize("role,expected_code", [
-        ("admin", 403),
-        ("admin-ccs-category", 403),
-        ("admin-ccs-sourcing", 200),
-        ("admin-manager", 403),
+    @pytest.mark.parametrize("role, expected_code, read_only", [
+        ("admin", 403, None),
+        ("admin-ccs-category", 200, True),
+        ("admin-ccs-sourcing", 200, False),
+        ("admin-framework-manager", 200, True),
+        ("admin-manager", 403, None),
     ])
     def test_get_page_should_only_be_accessible_to_specific_user_roles(
-            self, s3, get_signed_url, data_api_client, role, expected_code
+            self, s3, get_signed_url, data_api_client, role, expected_code, read_only
     ):
         self.user_role = role
         self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
         response = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8")
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+        # No action buttons should be shown if read-only
+        if read_only:
+            document = html.fromstring(response.get_data(as_text=True))
+            input_elems = document.xpath("//main//form//input[@type='submit']")
+            assert len(input_elems) == 0
 
     @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
     def test_buttons_shown_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client, next_status):

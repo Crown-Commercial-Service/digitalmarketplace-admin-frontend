@@ -41,10 +41,10 @@
     {% endwith %}
   {% endif %}
 
-  {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-sourcing') %}
+  {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager') %}
     <div class="grid-row">
       <div class="column-two-thirds">
-        {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
+        {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager') %}
         <form action="{{ url_for('.find') }}" method="get" class="question">
           <label class="question-heading" for="service_id">Find a service by service ID</label>
           <p class='hint'>
@@ -131,7 +131,7 @@
     {% endwith %}
   {% endif %}
 
-  {% if current_user.has_any_role('admin-ccs-sourcing') %}
+  {% if current_user.has_any_role('admin-ccs-sourcing', 'admin-framework-manager') %}
     {% with
       smaller = True,
       heading = "Statistics"
@@ -150,7 +150,7 @@
     {% endwith %}
   {% endif %}
 
-  {% if current_user.has_any_role('admin-ccs-sourcing') %}
+  {% if current_user.has_any_role('admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager') %}
     {% with
       smaller = True,
       heading = "Agreements"

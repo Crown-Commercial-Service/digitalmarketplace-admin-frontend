@@ -4,6 +4,7 @@ import mock
 from lxml import html
 from six import iteritems, iterkeys
 from six.moves.urllib.parse import urlparse, parse_qs
+import pytest
 
 from app.main.views.agreements import status_labels
 from ...helpers import LoggedInApplicationTest
@@ -196,12 +197,18 @@ class TestListAgreements(LoggedInApplicationTest):
             status_labels[chosen_status_key].lower()
         )
 
-    def test_unauthorised_roles_are_rejected_access(self, data_api_client):
-        self.user_role = 'admin-ccs-category'
-
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 200),
+        ("admin-ccs-sourcing", 200),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_list_agreements_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
         response = self.client.get('/admin/agreements/g-cloud-7')
-
-        assert response.status_code == 403
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     def test_invalid_status_raises_400(self, data_api_client):
 
@@ -347,3 +354,17 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
     def test_invalid_status_raises_400(self, data_api_client):
         response = self.client.get('/admin/suppliers/151/agreements/g-cloud-8/next?status=bad')
         assert response.status_code == 400
+
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 302),
+        ("admin-ccs-sourcing", 302),
+        ("admin-framework-manager", 302),
+        ("admin-manager", 403),
+    ])
+    def test_next_agreement_redirect_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+        self.user_role = role
+        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8/next')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)

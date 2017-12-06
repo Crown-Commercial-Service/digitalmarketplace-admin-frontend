@@ -102,7 +102,7 @@ Countersign {{ framework.name }} agreement for {{ supplier_framework.declaration
           <br>
           {{ supplier_framework.countersignedAt|datetimeformat }}
         </p>
-        {% if supplier_framework.agreementStatus == 'approved' %}
+        {% if current_user.has_role('admin-ccs-sourcing') and supplier_framework.agreementStatus == 'approved' %}
         <form action="{{ url_for('.unapprove_agreement_for_countersignature', agreement_id=supplier_framework.agreementId, next_status=next_status) }}" method="post">
           <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
           <input name="nameOfOrganisation" value="{{ supplier_framework.declaration.nameOfOrganisation }}" type="hidden">
@@ -115,7 +115,7 @@ Countersign {{ framework.name }} agreement for {{ supplier_framework.declaration
           {% endwith %}
         </form>
         {% endif %}
-      {% else %}
+      {% elif current_user.has_role('admin-ccs-sourcing') %}
         <form action="{{ url_for('.approve_agreement_for_countersignature', agreement_id=supplier_framework.agreementId, next_status=next_status) }}" method="post">
           <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
           <input name="nameOfOrganisation" value="{{ supplier_framework.declaration.nameOfOrganisation }}" type="hidden">

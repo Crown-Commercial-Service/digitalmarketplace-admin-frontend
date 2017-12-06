@@ -124,7 +124,7 @@
 
     {% for section in sections %}
       {{ summary.heading(section.name) }}
-      {% if section.editable %}
+      {% if section.editable and current_user.has_role('admin-ccs-category') %}
         {{ summary.top_link("Edit", url_for('.edit', service_id=service_id, section_id=section.id)) }}
       {% endif %}
       {% call(question) summary.list_table(
@@ -140,7 +140,7 @@
         {% call summary.row() %}
           {{ summary.field_name(question.label) }}
           {{ summary[question.type](question.value, question.assurance) }}
-          {% if section.edit_questions %}
+          {% if section.edit_questions and current_user.has_role('admin-ccs-category') %}
             {{ summary.edit_link('Add' if question.is_empty else 'Edit', url_for('.edit', service_id=service_id, section_id=section.id, question_slug=question.slug)) }}
           {% endif %}
 
