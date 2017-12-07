@@ -320,17 +320,16 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
 
         assert document.xpath('//span[@class="question-heading"]')[1].text.strip() == "Permissions"
 
-        assert document.cssselect('#input-edit_admin_permissions-1')[0].label.text.strip() == "Category"
-        assert document.cssselect('#input-edit_admin_permissions-1')[0].checked
-
-        assert document.cssselect('#input-edit_admin_permissions-2')[0].label.text.strip() == "Framework Manager"
-        assert not document.cssselect('#input-edit_admin_permissions-2')[0].checked
-
-        assert document.cssselect('#input-edit_admin_permissions-3')[0].label.text.strip() == "Sourcing"
-        assert not document.cssselect('#input-edit_admin_permissions-3')[0].checked
-
-        assert document.cssselect('#input-edit_admin_permissions-4')[0].label.text.strip() == "Support"
-        assert not document.cssselect('#input-edit_admin_permissions-4')[0].checked
+        permission_options_checked = [
+            (input.label.text.strip(), input.checked)
+            for input in document.xpath("//div[@id='edit_admin_permissions']//input")
+        ]
+        assert permission_options_checked == [
+            ("Manage framework applications", False),
+            ("Audit framework applications (CCS Sourcing)", False),
+            ("Manage services (CCS Category)", True),
+            ("Support user accounts", False)
+        ]
 
     def test_edit_admin_user_form_prefills_status_with_active(self, data_api_client):
         self.user_role = "admin-manager"

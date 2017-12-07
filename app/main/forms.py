@@ -6,6 +6,14 @@ from dmutils.forms import StripWhitespaceStringField
 from .. import data_api_client
 
 
+ADMIN_ROLES = [
+    ('admin-framework-manager', 'Manage framework applications'),
+    ('admin-ccs-sourcing', 'Audit framework applications (CCS Sourcing)'),
+    ('admin-ccs-category', 'Manage services (CCS Category)',),
+    ('admin', 'Support user accounts'),
+]
+
+
 class AdminEmailAddressValidator(object):
 
     def __init__(self, message=None):
@@ -37,12 +45,6 @@ class EmailDomainForm(Form):
 
 
 class InviteAdminForm(Form):
-    role_choices = [
-        ('admin-ccs-category', 'Category'),
-        ('admin-framework-manager', 'Framework Manager'),
-        ('admin-ccs-sourcing', 'Sourcing'),
-        ('admin', 'Support'),
-    ]
 
     email_address = StripWhitespaceStringField(
         'Email address',
@@ -55,12 +57,12 @@ class InviteAdminForm(Form):
     role = RadioField(
         'Permissions',
         validators=[validators.InputRequired(message='You must choose a permission')],
-        choices=role_choices
+        choices=ADMIN_ROLES
     )
 
     def __init__(self, *args, **kwargs):
         super(InviteAdminForm, self).__init__(*args, **kwargs)
-        self.role.toolkit_macro_options = [{'value': i[0], 'label': i[1]} for i in self.role_choices]
+        self.role.toolkit_macro_options = [{'value': i[0], 'label': i[1]} for i in ADMIN_ROLES]
 
 
 class EditAdminUserForm(Form):
@@ -68,14 +70,7 @@ class EditAdminUserForm(Form):
         DataRequired(message="You must provide a name.")
     ])
 
-    permissions_choices = [
-        ("admin-ccs-category", "Category"),
-        ('admin-framework-manager', 'Framework Manager'),
-        ("admin-ccs-sourcing", "Sourcing"),
-        ("admin", "Support"),
-    ]
-
-    edit_admin_permissions = RadioField('Permissions', choices=permissions_choices)
+    edit_admin_permissions = RadioField('Permissions', choices=ADMIN_ROLES)
 
     status_choices = [
         ("True", "Active"),
@@ -87,7 +82,7 @@ class EditAdminUserForm(Form):
     def __init__(self, *args, **kwargs):
         super(EditAdminUserForm, self).__init__(*args, **kwargs)
         self.edit_admin_permissions.toolkit_macro_options = [
-            {'value': choice[0], 'label': choice[1]} for choice in self.permissions_choices
+            {'value': choice[0], 'label': choice[1]} for choice in ADMIN_ROLES
         ]
         self.edit_admin_status.toolkit_macro_options = [
             {'value': choice[0], 'label': choice[1]} for choice in self.status_choices
