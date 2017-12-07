@@ -330,6 +330,15 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
             ("Manage services (CCS Category)", True),
             ("Support user accounts", False)
         ]
+        permission_descriptions = [
+            descr.strip() for descr in document.xpath("//p[@class='question-description']/text()")
+        ]
+        assert permission_descriptions == [
+            'Manages communications about the framework and publishes supplier clarification questions.',
+            'Checks declarations and agreements.',
+            'Helps with service problems and makes sure services are in scope.',
+            'Helps buyers and suppliers solve problems with their accounts.'
+        ]
 
     def test_edit_admin_user_form_prefills_status_with_active(self, data_api_client):
         self.user_role = "admin-manager"
