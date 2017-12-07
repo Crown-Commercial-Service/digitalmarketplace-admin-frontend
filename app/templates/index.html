@@ -4,6 +4,8 @@
 {% endblock %}
 
 {% block main_content %}
+<div class="grid-row">
+  <div class="column-two-thirds">
   {%
     with heading = "Admin"
   %}
@@ -22,38 +24,59 @@
     {% endwith %}
   {% endif %}
 
-        {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
+  {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
 
-          {% with
-            smaller = True,
-            heading = "User support"
-          %}
-            {% include "toolkit/page-heading.html" %}
-          {% endwith %}
+    {% with
+      smaller = True,
+      heading = "User support"
+    %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
 
-          {% with items = [
-            {
-              "link": url_for('.find_user_by_email_address'),
-              "title": "Find a user by email"
-            },
-          ]
-          %}
-            {% include "toolkit/browse-list.html" %}
-          {% endwith %}
+    {% with items = [
+      {
+        "link": url_for('.find_user_by_email_address'),
+        "title": "Find a user by email"
+      },
+    ]
+    %}
+      {% include "toolkit/browse-list.html" %}
+    {% endwith %}
+  {% endif %}
 
-          {% with items = [
-            {
-              "link": url_for('.find_buyer_by_brief_id'),
-              "title": "Find a buyer by opportunity ID"
-            },
-          ]
-          %}
-            {% include "toolkit/browse-list.html" %}
-          {% endwith %}
-        {% endif %}
+  {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager') %}
 
-<div class="grid-row">
-    <div class="column-two-thirds">
+    {% set link_texts = {
+        'admin': 'Edit supplier accounts or view services',
+        'admin-ccs-category': 'Edit suppliers and services',
+        'admin-ccs-sourcing': 'Edit supplier declarations',
+        'admin-framework-manager': 'View suppliers and services',
+        }
+    %}
+    {% with items = [
+      {
+        "link": url_for('.find_suppliers_and_services'),
+        "title": link_texts[current_user.role]
+      },
+    ]
+    %}
+      {% include "toolkit/browse-list.html" %}
+    {% endwith %}
+
+  {% endif %}
+
+  {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
+
+    {% with items = [
+      {
+        "link": url_for('.find_buyer_by_brief_id'),
+        "title": "Find a buyer by opportunity ID"
+      },
+    ]
+    %}
+      {% include "toolkit/browse-list.html" %}
+    {% endwith %}
+  {% endif %}
 
   {% if current_user.has_role('admin') %}
     {% with items = [
