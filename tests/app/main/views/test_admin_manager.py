@@ -108,39 +108,47 @@ class TestAdminManagerListView(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
 
         rows = document.cssselect(".summary-item-row")
-        # Active users in alphabetical order
+        # Active users in alphabetical order (status, name, role)
         assert "Active" in rows[0].text_content()
         assert "Suspended" not in rows[0].text_content()
         assert "CCS Category Support" in rows[0].text_content()
+        assert "Manage services" in rows[0].text_content()
 
         assert "Active" in rows[1].text_content()
         assert "Suspended" not in rows[1].text_content()
         assert "Extra Support" in rows[1].text_content()
+        assert "Support accounts" in rows[1].text_content()
 
         assert "Active" in rows[2].text_content()
         assert "Suspended" not in rows[2].text_content()
         assert "Rashguy Support" in rows[2].text_content()
+        assert "Support accounts" in rows[2].text_content()
 
         assert "Active" in rows[3].text_content()
         assert "Suspended" not in rows[3].text_content()
         assert "Sourcing Support" in rows[3].text_content()
+        assert "Audit framework" in rows[3].text_content()
 
         assert "Active" in rows[4].text_content()
         assert "Suspended" not in rows[4].text_content()
         assert "Wonderful Framework Manager" in rows[4].text_content()
+        assert "Manage framework" in rows[4].text_content()
 
-        # Deactivated users in alphabetical order
+        # Deactivated users in alphabetical order (status, name, role)
         assert "Active" not in rows[5].text_content()
         assert "Suspended" in rows[5].text_content()
         assert "CCS Category Support - Retired" in rows[5].text_content()
+        assert "Manage services" in rows[5].text_content()
 
         assert "Active" not in rows[6].text_content()
         assert "Suspended" in rows[6].text_content()
         assert "Has-been Framework Manager" in rows[6].text_content()
+        assert "Manage framework" in rows[6].text_content()
 
         assert "Active" not in rows[7].text_content()
         assert "Suspended" in rows[7].text_content()
         assert "Has-been Sourcing Support" in rows[7].text_content()
+        assert "Audit framework" in rows[7].text_content()
 
     def test_should_link_to_edit_admin_user_page(self, data_api_client):
         self.user_role = "admin-manager"
