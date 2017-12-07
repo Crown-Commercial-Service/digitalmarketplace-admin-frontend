@@ -31,7 +31,7 @@ def index():
 @role_required('admin', 'admin-ccs-category', 'admin-framework-manager')
 def find():
     if request.args.get("service_id") is None:
-        return render_template("index.html"), 404
+        return render_template("find_suppliers_and_services.html"), 404
     return redirect(
         url_for(".view", service_id=request.args.get("service_id")))
 
@@ -43,11 +43,11 @@ def view(service_id):
         service = data_api_client.get_service(service_id)
         if service is None:
             flash({'no_service': service_id}, 'error')
-            return redirect(url_for('.index'))
+            return redirect(url_for('.find_suppliers_and_services'))
         service_data = service['services']
     except HTTPError:
         flash({'api_error': service_id}, 'error')
-        return redirect(url_for('.index'))
+        return redirect(url_for('.find_suppliers_and_services'))
 
     removed_by = removed_at = None
     if service_data['status'] != 'published':
