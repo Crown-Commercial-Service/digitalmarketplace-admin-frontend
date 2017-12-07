@@ -24,200 +24,69 @@
     {% endif %}
   {% endwith %}
   {%
-    with heading = "Admin"
+    with heading = "Find suppliers and services"
   %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
 
-  {% if current_user.has_role('admin-manager') %}
-    {% with items = [
-      {
-        "link": url_for('.manage_admin_users'),
-        "title": "Manage users"
-      },
-    ]
-    %}
-      {% include "toolkit/browse-list.html" %}
-    {% endwith %}
-  {% endif %}
-
-  {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager') %}
-    <div class="grid-row">
-      <div class="column-two-thirds">
-        {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager') %}
-        <form action="{{ url_for('.find') }}" method="get" class="question">
-          <label class="question-heading" for="service_id">Find a service by service ID</label>
-          <p class='hint'>
-            eg 1234567890123456
-          </p>
-          <input type="text" name="service_id" id="service_id" class="text-box">
-          <input type="submit" value="Search" class="button-save">
-        </form>
-        {% endif %}
-
-        <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
-          <label class="question-heading" for="supplier_name_prefix">Find suppliers by name prefix</label>
-          <p class="hint">
-            eg searching for c would give all suppliers starting with c
-          </p>
-          <input type="text" name="supplier_name_prefix" id="supplier_name_prefix" class="text-box">
-          <input type="submit" value="Search" class="button-save">
-        </form>
-
-        <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
-          <label class="question-heading" for="supplier_duns_number">Find suppliers by DUNS number</label>
-          <p class="hint">
-            DUNS numbers are usually 9 digits long, eg 234554321
-          </p>
-          <input type="text" name="supplier_duns_number" id="supplier_duns_number" class="text-box">
-          <input type="submit" value="Search" class="button-save">
-        </form>
-
-        {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
-
-          {% with
-            smaller = True,
-            heading = "User support"
-          %}
-            {% include "toolkit/page-heading.html" %}
-          {% endwith %}
-
-          {% with items = [
-            {
-              "link": url_for('.find_user_by_email_address'),
-              "title": "Find a user by email"
-            },
-          ]
-          %}
-            {% include "toolkit/browse-list.html" %}
-          {% endwith %}
-
-          {% with items = [
-            {
-              "link": url_for('.find_buyer_by_brief_id'),
-              "title": "Find a buyer by opportunity ID"
-            },
-          ]
-          %}
-            {% include "toolkit/browse-list.html" %}
-          {% endwith %}
-        {% endif %}
-      </div>
-    </div>
-  {% endif %}
-
-<div class="grid-row">
+  <div class="grid-row">
     <div class="column-two-thirds">
 
-  {% if current_user.has_role('admin') %}
-    {% with items = [
-      {
-        "link": url_for('.add_buyer_domains'),
-        "title": "Add a buyer email domain"
-      },
-    ]
-    %}
-      {% include "toolkit/browse-list.html" %}
-    {% endwith %}
-  {% endif %}
+      <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+        {%
+          with
+          question = "Find a supplier by name",
+          name = "supplier_name_prefix",
+          hint = "You don't have to put in the full name to get a result."
+        %}
+          {% include "toolkit/forms/textbox.html" %}
+        {% endwith %}
+        {%
+          with
+          type = "save",
+          label = "Search"
+        %}
+          {% include "toolkit/button.html" %}
+        {% endwith %}
+      </form>
 
-  {% if current_user.has_any_role('admin-ccs-category') %}
-    {% with
-      smaller = True,
-      heading = "Service edits"
-    %}
-      {% include "toolkit/page-heading.html" %}
-    {% endwith %}
-    {% with items = [
-      {
-        "link": url_for('.service_update_audits'),
-        "title": "Check edits to services"
-      },
-    ]
-    %}
-      {% include "toolkit/browse-list.html" %}
-    {% endwith %}
-  {% endif %}
+      <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+        {%
+          with
+          question = "Find a supplier by DUNS number",
+          name = "supplier_duns_number",
+          hint = "DUNS numbers are usually 9 digits long, for example, 234554321"
+        %}
+          {% include "toolkit/forms/textbox.html" %}
+        {% endwith %}
+        {%
+          with
+          type = "save",
+          label = "Search"
+        %}
+          {% include "toolkit/button.html" %}
+        {% endwith %}
+      </form>
 
-  {% if current_user.has_any_role('admin-ccs-sourcing', 'admin-framework-manager') %}
-    {% with
-      smaller = True,
-      heading = "Statistics"
-    %}
-      {% include "toolkit/page-heading.html" %}
-    {% endwith %}
-    {% with items = [
-      {
-        "body": "View G-Cloud 9 statistics",
-        "link": "/admin/statistics/g-cloud-9",
-        "title": "G-Cloud 9 statistics"
-      }
-    ]
-    %}
-     {% include "toolkit/browse-list.html" %}
-    {% endwith %}
-  {% endif %}
-
-  {% if current_user.has_any_role('admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager') %}
-    {% with
-      smaller = True,
-      heading = "Agreements"
-    %}
-      {% include "toolkit/page-heading.html" %}
-    {% endwith %}
-    {% for framework in frameworks_for_countersigning %}
-      {% with items = [
-        {
-          "body": "Approve " + framework.name + " agreements for countersigning"
-                  if framework['frameworkAgreementVersion'] else
-                  "Download " + framework.name + " agreements",
-          "title": framework.name + " agreements",
-          "link": url_for('.list_agreements', framework_slug=framework['slug'], status='signed')
-        }
-      ]
-      %}
-        {% include "toolkit/browse-list.html" %}
-      {% endwith %}
-    {% endfor %}
-  {% endif %}
-
-  {% if current_user.has_role('admin-framework-manager') %}
-    {% set items = [
-      {
-        "body": "Manage G-Cloud 8 communications",
-        "link": url_for(".manage_communications", framework_slug="g-cloud-8"),
-        "title": "G-Cloud 8 communications"
-      },
-      {
-        "body": "Manage Digital Outcomes and Specialists 2 communications",
-        "link": url_for(".manage_communications", framework_slug="digital-outcomes-and-specialists-2"),
-        "title": "Digital Outcomes and Specialists 2 communications"
-      },
-      {
-        "body": "Manage G-Cloud 9 communications",
-        "link": url_for(".manage_communications", framework_slug="g-cloud-9"),
-        "title": "G-Cloud 9 communications"
-      },
-      {
-        "body": "Download a list of users for frameworks that are open, pending or live",
-        "link": url_for(".list_frameworks_with_users"),
-        "title": "Download user lists"
-      },
-    ]
-    %}
-
-    {% with
-      smaller = True,
-      heading = "Communications"
-    %}
-      {% include "toolkit/page-heading.html" %}
-    {% endwith %}
-
-    {% with items = items %}
-      {% include "toolkit/browse-list.html" %}
-    {% endwith %}
-  {% endif %}
-
+      {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager') %}
+        <form action="{{ url_for('.find') }}" method="get" class="question">
+          {%
+            with
+            question = "Find a service by service ID",
+            name = "service_id",
+            hint = "For example 123456789012345"
+          %}
+            {% include "toolkit/forms/textbox.html" %}
+          {% endwith %}
+          {%
+            with
+            type = "save",
+            label = "Search"
+          %}
+            {% include "toolkit/button.html" %}
+          {% endwith %}
+      </form>
+      {% endif %}
+    </div>
   </div>
-</div>
 {% endblock %}
