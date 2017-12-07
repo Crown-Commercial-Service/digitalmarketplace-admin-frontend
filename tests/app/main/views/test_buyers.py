@@ -4,7 +4,7 @@ from dmapiclient import HTTPError
 from lxml import html
 
 from tests.app.main.helpers.flash_tester import assert_flashes
-from ...helpers import LoggedInApplicationTest
+from ...helpers import LoggedInApplicationTest, Response
 
 
 @mock.patch('app.main.views.buyers.data_api_client')
@@ -14,6 +14,7 @@ class TestBuyersView(LoggedInApplicationTest):
         ("admin-ccs-category", 200),
         ("admin-ccs-sourcing", 403),
         ("admin-manager", 403),
+        ("admin-framework-manager", 403),
     ])
     def test_find_buyers_page_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
         self.user_role = role
@@ -21,14 +22,26 @@ class TestBuyersView(LoggedInApplicationTest):
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
-    def test_should_be_a_404_if_no_brief_found(self, data_api_client):
+    def test_should_show_find_buyers_page(self, data_api_client):
         data_api_client.get_brief.return_value = None
+        response = self.client.get('admin/buyers')
+        page_html = response.get_data(as_text=True)
+        document = html.fromstring(page_html)
+        heading = document.xpath(
+            '//header[@class="page-heading page-heading-without-breadcrumb"]//h1/text()')[0].strip()
+
+        assert response.status_code == 200
+        assert "There are no opportunities with ID" not in page_html
+        assert heading == "Find a buyer"
+
+    def test_should_be_a_404_if_no_brief_found(self, data_api_client):
+        data_api_client.get_brief.side_effect = HTTPError(Response(status_code=404))
         response = self.client.get('admin/buyers?brief_id=1')
 
         assert response.status_code == 404
 
     def test_should_display_a_useful_message_if_no_brief_found(self, data_api_client):
-        data_api_client.get_brief.return_value = None
+        data_api_client.get_brief.side_effect = HTTPError(Response(status_code=404))
         response = self.client.get('admin/buyers?brief_id=1')
 
         document = html.fromstring(response.get_data(as_text=True))
@@ -41,7 +54,7 @@ class TestBuyersView(LoggedInApplicationTest):
         Asserts that raw HTML in a bad brief ID cannot be injected into a flash message.
         """
         # impl copied from test_should_display_a_useful_message_if_no_brief_found
-        data_api_client.get_brief.return_value = None
+        data_api_client.get_brief.side_effect = HTTPError(Response(status_code=404))
         response = self.client.get('admin/buyers?brief_id=1%3Cimg%20src%3Da%20onerror%3Dalert%281%29%3E')
         assert response.status_code == 404
 
@@ -62,6 +75,16 @@ class TestBuyersView(LoggedInApplicationTest):
         table_content = document.xpath('//p[@class="summary-item-no-content"]//text()')[0].strip()
 
         assert table_content == "No buyers to show"
+
+    def test_should_show_brief_title(self, data_api_client):
+        brief = self.load_example_listing("brief_response")
+        data_api_client.get_brief.return_value = brief
+        response = self.client.get('/admin/buyers?brief_id=1')
+
+        document = html.fromstring(response.get_data(as_text=True))
+        title = document.xpath('//h2[@class="summary-item-heading"]//text()')[0].strip()
+
+        assert title == "Individual Specialist-Buyer Requirements"
 
     def test_should_show_buyers_contact_details(self, data_api_client):
         brief = self.load_example_listing("brief_response")

@@ -12,26 +12,21 @@ from ... import data_api_client
 @role_required('admin', 'admin-ccs-category')
 def find_buyer_by_brief_id():
     brief_id = request.args.get('brief_id')
+    brief = None
+    status_code = 200
 
     try:
-        brief = data_api_client.get_brief(brief_id).get('briefs')
+        brief = data_api_client.get_brief(brief_id)
+    except HTTPError:
+        if 'brief_id' in request.args:
+            flash('no_brief', 'error')
+            status_code = 404
 
-    except:
-        flash('no_brief', 'error')
-        return render_template(
-            "view_buyers.html",
-            users=list(),
-            brief_id=brief_id
-        ), 404
-
-    users = brief.get('users')
-    title = brief.get('title')
     return render_template(
         "view_buyers.html",
-        users=users,
-        title=title,
+        brief=brief.get('briefs') if brief else None,
         brief_id=brief_id
-    )
+    ), status_code
 
 
 @main.route('/buyers/add-buyer-domains', methods=['GET', 'POST'])

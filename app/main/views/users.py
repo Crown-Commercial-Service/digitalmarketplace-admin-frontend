@@ -17,26 +17,23 @@ CLOSED_BRIEF_STATUSES = ['closed', 'awarded', 'cancelled', 'unsuccessful']
 @main.route('/users', methods=['GET'])
 @role_required('admin', 'admin-ccs-category')
 def find_user_by_email_address():
-    template = "view_users.html"
     users = None
+    email_address = None
+    response_code = 200
 
-    email_address = request.args.get("email_address", None)
-    if email_address:
-        users = data_api_client.get_user(email_address=request.args.get("email_address"))
+    if "email_address" in request.args:
+        email_address = request.args.get("email_address")
+        if email_address:
+            users = data_api_client.get_user(email_address=email_address)
+        if not users:
+            flash('no_users', 'error')
+            response_code = 404
 
-    if users:
-        return render_template(
-            template,
-            users=[users['users']],
-            email_address=request.args.get("email_address")
-        )
-    else:
-        flash('no_users', 'error')
-        return render_template(
-            template,
-            users=list(),
-            email_address=None
-        ), 404
+    return render_template(
+        "view_users.html",
+        users=[users['users']] if users else list(),
+        email_address=email_address
+    ), response_code
 
 
 # TODO: This page to die once links to framework-specific lists is on index page
