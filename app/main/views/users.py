@@ -19,10 +19,9 @@ CLOSED_BRIEF_STATUSES = ['closed', 'awarded', 'cancelled', 'unsuccessful']
 def find_user_by_email_address():
     template = "view_users.html"
     users = None
-
     email_address = request.args.get("email_address", None)
     if email_address:
-        users = data_api_client.get_user(email_address=request.args.get("email_address"))
+        users = data_api_client.get_user(email_address=email_address)
 
     if not users and 'email_address' in request.args:
         flash('no_users', 'error')
@@ -35,7 +34,7 @@ def find_user_by_email_address():
         return render_template(
             template,
             users=[users['users']] if users else list(),
-            email_address=request.args.get("email_address")
+            email_address=email_address
         )
 
 

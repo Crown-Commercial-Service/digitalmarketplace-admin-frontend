@@ -35,13 +35,13 @@ class TestBuyersView(LoggedInApplicationTest):
         assert heading == "Find a buyer"
 
     def test_should_be_a_404_if_no_brief_found(self, data_api_client):
-        data_api_client.get_brief.side_effect = Response(status_code=404)
+        data_api_client.get_brief.side_effect = HTTPError(Response(status_code=404))
         response = self.client.get('admin/buyers?brief_id=1')
 
         assert response.status_code == 404
 
     def test_should_display_a_useful_message_if_no_brief_found(self, data_api_client):
-        data_api_client.get_brief.side_effect = Response(status_code=404)
+        data_api_client.get_brief.side_effect = HTTPError(Response(status_code=404))
         response = self.client.get('admin/buyers?brief_id=1')
 
         document = html.fromstring(response.get_data(as_text=True))
@@ -54,7 +54,7 @@ class TestBuyersView(LoggedInApplicationTest):
         Asserts that raw HTML in a bad brief ID cannot be injected into a flash message.
         """
         # impl copied from test_should_display_a_useful_message_if_no_brief_found
-        data_api_client.get_brief.side_effect = Response(status_code=404)
+        data_api_client.get_brief.side_effect = HTTPError(Response(status_code=404))
         response = self.client.get('admin/buyers?brief_id=1%3Cimg%20src%3Da%20onerror%3Dalert%281%29%3E')
         assert response.status_code == 404
 

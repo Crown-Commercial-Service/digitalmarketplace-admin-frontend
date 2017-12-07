@@ -17,8 +17,8 @@ def find_buyer_by_brief_id():
 
     try:
         brief = data_api_client.get_brief(brief_id)
-    except:
-        if not brief and 'brief_id' in request.args:
+    except HTTPError:
+        if 'brief_id' in request.args:
             flash('no_brief', 'error')
             status_code = 404
 
