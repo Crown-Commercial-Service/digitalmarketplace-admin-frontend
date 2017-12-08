@@ -1,8 +1,3 @@
-{% extends "_base_page.html" %}
-{% block page_title %}
-  Digital Marketplace admin
-{% endblock %}
-
 {% if current_user.role == "admin" %}
   {% set page_title = "Edit supplier accounts or view services" %}
 {% elif current_user.role == "admin-ccs-category" %}
@@ -13,12 +8,18 @@
   {% set page_title = "View suppliers and services" %}
 {% endif %}
 
+{% extends "_base_page.html" %}
+
+{% block page_title %}
+  {{ page_title }} - Digital Marketplace admin
+{% endblock %}
+
 {% block breadcrumb %}
   {%
       with items = [
           {
               "link": url_for('.index'),
-              "label": page_title
+              "label": "Admin home"
           },
       ]
   %}

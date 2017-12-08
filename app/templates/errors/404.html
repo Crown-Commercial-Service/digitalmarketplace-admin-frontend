@@ -1,5 +1,20 @@
 {% extends "_base_page.html" %}
 
+{% block page_title %}Not found - 404 - Digital Marketplace{% endblock %}
+
+{% block breadcrumb %}
+  {%
+      with items = [
+          {
+              "link": url_for('main.index'),
+              "label": "Admin home"
+          }
+      ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
 {% block main_content %}
   {% with heading = "Page could not be found" %}
     {% include 'toolkit/page-heading.html' %}
