@@ -33,12 +33,12 @@ def find_service():
     if request.args.get("service_id") is None:
         return render_template("find_suppliers_and_services.html"), 404
     return redirect(
-        url_for(".view", service_id=request.args.get("service_id")))
+        url_for(".view_service", service_id=request.args.get("service_id")))
 
 
 @main.route('/services/<service_id>', methods=['GET'])
 @role_required('admin', 'admin-ccs-category', 'admin-framework-manager')
-def view(service_id):
+def view_service(service_id):
     try:
         service = data_api_client.get_service(service_id)
         if service is None:
@@ -90,7 +90,7 @@ def update_service_status(service_id):
         backend_status = translate_frontend_to_api[frontend_status]
     else:
         flash({'bad_status': frontend_status}, 'error')
-        return redirect(url_for('.view', service_id=service_id))
+        return redirect(url_for('.view_service', service_id=service_id))
 
     try:
         data_api_client.update_service_status(
@@ -99,13 +99,13 @@ def update_service_status(service_id):
 
     except HTTPError as e:
         flash({'status_error': e.message}, 'error')
-        return redirect(url_for('.view', service_id=service_id))
+        return redirect(url_for('.view_service', service_id=service_id))
 
     message = "admin.status.updated: " \
               "Service ID %s updated to '%s'"
     current_app.logger.info(message, service_id, frontend_status)
     flash({'status_updated': frontend_status})
-    return redirect(url_for('.view', service_id=service_id))
+    return redirect(url_for('.view_service', service_id=service_id))
 
 
 @main.route('/services/<service_id>/edit/<section_id>', methods=['GET'])
@@ -277,4 +277,4 @@ def update(service_id, section_id, question_slug=None):
             errors=errors,
         ), 400
 
-    return redirect(url_for(".view", service_id=service_id))
+    return redirect(url_for(".view_service", service_id=service_id))

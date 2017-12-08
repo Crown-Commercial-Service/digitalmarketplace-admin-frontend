@@ -90,7 +90,7 @@
         type = "temporary-message",
         heading = "Removed by {} on ".format(removed_by) + "{}.".format(removed_at|dateformat)|nbsp,
         message = (
-          ("<a href='{}'>Publish service</a>"|safe).format(url_for('.view', service_id=service_id, publish=True))
+          ("<a href='{}'>Publish service</a>"|safe).format(url_for('.view_service', service_id=service_id, publish=True))
           if current_user.has_role('admin-ccs-category') else ""
         )
       %}
@@ -118,7 +118,7 @@
         <li><a href="{{ "/{}/services/{}".format(service_data['frameworkFramework'], service_id) }}">View service</a></li>
       {% endif %}
       {% if current_user.has_role('admin-ccs-category') and service_data['status'] == 'published' %}
-        <li><a href="{{ url_for('.view', service_id=service_id, remove=True) }}">Remove service</a></li>
+        <li><a href="{{ url_for('.view_service', service_id=service_id, remove=True) }}">Remove service</a></li>
       {% endif %}
     </ul>
     {# endlinks #}
