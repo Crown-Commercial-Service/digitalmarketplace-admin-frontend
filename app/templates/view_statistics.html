@@ -30,16 +30,9 @@
         %}
           {% include "toolkit/page-heading.html" %}
         {% endwith %}
-      </div>
-      <div class="column-one-third">
+        
         {% if not big_screen_mode %}
-          {%
-            with
-            url = '?big_screen_mode=yes',
-            label = "Big screen view"
-          %}
-            {% include "toolkit/link-button.html" %}
-          {% endwith %}
+          <a href="?big_screen_mode=yes">Big screen view</a>
         {% endif %}
       </div>
     </div>
