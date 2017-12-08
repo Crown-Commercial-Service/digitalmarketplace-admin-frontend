@@ -487,7 +487,10 @@ class TestBuyersExport(LoggedInApplicationTest):
 
             response = self.client.get('/admin/users/download/buyers')
 
-            assert response.headers['Content-Disposition'] == 'attachment;filename=buyers_20160805T160000.csv'
+            assert (
+                response.headers['Content-Disposition'] ==
+                'attachment;filename=all-digital-marketplace-buyers-on-2016-08-05_at_16-00-00.csv'
+            )
 
     @pytest.mark.parametrize("role, expected_code", [
         ("admin", 403),
