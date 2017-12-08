@@ -1,28 +1,10 @@
 {% extends "_base_page.html" %}
-{% block page_title %}
-  Digital Marketplace admin
-{% endblock %}
+
+{% block page_title %}Digital Marketplace admin{% endblock %}
 
 {% block main_content %}
-
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        {% if message['no_service'] %}
-          {% set displayed_message = "Could not find a service with ID: {}".format(message['no_service']) %}
-        {% elif message['api_error'] %}
-          {% set displayed_message = "Error trying to retrieve service with ID: {}".format(message['api_error']) %}
-        {% endif %}
-        {%
-          with
-          message = displayed_message,
-          type = "destructive" if category == 'error' else "success"
-        %}
-          {% include "toolkit/notification-banner.html" %}
-        {% endwith %}
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
+<div class="grid-row">
+  <div class="column-two-thirds">
   {%
     with heading = "Admin"
   %}
@@ -41,73 +23,59 @@
     {% endwith %}
   {% endif %}
 
-  {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager') %}
-    <div class="grid-row">
-      <div class="column-two-thirds">
-        {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager') %}
-        <form action="{{ url_for('.find') }}" method="get" class="question">
-          <label class="question-heading" for="service_id">Find a service by service ID</label>
-          <p class='hint'>
-            eg 1234567890123456
-          </p>
-          <input type="text" name="service_id" id="service_id" class="text-box">
-          <input type="submit" value="Search" class="button-save">
-        </form>
-        {% endif %}
+  {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
 
-        <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
-          <label class="question-heading" for="supplier_name_prefix">Find suppliers by name prefix</label>
-          <p class="hint">
-            eg searching for c would give all suppliers starting with c
-          </p>
-          <input type="text" name="supplier_name_prefix" id="supplier_name_prefix" class="text-box">
-          <input type="submit" value="Search" class="button-save">
-        </form>
+    {% with
+      smaller = True,
+      heading = "User support"
+    %}
+      {% include "toolkit/page-heading.html" %}
+    {% endwith %}
 
-        <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
-          <label class="question-heading" for="supplier_duns_number">Find suppliers by DUNS number</label>
-          <p class="hint">
-            DUNS numbers are usually 9 digits long, eg 234554321
-          </p>
-          <input type="text" name="supplier_duns_number" id="supplier_duns_number" class="text-box">
-          <input type="submit" value="Search" class="button-save">
-        </form>
-
-        {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
-
-          {% with
-            smaller = True,
-            heading = "User support"
-          %}
-            {% include "toolkit/page-heading.html" %}
-          {% endwith %}
-
-          {% with items = [
-            {
-              "link": url_for('.find_user_by_email_address'),
-              "title": "Find a user by email"
-            },
-          ]
-          %}
-            {% include "toolkit/browse-list.html" %}
-          {% endwith %}
-
-          {% with items = [
-            {
-              "link": url_for('.find_buyer_by_brief_id'),
-              "title": "Find a buyer by opportunity ID"
-            },
-          ]
-          %}
-            {% include "toolkit/browse-list.html" %}
-          {% endwith %}
-        {% endif %}
-      </div>
-    </div>
+    {% with items = [
+      {
+        "link": url_for('.find_user_by_email_address'),
+        "title": "Find a user by email"
+      },
+    ]
+    %}
+      {% include "toolkit/browse-list.html" %}
+    {% endwith %}
   {% endif %}
 
-<div class="grid-row">
-    <div class="column-two-thirds">
+  {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager') %}
+
+    {% set link_texts = {
+        'admin': 'Edit supplier accounts or view services',
+        'admin-ccs-category': 'Edit suppliers and services',
+        'admin-ccs-sourcing': 'Edit supplier declarations',
+        'admin-framework-manager': 'View suppliers and services',
+        }
+    %}
+    {% with items = [
+      {
+        "link": url_for('.find_suppliers_and_services'),
+        "title": link_texts[current_user.role]
+      },
+    ]
+    %}
+      {% include "toolkit/browse-list.html" %}
+    {% endwith %}
+
+  {% endif %}
+
+  {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
+
+    {% with items = [
+      {
+        "link": url_for('.find_buyer_by_brief_id'),
+        "title": "Find a buyer by opportunity ID"
+      },
+    ]
+    %}
+      {% include "toolkit/browse-list.html" %}
+    {% endwith %}
+  {% endif %}
 
   {% if current_user.has_role('admin') %}
     {% with items = [

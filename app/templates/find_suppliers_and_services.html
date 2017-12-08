@@ -1,0 +1,119 @@
+{% if current_user.role == "admin" %}
+  {% set page_title = "Edit supplier accounts or view services" %}
+{% elif current_user.role == "admin-ccs-category" %}
+  {% set page_title = "Edit suppliers and services" %}
+{% elif current_user.role == "admin-ccs-sourcing" %}
+  {% set page_title = "Edit supplier declarations" %}
+{% elif current_user.role == "admin-framework-manager" %}
+  {% set page_title = "View suppliers and services" %}
+{% endif %}
+
+{% extends "_base_page.html" %}
+
+{% block page_title %}
+  {{ page_title }} - Digital Marketplace admin
+{% endblock %}
+
+{% block breadcrumb %}
+  {%
+      with items = [
+          {
+              "link": url_for('.index'),
+              "label": "Admin home"
+          },
+      ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        {% if message['no_service'] %}
+          {% set displayed_message = "Could not find a service with ID: {}".format(message['no_service']) %}
+        {% elif message['api_error'] %}
+          {% set displayed_message = "Error trying to retrieve service with ID: {}".format(message['api_error']) %}
+        {% endif %}
+        {%
+          with
+          message = displayed_message,
+          type = "destructive" if category == 'error' else "success"
+        %}
+          {% include "toolkit/notification-banner.html" %}
+        {% endwith %}
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  {%
+    with heading = page_title
+  %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+
+  <div class="grid-row">
+    <div class="column-two-thirds">
+
+      <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+        {%
+          with
+          question = "Find a supplier by name",
+          name = "supplier_name_prefix",
+          hint = "You don’t have to put in the full name to get a result."
+        %}
+          {% include "toolkit/forms/textbox.html" %}
+        {% endwith %}
+        {%
+          with
+          type = "save",
+          name = "find_supplier_by_name_search",
+          label = "Search"
+        %}
+          {% include "toolkit/button.html" %}
+        {% endwith %}
+      </form>
+
+      <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+        {%
+          with
+          question = "Find a supplier by DUNS number",
+          name = "supplier_duns_number",
+          hint = "DUNS numbers are usually 9 digits long, for example, 234554321"
+        %}
+          {% include "toolkit/forms/textbox.html" %}
+        {% endwith %}
+        {%
+          with
+          type = "save",
+          name = "find_supplier_by_duns_number_search",
+          label = "Search"
+        %}
+          {% include "toolkit/button.html" %}
+        {% endwith %}
+      </form>
+
+      {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager') %}
+        <form action="{{ url_for('.find_service') }}" method="get" class="question">
+          {%
+            with
+            question = "Find a service by service ID",
+            name = "service_id",
+            hint = "For example 123456789012345"
+          %}
+            {% include "toolkit/forms/textbox.html" %}
+          {% endwith %}
+          {%
+            with
+            type = "save",
+            name = "find_service_by_id_search",
+            label = "Search"
+          %}
+            {% include "toolkit/button.html" %}
+          {% endwith %}
+      </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

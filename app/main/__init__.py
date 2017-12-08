@@ -4,7 +4,9 @@ from flask_login import current_user, login_required
 
 main = Blueprint('main', __name__)
 
-from .views import agreements, communications, service_updates, services, suppliers, stats, users, buyers, admin_manager
+from .views import (
+    agreements, communications, search, service_updates, services, suppliers, stats, users, buyers, admin_manager
+)
 from app.main import errors
 
 

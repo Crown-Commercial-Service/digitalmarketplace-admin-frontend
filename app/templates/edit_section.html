@@ -2,8 +2,9 @@
 {% from "macros/assurance.html" import assurance_question %}
 
 {% extends "_base_page.html" %}
+
 {% block page_title %}
-  {{ section.name }} – Digital Marketplace admin
+  Edit {{ section.name }} – Digital Marketplace admin
 {% endblock %}
 
 {% block breadcrumb %}
@@ -14,7 +15,7 @@
         "label": "Admin home"
       },
       {
-        "link": url_for(".view", service_id=service_data.id),
+        "link": url_for(".view_service", service_id=service_data.id),
         "label": service_data['serviceName']
       }
     ]
@@ -67,7 +68,7 @@
           {% include "toolkit/button.html" %}
         {% endwith %}
         <p>
-          <a href="{{ url_for('.view', service_id=service_data.id) }}">Return without saving</a>
+          <a href="{{ url_for('.view_service', service_id=service_data.id) }}">Return without saving</a>
         </p>
       </div>
     </div>

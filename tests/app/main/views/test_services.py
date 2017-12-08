@@ -359,7 +359,7 @@ class TestServiceView(LoggedInApplicationTest):
 
         response1 = self.client.get('/admin/services/1')
         assert response1.status_code == 302
-        assert response1.location == 'http://localhost/admin'
+        assert response1.location == 'http://localhost/admin/find-suppliers-and-services'
         response2 = self.client.get(response1.location)
         assert b'Error trying to retrieve service with ID: 1' in response2.data
 
