@@ -108,39 +108,47 @@ class TestAdminManagerListView(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
 
         rows = document.cssselect(".summary-item-row")
-        # Active users in alphabetical order
+        # Active users in alphabetical order (status, name, role)
         assert "Active" in rows[0].text_content()
         assert "Suspended" not in rows[0].text_content()
         assert "CCS Category Support" in rows[0].text_content()
+        assert "Manage services" in rows[0].text_content()
 
         assert "Active" in rows[1].text_content()
         assert "Suspended" not in rows[1].text_content()
         assert "Extra Support" in rows[1].text_content()
+        assert "Support accounts" in rows[1].text_content()
 
         assert "Active" in rows[2].text_content()
         assert "Suspended" not in rows[2].text_content()
         assert "Rashguy Support" in rows[2].text_content()
+        assert "Support accounts" in rows[2].text_content()
 
         assert "Active" in rows[3].text_content()
         assert "Suspended" not in rows[3].text_content()
         assert "Sourcing Support" in rows[3].text_content()
+        assert "Audit framework" in rows[3].text_content()
 
         assert "Active" in rows[4].text_content()
         assert "Suspended" not in rows[4].text_content()
         assert "Wonderful Framework Manager" in rows[4].text_content()
+        assert "Manage framework" in rows[4].text_content()
 
-        # Deactivated users in alphabetical order
+        # Deactivated users in alphabetical order (status, name, role)
         assert "Active" not in rows[5].text_content()
         assert "Suspended" in rows[5].text_content()
         assert "CCS Category Support - Retired" in rows[5].text_content()
+        assert "Manage services" in rows[5].text_content()
 
         assert "Active" not in rows[6].text_content()
         assert "Suspended" in rows[6].text_content()
         assert "Has-been Framework Manager" in rows[6].text_content()
+        assert "Manage framework" in rows[6].text_content()
 
         assert "Active" not in rows[7].text_content()
         assert "Suspended" in rows[7].text_content()
         assert "Has-been Sourcing Support" in rows[7].text_content()
+        assert "Audit framework" in rows[7].text_content()
 
     def test_should_link_to_edit_admin_user_page(self, data_api_client):
         self.user_role = "admin-manager"
@@ -312,17 +320,25 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
 
         assert document.xpath('//span[@class="question-heading"]')[1].text.strip() == "Permissions"
 
-        assert document.cssselect('#input-edit_admin_permissions-1')[0].label.text.strip() == "Category"
-        assert document.cssselect('#input-edit_admin_permissions-1')[0].checked
-
-        assert document.cssselect('#input-edit_admin_permissions-2')[0].label.text.strip() == "Framework Manager"
-        assert not document.cssselect('#input-edit_admin_permissions-2')[0].checked
-
-        assert document.cssselect('#input-edit_admin_permissions-3')[0].label.text.strip() == "Sourcing"
-        assert not document.cssselect('#input-edit_admin_permissions-3')[0].checked
-
-        assert document.cssselect('#input-edit_admin_permissions-4')[0].label.text.strip() == "Support"
-        assert not document.cssselect('#input-edit_admin_permissions-4')[0].checked
+        permission_options_checked = [
+            (input.label.text.strip(), input.checked)
+            for input in document.xpath("//div[@id='edit_admin_permissions']//input")
+        ]
+        assert permission_options_checked == [
+            ("Manage framework applications", False),
+            ("Audit framework applications (CCS Sourcing)", False),
+            ("Manage services (CCS Category)", True),
+            ("Support user accounts", False)
+        ]
+        permission_descriptions = [
+            descr.strip() for descr in document.xpath("//p[@class='question-description']/text()")
+        ]
+        assert permission_descriptions == [
+            'Manages communications about the framework and publishes supplier clarification questions.',
+            'Checks declarations and agreements.',
+            'Helps with service problems and makes sure services are in scope.',
+            'Helps buyers and suppliers solve problems with their accounts.'
+        ]
 
     def test_edit_admin_user_form_prefills_status_with_active(self, data_api_client):
         self.user_role = "admin-manager"
