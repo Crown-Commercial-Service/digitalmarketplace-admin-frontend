@@ -37,31 +37,31 @@ class TestSearchView(LoggedInApplicationTest):
         assert response.status_code == 200
         assert header == expected_header
 
-    @pytest.mark.parametrize("role,form_1_exists,form_2_exists,form_3_exists", [
-        ("admin", True, True, True),
-        ("admin-ccs-category", True, True, True),
-        ("admin-ccs-sourcing", True, True, False),
-        ("admin-framework-manager", True, True, True),
-    ])
-    def test_forms_visible_for_relevant_roles(self, role, form_1_exists, form_2_exists, form_3_exists):
+    @pytest.mark.parametrize(
+        "role, supplier_name_form_should_exist, supplier_duns_form_should_exist, service_id_form_should_exist", [
+            ("admin", True, True, True),
+            ("admin-ccs-category", True, True, True),
+            ("admin-ccs-sourcing", True, True, False),
+            ("admin-framework-manager", True, True, True),
+        ])
+    def test_forms_visible_for_relevant_roles(
+            self, role, supplier_name_form_should_exist, supplier_duns_form_should_exist, service_id_form_should_exist
+    ):
         self.user_role = role
         response = self.client.get('/admin/find-suppliers-and-services')
         document = html.fromstring(response.get_data(as_text=True))
-        title_1_exists = bool(
-            document.xpath('//span[@class="question-heading"][contains(text(),"Find a supplier by name")]')
+        question_headings = [heading.strip() for heading in document.xpath('//span[@class="question-heading"]/text()')]
+
+        # We test that we can find the relevant question headings as a proxy for finding the forms themselves
+        assert len(question_headings) == (
+            supplier_name_form_should_exist + supplier_duns_form_should_exist + service_id_form_should_exist
         )
-        title_2_exists = bool(
-            document.xpath('//span[@class="question-heading"][contains(text(),"Find a supplier by DUNS number")]')
+        assert ("Find a supplier by name" in question_headings) is supplier_name_form_should_exist, (
+            "Role {} {} see the Find-by-name form".format(role, "can not" if supplier_name_form_should_exist else "can")
         )
-        title_3_exists = bool(
-            document.xpath('//span[@class="question-heading"][contains(text(),"Find a service by service ID")]')
+        assert ("Find a supplier by DUNS number" in question_headings) is supplier_duns_form_should_exist, (
+            "Role {} {} see the Find-by-DUNS form".format(role, "can not" if supplier_duns_form_should_exist else "can")
         )
-        assert title_1_exists == form_1_exists, (
-            "Role {} {} see the Find a supplier by name form".format(role, "can not" if form_1_exists else "can")
-        )
-        assert title_2_exists == form_2_exists, (
-            "Role {} {} see the Find a supplier by DUNS number form".format(role, "can not" if form_2_exists else "can")
-        )
-        assert title_3_exists == form_3_exists, (
-            "Role {} {} see the Find a service by service ID form".format(role, "can not" if form_3_exists else "can")
+        assert ("Find a service by service ID" in question_headings) is service_id_form_should_exist, (
+            "Role {} {} see the Find-by-ID form".format(role, "can not" if service_id_form_should_exist else "can")
         )
