@@ -133,6 +133,60 @@ def edit_service(service_id, section_id, question_slug=None):
     )
 
 
+@main.route('/services/<service_id>/edit/<section_id>', methods=['POST'])
+@main.route('/services/<service_id>/edit/<section_id>/<question_slug>', methods=['POST'])
+@role_required('admin-ccs-category')
+def update_service(service_id, section_id, question_slug=None):
+    service = data_api_client.get_service(service_id)
+    if service is None:
+        abort(404)
+    service = service['services']
+
+    content = content_loader.get_manifest(service['frameworkSlug'], 'edit_service_as_admin').filter(service)
+    section = content.get_section(section_id)
+    if question_slug is not None:
+        # Overwrite section with single question section for 'question per page' editing.
+        section = section.get_question_as_section(question_slug)
+    if section is None or not section.editable:
+        abort(404)
+
+    errors = None
+    posted_data = section.get_data(request.form)
+
+    uploaded_documents, document_errors = upload_service_documents(
+        s3.S3(current_app.config['DM_S3_DOCUMENT_BUCKET']),
+        'documents',
+        current_app.config['DM_ASSETS_URL'],
+        service, request.files, section)
+
+    if document_errors:
+        errors = section.get_error_messages(document_errors)
+    else:
+        posted_data.update(uploaded_documents)
+
+    if not errors and section.has_changes_to_save(service, posted_data):
+        try:
+            data_api_client.update_service(
+                service_id,
+                posted_data,
+                current_user.email_address,
+                user_role='admin',
+            )
+        except HTTPError as e:
+            errors = section.get_error_messages(e.message)
+
+    if errors:
+        return render_template(
+            "edit_section.html",
+            section=section,
+            service_data=section.unformat_data(dict(service, **posted_data)),
+            service_id=service_id,
+            errors=errors,
+        ), 400
+
+    return redirect(url_for(".view_service", service_id=service_id))
+
+
 @main.route('/services/<service_id>/updates', methods=['GET'])
 @role_required('admin-ccs-category')
 def service_updates(service_id):
@@ -224,57 +278,3 @@ def service_updates(service_id):
         ))),
         **extra_context
     )
-
-
-@main.route('/services/<service_id>/edit/<section_id>', methods=['POST'])
-@main.route('/services/<service_id>/edit/<section_id>/<question_slug>', methods=['POST'])
-@role_required('admin-ccs-category')
-def update(service_id, section_id, question_slug=None):
-    service = data_api_client.get_service(service_id)
-    if service is None:
-        abort(404)
-    service = service['services']
-
-    content = content_loader.get_manifest(service['frameworkSlug'], 'edit_service_as_admin').filter(service)
-    section = content.get_section(section_id)
-    if question_slug is not None:
-        # Overwrite section with single question section for 'question per page' editing.
-        section = section.get_question_as_section(question_slug)
-    if section is None or not section.editable:
-        abort(404)
-
-    errors = None
-    posted_data = section.get_data(request.form)
-
-    uploaded_documents, document_errors = upload_service_documents(
-        s3.S3(current_app.config['DM_S3_DOCUMENT_BUCKET']),
-        'documents',
-        current_app.config['DM_ASSETS_URL'],
-        service, request.files, section)
-
-    if document_errors:
-        errors = section.get_error_messages(document_errors)
-    else:
-        posted_data.update(uploaded_documents)
-
-    if not errors and section.has_changes_to_save(service, posted_data):
-        try:
-            data_api_client.update_service(
-                service_id,
-                posted_data,
-                current_user.email_address,
-                user_role='admin',
-            )
-        except HTTPError as e:
-            errors = section.get_error_messages(e.message)
-
-    if errors:
-        return render_template(
-            "edit_section.html",
-            section=section,
-            service_data=section.unformat_data(dict(service, **posted_data)),
-            service_id=service_id,
-            errors=errors,
-        ), 400
-
-    return redirect(url_for(".view_service", service_id=service_id))
