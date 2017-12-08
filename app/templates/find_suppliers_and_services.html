@@ -3,12 +3,22 @@
   Digital Marketplace admin
 {% endblock %}
 
+{% if current_user.role == "admin" %}
+  {% set page_title = "Edit supplier accounts or view services" %}
+{% elif current_user.role == "admin-ccs-category" %}
+  {% set page_title = "Edit suppliers and services" %}
+{% elif current_user.role == "admin-ccs-sourcing" %}
+  {% set page_title = "Edit supplier declarations" %}
+{% elif current_user.role == "admin-framework-manager" %}
+  {% set page_title = "View suppliers and services" %}
+{% endif %}
+
 {% block breadcrumb %}
   {%
       with items = [
           {
               "link": url_for('.index'),
-              "label": "Admin home"
+              "label": page_title
           },
       ]
   %}
@@ -37,7 +47,7 @@
     {% endif %}
   {% endwith %}
   {%
-    with heading = "Find suppliers and services"
+    with heading = page_title
   %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
