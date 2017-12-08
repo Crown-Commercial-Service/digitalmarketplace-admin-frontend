@@ -111,7 +111,7 @@ def update_service_status(service_id):
 @main.route('/services/<service_id>/edit/<section_id>', methods=['GET'])
 @main.route('/services/<service_id>/edit/<section_id>/<question_slug>', methods=['GET'])
 @role_required('admin-ccs-category')
-def edit(service_id, section_id, question_slug=None):
+def edit_service(service_id, section_id, question_slug=None):
     service_data = data_api_client.get_service(service_id)['services']
 
     content = content_loader.get_manifest(service_data['frameworkSlug'], 'edit_service_as_admin').filter(service_data)
