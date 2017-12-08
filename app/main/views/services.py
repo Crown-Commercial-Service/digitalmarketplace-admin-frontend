@@ -29,7 +29,7 @@ def index():
 
 @main.route('/services', methods=['GET'])
 @role_required('admin', 'admin-ccs-category', 'admin-framework-manager')
-def find():
+def find_service():
     if request.args.get("service_id") is None:
         return render_template("find_suppliers_and_services.html"), 404
     return redirect(

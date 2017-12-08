@@ -93,7 +93,7 @@
       </form>
 
       {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager') %}
-        <form action="{{ url_for('.find') }}" method="get" class="question">
+        <form action="{{ url_for('.find_service') }}" method="get" class="question">
           {%
             with
             question = "Find a service by service ID",
