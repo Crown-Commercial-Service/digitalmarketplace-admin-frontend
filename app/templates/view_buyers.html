@@ -78,16 +78,32 @@
 
   <br>
 {% if brief %}
-<form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
 
-    <label class="question-heading" for="questions_closed_at">Set new question date (YYYY-MM-DD)</label>
-    <input type="text" name="questions_closed_at" id="questions_closed_at" class="text-box"  value="{{brief.dates.questions_closing_date}}">
+    <b> Edit brief data</b>
+    <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
+        {{ form.csrf_token }}
+        <label class="question-heading" for="add_user">Add user to brief (email address or id)</label>
+        <input type="text" name="add_user" id="add_user" class="text-box" >
+        <br/>
+        <input type="submit" value="Save" class="button-save">
+    </form>
+    <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
+        {{ form.csrf_token }}
+        <label class="question-heading" for="remove_user">Remove user from brief (email address or id)</label>
+        <input type="text" name="remove_user" id="remove_user" class="text-box">
+        <br/>
+        <input type="submit" value="Save" class="button-save">
+    </form>
+    <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
+        {{ form.csrf_token }}
+        <label class="question-heading" for="questions_closed_at">Set new question date (YYYY-MM-DD)</label>
+        <input type="text" name="questions_closed_at" id="questions_closed_at" class="text-box"  value="{{brief.dates.questions_closing_date if brief.dates.questions_closing_date}}">
 
-    <label class="question-heading" for="closed_at">Set new closing date (YYYY-MM-DD)</label>
-    <input type="text" name="closed_at" id="closed_at" class="text-box" value="{{brief.dates.closing_date}}">
-
-    <input type="submit" value="Save" class="button-save">
-</form>
+        <label class="question-heading" for="closed_at">Set new closing date (YYYY-MM-DD)</label>
+        <input type="text" name="closed_at" id="closed_at" class="text-box" value="{{brief.dates.closing_date if brief.dates.closing_date}}">
+        <br/>
+        <input type="submit" value="Save" class="button-save">
+    </form>
 {% endif %}
   <form action="{{ url_for('.find_buyer_by_brief_id') }}" method="get" class="question">
       <label class="question-heading" for="brief_id">Find buyer by opportunity ID</label>
@@ -95,6 +111,7 @@
         You can find this number at the end of the opportunities’ URL.
       </p>
       <input type="text" name="brief_id" id="brief_id" class="text-box">
+      <br/>
       <input type="submit" value="Search" class="button-save">
   </form>
   </div>
