@@ -137,7 +137,7 @@ def download_buyers():
         csv_generator.iter_csv(rows_iter),
         mimetype='text/csv',
         headers={
-            "Content-Disposition": "attachment;filename=all-digital-marketplace-buyers-on-{}.csv".format(
+            "Content-Disposition": "attachment;filename=all-buyers-on-{}.csv".format(
                 datetime.utcnow().strftime('%Y-%m-%d_at_%H-%M-%S')
             ),
             "Content-Type": "text/csv; header=present"
