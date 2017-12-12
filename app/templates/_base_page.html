@@ -11,11 +11,7 @@
 {% block header_class %}with-proposition{% endblock %}
 
 {% block proposition_header %}
-  {% with items = [
-      {"label": "Service status changes", "link": url_for('main.service_status_update_audits')}
-  ] if current_user.is_authenticated() and (current_user.has_role('admin') or current_user.has_role('admin-ccs-category')) else [] %}
     {% include "toolkit/proposition-header.html" %}
-  {% endwith %}
 {% endblock %}
 
 {% block content %}
