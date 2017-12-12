@@ -36,25 +36,6 @@ def find_user_by_email_address():
     ), response_code
 
 
-# TODO: This page to die once links to framework-specific lists is on index page
-@main.route('/users/download', methods=['GET'])
-@role_required('admin', 'admin-framework-manager')
-def list_frameworks_with_users(errors=None):
-    bad_statuses = ['coming', 'expired']
-    frameworks = [framework for framework in data_api_client.find_frameworks()['frameworks']
-                  if framework['status'] not in bad_statuses
-                  #  TODO: remove this temporary hack once we have implemented new status that covers the DOS case
-                  or framework['slug'] == 'digital-outcomes-and-specialists']
-    framework_options = [{'value': framework['slug'], 'label': framework['name']} for framework
-                         in sorted(frameworks, key=lambda framework: framework['name'])]
-
-    return render_template(
-        "download_users.html",
-        framework_options=framework_options,
-        errors=errors
-    ), 200 if not errors else 400
-
-
 @main.route('/frameworks/<framework_slug>/users', methods=['GET'])
 @role_required('admin-framework-manager')
 def user_list_page_for_framework(framework_slug):
