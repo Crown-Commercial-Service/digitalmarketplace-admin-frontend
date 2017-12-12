@@ -138,7 +138,7 @@ def download_buyers():
         mimetype='text/csv',
         headers={
             "Content-Disposition": "attachment;filename=all-buyers-on-{}.csv".format(
-                datetime.utcnow().strftime('%Y-%m-%d_at_%H-%M-%S')
+                datetime.utcnow().strftime('%Y-%m-%d-at-%H-%M-%S')
             ),
             "Content-Type": "text/csv; header=present"
         }

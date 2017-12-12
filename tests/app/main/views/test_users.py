@@ -489,7 +489,7 @@ class TestBuyersExport(LoggedInApplicationTest):
 
             assert (
                 response.headers['Content-Disposition'] ==
-                'attachment;filename=all-buyers-on-2016-08-05_at_16-00-00.csv'
+                'attachment;filename=all-buyers-on-2016-08-05-at-16-00-00.csv'
             )
 
     @pytest.mark.parametrize("role, expected_code", [
