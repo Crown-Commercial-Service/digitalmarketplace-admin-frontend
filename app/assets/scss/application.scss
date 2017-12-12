@@ -44,7 +44,6 @@ $path: "/admin/static/images/";
 @import "shared_placeholders/_temporary-messages.scss";
 
 // Layout of specific views
-@import "views/edit_section";
 @import "views/view_audits";
 @import "_diff.scss";
 @import "views/statistics";
