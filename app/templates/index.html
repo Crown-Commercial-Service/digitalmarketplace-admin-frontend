@@ -10,19 +10,12 @@
   %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
-
+    <div class="dmspeak">
   {% if current_user.has_role('admin-manager') %}
-    {% with items = [
-      {
-        "link": url_for('.manage_admin_users'),
-        "title": "Manage users"
-      },
-    ]
-    %}
-      {% include "toolkit/browse-list.html" %}
-    {% endwith %}
+      <p>
+        <a href="{{ url_for('.manage_admin_users') }}">View and edit admin accounts</a>
+      </p>
   {% endif %}
-  <div class="dmspeak">
   {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager')  %}
     {% with
       smaller = True,
