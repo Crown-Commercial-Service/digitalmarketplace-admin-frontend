@@ -6,6 +6,7 @@ $path: "/admin/static/images/";
 
 // Digital Marketplace Front-end toolkit shared CSS placeholders used by other DM toolkit styles
 @import "toolkit/shared_placeholders/_dm-typography.scss";
+@import "toolkit/shared_placeholders/_mixins.scss";
 @import "toolkit/shared_placeholders/_placeholders.scss";
 @import "toolkit/shared_placeholders/_temporary-messages.scss";
 
@@ -27,6 +28,7 @@ $path: "/admin/static/images/";
 @import "toolkit/_service-id";
 @import "toolkit/forms/_hint";
 @import "toolkit/forms/_list-entry";
+@import "toolkit/forms/_pricing";
 @import "toolkit/forms/_questions";
 @import "toolkit/forms/_selection-buttons";
 @import "toolkit/forms/_summary";
@@ -41,7 +43,6 @@ $path: "/admin/static/images/";
 @import "_layout";
 @import "_c3";  // Graphs
 @import "_diff.scss";
-@import "patterns/pricing";
 @import "views/statistics";
 @import "views/list_agreements";
 
