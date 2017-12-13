@@ -20,13 +20,7 @@ from ... import data_api_client
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager', 'admin-manager')
 def index():
     frameworks = data_api_client.find_frameworks()['frameworks']
-
-    frameworks_for_countersigning = [fw for fw in frameworks if fw['status'] in ('standstill', 'live')]
-    frameworks_for_countersigning = sorted(frameworks, key=lambda x: x['id'], reverse=True)
-
-    return render_template("index.html",
-                           frameworks_for_countersigning=frameworks_for_countersigning,
-                           frameworks=frameworks)
+    return render_template("index.html", frameworks=frameworks)
 
 
 @main.route('/services', methods=['GET'])
