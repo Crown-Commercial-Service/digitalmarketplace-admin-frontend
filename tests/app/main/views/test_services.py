@@ -75,6 +75,32 @@ class TestServiceView(LoggedInApplicationTest):
         },
     ]}
 
+    get_framework_api_response = {'frameworks': {'slug': 'g-cloud-8', 'status': 'live'}}
+
+    @pytest.mark.parametrize("fwk_status,expected_code", [
+        ("coming", 404),
+        ("open", 404),
+        ("pending", 404),
+        ("standstill", 404),
+        ("live", 200),
+        ("expired", 404),
+    ])
+    def test_view_service_only_accessible_for_live_framework_services(self, data_api_client, fwk_status, expected_code):
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-8',
+            'serviceName': 'test',
+            'supplierId': 1000,
+            'lot': 'iaas',
+            'id': "314159265",
+            "status": "disabled",
+        }}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-8', 'status': fwk_status}}
+        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+        response = self.client.get('/admin/services/314159265')
+        actual_code = response.status_code
+
+        assert actual_code == expected_code, "Unexpected response {} for {} framework".format(actual_code, fwk_status)
+
     def test_service_view_status_disabled(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
@@ -84,6 +110,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "314159265",
             "status": "disabled",
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/314159265')
 
@@ -107,13 +134,14 @@ class TestServiceView(LoggedInApplicationTest):
 
     def test_service_view_status_enabled(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
-            'frameworkSlug': 'g-cloud-7',
+            'frameworkSlug': 'g-cloud-8',
             'serviceName': 'test',
             'supplierId': 1000,
             'lot': 'iaas',
             'id': "1412",
             "status": "enabled",
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/1412')
 
@@ -152,6 +180,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "314159265",
             "status": "disabled",
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/314159265')
         actual_code = response.status_code
@@ -183,6 +212,7 @@ class TestServiceView(LoggedInApplicationTest):
             },
         }
         data_api_client.get_service.return_value = {'services': service}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/151')
 
@@ -261,6 +291,7 @@ class TestServiceView(LoggedInApplicationTest):
             },
         }
         data_api_client.get_service.return_value = {'services': service}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/151')
 
@@ -277,6 +308,7 @@ class TestServiceView(LoggedInApplicationTest):
             'supplierId': 1000,
             "status": service_status,
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
 
         response = self.client.get('/admin/services/314159265')
@@ -305,6 +337,7 @@ class TestServiceView(LoggedInApplicationTest):
             'supplierId': 1000,
             "status": service_status,
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
 
         response = self.client.get('/admin/services/314159265')
@@ -326,6 +359,7 @@ class TestServiceView(LoggedInApplicationTest):
             'supplierId': 1000,
             "status": 'published',
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
 
         response = self.client.get('/admin/services/314159265')
@@ -344,6 +378,7 @@ class TestServiceView(LoggedInApplicationTest):
             'supplierId': 1000,
             "status": service_status,
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
 
         response = self.client.get('/admin/services/314159265')
@@ -381,54 +416,6 @@ class TestServiceView(LoggedInApplicationTest):
         assert "1<img src=a onerror=alert(1)>" not in html_response
         assert "1&lt;img src=a onerror=alert(1)&gt;" in html_response
 
-    def test_independence_of_viewing_services(self, data_api_client):
-        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
-        data_api_client.get_service.return_value = {'services': {
-            'lot': 'SCS',
-            'frameworkSlug': 'g-cloud-8',
-            'serviceName': 'test',
-            'supplierId': 1000,
-            'id': "1",
-            'status': 'published'
-        }}
-        response = self.client.get('/admin/services/1')
-        assert b'Termination cost' in response.data
-
-        data_api_client.get_service.return_value = {'services': {
-            'lot': 'SaaS',
-            'frameworkSlug': 'g-cloud-8',
-            'serviceName': 'test',
-            'supplierId': 1000,
-            'id': "1",
-            'status': 'published'
-        }}
-        response = self.client.get('/admin/services/1')
-        assert b'Termination cost' not in response.data
-
-        data_api_client.get_service.return_value = {'services': {
-            'lot': 'SCS',
-            'frameworkSlug': 'g-cloud-8',
-            'serviceName': 'test',
-            'supplierId': 1000,
-            'id': "1",
-            'status': 'published'
-        }}
-        response = self.client.get('/admin/services/1')
-        assert b'Termination cost' in response.data
-
-    def test_service_status_update_widgets_not_visible_when_not_permitted(self, data_api_client):
-        data_api_client.get_service.return_value = {'services': {
-            'lot': 'paas',
-            'serviceName': 'test',
-            'supplierId': 1000,
-            'frameworkSlug': 'g-cloud-8',
-            'id': "1",
-            'status': 'published'
-        }}
-        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
-        response = self.client.get('/admin/services/1')
-        assert b'Termination cost' in response.data
-
     def test_view_service_link_appears_for_gcloud_framework(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'paas',
@@ -439,6 +426,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "1",
             'status': 'published'
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         response = self.client.get('/admin/services/1')
         assert response.status_code == 200
 
@@ -459,6 +447,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "1",
             'status': 'published'
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         response = self.client.get('/admin/services/1')
         assert response.status_code == 200
 
@@ -478,6 +467,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "1",
             'status': 'published'
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         response = self.client.get('/admin/services/1{}'.format(url_suffix))
         assert response.status_code == 200
 
@@ -500,6 +490,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "1",
             'status': 'published'
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         response = self.client.get('/admin/services/1')
         assert response.status_code == 403
 
@@ -514,6 +505,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "1",
             'status': service_status
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/1')
 
@@ -534,6 +526,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "1",
             'status': 'disabled'
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/1')
 
@@ -554,6 +547,7 @@ class TestServiceView(LoggedInApplicationTest):
             'id': "1",
             'status': 'published'
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/1')
 
@@ -572,6 +566,7 @@ class TestServiceView(LoggedInApplicationTest):
             'supplierId': 1000,
             "status": 'disabled',
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
 
         response = self.client.get('/admin/services/314159265?publish=True')
@@ -590,6 +585,7 @@ class TestServiceView(LoggedInApplicationTest):
             'supplierId': 1000,
             "status": 'published',
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
 
         response = self.client.get('/admin/services/314159265?remove=True')
@@ -603,6 +599,33 @@ class TestServiceView(LoggedInApplicationTest):
 @mock.patch('app.main.views.services.data_api_client', autospec=True)
 class TestServiceEdit(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
+
+    get_framework_api_response = {'frameworks': {'slug': 'digital-outcomes-and-specialists-2', 'status': 'live'}}
+
+    @pytest.mark.parametrize("fwk_status,expected_code", [
+        ("coming", 404),
+        ("open", 404),
+        ("pending", 404),
+        ("standstill", 404),
+        ("live", 200),
+        ("expired", 404),
+    ])
+    def test_edit_service_only_accessible_for_live_framework_services(self, data_api_client, fwk_status, expected_code):
+        service = {
+            "id": 123,
+            "frameworkSlug": "digital-outcomes-and-specialists",
+            "serviceName": "Larry O'Rourke's",
+            "supplierId": 1000,
+            "lot": "user-research-studios",
+        }
+        data_api_client.get_service.return_value = {'services': service}
+        data_api_client.get_framework.return_value = {
+            'frameworks': {'slug': 'digital-outcomes-and-specialists', 'status': fwk_status}
+        }
+        response = self.client.get('/admin/services/123/edit/description')
+        actual_code = response.status_code
+
+        assert actual_code == expected_code, "Unexpected response {} for {} framework".format(actual_code, fwk_status)
 
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 403),
@@ -621,6 +644,9 @@ class TestServiceEdit(LoggedInApplicationTest):
             "lot": "user-research-studios",
         }
         data_api_client.get_service.return_value = {'services': service}
+        data_api_client.get_framework.return_value = {
+            'frameworks': {'slug': 'digital-outcomes-and-specialists', 'status': 'live'}
+        }
         response = self.client.get('/admin/services/123/edit/description')
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
@@ -634,6 +660,9 @@ class TestServiceEdit(LoggedInApplicationTest):
             "lot": "user-research-studios",
         }
         data_api_client.get_service.return_value = {'services': service}
+        data_api_client.get_framework.return_value = {
+            'frameworks': {'slug': 'digital-outcomes-and-specialists', 'status': 'live'}
+        }
         response = self.client.get('/admin/services/123/edit/description')
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -658,6 +687,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             'status': 'published'
         }
         data_api_client.get_service.return_value = {'services': service}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
 
         response = self.client.get('/admin/services/123')
@@ -679,6 +709,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         }
 
         data_api_client.get_service.return_value = {'services': service}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
 
         response = self.client.get('/admin/services/123')
@@ -703,6 +734,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         }
 
         data_api_client.get_service.return_value = {'services': service}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
 
         response = self.client.get('/admin/services/123')
@@ -726,6 +758,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         }
 
         data_api_client.get_service.return_value = {'services': service}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         response = self.client.get('/admin/services/123/edit/individual-specialist-roles/business-analyst')
 
         assert response.status_code == 200
@@ -739,6 +772,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             "termsAndConditionsDocumentURL": "http://boylan.example.com/concert-tours",
         }
         data_api_client.get_service.return_value = {'services': service}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-8', 'status': 'live'}}
         response = self.client.get('/admin/services/321/edit/documents')
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -758,6 +792,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             'lot': 'saas',
             'frameworkSlug': 'g-cloud-8',
         }}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-8', 'status': 'live'}}
         response = self.client.get(
             '/admin/services/234/edit/features-and-benefits')
 
@@ -781,6 +816,7 @@ class TestServiceEdit(LoggedInApplicationTest):
                 "foo",
             ],
         }}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-8', 'status': 'live'}}
         response = self.client.get(
             '/admin/services/1/edit/features-and-benefits'
         )
@@ -799,6 +835,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             },
         }
         data_api_client.get_service.return_value = {'services': service}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-8', 'status': 'live'}}
         response = self.client.get('/admin/services/432/edit/asset-protection-and-resilience')
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -820,6 +857,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             'lot': 'saas',
             'frameworkSlug': 'g-cloud-8',
         }}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-8', 'status': 'live'}}
         response = self.client.get(
             '/admin/services/234/edit/bad-section')
 
@@ -830,6 +868,35 @@ class TestServiceEdit(LoggedInApplicationTest):
 @mock.patch('app.main.views.services.data_api_client', autospec=True)
 class TestServiceUpdate(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
+
+    get_framework_api_response = {'frameworks': {'slug': 'g-cloud-7', 'status': 'live'}}
+
+    @pytest.mark.parametrize("fwk_status,expected_code", [
+        ("coming", 404),
+        ("open", 404),
+        ("pending", 404),
+        ("standstill", 404),
+        ("live", 302),
+        ("expired", 404),
+    ])
+    def test_post_service_update_only_for_live_framework_services(self, data_api_client, fwk_status, expected_code):
+        data_api_client.get_service.return_value = {'services': {
+            'id': 1,
+            'supplierId': 2,
+            'frameworkSlug': 'g-cloud-8',
+            'lot': 'IaaS',
+        }}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-8', 'status': fwk_status}}
+        response = self.client.post(
+            '/admin/services/1/edit/features-and-benefits',
+            data={
+                'serviceFeatures': 'baz',
+                'serviceBenefits': 'foo',
+            }
+        )
+        actual_code = response.status_code
+
+        assert actual_code == expected_code, "Unexpected response {} for {} framework".format(actual_code, fwk_status)
 
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 403),
@@ -845,6 +912,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
             'frameworkSlug': 'g-cloud-8',
             'lot': 'IaaS',
         }}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-8', 'status': 'live'}}
         response = self.client.post(
             '/admin/services/1/edit/features-and-benefits',
             data={
@@ -866,6 +934,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
             'sfiaRateDocumentURL': '',
             'pricingDocumentURL': '',
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         response = self.client.post(
             '/admin/services/1/edit/documents',
             data={}
@@ -888,6 +957,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
             'termsAndConditionsDocumentURL': "http://assets/documents/1/2-terms-and-conditions.pdf",
             'sfiaRateDocumentURL': None
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         response = self.client.post(
             '/admin/services/1/edit/documents',
             data={
@@ -917,6 +987,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
             'pricingDocumentURL': "http://assets/documents/7654/2-pricing.pdf",
             'sfiaRateDocumentURL': None
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         response = self.client.post(
             '/admin/services/7654/edit/documents',
             data={
@@ -949,6 +1020,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
             'frameworkSlug': 'g-cloud-8',
             'lot': 'paas',
         }}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-8', 'status': 'live'}}
         data_api_client.update_service.side_effect = HTTPError(None, {'dataProtectionWithinService': 'answer_required'})
         posted_values = {
             "dataProtectionBetweenUserAndService": ["PSN assured service"],
@@ -1020,6 +1092,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
                 "foo",
             ],
         }}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-8', 'status': 'live'}}
         response = self.client.post(
             '/admin/services/1/edit/features-and-benefits',
             data={
@@ -1046,7 +1119,9 @@ class TestServiceUpdate(LoggedInApplicationTest):
             "businessAnalyst": '',
         }
         data_api_client.get_service.return_value = {'services': service}
-
+        data_api_client.get_framework.return_value = {
+            'frameworks': {'slug': 'digital-outcomes-and-specialists-2', 'status': 'live'}
+        }
         data = {
             'businessAnalystLocations': ["London", "Offsite", "Scotland", "Wales"],
             'businessAnalystPriceMin': '100',
@@ -1075,6 +1150,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
                 "foo",
             ],
         }}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-9', 'status': 'live'}}
         mock_api_error = mock.Mock(status_code=400)
         mock_api_error.json.return_value = {
             "error": {"serviceBenefits": "under_10_words", "serviceFeatures": "under_10_words"}
@@ -1134,6 +1210,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
                 "assurance": "Service provider assertion",
             },
         }}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-8', 'status': 'live'}}
         response = self.client.post(
             '/admin/services/567/edit/external-interface-protection',
             data={
@@ -1172,6 +1249,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
             'sfiaRateDocumentURL': None
         }}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         upload_service_documents.return_value = ({}, {})
         data_api_client.update_service.side_effect = HTTPError(None, {'sfiaRateDocumentURL': 'required'})
 
@@ -1187,6 +1265,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
 
     def test_service_update_with_no_service_returns_404(self, data_api_client):
         data_api_client.get_service.return_value = None
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         response = self.client.post(
             '/admin/services/234/edit/documents',
             data={
@@ -1210,6 +1289,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
             'pricingDocumentURL': "http://assets/documents/1/2-pricing.pdf",
             'sfiaRateDocumentURL': None
         }}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': framework_slug, 'status': 'live'}}
         response = self.client.post(
             '/admin/services/234/edit/bad-section',
             data={
@@ -1227,6 +1307,29 @@ class TestServiceUpdate(LoggedInApplicationTest):
 class TestServiceStatusUpdate(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
 
+    @pytest.mark.parametrize("fwk_status,expected_code", [
+        ("coming", 404),
+        ("open", 404),
+        ("pending", 404),
+        ("standstill", 404),
+        ("live", 302),
+        ("expired", 404),
+    ])
+    def test_post_status_update_only_for_live_framework_services(self, data_api_client, fwk_status, expected_code):
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-9',
+            'serviceName': 'bad service',
+            'supplierId': 1000,
+            'status': 'published',
+        }}
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-9', 'status': fwk_status}}
+        response = self.client.post('/admin/services/status/1',
+                                    data={'service_status': 'removed'})
+        actual_code = response.status_code
+
+        assert actual_code == expected_code, "Unexpected response {} for {} framework".format(actual_code, fwk_status)
+
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 403),
         ("admin-ccs-category", 302),
@@ -1242,6 +1345,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'status': 'published',
         }}
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-9', 'status': 'live'}}
         response = self.client.post('/admin/services/status/1',
                                     data={'service_status': 'removed'})
         actual_code = response.status_code
@@ -1256,6 +1360,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'status': 'published',
         }}
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-7', 'status': 'live'}}
         response = self.client.post('/admin/services/status/1', data={'service_status': 'removed'})
         data_api_client.update_service_status.assert_called_with('1', 'disabled', 'test@example.com')
 
@@ -1271,6 +1376,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'status': 'published',
         }}
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-8', 'status': 'live'}}
         response = self.client.post('/admin/services/status/1', data={'service_status': 'private'})
 
         assert not data_api_client.update_service_status.called
@@ -1287,6 +1393,9 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         }}
 
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
+        data_api_client.get_framework.return_value = {
+            'frameworks': {'slug': 'digital-outcomes-and-specialists', 'status': 'live'}
+        }
         response = self.client.post('/admin/services/status/1', data={'service_status': 'public'})
         data_api_client.update_service_status.assert_called_with('1', 'published', 'test@example.com')
 
@@ -1302,6 +1411,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
             'status': 'published',
         }}
         data_api_client.find_audit_events.return_value = {'auditEvents': []}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-7', 'status': 'live'}}
         response = self.client.post('/admin/services/status/1', data={'service_status': 'suspended'})
 
         assert response.status_code == 302
