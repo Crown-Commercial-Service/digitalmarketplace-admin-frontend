@@ -134,14 +134,14 @@ class TestServiceView(LoggedInApplicationTest):
 
     def test_service_view_status_enabled(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
-            'frameworkSlug': 'g-cloud-7',
+            'frameworkSlug': 'g-cloud-8',
             'serviceName': 'test',
             'supplierId': 1000,
             'lot': 'iaas',
             'id': "1412",
             "status": "enabled",
         }}
-        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-7', 'status': 'live'}}
+        data_api_client.get_framework.return_value = self.get_framework_api_response
         data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
         response = self.client.get('/admin/services/1412')
 
