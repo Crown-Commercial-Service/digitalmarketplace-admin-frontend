@@ -416,54 +416,6 @@ class TestServiceView(LoggedInApplicationTest):
         assert "1<img src=a onerror=alert(1)>" not in html_response
         assert "1&lt;img src=a onerror=alert(1)&gt;" in html_response
 
-    def test_independence_of_viewing_services(self, data_api_client):
-        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
-        data_api_client.get_framework.return_value = self.get_framework_api_response
-        data_api_client.get_service.return_value = {'services': {
-            'lot': 'SCS',
-            'frameworkSlug': 'g-cloud-8',
-            'serviceName': 'test',
-            'supplierId': 1000,
-            'id': "1",
-            'status': 'published'
-        }}
-        response = self.client.get('/admin/services/1')
-        assert b'Termination cost' in response.data
-
-        data_api_client.get_service.return_value = {'services': {
-            'lot': 'SaaS',
-            'frameworkSlug': 'g-cloud-8',
-            'serviceName': 'test',
-            'supplierId': 1000,
-            'id': "1",
-            'status': 'published'
-        }}
-        response = self.client.get('/admin/services/1')
-        assert b'Termination cost' not in response.data
-
-        data_api_client.get_service.return_value = {'services': {
-            'lot': 'SCS',
-            'frameworkSlug': 'g-cloud-8',
-            'serviceName': 'test',
-            'supplierId': 1000,
-            'id': "1",
-            'status': 'published'
-        }}
-        response = self.client.get('/admin/services/1')
-        assert b'Termination cost' in response.data
-
-        data_api_client.get_service.return_value = {'services': {
-            'lot': 'paas',
-            'serviceName': 'test',
-            'supplierId': 1000,
-            'frameworkSlug': 'g-cloud-8',
-            'id': "1",
-            'status': 'published'
-        }}
-        data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
-        response = self.client.get('/admin/services/1')
-        assert b'Termination cost' in response.data
-
     def test_view_service_link_appears_for_gcloud_framework(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'lot': 'paas',
