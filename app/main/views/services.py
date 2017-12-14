@@ -12,6 +12,7 @@ from flask_login import current_user
 from .. import main
 from ..auth import role_required
 from ..helpers.diff_tools import html_diff_tables_from_sections_iter
+from ..helpers.frameworks import get_framework_or_404
 from ... import content_loader
 from ... import data_api_client
 
@@ -47,6 +48,9 @@ def view_service(service_id):
         flash({'api_error': service_id}, 'error')
         return redirect(url_for('.find_suppliers_and_services'))
 
+    # we don't actually need the framework here; using this to 404 if framework for the service is not live
+    get_framework_or_404(data_api_client, service_data['frameworkSlug'], allowed_statuses=['live'])
+
     removed_by = removed_at = None
     if service_data['status'] != 'published':
         most_recent_audit_events = data_api_client.find_audit_events(
@@ -77,6 +81,11 @@ def view_service(service_id):
 @main.route('/services/status/<string:service_id>', methods=['POST'])
 @role_required('admin-ccs-category')
 def update_service_status(service_id):
+
+    # Only services on live frameworks should have their status changed.
+    service = data_api_client.get_service(service_id)['services']
+    get_framework_or_404(data_api_client, service['frameworkSlug'], allowed_statuses=['live'])
+
     frontend_status = request.form['service_status']
 
     translate_frontend_to_api = {
@@ -112,6 +121,9 @@ def update_service_status(service_id):
 def edit_service(service_id, section_id, question_slug=None):
     service_data = data_api_client.get_service(service_id)['services']
 
+    # we don't actually need the framework here; using this to 404 if framework for the service is not live
+    get_framework_or_404(data_api_client, service_data['frameworkSlug'], allowed_statuses=['live'])
+
     content = content_loader.get_manifest(service_data['frameworkSlug'], 'edit_service_as_admin').filter(service_data)
 
     section = content.get_section(section_id)
@@ -139,6 +151,9 @@ def update_service(service_id, section_id, question_slug=None):
     if service is None:
         abort(404)
     service = service['services']
+
+    # we don't actually need the framework here; using this to 404 if framework for the service is not live
+    get_framework_or_404(data_api_client, service['frameworkSlug'], allowed_statuses=['live'])
 
     content = content_loader.get_manifest(service['frameworkSlug'], 'edit_service_as_admin').filter(service)
     section = content.get_section(section_id)
