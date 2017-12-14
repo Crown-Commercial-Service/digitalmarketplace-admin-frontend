@@ -238,35 +238,6 @@ class TestUsersExport(LoggedInApplicationTest):
         "variations_agreed": "var1"
     }
 
-    def _return_get_user_export_response(self, data_api_client, frameworks):
-            data_api_client.find_frameworks.return_value = {"frameworks": frameworks}
-            return self.client.get('/admin/users/download')
-
-    def _assert_things_about_frameworks(self, response, frameworks):
-
-        def _assert_things_about_valid_frameworks(options, frameworks):
-            valid_frameworks = [
-                framework for framework in frameworks if framework['status'] not in self._bad_statuses]
-
-            assert len(frameworks) == len(valid_frameworks)
-
-        def _assert_things_about_invalid_frameworks(options, frameworks):
-            invalid_frameworks = [
-                framework for framework in frameworks if framework['status'] in self._bad_statuses]
-
-            for framework in invalid_frameworks:
-                assert framework['slug'] not in [option.xpath('input')[0].attrib['value'] for option in options]
-                assert framework['name'] not in ["".join(option.xpath('text()')).strip() for option in options]
-
-        document = html.fromstring(response.get_data(as_text=True))
-
-        options = document.xpath(
-            '//fieldset[@id="framework_slug"]/label')
-
-        assert response.status_code == 200
-        _assert_things_about_valid_frameworks(options, frameworks)
-        _assert_things_about_invalid_frameworks(options, frameworks)
-
     def _return_user_export_response(self, data_api_client, framework, users, framework_slug=None, only_on_fwk=False):
         if framework_slug is None:
             framework_slug = framework['slug']
@@ -287,28 +258,6 @@ class TestUsersExport(LoggedInApplicationTest):
             ),
             data={'framework_slug': framework_slug}
         )
-
-    ##########################################################################
-    def test_get_form_with_valid_framework(self, data_api_client):
-        self.user_role = 'admin-framework-manager'
-        frameworks = [self._valid_framework]
-        response = self._return_get_user_export_response(data_api_client, frameworks)
-        assert response.status_code == 200
-        self._assert_things_about_frameworks(response, frameworks)
-
-    @pytest.mark.parametrize("role, expected_code", [
-        ("admin", 200),
-        ("admin-ccs-category", 403),
-        ("admin-ccs-sourcing", 403),
-        ("admin-framework-manager", 200),
-        ("admin-manager", 403),
-    ])
-    def test_download_users_page_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
-        self.user_role = role
-        frameworks = [self._valid_framework]
-        response = self._return_get_user_export_response(data_api_client, frameworks)
-        actual_code = response.status_code
-        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     @pytest.mark.parametrize("role, expected_code", [
         ("admin", 403),
