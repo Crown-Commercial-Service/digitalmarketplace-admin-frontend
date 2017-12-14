@@ -1,60 +1,53 @@
+// Reset styles on core HTML elements that might be injected by eg a user's browser, so that we have a known clean base
+// for DM styles to build on.
+@import "toolkit/shared_scss/_reset.scss";
+
 $path: "/admin/static/images/";
 
-/* Blocks shared between multiple selectors */
+// Digital Marketplace Front-end toolkit shared CSS placeholders used by other DM toolkit styles
 @import "toolkit/shared_placeholders/_dm-typography.scss";
+@import "toolkit/shared_placeholders/_mixins.scss";
 @import "toolkit/shared_placeholders/_placeholders.scss";
 @import "toolkit/shared_placeholders/_temporary-messages.scss";
 
-// Digital Marketplace Front-end toolkit styles
-@import "toolkit/grids";
-@import "toolkit/breadcrumb";
-@import "toolkit/browse-list";
-@import "toolkit/buttons";
-@import "toolkit/forms/hint";
-@import "toolkit/forms/list-entry";
-@import "toolkit/forms/questions";
-@import "toolkit/forms/selection-buttons";
-@import "toolkit/forms/summary";
-@import "toolkit/forms/textboxes";
-@import "toolkit/forms/validation";
-@import "toolkit/forms/word-counter";
-@import "toolkit/notification-banners";
-@import "toolkit/proposition-header";
-@import "toolkit/page-headings";
-@import "toolkit/previous-next-navigation";
-@import "toolkit/secondary-action-link";
-
-// Digital Marketplace front end toolkit components
-@import "toolkit/_document.scss";
-@import "forms/_option-select.scss";
-@import "forms/_keyword-search.scss";
-
-// Admin app styles
-@import "_reset";
-@import "_footer";
-@import "_layout";
-@import "_grids";
-
-@import "patterns/service-id";
-@import "patterns/pricing";
-
-// Blocks shared between multiple selectors
-@import "shared_placeholders/_temporary-messages.scss";
-
-// Styles shared by different html patterns
+// Digital Marketplace Front-end toolkit shared styles between multiple apps
+@import "shared_scss/_reset.scss";
 @import "shared_scss/_dmspeak.scss";
 
-// Layout of specific views
-@import "views/edit_section";
-@import "views/view_audits";
+// Digital Marketplace Front-end toolkit styles
+@import "toolkit/_breadcrumb";
+@import "toolkit/_browse-list";
+@import "toolkit/_buttons";
+@import "toolkit/_document.scss";
+@import "toolkit/_grids";
+@import "toolkit/_notification-banners";
+@import "toolkit/_page-headings";
+@import "toolkit/_previous-next-navigation";
+@import "toolkit/_proposition-header";
+@import "toolkit/_secondary-action-link";
+@import "toolkit/_service-id";
+@import "toolkit/forms/_hint";
+@import "toolkit/forms/_list-entry";
+@import "toolkit/forms/_pricing";
+@import "toolkit/forms/_questions";
+@import "toolkit/forms/_selection-buttons";
+@import "toolkit/forms/_summary";
+@import "toolkit/forms/_textboxes";
+@import "toolkit/forms/_validation";
+@import "toolkit/forms/_word-counter";
+@import "toolkit/forms/_option-select";
+@import "toolkit/forms/_keyword-search";
+
+// App specific styles
+@import "_footer";
+@import "_layout";
+@import "_c3";  // Graphs
 @import "_diff.scss";
 @import "views/statistics";
-@import "views/view_declaration";
 @import "views/list_agreements";
 
-// Graphs
-@import "_c3";
-
+// Misc styles
+// TODO: Move misc styling into their own partial files or the Digital Marketplace FE Toolkit
 .padding-bottom-small {
   padding-bottom: 10px;
 }
