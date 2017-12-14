@@ -259,7 +259,6 @@ class TestUsersExport(LoggedInApplicationTest):
             data={'framework_slug': framework_slug}
         )
 
-    ##########################################################################
     @pytest.mark.parametrize("role, expected_code", [
         ("admin", 403),
         ("admin-ccs-category", 403),

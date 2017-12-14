@@ -17,23 +17,16 @@
       </p>
   {% endif %}
   {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager')  %}
-    {% with
-      smaller = True,
-      heading = "User support"
-    %}
-      {% include "toolkit/page-heading.html" %}
-    {% endwith %}
+      <h2 class="heading-large">User support</h2>
   {% endif %}
 
   {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
-
       <a href="{{ url_for('.find_user_by_email_address') }}">Find a user by email</a>
-
   {% endif %}
 
   {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager') %}
 
-      <h2 class="heading-xmedium">Suppliers</h2>
+      <h3 class="heading-xmedium">Suppliers</h3>
 
     {% set find_supplier_and_services_link_text = {
         'admin': 'Edit supplier accounts or view services',
@@ -42,47 +35,42 @@
         'admin-framework-manager': 'View suppliers and services',
         }
     %}
-    <p>
-      <a href="{{ url_for('.find_suppliers_and_services') }}">{{ find_supplier_and_services_link_text[current_user.role] }}</a>
-    </p>
+      <p>
+        <a href="{{ url_for('.find_suppliers_and_services') }}">{{ find_supplier_and_services_link_text[current_user.role] }}</a>
+      </p>
 
   {% endif %}
   {% if current_user.has_any_role('admin-ccs-category') %}
-    <p>
-      <a href="{{ url_for('.service_update_audits') }}">Review service changes</a>
-    </p>
+      <p>
+        <a href="{{ url_for('.service_update_audits') }}">Review service changes</a>
+      </p>
   {% endif %}
 
   {% if current_user.has_any_role('admin','admin-ccs-category', 'admin-framework-manager') %}
-    <h2 class="heading-xmedium">Buyers</h2>
+      <h3 class="heading-xmedium">Buyers</h3>
   {% endif %}
   {% if current_user.has_any_role('admin-framework-manager') %}
-    <p>
-      <a href="{{ url_for('.download_buyers') }}">Download buyers list</a>
-    </p>
+      <p>
+        <a href="{{ url_for('.download_buyers') }}">Download buyers list</a>
+      </p>
   {% endif %}
   {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
-    <p>
-      <a href="{{ url_for('.find_buyer_by_brief_id') }}">Find a buyer by opportunity ID</a>
-    </p>
+      <p>
+        <a href="{{ url_for('.find_buyer_by_brief_id') }}">Find a buyer by opportunity ID</a>
+      </p>
   {% endif %}
 
   {% if current_user.has_role('admin') %}
-    <p>
-      <a href="{{ url_for('.add_buyer_domains') }}">Add a buyer email domain</a>
-    </p>
+      <p>
+        <a href="{{ url_for('.add_buyer_domains') }}">Add a buyer email domain</a>
+      </p>
   {% endif %}
 
   {% if current_user.has_any_role('admin-ccs-category', 'admin-framework-manager', 'admin-ccs-sourcing') %}
-    {% with
-      smaller = True,
-      heading = "Manage applications"
-    %}
-      {% include "toolkit/page-heading.html" %}
-    {% endwith %}
+      <h2 class="heading-large">Manage applications</h2>
 
     {% for framework in frameworks %}
-      <h2 class="heading-xmedium">{{framework.name}}</h2>
+      <h3 class="heading-xmedium">{{framework.name}}</h3>
 
       {% if framework.status in ["live", "standstill"] %}
         {% set agreement_link_text = {
@@ -91,9 +79,9 @@
             'admin-framework-manager': 'View agreements',
             }
         %}
-        <p>
-          <a href="{{ url_for('.list_agreements', framework_slug=framework['slug'], status='signed') }}">{{ agreement_link_text[current_user.role] }}</a>
-        </p>
+      <p>
+        <a href="{{ url_for('.list_agreements', framework_slug=framework['slug'], status='signed') }}">{{ agreement_link_text[current_user.role] }}</a>
+      </p>
       {% endif %}
 
       {% if current_user.has_any_role('admin-ccs-sourcing', 'admin-framework-manager') %}

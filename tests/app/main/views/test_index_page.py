@@ -35,7 +35,7 @@ class TestIndex(LoggedInApplicationTest):
         self.user_role = role
         response = self.client.get('/admin')
         document = html.fromstring(response.get_data(as_text=True))
-        header_is_visible = bool(document.xpath('.//h1[contains(text(),"User support")]'))
+        header_is_visible = bool(document.xpath('.//h2[contains(text(),"User support")]'))
 
         assert header_is_visible is header_should_be_visible, (
             "Role {} {} see the header".format(role, "can not" if header_should_be_visible else "can")
@@ -103,7 +103,7 @@ class TestIndex(LoggedInApplicationTest):
         self.user_role = role
         response = self.client.get('/admin')
         document = html.fromstring(response.get_data(as_text=True))
-        header_is_visible = bool(document.xpath('.//h1[contains(text(),"Manage applications")]'))
+        header_is_visible = bool(document.xpath('.//h2[contains(text(),"Manage applications")]'))
 
         assert header_is_visible is header_should_be_visible, (
             "Role {} {} see the header".format(role, "can not" if header_should_be_visible else "can")
@@ -198,7 +198,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         response = self.client.get('/admin')
         document = html.fromstring(response.get_data(as_text=True))
 
-        assert bool(document.xpath('.//h2[contains(text(),"Amazing Digital Framework")]')) == header_shown
+        assert bool(document.xpath('.//h3[contains(text(),"Amazing Digital Framework")]')) == header_shown
 
     @pytest.mark.parametrize('framework_status, agreements_shown, stats_shown, comms_shown, contact_shown', [
         ('coming', False, False, False, False),
