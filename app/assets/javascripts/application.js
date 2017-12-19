@@ -4,22 +4,21 @@
   Sprockets-style (https://github.com/sstephenson/sprockets)
   directives to concatenate multiple Javascript files into one.
 */
-//= include ../../../node_modules/govuk_frontend_toolkit/javascripts/vendor/polyfills/bind.js
-//= include ../../../bower_components/jquery/dist/jquery.js
-//= include ../../../bower_components/hogan/web/builds/3.0.2/hogan-3.0.2.js
-//= include ../../../bower_components/d3/d3.js
-//= include ../../../bower_components/c3/c3.js
-//= include ../../../bower_components/digitalmarketplace-frontend-toolkit/toolkit/javascripts/list-entry.js
-//= include ../../../bower_components/digitalmarketplace-frontend-toolkit/toolkit/javascripts/validation.js
-//= include ../../../bower_components/digitalmarketplace-frontend-toolkit/toolkit/javascripts/word-counter.js
-//= include ../../../node_modules/govuk_frontend_toolkit/javascripts/govuk/selection-buttons.js
-//= include ../../../node_modules/govuk_frontend_toolkit/javascripts/govuk/shim-links-with-button-role.js
-//= include ../../../bower_components/digitalmarketplace-frontend-toolkit/toolkit/javascripts/shim-links-with-button-role.js
-//= include ../../../bower_components/digitalmarketplace-frontend-toolkit/toolkit/javascripts/show-hide-content.js
-
+//= require ../../../node_modules/govuk_frontend_toolkit/javascripts/vendor/polyfills/bind.js
+//= require ../../../node_modules/jquery/dist/jquery.js
+//= require ../../../node_modules/hogan.js/web/builds/3.0.2/hogan-3.0.2.js
+//= require ../../../node_modules/d3/d3.js
+//= require ../../../node_modules/c3/c3.js
+//= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/list-entry.js
+//= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/validation.js
+//= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/word-counter.js
+//= require ../../../node_modules/govuk_frontend_toolkit/javascripts/govuk/selection-buttons.js
+//= require ../../../node_modules/govuk_frontend_toolkit/javascripts/govuk/shim-links-with-button-role.js
+//= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/shim-links-with-button-role.js
+//= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/show-hide-content.js
 ; // JavaScript in the govuk_frontend_toolkit doesn't have trailing semicolons
 
-//= include _scroll-through-statistics.js
-//= include _selection-buttons.js
-//= include _tables-to-charts.js
-//= include ../../../bower_components/digitalmarketplace-frontend-toolkit/toolkit/javascripts/module-loader.js
+//= require _scroll-through-statistics.js
+//= require _selection-buttons.js
+//= require _tables-to-charts.js
+//= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/module-loader.js
