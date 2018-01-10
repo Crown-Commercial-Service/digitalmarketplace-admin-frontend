@@ -200,6 +200,26 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
 
         assert bool(document.xpath('.//h3[contains(text(),"Amazing Digital Framework")]')) == header_shown
 
+    @pytest.mark.parametrize('framework_status, header_shown', [
+        ('coming', False),
+        ('open', False),
+        ('pending', False),
+        ('standstill', True),
+        ('live', True),
+        ('expired', False),
+    ])
+    def test_framework_action_lists_only_shown_when_framework_standstill_or_live_for_category_users(
+        self, framework_status, header_shown
+    ):
+        data_api_client.find_frameworks = mock.Mock()
+        data_api_client.find_frameworks.return_value = self._get_mock_framework_response(framework_status)
+
+        self.user_role = "admin-ccs-category"
+        response = self.client.get('/admin')
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert bool(document.xpath('.//h3[contains(text(),"Amazing Digital Framework")]')) == header_shown
+
     @pytest.mark.parametrize('framework_status, agreements_shown, stats_shown, comms_shown, contact_shown', [
         ('coming', False, False, False, False),
         ('open', False, True, True, True),
