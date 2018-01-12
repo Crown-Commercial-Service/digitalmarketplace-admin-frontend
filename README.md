@@ -43,15 +43,17 @@ Install new Python dependencies with pip
 
 ```make requirements-dev```
 
-Install frontend dependencies with npm and gulp
+Install frontend dependencies with yarn and gulp
+[How to install yarn](https://yarnpkg.com/en/docs/install)
 
 ```
-npm install
+yarn
 ```
 
 ### Compile the front-end code
 
-You need Node (minimum version of 0.10.0, maximum version 0.12.7) which will also get you [NPM](npmjs.org), Node's package management tool.
+You need Node (try to install the version we use in production -
+ see the [base docker image](https://github.com/alphagov/digitalmarketplace-docker-base/blob/master/base.docker)).
 
 To check the version you're running, type:
 
@@ -59,19 +61,6 @@ To check the version you're running, type:
 node --version
 ```
 
-For development usage:
-
-```
-npm run frontend-build:development
-```
-
-For production:
-
-```
-npm run frontend-build:production
-```
-
-Note: running `npm run frontend-build:watch` will also build the front-end code.
 
 ### Run the tests
 
@@ -96,7 +85,7 @@ The admin frontend runs on port 5004. Use the app at [http://127.0.0.1:5004/admi
 ### Updating application dependencies
 
 `requirements.txt` file is generated from the `requirements-app.txt` in order to pin
-versions of all nested dependecies. If `requirements-app.txt` has been changed (or
+versions of all nested dependencies. If `requirements-app.txt` has been changed (or
 we want to update the unpinned nested dependencies) `requirements.txt` should be
 regenerated with
 
@@ -113,11 +102,8 @@ To use feature flags, check out the documentation in (the README of)
 
 ## Frontend tasks
 
-[NPM](https://www.npmjs.org/) is used for all frontend build tasks. The commands available are:
+[YARN](https://yarnpkg.com/en/) is used for all frontend build tasks. The commands available are:
 
-- `npm run frontend-build:development` (compile the frontend files for development)
-- `npm run frontend-build:production` (compile the frontend files for production)
-- `npm run frontend-build:watch` (watch all frontend files & rebuild when anything changes)
-- `npm run frontend-install` (install all non-NPM dependancies)
-
-Note: `npm run frontend-install` is run as a post-install task after you run `npm install`.
+- `yarn run frontend-build:development` (compile the frontend files for development)
+- `yarn run frontend-build:production` (compile the frontend files for production)
+- `yarn run frontend-build:watch` (watch all frontend files & rebuild when anything changes)
