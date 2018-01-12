@@ -122,7 +122,7 @@ gulp.task('sass', function () {
 gulp.task('js', function () {
   var stream = gulp.src(jsSourceFile)
     .pipe(filelog('Compressing JavaScript files'))
-    .pipe(include())
+    .pipe(include({'hardFail': true}))
     .pipe(uglify(
       uglifyOptions[environment]
     ))
