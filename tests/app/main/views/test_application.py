@@ -1,7 +1,8 @@
 # coding=utf-8
 
-import pytest
 import mock
+import pytest
+
 from ...helpers import LoggedInApplicationTest
 
 
@@ -16,10 +17,6 @@ class TestApplication(LoggedInApplicationTest):
         with self.app.app_context():
             response = self.client.get('/admin/not-found')
             assert response.status_code == 404
-
-    def test_index_is_404(self):
-        response = self.client.get('/')
-        assert response.status_code == 404
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_headers(self, data_api_client):

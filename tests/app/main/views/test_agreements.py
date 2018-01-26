@@ -109,13 +109,13 @@ class TestListAgreements(LoggedInApplicationTest):
                 "/admin/suppliers/11112/agreements/g-cloud-8",
                 {},
                 "My other supplier",
-                "Submitted: Friday 30 October 2015 at 1:01am",
+                "Submitted: Friday 30 October 2015 at 1:01am GMT",
             ),
             (
                 "/admin/suppliers/11111/agreements/g-cloud-8",
                 {},
                 "My Supplier",
-                "Submitted: Sunday 1 November 2015 at 1:01am",
+                "Submitted: Sunday 1 November 2015 at 1:01am GMT",
             ),
         )
 
@@ -161,13 +161,13 @@ class TestListAgreements(LoggedInApplicationTest):
                 "/admin/suppliers/11111/agreements/g-cloud-8",
                 {"next_status": [chosen_status_key]},
                 "My Supplier",
-                "Submitted: Sunday 1 November 2015 at 1:01am",
+                "Submitted: Sunday 1 November 2015 at 1:01am GMT",
             ),
             (
                 "/admin/suppliers/11112/agreements/g-cloud-8",
                 {"next_status": [chosen_status_key]},
                 "My other supplier",
-                "Submitted: Friday 30 October 2015 at 1:01am",
+                "Submitted: Friday 30 October 2015 at 1:01am GMT",
             ),
         )
 

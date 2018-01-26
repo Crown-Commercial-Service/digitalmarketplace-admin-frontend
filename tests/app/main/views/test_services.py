@@ -1525,7 +1525,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         # service status:
         "disabled",
         # expected message about the oldest unapproved edit:
-        "Changed on Wednesday 3 February 2010 at 10:11am",
+        "Changed on Wednesday 3 February 2010 at 10:11am GMT",
         # number of audit events per page in API response + expected message about latest edit:
         ((5, expected_message_about_latest_edit_1,),),
     )
@@ -1583,7 +1583,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         # service status:
         "published",
         # expected message about the oldest unapproved edit:
-        "Changed on Tuesday 3 February 2015 at 8:11pm",
+        "Changed on Tuesday 3 February 2015 at 8:11pm GMT",
         # number of audit events per page in API response + expected message about latest edit:
         (
             (5, expected_message_about_latest_edit_2),
@@ -1633,7 +1633,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         # service status:
         "enabled",
         # expected message about the oldest unapproved edit:
-        "Changed on Saturday 30 June 2012 at 9:01pm",
+        "Changed on Saturday 30 June 2012 at 9:01pm BST",
         # number of audit events per page in API response + expected message about latest edit:
         (
             (5, expected_message_about_latest_edit_3),
@@ -1706,7 +1706,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         # service status:
         "enabled",
         # expected message about the oldest unapproved edit:
-        "Changed on Saturday 12 November 2005 at 3:01pm",
+        "Changed on Saturday 12 November 2005 at 3:01pm GMT",
         # number of audit events per page in API response + expected message about latest edit:
         (
             (5, expected_message_about_latest_edit_4),
