@@ -1,10 +1,9 @@
 from itertools import chain
+from urllib.parse import urlparse, parse_qs
 
 import mock
-from lxml import html
-from six import iteritems, iterkeys
-from six.moves.urllib.parse import urlparse, parse_qs
 import pytest
+from lxml import html
 
 from app.main.views.agreements import status_labels
 from ...helpers import LoggedInApplicationTest
@@ -127,7 +126,7 @@ class TestListAgreements(LoggedInApplicationTest):
             for a_element in page.cssselect('.status-filters a')
         ) == tuple(
             ({"status": [status_key]}, status_label)
-            for status_key, status_label in iteritems(status_labels)
+            for status_key, status_label in status_labels.items()
         )
 
         summary_elem = page.xpath("//p[@class='search-summary-border-bottom']")[0]
@@ -141,7 +140,7 @@ class TestListAgreements(LoggedInApplicationTest):
         data_api_client.find_framework_suppliers.return_value = find_framework_suppliers_return_value_g8
 
         # choose the second status (if there is one, otherwise first)
-        chosen_status_key = tuple(iterkeys(status_labels))[:2][-1]
+        chosen_status_key = tuple(status_labels.keys())[:2][-1]
 
         response = self.client.get('/admin/agreements/g-cloud-8?status={}'.format(chosen_status_key))
         page = html.fromstring(response.get_data(as_text=True))
@@ -188,7 +187,7 @@ class TestListAgreements(LoggedInApplicationTest):
             ),
             (
                 ({"status": [status_key]}, status_label)
-                for status_key, status_label in iteritems(status_labels) if status_key != chosen_status_key
+                for status_key, status_label in status_labels.items() if status_key != chosen_status_key
             ),
         ))
 

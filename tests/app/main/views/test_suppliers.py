@@ -1,3 +1,6 @@
+from io import BytesIO
+from urllib.parse import urlparse, parse_qs
+
 import mock
 import pytest
 from dmapiclient import HTTPError, APIError
@@ -6,8 +9,6 @@ from dmutils.email.exceptions import EmailError
 from flask import current_app
 from freezegun import freeze_time
 from lxml import html
-from six import BytesIO
-from six.moves.urllib.parse import urlparse, parse_qs
 
 from ..helpers.flash_tester import assert_flashes
 from ...helpers import LoggedInApplicationTest, Response

@@ -1,16 +1,13 @@
 from collections import OrderedDict
 
-from dmutils.documents import degenerate_document_path_and_return_doc_name
-from flask import render_template, redirect, url_for, abort, request
 from dateutil.parser import parse as parse_date
-from six import next
-
+from dmutils.documents import degenerate_document_path_and_return_doc_name
 from dmutils.formats import datetimeformat
+from flask import render_template, redirect, url_for, abort, request
 
 from .. import main
 from ..auth import role_required
 from ... import data_api_client
-
 
 status_labels = OrderedDict((
     ("signed", "Waiting for countersigning"),

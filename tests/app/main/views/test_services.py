@@ -1,23 +1,15 @@
 from functools import partial
-
-import pytest
-
-try:
-    from urlparse import urlsplit
-    from StringIO import StringIO
-except ImportError:
-    from urllib.parse import urlsplit
-    from io import BytesIO as StringIO
+from io import BytesIO as StringIO
 from itertools import chain
+from urllib.parse import urlsplit
+
 import mock
-
-from flask import Markup
-from lxml import html
-from six import text_type
-
+import pytest
 from dmapiclient import HTTPError
 from dmapiclient.audit import AuditTypes
 from dmutils import s3
+from flask import Markup
+from lxml import html
 
 from tests.app.main.helpers.flash_tester import assert_flashes
 from ...helpers import LoggedInApplicationTest
@@ -1825,7 +1817,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             assert len(ack_forms) == 1
             assert ack_forms[0].method == "POST"
             assert ack_forms[0].action == "/admin/services/151/updates/{}/approve".format(
-                text_type(find_audit_events_api_response[-1]["id"])
+                str(find_audit_events_api_response[-1]["id"])
             )
             assert sorted(ack_forms[0].form_values()) == [
                 ("csrf_token", mock.ANY),
