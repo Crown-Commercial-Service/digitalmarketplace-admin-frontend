@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import copy
 from datetime import datetime
 
 import mock
 import pytest
-import six
 from dmapiclient import HTTPError
 from lxml import html
 
@@ -301,7 +298,7 @@ class TestUsersExport(LoggedInApplicationTest):
         ]
         # All users returned from the API should appear in the CSV
         for index, user in enumerate(users):
-            assert sorted([six.text_type(val) for val in user.values()]) == sorted(rows[index + 1])
+            assert sorted([str(val) for val in user.values()]) == sorted(rows[index + 1])
 
     def test_download_csv_for_on_framework_only(self, data_api_client):
         framework = self._valid_framework

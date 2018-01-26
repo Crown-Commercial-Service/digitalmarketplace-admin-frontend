@@ -1,13 +1,11 @@
 from collections import OrderedDict
 from itertools import chain
 
-from lxml import html
 import pytest
-from six import string_types
+from lxml import html
 
 from app import content_loader
 from app.main.helpers.diff_tools import html_diff_tables_from_sections_iter
-
 from .helpers import BaseApplicationTest
 
 
@@ -231,7 +229,7 @@ class TestHtmlDiffTablesFromSections(BaseApplicationTest):
             expected_content_a, expected_content_b = (
                 [
                     (line or " ")  # diff outputs an extraneous space in some blank line cases, which is ok by us
-                    for line in (q.splitlines() if isinstance(q, string_types) else q)
+                    for line in (q.splitlines() if isinstance(q, str) else q)
                 ]
                 for q in (r.get(question_id, []) for r in (service_data_a, service_data_b,))
             )

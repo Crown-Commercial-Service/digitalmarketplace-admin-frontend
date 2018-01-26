@@ -1,23 +1,15 @@
 from functools import partial
-
-import pytest
-
-try:
-    from urlparse import urlsplit
-    from StringIO import StringIO
-except ImportError:
-    from urllib.parse import urlsplit
-    from io import BytesIO as StringIO
+from io import BytesIO as StringIO
 from itertools import chain
+from urllib.parse import urlsplit
+
 import mock
-
-from flask import Markup
-from lxml import html
-from six import text_type
-
+import pytest
 from dmapiclient import HTTPError
 from dmapiclient.audit import AuditTypes
 from dmutils import s3
+from flask import Markup
+from lxml import html
 
 from tests.app.main.helpers.flash_tester import assert_flashes
 from ...helpers import LoggedInApplicationTest
@@ -1533,7 +1525,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         # service status:
         "disabled",
         # expected message about the oldest unapproved edit:
-        "Changed on Wednesday 3 February 2010 at 10:11am",
+        "Changed on Wednesday 3 February 2010 at 10:11am GMT",
         # number of audit events per page in API response + expected message about latest edit:
         ((5, expected_message_about_latest_edit_1,),),
     )
@@ -1591,7 +1583,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         # service status:
         "published",
         # expected message about the oldest unapproved edit:
-        "Changed on Tuesday 3 February 2015 at 8:11pm",
+        "Changed on Tuesday 3 February 2015 at 8:11pm GMT",
         # number of audit events per page in API response + expected message about latest edit:
         (
             (5, expected_message_about_latest_edit_2),
@@ -1641,7 +1633,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         # service status:
         "enabled",
         # expected message about the oldest unapproved edit:
-        "Changed on Saturday 30 June 2012 at 9:01pm",
+        "Changed on Saturday 30 June 2012 at 9:01pm BST",
         # number of audit events per page in API response + expected message about latest edit:
         (
             (5, expected_message_about_latest_edit_3),
@@ -1714,7 +1706,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         # service status:
         "enabled",
         # expected message about the oldest unapproved edit:
-        "Changed on Saturday 12 November 2005 at 3:01pm",
+        "Changed on Saturday 12 November 2005 at 3:01pm GMT",
         # number of audit events per page in API response + expected message about latest edit:
         (
             (5, expected_message_about_latest_edit_4),
@@ -1825,7 +1817,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             assert len(ack_forms) == 1
             assert ack_forms[0].method == "POST"
             assert ack_forms[0].action == "/admin/services/151/updates/{}/approve".format(
-                text_type(find_audit_events_api_response[-1]["id"])
+                str(find_audit_events_api_response[-1]["id"])
             )
             assert sorted(ack_forms[0].form_values()) == [
                 ("csrf_token", mock.ANY),
