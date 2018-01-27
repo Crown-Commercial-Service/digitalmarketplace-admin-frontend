@@ -14,17 +14,21 @@ def manage_communications(framework_slug):
     communications_bucket = s3.S3(current_app.config['DM_COMMUNICATIONS_BUCKET'])
     framework = data_api_client.get_framework(framework_slug)['frameworks']
 
-    clarification = next(iter(communications_bucket.list(
-        '{}/communications/updates/clarifications'.format(framework_slug), load_timestamps=True
-    )), None)
-    communication = next(iter(communications_bucket.list(
+    # Get the last items from the timestamp-ordered buckets, in order to show the most recently updated timestamps
+    # The "or [None]" is to ensure we dereference from a list with at least one item when no files exist in the bucket
+    communications = communications_bucket.list(
         '{}/communications/updates/communications'.format(framework_slug), load_timestamps=True
-    )), None)
+    ) or [None]
+    clarifications = communications_bucket.list(
+        '{}/communications/updates/clarifications'.format(framework_slug), load_timestamps=True
+    ) or [None]
+    *_, last_clarification = clarifications
+    *_, last_communication = communications
 
     return render_template(
         'manage_communications.html',
-        clarification=clarification,
-        communication=communication,
+        clarification=last_clarification,
+        communication=last_communication,
         framework=framework
     )
 
