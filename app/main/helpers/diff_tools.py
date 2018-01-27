@@ -1,12 +1,10 @@
 import difflib
 from itertools import chain
 
+from dmcontent.questions import Multiquestion
 from flask import Markup, render_template
 from flask._compat import string_types
-
 from lxml import html
-
-from dmcontent.questions import Multiquestion
 
 
 def _unpack_question(question):

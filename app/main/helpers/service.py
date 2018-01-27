@@ -1,5 +1,5 @@
-import re
 import datetime
+import re
 
 
 def parse_document_upload_time(data):

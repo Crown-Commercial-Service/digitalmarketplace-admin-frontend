@@ -1,6 +1,7 @@
-from flask import render_template
-from app.main import main
 from dmapiclient import APIError
+from flask import render_template
+
+from app.main import main
 
 
 @main.app_errorhandler(APIError)

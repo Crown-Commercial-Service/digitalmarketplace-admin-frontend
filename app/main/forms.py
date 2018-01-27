@@ -1,10 +1,9 @@
-from wtforms import RadioField, validators
-from flask.ext.wtf import Form
-from wtforms.validators import DataRequired
 from dmutils.forms import StripWhitespaceStringField
+from flask_wtf import Form
+from wtforms import RadioField, validators
+from wtforms.validators import DataRequired
 
 from .. import data_api_client
-
 
 ADMIN_ROLES = [
     (
