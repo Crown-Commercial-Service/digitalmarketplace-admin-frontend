@@ -14,20 +14,19 @@ def manage_communications(framework_slug):
     framework = data_api_client.get_framework(framework_slug)['frameworks']
 
     # Get the last items from the timestamp-ordered buckets, in order to show the most recently updated timestamps
-    # The "or [None]" is to ensure we dereference from a list with at least one item when no files exist in the bucket
+    # The "or [None]" ensures we have a list with at least one item (None) when no files exist in the bucket
     communications = communications_bucket.list(
         '{}/communications/updates/communications'.format(framework_slug), load_timestamps=True
     ) or [None]
     clarifications = communications_bucket.list(
         '{}/communications/updates/clarifications'.format(framework_slug), load_timestamps=True
     ) or [None]
-    *_, last_clarification = clarifications
-    *_, last_communication = communications
 
     return render_template(
         'manage_communications.html',
-        clarification=last_clarification,
-        communication=last_communication,
+        # Pass in the last (most recent) clarification and communication from the lists; used to show "last modified"
+        clarification=clarifications[-1],
+        communication=communications[-1],
         framework=framework
     )
 
