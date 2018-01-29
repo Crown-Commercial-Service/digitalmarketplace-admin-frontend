@@ -56,7 +56,7 @@
        question="Communication",
        hint="This must be an open document format (pdf, pda, odt, ods, odp) or CSV",
        name="communication",
-       value="Last modified {}".format(communication.last_modified),
+       value="Last modified {}".format(communication.last_modified|datetimeformat) if communication else "No communications have been uploaded yet",
        error=communication_error
     %}
       {% include "toolkit/forms/upload.html" %}
@@ -67,7 +67,7 @@
        question="Clarification answers",
        hint="This must be PDF",
        name="clarification",
-       value="Last modified {}".format(clarification.last_modified),
+       value="Last modified {}".format(clarification.last_modified|datetimeformat) if clarification else "No clarification answers have been uploaded yet",
        error=clarification_error
     %}
       {% include "toolkit/forms/upload.html" %}

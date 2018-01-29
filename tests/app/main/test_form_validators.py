@@ -1,7 +1,6 @@
 import mock
 import pytest
-
-from flask.ext.wtf import Form
+from flask_wtf import Form
 from wtforms.fields.core import Field
 from wtforms.validators import StopValidation
 

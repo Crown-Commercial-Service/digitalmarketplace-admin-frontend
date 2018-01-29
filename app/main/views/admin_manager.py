@@ -1,15 +1,14 @@
+from distutils.util import strtobool
+
+from dmapiclient import HTTPError
+from dmutils.email.user_account_email import send_user_account_email
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user
 
-from dmutils.email.user_account_email import send_user_account_email
-
-from ... import data_api_client
 from .. import main
-
-from ..forms import InviteAdminForm, EditAdminUserForm
-from dmapiclient import HTTPError
 from ..auth import role_required
-from distutils.util import strtobool
+from ..forms import InviteAdminForm, EditAdminUserForm
+from ... import data_api_client
 
 
 @main.route('/admin-users', methods=['GET'])
