@@ -32,7 +32,8 @@ def find_buyer_by_brief_id():
         users=users,
         title=title,
         brief_id=brief_id,
-        brief=brief
+        brief=brief,
+        seller_email_list=convert_array_to_string(brief.get('sellerEmailList', []))
     )
 
 
@@ -47,12 +48,19 @@ def update_brief(brief_id):
         elif request.form.get('remove_user'):
             brief = data_api_client.req.briefs(brief_id).users(request.form['remove_user'].strip()) \
                 .delete({'update_details': {'updated_by': current_user.email_address}}).get('briefs')
-        else:
+        elif request.form.get('questions_closed_at'):
             brief = data_api_client.req.briefs(brief_id).admin() \
                 .post({'briefs': {'clarification_questions_closed_at': request.form['questions_closed_at'],
                                   'applications_closed_at': request.form['closed_at']
                                   },
                        'update_details': {'updated_by': current_user.email_address}}).get('briefs')
+        elif request.form.get('edit_seller_email_list'):
+            edit_seller_email_list = request.form['edit_seller_email_list'].split(get_new_line())
+            brief = data_api_client.req.briefs(brief_id).admin() \
+                .post({'briefs': {'sellerEmailList': [_.strip() for _ in edit_seller_email_list if _ != '']
+                                  },
+                      'update_details': {'updated_by': current_user.email_address}}).get('briefs')
+
     except HTTPError, e:
         flash(e.message, 'error')
         brief = data_api_client.get_brief(brief_id).get('briefs')
@@ -74,5 +82,14 @@ def update_brief(brief_id):
         users=users,
         title=title,
         brief_id=brief_id,
-        brief=brief
+        brief=brief,
+        seller_email_list=convert_array_to_string(brief.get('sellerEmailList', []))
     )
+
+
+def convert_array_to_string(array):
+    return get_new_line().join(array)
+
+
+def get_new_line():
+    return '\n'

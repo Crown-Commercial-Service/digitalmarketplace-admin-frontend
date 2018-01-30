@@ -26,7 +26,8 @@ class TestBuyersView(LoggedInApplicationTest):
             'briefs': {
                 'title': 'No users in here',
                 'users': list(),
-                'dates': {}
+                'dates': {},
+                'sellerEmailList': []
             }
         }
         response = self.client.get('admin/buyers?brief_id=1')

@@ -96,6 +96,12 @@
     </form>
     <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
         {{ form.csrf_token }}
+        <label class="question-heading" for="edit_seller_email_list">Edit seller email list (one on each line)</label>
+        <textarea rows="5" name="edit_seller_email_list" id="edit_seller_email_list" class="text-area">{{seller_email_list}}</textarea>
+        <input type="submit" value="Save" class="button-save">
+    </form>
+    <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
+        {{ form.csrf_token }}
         <label class="question-heading" for="questions_closed_at">Set new question date (YYYY-MM-DD)</label>
         <input type="text" name="questions_closed_at" id="questions_closed_at" class="text-box"  value="{{brief.dates.questions_closing_date if brief.dates.questions_closing_date}}">
 
