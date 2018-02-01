@@ -8,6 +8,22 @@ from ..auth import role_required
 from dmapiclient.errors import HTTPError
 
 
+NEW_LINE = '\n'
+AREA_OF_EXPERTISE_LIST = [
+    'Agile delivery and Governance',
+    'Change, Training and Transformation',
+    'Content and Publishing',
+    'Cyber security',
+    'Data science',
+    'Emerging technologies',
+    'Marketing, Communications and Engagement',
+    'Software engineering and Development',
+    'Strategy and Policy',
+    'Support and Operations',
+    'User research and Design'
+]
+
+
 @main.route('/buyers', methods=['GET'])
 @login_required
 @role_required('admin')
@@ -33,7 +49,9 @@ def find_buyer_by_brief_id():
         title=title,
         brief_id=brief_id,
         brief=brief,
-        seller_email_list=convert_array_to_string(brief.get('sellerEmailList', []))
+        seller_email_list=convert_array_to_string(brief.get('sellerEmailList', [])),
+        area_of_expertise_list=AREA_OF_EXPERTISE_LIST,
+        area_of_expertise_selected=brief.get('areaOfExpertise', '')
     )
 
 
@@ -54,10 +72,15 @@ def update_brief(brief_id):
                                   'applications_closed_at': request.form['closed_at']
                                   },
                        'update_details': {'updated_by': current_user.email_address}}).get('briefs')
-        elif request.form.get('edit_seller_email_list'):
-            edit_seller_email_list = request.form['edit_seller_email_list'].split(get_new_line())
+        elif 'edit_seller_email_list' in request.form:
+            edit_seller_email_list = request.form.get('edit_seller_email_list', []).split(NEW_LINE)
             brief = data_api_client.req.briefs(brief_id).admin() \
                 .post({'briefs': {'sellerEmailList': [_.strip() for _ in edit_seller_email_list if _ != '']
+                                  },
+                      'update_details': {'updated_by': current_user.email_address}}).get('briefs')
+        elif 'edit_area_of_expertise' in request.form:
+            brief = data_api_client.req.briefs(brief_id).admin() \
+                .post({'briefs': {'areaOfExpertise': request.form['edit_area_of_expertise']
                                   },
                       'update_details': {'updated_by': current_user.email_address}}).get('briefs')
 
@@ -83,13 +106,11 @@ def update_brief(brief_id):
         title=title,
         brief_id=brief_id,
         brief=brief,
-        seller_email_list=convert_array_to_string(brief.get('sellerEmailList', []))
+        seller_email_list=convert_array_to_string(brief.get('sellerEmailList', [])),
+        area_of_expertise_list=AREA_OF_EXPERTISE_LIST,
+        area_of_expertise_selected=brief.get('areaOfExpertise', '')
     )
 
 
 def convert_array_to_string(array):
-    return get_new_line().join(array)
-
-
-def get_new_line():
-    return '\n'
+    return NEW_LINE.join(array)

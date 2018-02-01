@@ -102,6 +102,18 @@
     </form>
     <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
         {{ form.csrf_token }}
+        <label class="question-heading" for="edit_area_of_expertise">Select area of expertise</label>
+        <select name="edit_area_of_expertise" id="edit_area_of_expertise">
+            <option value="">None Selected</option>
+            {% for i in area_of_expertise_list %}
+                <option value="{{i}}" {% if i == area_of_expertise_selected %}selected{% endif %}>{{i}}</option>
+            {% endfor %}
+        </select>
+        <br/>
+        <input type="submit" value="Save" class="button-save">
+    </form>
+    <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
+        {{ form.csrf_token }}
         <label class="question-heading" for="questions_closed_at">Set new question date (YYYY-MM-DD)</label>
         <input type="text" name="questions_closed_at" id="questions_closed_at" class="text-box"  value="{{brief.dates.questions_closing_date if brief.dates.questions_closing_date}}">
 
