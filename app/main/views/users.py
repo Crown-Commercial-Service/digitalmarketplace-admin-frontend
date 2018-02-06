@@ -18,17 +18,29 @@ from .zendesk import _user_info
 def find_user_by_email_address():
     template = "view_users.html"
     users = None
+    teammembers = None
 
     email_address = request.args.get("email_address", None)
     if email_address:
-        users = data_api_client.get_user(email_address=request.args.get("email_address"))
+        users = data_api_client.get_user(email_address=email_address)
+
+    # skip calling of teammembers.get when an @ charater is present.
+    # that method only searches the domain field.
+    if users is None and email_address and "@" not in email_address:
+        teammembers = data_api_client.req.teammembers(email_address).get()
+        if teammembers:
+            return render_template_with_csrf(
+                template,
+                search_result=True,
+                teammembers=teammembers
+            )
 
     if users:
-        user, supplier, teammembers, application, briefs = _user_info(request.args.get("email_address"))
+        user, supplier, teammembers, application, briefs = _user_info(email_address)
         return render_template_with_csrf(
             template,
             users=[users['users']],
-            email_address=request.args.get("email_address"),
+            email_address=email_address,
             user=user, supplier=supplier, teammembers=teammembers, applications=application, briefs=briefs
         )
     else:

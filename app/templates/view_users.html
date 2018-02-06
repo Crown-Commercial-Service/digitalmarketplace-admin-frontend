@@ -41,110 +41,112 @@
   {% include "toolkit/page-heading.html" %}
   {% endwith %}
 
-  {% call(item) summary.list_table(
-          users,
-          caption="Users",
-          empty_message="No users to show",
-          field_headings=[
-              'Name',
-              'Role',
-              'Supplier',
-              'Last login',
-              'Last password change',
-              'Locked',
-              summary.hidden_field_heading("Change status")
-          ],
-          field_headings_visible=True)
-      %}
-      {% call summary.row() %}
+  {% if users %}
+    {% call(item) summary.list_table(
+            users,
+            caption="Users",
+            empty_message="No users to show",
+            field_headings=[
+                'Name',
+                'Role',
+                'Supplier',
+                'Last login',
+                'Last password change',
+                'Locked',
+                summary.hidden_field_heading("Change status")
+            ],
+            field_headings_visible=True)
+        %}
+        {% call summary.row() %}
 
-      {{ summary.field_name(item.name) }}
+        {{ summary.field_name(item.name) }}
 
-      {{ summary.text(item.role) }}
+        {{ summary.text(item.role) }}
 
-      {% call summary.field() %}
-          {% if item.role == 'supplier' %}
-          <a href="{{ url_for('.find_suppliers', supplier_code=item.supplier.supplierCode) }}">{{ item.supplier.name }}</a>
-          {% endif %}
-      {% endcall %}
-
-      {% call summary.field() %}
-          {% if item.loggedInAt %}
-              {{ item.loggedInAt|timeformat }}<br/>
-              {{ item.loggedInAt|shortdateformat }}
-          {% else %}
-              Never
-          {% endif %}
-      {% endcall %}
-
-      {% call summary.field() %}
-          {% if item.passwordChangedAt %}
-              {{ item.passwordChangedAt|timeformat }}<br/>
-              {{ item.passwordChangedAt|shortdateformat }}
-          {% else %}
-              Never
-          {% endif %}
-      {% endcall %}
-
-      {% call summary.field() %}
-      {% if item.locked and current_user.has_role('admin') %}
-      <form action="{{ url_for('.unlock_user', user_id=item.id) }}" method="post">
-          {{ form.csrf_token }}
-          <input type="hidden" name="source" value="{{ url_for('.find_user_by_email_address', email_address=email_address) }}"/>
-          {%
-              with
-              type = "secondary",
-              label = "Unlock"
-          %}
-          {% include "toolkit/button.html" %}
-          {% endwith %}
-      </form>
-      {% elif item.locked %}
-          Yes
-      {% else %}
-          No
-      {% endif %}
-      {% endcall %}
-
-      {% call summary.field() %}
-          {% if item.active %}
-            {% if current_user.has_role('admin') %}
-        <a href="{{ url_for('.reset_password', user_id=item.id) }}">Reset Password</a>
-              <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
-                  {{ form.csrf_token }}
-                  <input type="hidden" name="source" value="{{ url_for('.find_user_by_email_address', email_address=email_address) }}"/>
-                  {%
-                      with
-                      type = "destructive",
-                      label = "Deactivate"
-                  %}
-                  {% include "toolkit/button.html" %}
-                  {% endwith %}
-              </form>
-            {% else %}
-              Active
+        {% call summary.field() %}
+            {% if item.role == 'supplier' %}
+            <a href="{{ url_for('.find_suppliers', supplier_code=item.supplier.supplierCode) }}">{{ item.supplier.name }}</a>
             {% endif %}
-          {% else %}
-            {% if current_user.has_role('admin') %}
-              <form action="{{ url_for('.activate_user', user_id=item.id) }}" method="post">
-                  {{ form.csrf_token }}
-                  <input type="hidden" name="source" value="{{ url_for('.find_user_by_email_address', email_address=email_address) }}"/>
-                  {%
-                      with
-                      type = "secondary",
-                      label = "Activate"
-                  %}
-                  {% include "toolkit/button.html" %}
-                  {% endwith %}
-              </form>
-            {% else %}
-              Deactivated
-            {% endif %}
-          {% endif %}
-      {% endcall %}
+        {% endcall %}
 
-      {% endcall %}
-      {% endcall %}
+        {% call summary.field() %}
+            {% if item.loggedInAt %}
+                {{ item.loggedInAt|timeformat }}<br/>
+                {{ item.loggedInAt|shortdateformat }}
+            {% else %}
+                Never
+            {% endif %}
+        {% endcall %}
+
+        {% call summary.field() %}
+            {% if item.passwordChangedAt %}
+                {{ item.passwordChangedAt|timeformat }}<br/>
+                {{ item.passwordChangedAt|shortdateformat }}
+            {% else %}
+                Never
+            {% endif %}
+        {% endcall %}
+
+        {% call summary.field() %}
+        {% if item.locked and current_user.has_role('admin') %}
+        <form action="{{ url_for('.unlock_user', user_id=item.id) }}" method="post">
+            {{ form.csrf_token }}
+            <input type="hidden" name="source" value="{{ url_for('.find_user_by_email_address', email_address=email_address) }}"/>
+            {%
+                with
+                type = "secondary",
+                label = "Unlock"
+            %}
+            {% include "toolkit/button.html" %}
+            {% endwith %}
+        </form>
+        {% elif item.locked %}
+            Yes
+        {% else %}
+            No
+        {% endif %}
+        {% endcall %}
+
+        {% call summary.field() %}
+            {% if item.active %}
+                {% if current_user.has_role('admin') %}
+            <a href="{{ url_for('.reset_password', user_id=item.id) }}">Reset Password</a>
+                <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
+                    {{ form.csrf_token }}
+                    <input type="hidden" name="source" value="{{ url_for('.find_user_by_email_address', email_address=email_address) }}"/>
+                    {%
+                        with
+                        type = "destructive",
+                        label = "Deactivate"
+                    %}
+                    {% include "toolkit/button.html" %}
+                    {% endwith %}
+                </form>
+                {% else %}
+                Active
+                {% endif %}
+            {% else %}
+                {% if current_user.has_role('admin') %}
+                <form action="{{ url_for('.activate_user', user_id=item.id) }}" method="post">
+                    {{ form.csrf_token }}
+                    <input type="hidden" name="source" value="{{ url_for('.find_user_by_email_address', email_address=email_address) }}"/>
+                    {%
+                        with
+                        type = "secondary",
+                        label = "Activate"
+                    %}
+                    {% include "toolkit/button.html" %}
+                    {% endwith %}
+                </form>
+                {% else %}
+                Deactivated
+                {% endif %}
+            {% endif %}
+        {% endcall %}
+
+        {% endcall %}
+    {% endcall %}
+{% endif %}
 
 {%  if email_address %}
   {% include "zendesk/zendesk_result.html" %}
@@ -153,11 +155,31 @@
   <form action="{{ url_for('.find_user_by_email_address') }}" method="get" class="question">
     <label class="question-heading" for="email_address">Find users by email address</label>
     <p class='hint'>
-      eg name@example.com
+      eg name@example.com, example.com
     </p>
     <input type="text" name="email_address" id="email_address" class="text-box" maxlength="200">
     <input type="submit" value="Search" class="button-save">
   </form>
   </div>
+
+{% if search_result %}
+    {% call(item) summary.list_table(
+        teammembers.teammembers,
+        caption="Search Result",
+        empty_message="No matches",
+        field_headings=[
+            'Name',
+            'Email'
+        ],
+        field_headings_visible=True)
+    %}
+        {% call summary.row() %}
+            {% call summary.field() %}
+                <a href={{ url_for('.find_user_by_email_address') }}?email_address={{item.email_address}}>{{item.name}}</a>
+            {% endcall %}
+            {{ summary.field_name(item.email_address) }}
+        {% endcall %}
+    {% endcall %}
+{% endif %}
 
 {% endblock %}

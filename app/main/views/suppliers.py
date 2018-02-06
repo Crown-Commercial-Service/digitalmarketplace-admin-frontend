@@ -27,7 +27,9 @@ def find_suppliers():
     if request.args.get('supplier_code'):
         suppliers = [data_api_client.get_supplier(request.args.get('supplier_code'))['supplier']]
     else:
-        suppliers = data_api_client.find_suppliers(prefix=request.args.get('supplier_name_prefix'))['suppliers']
+        suppliers = data_api_client.find_suppliers(
+            prefix=request.args.get('supplier_name_prefix'),
+            per_page=1000)['suppliers']  # hard coded to 1000 records, in hope this is enough for admins searching
 
     return render_template_with_csrf(
         "view_suppliers.html",

@@ -40,9 +40,9 @@ class TestSuppliersListView(LoggedInApplicationTest):
 
     def test_should_search_by_prefix(self, data_api_client):
         data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
-        self.client.get("/admin/suppliers?supplier_name_prefix=foo")
+        self.client.get("/admin/suppliers?supplier_name_prefix=foo&per_page=1000")
 
-        data_api_client.find_suppliers.assert_called_once_with(prefix='foo')
+        data_api_client.find_suppliers.assert_called_once_with(prefix='foo', per_page=1000)
 
     def test_should_find_by_supplier_code(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))

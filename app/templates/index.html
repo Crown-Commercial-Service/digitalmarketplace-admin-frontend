@@ -38,7 +38,7 @@
 
 
               <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
-                <label class="question-heading" for="supplier_name_prefix">Find suppliers by name prefix</label>
+                <label class="question-heading" for="supplier_name_prefix">Find suppliers by name prefix or email</label>
                 <p class="hint">
                   eg searching for c would give all suppliers starting with c
                 </p>
@@ -51,7 +51,7 @@
               <form action="{{ url_for('.find_user_by_email_address') }}" method="get" class="question">
                   <label class="question-heading" for="email_address">Find users by email address</label>
                   <p class='hint'>
-                    eg john@smokeyjoes.com
+                    eg john@smokeyjoes.com, smokeyjoes.com
                   </p>
                   <input type="text" name="email_address" id="email_address" class="text-box">
                   <input type="submit" value="Search" class="button-save">

@@ -21,7 +21,7 @@
     {% endfor %}
   </ul>
 </details>
-{% if user.application %}
+{% if user and user.application %}
   <a href="{{ url_for('main.preview_application', id= user.application.id ) }}" target="_blank">
     Application #{{ user.application.id }} is {{ user.application.status }}
   </a><br/>

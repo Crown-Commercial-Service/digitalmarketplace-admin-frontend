@@ -25,10 +25,6 @@ class TestUsersView(LoggedInApplicationTest):
             '//p[@class="banner-message"]//text()')[0].strip()
         self.assertEqual("Sorry, we couldn't find an account with that email address", page_title)
 
-        page_title = document.xpath(
-            '//p[@class="summary-item-no-content"]//text()')[0].strip()
-        self.assertEqual("No users to show", page_title)
-
     def test_should_be_a_404_if_no_email_provided(self, data_api_client, _user_info):
         data_api_client.get_user.return_value = None
         response = self.client.get('/admin/users?email_address=')
@@ -40,10 +36,6 @@ class TestUsersView(LoggedInApplicationTest):
             '//p[@class="banner-message"]//text()')[0].strip()
         self.assertEqual("Sorry, we couldn't find an account with that email address", page_title)
 
-        page_title = document.xpath(
-            '//p[@class="summary-item-no-content"]//text()')[0].strip()
-        self.assertEqual("No users to show", page_title)
-
     def test_should_be_a_404_if_no_email_param_provided(self, data_api_client, _user_info):
         data_api_client.get_user.return_value = None
         response = self.client.get('/admin/users')
@@ -54,10 +46,6 @@ class TestUsersView(LoggedInApplicationTest):
         page_title = document.xpath(
             '//p[@class="banner-message"]//text()')[0].strip()
         self.assertEqual("Sorry, we couldn't find an account with that email address", page_title)
-
-        page_title = document.xpath(
-            '//p[@class="summary-item-no-content"]//text()')[0].strip()
-        self.assertEqual("No users to show", page_title)
 
     def test_should_show_buyer_user(self, data_api_client, _user_info):
         buyer = self.load_example_listing("user_response")

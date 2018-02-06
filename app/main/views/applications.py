@@ -167,7 +167,8 @@ def revert_application():
 @login_required
 @role_required('admin')
 def search_applications(keyword):
-    result = data_api_client.req.applications().search(keyword).get()
+    params = {'per_page': 1000}
+    result = data_api_client.req.applications().search(keyword).get(params=params)
     return jsonify(result)
 
 
