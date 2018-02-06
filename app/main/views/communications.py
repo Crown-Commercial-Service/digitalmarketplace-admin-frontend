@@ -44,7 +44,9 @@ def upload_communication(framework_slug):
 
         if 'communication' not in errors.keys():
             path = "{}/communications/updates/communications/{}".format(framework_slug, the_file.filename)
-            communications_bucket.save(path, the_file, acl='private', download_filename=the_file.filename)
+            communications_bucket.save(
+                path, the_file, acl='bucket-owner-full-control', download_filename=the_file.filename
+            )
             flash('communication', 'upload_communication')
 
     if request.files.get('clarification'):
@@ -54,7 +56,9 @@ def upload_communication(framework_slug):
 
         if 'clarification' not in errors.keys():
             path = "{}/communications/updates/clarifications/{}".format(framework_slug, the_file.filename)
-            communications_bucket.save(path, the_file, acl='private', download_filename=the_file.filename)
+            communications_bucket.save(
+                path, the_file, acl='bucket-owner-full-control', download_filename=the_file.filename
+            )
             flash('clarification', 'upload_communication')
 
     if len(errors) > 0:

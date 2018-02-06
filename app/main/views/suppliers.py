@@ -276,7 +276,9 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
                 framework_slug, supplier_id, 'agreements', COUNTERPART_FILENAME
             )
             download_filename = generate_download_filename(supplier_id, COUNTERPART_FILENAME, supplier_name)
-            agreements_bucket.save(path, the_file, acl='private', move_prefix=None, download_filename=download_filename)
+            agreements_bucket.save(
+                path, the_file, acl='bucket-owner-full-control', move_prefix=None, download_filename=download_filename
+            )
 
             data_api_client.update_framework_agreement(
                 agreement_id,
