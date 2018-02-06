@@ -138,7 +138,7 @@ class TestCommunicationsView(LoggedInApplicationTest):
         self.s3.return_value.save.assert_called_once_with(
             '{}/communications/updates/communications/test-comm.pdf'.format(self.framework_slug),
             mock.ANY,  # werkzeug.datastructures.FileStorage object we are saving to s3
-            acl='private',
+            acl='bucket-owner-full-control',
             download_filename='test-comm.pdf'
         )
 
@@ -155,6 +155,6 @@ class TestCommunicationsView(LoggedInApplicationTest):
         self.s3.return_value.save.assert_called_once_with(
             '{}/communications/updates/clarifications/test-comm.pdf'.format(self.framework_slug),
             mock.ANY,  # werkzeug.datastructures.FileStorage object we are saving to s3
-            acl='private',
+            acl='bucket-owner-full-control',
             download_filename='test-comm.pdf'
         )

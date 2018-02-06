@@ -1209,7 +1209,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
         s3.S3.return_value.save.assert_called_once_with(
             expected_countersign_path,
             mock.ANY,
-            acl='private',
+            acl='bucket-owner-full-control',
             move_prefix=None,
             download_filename='Supplier_Mc_Supply_Face-1234-agreement-countersignature.pdf'
         )
@@ -1258,7 +1258,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
         s3.S3.return_value.save.assert_called_once_with(
             "g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf",
             mock.ANY,
-            acl='private',
+            acl='bucket-owner-full-control',
             move_prefix=None,
             download_filename='Supplier_Mc_Supply_Face-1234-agreement-countersignature.pdf'
         )
@@ -1316,7 +1316,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
         s3.S3.return_value.save.assert_called_once_with(
             "g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf",
             mock.ANY,
-            acl='private',
+            acl='bucket-owner-full-control',
             move_prefix=None,
             download_filename='DM_Supplier_Name-1234-agreement-countersignature.pdf'
         )
