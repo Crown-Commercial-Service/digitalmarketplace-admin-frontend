@@ -27,7 +27,7 @@
         "Name",
         summary.hidden_field_heading("Change name"),
         summary.hidden_field_heading("Users"),
-        summary.hidden_field_heading("Services"),
+        summary.hidden_field_heading("Services")
       ] %}
     {% elif current_user.has_role("admin-ccs-sourcing") %}
       {% set field_headings = [

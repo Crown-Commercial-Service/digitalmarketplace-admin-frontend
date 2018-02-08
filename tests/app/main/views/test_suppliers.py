@@ -282,13 +282,17 @@ class TestSupplierServicesView(LoggedInApplicationTest):
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_indicate_if_supplier_has_no_services(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response_with_no_services")
         data_api_client.find_services.return_value = {'services': []}
         response = self.client.get('/admin/suppliers/services?supplier_code=1000')
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
             "This supplier has no services on the Digital Marketplace",
+            response.get_data(as_text=True)
+        )
+        self.assertIn(
+            "This supplier has no services to assess",
             response.get_data(as_text=True)
         )
 
@@ -306,83 +310,26 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         )
 
     @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_show_service_details_on_page(self, data_api_client):
+    def test_should_show_services_to_assess(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_services.return_value = self.load_example_listing("services_response")
 
         response = self.client.get('/admin/suppliers/services?supplier_code=1000')
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
-            "Contract Management",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            '<a href="/g-cloud/services/5687123785023488">',
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "5687123785023488",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "G-Cloud 6",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "Software as a Service",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "Public",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            '<a href="/admin/services/5687123785023488">',
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "Edit",
+            "Cyber security",
             response.get_data(as_text=True)
         )
 
     @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_show_correct_fields_for_disabled_service(self, data_api_client):
+    def test_should_show_assessed_services(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-
-        services = self.load_example_listing("services_response")
-        services["services"][0]["status"] = "disabled"
-        data_api_client.find_services.return_value = services
 
         response = self.client.get('/admin/suppliers/services?supplier_code=1000')
 
         self.assertEquals(200, response.status_code)
         self.assertIn(
-            "Removed",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "Details",
-            response.get_data(as_text=True)
-        )
-
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_show_correct_fields_for_enabled_service(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-
-        services = self.load_example_listing("services_response")
-        services["services"][0]["status"] = "enabled"
-        data_api_client.find_services.return_value = services
-
-        response = self.client.get('/admin/suppliers/services?supplier_code=1000')
-
-        self.assertEquals(200, response.status_code)
-        self.assertIn(
-            "Private",
-            response.get_data(as_text=True)
-        )
-        self.assertIn(
-            "Edit",
+            "Data science",
             response.get_data(as_text=True)
         )
 

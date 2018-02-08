@@ -19,6 +19,8 @@ from dmutils import s3
 from dmutils.formats import DateFormatter
 from dmutils.forms import DmForm, render_template_with_csrf
 
+from itertools import chain
+
 
 @main.route('/suppliers', methods=['GET'])
 @login_required
@@ -476,3 +478,23 @@ def invite_user(supplier_code):
             users=users["users"],
             supplier=supplier
         )
+
+
+@main.route('/suppliers/assessments/trigger', methods=['POST'])
+@login_required
+@role_required('admin')
+def trigger_assessment():
+    """Triggers a domain assessment for a supplier."""
+
+    data_api_client.req.assessments().post(data={
+        'assessment': {
+            'brief_id': request.form['brief_id'],
+            'domain_name': request.form['domain_name'],
+            'supplier_code': request.form['supplier_code']
+        },
+        'update_details': {
+            'updated_by': current_user.email_address
+        }
+    })
+
+    return redirect(url_for('.assessments_review'))

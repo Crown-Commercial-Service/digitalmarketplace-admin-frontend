@@ -20,12 +20,8 @@
         "dataVersion": null,
         "description": null,
         "domains": {
-            "assessed": [
-                "Data science"
-            ],
-            "unassessed": [
-                "Cyber security"
-            ]
+            "assessed": [],
+            "unassessed": []
         },
         "extraLinks": [],
         "lastUpdateTime": "2016-09-06T00:29:44.067375Z",

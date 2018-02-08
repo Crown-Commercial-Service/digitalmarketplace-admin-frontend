@@ -2,65 +2,89 @@
 {% import 'macros/answers.html' as answers %}
 
 {% extends "_base_page.html" %}
+
 {% block page_title %}
-  {{ supplier.name }} – Digital Marketplace admin
+    {{ supplier.name }} – Digital Marketplace admin
 {% endblock %}
 
 {% block breadcrumb %}
-  {%
-    with items = [
-      {
-        "link": url_for('.index'),
-        "label": "Admin home"
-      },
-      {
-        "label": supplier.name
-      }
-    ]
-  %}
+    {%
+        with items = [
+            {
+                "link": url_for('.index'),
+                "label": "Admin home"
+            },
+            {
+                "label": supplier.name
+            }
+        ]
+    %}
     {% include "_breadcrumb.html" %}
-  {% endwith %}
+    {% endwith %}
 {% endblock %}
+
 {% block main_content %}
-  {% with heading = "Services" %}
-    {% include "toolkit/page-heading.html" %}
-  {% endwith %}
-  {% call(item) summary.list_table(
-    services,
-    caption="Services",
-    empty_message="This supplier has no services on the Digital Marketplace",
-    field_headings=[
-      'Name',
-      'Service ID',
-      'Framework',
-      'Lot',
-      'Status',
-      summary.hidden_field_heading("Action")
-    ],
-    field_headings_visible=True
-  ) %}
-    {% call summary.row() %}
-      {{ summary.service_link(item.serviceName, '/' + item.frameworkFramework + '/services/' + item.id|string) }}
-      {{ summary.text(item.id) }}
-      {{ summary.text(item.frameworkName) }}
-      {{ summary.text(item.lotName) }}
-      {% call summary.field() %}
-        <span class="service-status-{{ item.status }}">
-          {% if item.status == "published" %}
-            Public
-          {% elif item.status == "enabled" %}
-            Private
-          {% elif item.status == "disabled" %}
-            Removed
-          {% else %}
-            {{ item.status|title }}
-          {% endif %}
-        </span>
-      {% endcall %}
-      {{ summary.edit_link(
-        'Details' if item.status == 'disabled' or not current_user.has_role('admin') else 'Edit',
-        url_for('.view', service_id=item.id)
-      ) }}
-    {% endcall %}
-  {% endcall %}
+    {% with heading = "Services" %}
+        {% include "toolkit/page-heading.html" %}
+    {% endwith %}
+
+    <h3>Assessed</h3>
+
+    <div class='page-section'>
+        {% call(domain) summary.list_table(
+            supplier.domains.assessed,
+            caption="Services",
+            empty_message="This supplier has no services on the Digital Marketplace",
+            field_headings=['Service'],
+            field_headings_visible=True)
+        %}
+
+        {% call summary.row() %}
+            {{ summary.text(domain) }}
+        {% endcall %}
+        {% endcall %}
+    </div>
+
+    <h3>Unassessed</h3>
+
+    <div class='page-section'>
+        {% call(domain) summary.list_table(
+            supplier.domains.unassessed,
+            caption="Services to assess",
+            empty_message="This supplier has no services to assess",
+            field_headings=[
+                'Service',
+                'Brief ID',
+                'Action'
+            ],
+            field_headings_visible=True)
+        %}
+
+        {% call summary.row() %}
+            {{ summary.field_name(domain) }}
+
+            {% set form_suffix = domain.replace(' ', '_').replace(',', '_') %}
+            {% set form_suffix = form_suffix.lower() %}
+
+            {% call summary.field() %}
+                <input form="assess_domain_{{ form_suffix }}" name="brief_id" type="number" autofocus />    
+            {% endcall %}        
+            
+            {% call summary.field() %}
+            <form id="assess_domain_{{ form_suffix }}" action="{{ url_for('.trigger_assessment') }}" method="post">
+                {{ form.csrf_token }}
+                {%
+                    with
+                    label = "Assess"
+                %}
+                {% include "toolkit/button.html" %}
+                {% endwith %}
+
+                <input name="domain_name" type="hidden" value="{{ domain }}" />
+                <input name="supplier_code" type="hidden" value="{{ supplier.code }}" />
+            </form>
+            {% endcall %}
+        {% endcall %}
+        {% endcall %}
+    </div>
 {% endblock %}
