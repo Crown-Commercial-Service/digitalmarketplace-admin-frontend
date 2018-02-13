@@ -31,9 +31,9 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 ('2017-04-25T14:43:46.061077Z', '597637931594387', u'Making £ Inc', '240701', '240684'),
             ),
             (
-                ('Company name', '1123456789012351', '15 July at 19:03:43', '/admin/services/1123456789012351/updates'),
+                ('Company name', '1123456789012351', '15 July at 18:03:43', '/admin/services/1123456789012351/updates'),
                 (u'Testing Ltd', '1123456789012348', '5 March at 10:42:16', '/admin/services/1123456789012348/updates'),
-                (u'Making £ Inc', '597637931594387', '25 April at 15:43:46', '/admin/services/597637931594387/updates'),
+                (u'Making £ Inc', '597637931594387', '25 April at 14:43:46', '/admin/services/597637931594387/updates'),
             ),
             '3 edited services',
         ),
@@ -43,7 +43,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 ('2016-03-05T10:42:16.061077Z', '597637931590001', 'Ideal Health', '240699', '240682'),
             ),
             (
-                ('Company name', '597637931590002', '15 July at 19:03:43', '/admin/services/597637931590002/updates'),
+                ('Company name', '597637931590002', '15 July at 18:03:43', '/admin/services/597637931590002/updates'),
                 ('Ideal Health', '597637931590001', '5 March at 10:42:16', '/admin/services/597637931590001/updates'),
             ),
             '2 edited services',
@@ -58,7 +58,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 ('2012-07-15T18:03:43.061077Z', '597637931590002', 'Company name', '240697', '240680'),
             ),
             (
-                ('Company name', '597637931590002', '15 July at 19:03:43', '/admin/services/597637931590002/updates'),
+                ('Company name', '597637931590002', '15 July at 18:03:43', '/admin/services/597637931590002/updates'),
             ),
             '1 edited service',
         ),

@@ -191,9 +191,9 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 200
         assert "Test User" in response.get_data(as_text=True)
         assert "test.user@sme.com" in response.get_data(as_text=True)
-        assert "10:33:53" in response.get_data(as_text=True)
+        assert "09:33:53" in response.get_data(as_text=True)
         assert "23 July" in response.get_data(as_text=True)
-        assert "13:46:01" in response.get_data(as_text=True)
+        assert "12:46:01" in response.get_data(as_text=True)
         assert "29 June" in response.get_data(as_text=True)
         assert "No" in response.get_data(as_text=True)
 
