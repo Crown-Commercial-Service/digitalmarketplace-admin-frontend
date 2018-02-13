@@ -25,6 +25,7 @@ class TestListAgreements(LoggedInApplicationTest):
                     'agreementReturnedAt': '2015-10-30T01:01:01.000000Z',
                     'agreementPath': 'path/11112-agreement.pdf',
                     'frameworkSlug': 'g-cloud-8',
+                    'onFramework': True
                 },
                 {
                     'supplierName': 'My Supplier',
@@ -33,6 +34,15 @@ class TestListAgreements(LoggedInApplicationTest):
                     'agreementReturnedAt': '2015-11-01T01:01:01.000000Z',
                     'agreementPath': 'path/11111-agreement.pdf',
                     'frameworkSlug': 'g-cloud-8',
+                    'onFramework': True
+                },
+                {
+                    'supplierName': 'My Supplier no longer on framework',
+                    'supplierId': 11111,
+                    'agreementReturned': True,
+                    'agreementReturnedAt': '2015-11-01T01:01:01.000000Z',
+                    'agreementPath': 'path/11111-agreement.pdf',
+                    'onFramework': False
                 },
             ],
         }
@@ -55,6 +65,7 @@ class TestListAgreements(LoggedInApplicationTest):
                     'agreementReturned': True,
                     'agreementReturnedAt': '2015-10-30T01:01:01.000000Z',
                     'agreementPath': 'path/11112-agreement.pdf',
+                    'onFramework': True
                 },
                 {
                     'supplierName': 'My Supplier',
@@ -62,6 +73,7 @@ class TestListAgreements(LoggedInApplicationTest):
                     'agreementReturned': True,
                     'agreementReturnedAt': '2015-11-01T01:01:01.000000Z',
                     'agreementPath': 'path/11111-agreement.pdf',
+                    'onFramework': True
                 },
             ]
         }
@@ -104,6 +116,7 @@ class TestListAgreements(LoggedInApplicationTest):
             ("with_declarations", False),
         ))
 
+        # only suppliers who are on the framework are shown in the results list
         assert tuple(self._unpack_search_result(result) for result in page.cssselect('.search-result')) == (
             (
                 "/admin/suppliers/11112/agreements/g-cloud-8",
@@ -229,36 +242,43 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
                     "supplierId": 4321,
                     "frameworkSlug": "g-cloud-8",
                     "agreementStatus": "signed",
+                    'onFramework': True
                 },
                 {
                     "supplierId": 1234,
                     "frameworkSlug": "g-cloud-8",
                     "agreementStatus": "on-hold",
+                    'onFramework': True
                 },
                 {
                     "supplierId": 31415,
                     "frameworkSlug": "g-cloud-8",
                     "agreementStatus": "signed",
+                    'onFramework': True
                 },
                 {
                     "supplierId": 27,
                     "frameworkSlug": "g-cloud-8",
                     "agreementStatus": "signed",
+                    'onFramework': True
                 },
                 {
                     "supplierId": 141,
                     "frameworkSlug": "g-cloud-8",
                     "agreementStatus": "countersigned",
+                    'onFramework': True
                 },
                 {
                     "supplierId": 151,
                     "frameworkSlug": "g-cloud-8",
                     "agreementStatus": "on-hold",
+                    'onFramework': True
                 },
                 {
                     "supplierId": 99,
                     "frameworkSlug": "g-cloud-8",
                     "agreementStatus": "approved",
+                    'onFramework': True
                 },
             ],
         }

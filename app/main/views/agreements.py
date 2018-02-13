@@ -18,12 +18,14 @@ status_labels = OrderedDict((
 
 
 def _get_supplier_frameworks(framework_slug, status=None):
-    return data_api_client.find_framework_suppliers(
-        framework_slug,
-        agreement_returned=True,
-        with_declarations=False,
-        **({"statuses": status} if status else {})
-    )['supplierFrameworks']
+    return [
+        supplier_framework for supplier_framework in data_api_client.find_framework_suppliers(
+            framework_slug, agreement_returned=True,
+            with_declarations=False,
+            **({"statuses": status} if status else {})
+        )['supplierFrameworks']
+        if supplier_framework['onFramework']
+    ]
 
 
 @main.route('/agreements/<framework_slug>', methods=['GET'])
