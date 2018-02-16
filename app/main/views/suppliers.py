@@ -493,7 +493,7 @@ def trigger_assessment():
             'supplier_code': request.form['supplier_code']
         },
         'update_details': {
-            'updated_by': current_user.email_address
+            'updated_by': ''
         }
     })
 
