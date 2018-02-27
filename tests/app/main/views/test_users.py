@@ -232,7 +232,8 @@ class TestUsersExport(LoggedInApplicationTest):
         "supplier_id": 1,
         "email address": "test.user@sme.com",
         "user_name": "Test User",
-        "variations_agreed": "var1"
+        "variations_agreed": "var1",
+        "published_service_count": "0"
     }
 
     def _return_user_export_response(self, data_api_client, framework, users, framework_slug=None, only_on_fwk=False):
@@ -294,7 +295,8 @@ class TestUsersExport(LoggedInApplicationTest):
             'application_status',
             'application_result',
             'framework_agreement',
-            'variations_agreed'
+            'variations_agreed',
+            'published_service_count'
         ]
         # All users returned from the API should appear in the CSV
         for index, user in enumerate(users):
