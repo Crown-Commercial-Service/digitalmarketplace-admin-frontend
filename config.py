@@ -38,7 +38,6 @@ class Config(object):
     DM_LOG_LEVEL = 'DEBUG'
     DM_PLAIN_TEXT_LOGS = False
     DM_APP_NAME = 'admin-frontend'
-    DM_DOWNSTREAM_REQUEST_ID_HEADER = 'X-Amz-Cf-Id'
 
     # Feature Flags
     RAISE_ERROR_ON_MISSING_FEATURES = True
