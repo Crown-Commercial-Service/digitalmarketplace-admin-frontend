@@ -114,7 +114,7 @@
     {# links #}
     <ul class="list-no-bullet">
       {% if service_data['frameworkFramework'] == 'g-cloud' %}
-        <li><a href="{{ "/{}/services/{}".format(service_data['frameworkFramework'], service_id) }}">View service</a></li>
+        <li><a href="{{ '/{}/services/{}'.format(service_data['frameworkFramework'], service_id) }}">View service</a></li>
       {% endif %}
       {% if current_user.has_role('admin-ccs-category') and service_data['status'] == 'published' %}
         <li><a href="{{ url_for('.view_service', service_id=service_id, remove=True) }}">Remove service</a></li>
@@ -125,7 +125,7 @@
     {% for section in sections %}
       {{ summary.heading(section.name) }}
       {% if section.editable and current_user.has_role('admin-ccs-category') %}
-        {{ summary.top_link("Edit", url_for('.edit_service', service_id=service_id, section_id=section.id)) }}
+        {{ summary.top_link("Edit", url_for('.edit_service', service_id=service_id, section_id=section.id), hidden_text=section.name) }}
       {% endif %}
       {% call(question) summary.list_table(
         section.questions,
@@ -141,7 +141,7 @@
           {{ summary.field_name(question.label) }}
           {{ summary[question.type](question.value, question.assurance) }}
           {% if section.edit_questions and current_user.has_role('admin-ccs-category') %}
-            {{ summary.edit_link('Add' if question.is_empty else 'Edit', url_for('.edit_service', service_id=service_id, section_id=section.id, question_slug=question.slug)) }}
+            {{ summary.edit_link('Add' if question.is_empty else 'Edit', url_for('.edit_service', service_id=service_id, section_id=section.id, question_slug=question.slug), hidden_text=question.label) }}
           {% endif %}
 
         {% endcall %}
