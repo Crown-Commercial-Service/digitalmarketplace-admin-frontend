@@ -102,36 +102,31 @@ def download_users(framework_slug):
 
 
 @main.route('/users/download/buyers', methods=['GET'])
-@role_required('admin-framework-manager')
+@role_required('admin-framework-manager', 'admin')
 def download_buyers():
-
-    user_attributes = (
-        "emailAddress",
-        "name",
-    )
+    """Either download a list of all buyers (for framework manager) or user research buyers (for admin users)."""
+    download_filename = "all-buyers-on-{}.csv".format(datetime.utcnow().strftime('%Y-%m-%d-at-%H-%M-%S'))
     users = data_api_client.find_users_iter(role="buyer")
 
-    rows_iter = chain(
-        (
-            # header row
-            ("email address", "name"),
-        ),
-        (
-            # data rows
-            tuple(chain(
-                (user.get(field_name, "") for field_name in user_attributes),
-            ))
-            for user in sorted(users, key=lambda user: user["name"])
-        ),
-    )
+    if current_user.role == 'admin':
+        # Overwrite the above values for admin specific user research csv
+        download_filename = "user-research-buyers-on-{}.csv".format(datetime.utcnow().strftime('%Y-%m-%d-at-%H-%M-%S'))
+        users = filter(lambda i: i['userResearchOptedIn'], users)
+
+    header_row = ("email address", "name")
+    user_attributes = ("emailAddress", "name")
+
+    def rows_iter():
+        """Iterator yielding header then rows."""
+        yield header_row
+        for user in sorted(users, key=lambda user: user["name"]):
+            yield (user.get(field_name, "") for field_name in user_attributes)
 
     return Response(
-        csv_generator.iter_csv(rows_iter),
+        csv_generator.iter_csv(rows_iter()),
         mimetype='text/csv',
         headers={
-            "Content-Disposition": "attachment;filename=all-buyers-on-{}.csv".format(
-                datetime.utcnow().strftime('%Y-%m-%d-at-%H-%M-%S')
-            ),
+            "Content-Disposition": "attachment;filename={}".format(download_filename),
             "Content-Type": "text/csv; header=present"
         }
     )
