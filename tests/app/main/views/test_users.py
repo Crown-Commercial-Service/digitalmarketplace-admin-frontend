@@ -4,7 +4,6 @@ from datetime import datetime
 
 import mock
 import pytest
-from dmapiclient import HTTPError
 from lxml import html
 
 from ...helpers import LoggedInApplicationTest
@@ -233,52 +232,51 @@ class TestUsersExport(LoggedInApplicationTest):
         "email address": "test.user@sme.com",
         "user_name": "Test User",
         "variations_agreed": "var1",
-        "published_service_count": "0"
+        "published_service_count": "0",
+        "user_research_opted_in": True
     }
 
-    def _return_user_export_response(self, data_api_client, framework, users, framework_slug=None, only_on_fwk=False):
-        if framework_slug is None:
-            framework_slug = framework['slug']
-
-        # collection of users is modified in the route
+    @pytest.mark.parametrize("role, url_params, expected_code", [
+        ("admin", "?user_research_opted_in=True", 200),
+        ("admin", "?user_research_opted_in=False", 403),
+        ("admin-ccs-category", "", 403),
+        ("admin-ccs-sourcing", "", 403),
+        ("admin-framework-manager", "?on_framework_only=True", 200),
+        ("admin-framework-manager", "?on_framework_only=False", 200),
+        ("admin-manager", "", 403),
+    ])
+    def test_supplier_csv_is_only_accessible_to_specific_user_roles(self, data_api_client, role,
+                                                                    url_params, expected_code):
+        self.user_role = role
+        users = [self._supplier_user]
         data_api_client.export_users.return_value = {"users": copy.copy(users)}
-        data_api_client.find_frameworks.return_value = {"frameworks": [framework]}
+        data_api_client.find_frameworks.return_value = {"frameworks": [self._valid_framework]}
+        data_api_client.get_framework.return_value = {"frameworks": self._valid_framework}
 
-        if framework_slug == framework['slug']:
-            data_api_client.get_framework.return_value = {"frameworks": framework}
-        else:
-            data_api_client.get_framework.side_effect = HTTPError(mock.Mock(status_code=404))
-
-        return self.client.get(
+        response = self.client.get(
             '/admin/frameworks/{}/users/download{}'.format(
                 self._valid_framework['slug'],
-                '?on_framework_only=True' if only_on_fwk else ''
+                url_params
             ),
-            data={'framework_slug': framework_slug}
+            data={'framework_slug': self._valid_framework['slug']}
         )
 
-    @pytest.mark.parametrize("role, expected_code", [
-        ("admin", 403),
-        ("admin-ccs-category", 403),
-        ("admin-ccs-sourcing", 403),
-        ("admin-framework-manager", 200),
-        ("admin-manager", 403),
-    ])
-    def test_supplier_csv_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
-        self.user_role = role
-        framework = self._valid_framework
-        users = [self._supplier_user]
-
-        response = self._return_user_export_response(data_api_client, framework, users)
-        actual_code = response.status_code
-        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+        assert response.status_code == expected_code
 
     def test_download_csv_for_all_framework_users(self, data_api_client):
-        framework = self._valid_framework
         users = [self._supplier_user]
 
-        response = self._return_user_export_response(data_api_client, framework, users)
+        data_api_client.export_users.return_value = {"users": copy.copy(users)}
+        data_api_client.find_frameworks.return_value = {"frameworks": [self._valid_framework]}
 
+        data_api_client.get_framework.return_value = {"frameworks": self._valid_framework}
+        response = self.client.get(
+            '/admin/frameworks/{}/users/download'.format(
+                self._valid_framework['slug']
+            ),
+
+            data={'framework_slug': self._valid_framework['slug']}
+        )
         assert response.status_code == 200
         assert response.mimetype == 'text/csv'
         assert (response.headers['Content-Disposition'] ==
@@ -287,7 +285,7 @@ class TestUsersExport(LoggedInApplicationTest):
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
 
         assert len(rows) == len(users) + 1
-        assert rows[0] == [
+        expected_headings = [
             'email address',
             'user_name',
             'supplier_id',
@@ -296,14 +294,17 @@ class TestUsersExport(LoggedInApplicationTest):
             'application_result',
             'framework_agreement',
             'variations_agreed',
-            'published_service_count'
+            'published_service_count',
         ]
+
+        assert rows[0] == expected_headings
         # All users returned from the API should appear in the CSV
         for index, user in enumerate(users):
-            assert sorted([str(val) for val in user.values()]) == sorted(rows[index + 1])
+            assert sorted(
+                [str(val) for key, val in user.items() if key in expected_headings]
+            ) == sorted(rows[index + 1])
 
     def test_download_csv_for_on_framework_only(self, data_api_client):
-        framework = self._valid_framework
         users = [
             self._supplier_user,
             {
@@ -314,11 +315,21 @@ class TestUsersExport(LoggedInApplicationTest):
                 "supplier_id": 2,
                 "email address": "test.user@sme2.com",
                 "user_name": "Test User 2",
-                "variations_agreed": ""
+                "variations_agreed": "",
+                "published_service_count": 0,
             }
         ]
 
-        response = self._return_user_export_response(data_api_client, framework, users, only_on_fwk=True)
+        data_api_client.export_users.return_value = {"users": copy.copy(users)}
+        data_api_client.find_frameworks.return_value = {"frameworks": [self._valid_framework]}
+
+        data_api_client.get_framework.return_value = {"frameworks": self._valid_framework}
+        response = self.client.get(
+            '/admin/frameworks/{}/users/download?on_framework_only=True'.format(
+                self._valid_framework['slug'],
+            ),
+            data={'framework_slug': self._valid_framework['slug']}
+        )
         assert response.status_code == 200
         assert response.mimetype == 'text/csv'
         assert response.headers['Content-Disposition'] == 'attachment;filename=suppliers-on-g-cloud-7.csv'
