@@ -346,37 +346,9 @@ class TestUsersExport(LoggedInApplicationTest):
 class TestBuyersExport(LoggedInApplicationTest):
     user_role = "admin-framework-manager"
 
-    def test_response_data_has_buyer_info(self, data_api_client):
-        data_api_client.find_users_iter.return_value = [
-            {
-                'id': 1,
-                "name": "Chris",
-                "emailAddress": "chris@gov.uk",
-                "phoneNumber": "01234567891",
-                "createdAt": "2016-08-04T12:00:00.000000Z",
-            },
-            {
-                'id': 2,
-                "name": "Topher",
-                "emailAddress": "topher@gov.uk",
-                "phoneNumber": "01234567891",
-                "createdAt": "2016-08-05T12:00:00.000000Z",
-            },
-        ]
-
-        response = self.client.get('/admin/users/download/buyers')
-        assert response.status_code == 200
-
-        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
-
-        assert len(rows) == 3
-        assert rows == [
-            ['email address', 'name'],
-            ['chris@gov.uk', 'Chris'],
-            ['topher@gov.uk', 'Topher'],
-        ]
-
-    def test_csv_is_sorted_by_name(self, data_api_client):
+    @pytest.mark.parametrize('user_role', ('admin', 'admin-framework-manager'))
+    def test_csv_is_sorted_by_name(self, data_api_client, user_role):
+        self.user_role = user_role
         data_api_client.find_users_iter.return_value = [
             {
                 'id': 1,
@@ -384,6 +356,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "emailAddress": "zebedee@gov.uk",
                 "phoneNumber": "01234567891",
                 "createdAt": "2016-08-04T12:00:00.000000Z",
+                "userResearchOptedIn": True
             },
             {
                 'id': 2,
@@ -391,6 +364,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "emailAddress": "dougal@gov.uk",
                 "phoneNumber": "01234567891",
                 "createdAt": "2016-08-05T12:00:00.000000Z",
+                "userResearchOptedIn": True
             },
             {
                 'id': 3,
@@ -398,6 +372,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "emailAddress": "brian@gov.uk",
                 "phoneNumber": "01234567891",
                 "createdAt": "2016-08-06T12:00:00.000000Z",
+                "userResearchOptedIn": True
             },
             {
                 'id': 4,
@@ -405,6 +380,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "emailAddress": "florence@gov.uk",
                 "phoneNumber": "01234567891",
                 "createdAt": "2016-08-07T12:00:00.000000Z",
+                "userResearchOptedIn": True
             },
         ]
 
@@ -416,7 +392,9 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         assert [row[1] for row in rows[1:5]] == ['Brian', 'Dougal', 'Florence', 'Zebedee']
 
-    def test_response_is_a_csv(self, data_api_client):
+    @pytest.mark.parametrize('user_role', ('admin', 'admin-framework-manager'))
+    def test_response_is_a_csv(self, data_api_client, user_role):
+        self.user_role = user_role
         data_api_client.find_users_iter.return_value = [
             {
                 'id': 1,
@@ -424,6 +402,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "emailAddress": "chris@gov.uk",
                 "phoneNumber": "01234567891",
                 "createdAt": "2016-08-04T12:00:00.000000Z",
+                "userResearchOptedIn": True
             },
         ]
 
@@ -431,7 +410,9 @@ class TestBuyersExport(LoggedInApplicationTest):
 
         assert response.mimetype == 'text/csv'
 
-    def test_filename_includes_a_timestamp(self, data_api_client):
+    @pytest.mark.parametrize('user_role', ('admin', 'admin-framework-manager'))
+    def test_filename_includes_a_timestamp(self, data_api_client, user_role):
+        self.user_role = user_role
         with mock.patch('app.main.views.users.datetime') as mock_date:
             mock_date.utcnow.return_value = datetime(2016, 8, 5, 16, 0, 0)
             data_api_client.find_users_iter.return_value = [
@@ -445,14 +426,10 @@ class TestBuyersExport(LoggedInApplicationTest):
             ]
 
             response = self.client.get('/admin/users/download/buyers')
-
-            assert (
-                response.headers['Content-Disposition'] ==
-                'attachment;filename=all-buyers-on-2016-08-05-at-16-00-00.csv'
-            )
+            assert '2016-08-05-at-16-00-00' in response.headers['Content-Disposition']
 
     @pytest.mark.parametrize("role, expected_code", [
-        ("admin", 403),
+        ("admin", 200),
         ("admin-ccs-category", 403),
         ("admin-ccs-sourcing", 403),
         ("admin-framework-manager", 200),
@@ -473,3 +450,83 @@ class TestBuyersExport(LoggedInApplicationTest):
         response = self.client.get('/admin/users/download/buyers')
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
+    def test_response_data_has_correct_buyer_info_for_framework_manager_role(self, data_api_client):
+        self.user_role = "admin-framework-manager"
+        data_api_client.find_users_iter.return_value = [
+            {
+                'id': 1,
+                "name": "Chris",
+                "emailAddress": "chris@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "2016-08-04T12:00:00.000000Z",
+            },
+            {
+                'id': 2,
+                "name": "Topher",
+                "emailAddress": "topher@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "2016-08-05T12:00:00.000000Z",
+            },
+        ]
+        with mock.patch('app.main.views.users.datetime') as mock_date:
+            mock_date.utcnow.return_value = datetime(2016, 8, 5, 16, 0, 0)
+            response = self.client.get('/admin/users/download/buyers')
+        assert response.status_code == 200
+
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+
+        assert response.headers['Content-Disposition'] == 'attachment;filename=all-buyers-on-2016-08-05-at-16-00-00.csv'
+        assert len(rows) == 3
+        assert rows == [
+            ['email address', 'name'],
+            ['chris@gov.uk', 'Chris'],
+            ['topher@gov.uk', 'Topher'],
+        ]
+
+    def test_response_data_has_correct_buyer_info_for_admin_role(self, data_api_client):
+        self.user_role = "admin"
+
+        data_api_client.find_users_iter.return_value = [
+            {
+                'id': 1,
+                "name": "Chris",
+                "emailAddress": "chris@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "2016-08-04T12:00:00.000000Z",
+                "userResearchOptedIn": True
+            },
+            {
+                'id': 2,
+                "name": "Topher",
+                "emailAddress": "topher@gov.uk",
+                "phoneNumber": "01234567891",
+                "createdAt": "2016-08-05T12:00:00.000000Z",
+                "userResearchOptedIn": False
+            },
+            {
+                'id': 3,
+                "name": "Winifred",
+                "emailAddress": "winifred@gov.uk",
+                "phoneNumber": "34567890987",
+                "createdAt": "2016-08-02T12:00:00.000000Z",
+                "userResearchOptedIn": True
+            },
+        ]
+        with mock.patch('app.main.views.users.datetime') as mock_date:
+            mock_date.utcnow.return_value = datetime(2016, 8, 5, 16, 0, 0)
+            response = self.client.get('/admin/users/download/buyers')
+        assert response.status_code == 200
+
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+
+        assert (
+            response.headers['Content-Disposition'] ==
+            'attachment;filename=user-research-buyers-on-2016-08-05-at-16-00-00.csv'
+        )
+        assert len(rows) == 3
+        assert rows == [
+            ['email address', 'name'],
+            ['chris@gov.uk', 'Chris'],
+            ['winifred@gov.uk', 'Winifred'],
+        ]
