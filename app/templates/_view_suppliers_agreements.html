@@ -23,55 +23,55 @@
 
     {% call summary.row() %}
       {% call summary.field() %}
-       <a href="{{ url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="g-cloud-7") }}">Edit declaration</a>
+       <a href="{{ url_for('.view_supplier_declaration', supplier_id=item.id, framework_slug='g-cloud-7') }}">Edit <span class="visually-hidden">G-Cloud 7 </span>declaration</a>
       {% endcall %}
       {% call summary.field() %}
-        <a href="{{ url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists") }}">Edit declaration</a>
+        <a href="{{ url_for('.view_supplier_declaration', supplier_id=item.id, framework_slug='digital-outcomes-and-specialists') }}">Edit <span class="visually-hidden">Digital Outcomes and Specialists </span>declaration</a>
       {% endcall %}
       {% call summary.field() %}
-        <a href="{{ url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="g-cloud-8") }}">Edit declaration</a>
+        <a href="{{ url_for('.view_supplier_declaration', supplier_id=item.id, framework_slug='g-cloud-8') }}">Edit <span class="visually-hidden">G-Cloud 8 </span>declaration</a>
       {% endcall %}
       {% call summary.field() %}
-        <a href="{{ url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists-2") }}">Edit declaration</a>
+        <a href="{{ url_for('.view_supplier_declaration', supplier_id=item.id, framework_slug='digital-outcomes-and-specialists-2') }}">Edit <span class="visually-hidden">Digital Outcomes and Specialists 2 </span>declaration</a>
       {% endcall %}
       {% call summary.field() %}
-        <a href="{{ url_for(".view_supplier_declaration", supplier_id=item.id, framework_slug="g-cloud-9") }}">Edit declaration</a>
+        <a href="{{ url_for('.view_supplier_declaration', supplier_id=item.id, framework_slug='g-cloud-9') }}">Edit <span class="visually-hidden">G-Cloud 9 </span>declaration</a>
       {% endcall %}
     {% endcall %}
 
     {% call summary.row(no_border=True) %}
       {% call summary.field() %}
-        ⬇ <a href="{{ url_for(".download_agreement_file", supplier_id=item.id, framework_slug="g-cloud-7", document_name=agreement_filename) }}" >Agreement</a>
+        ⬇ <a href="{{ url_for('.download_agreement_file', supplier_id=item.id, framework_slug='g-cloud-7', document_name=agreement_filename) }}" ><span class="visually-hidden">Download G-Cloud 7 </span>Agreement</a>
       {% endcall %}
       {% call summary.field() %}
-        ⬇ <a href="{{ url_for(".download_agreement_file", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists", document_name=agreement_filename) }}" >Agreement</a>
+        ⬇ <a href="{{ url_for('.download_agreement_file', supplier_id=item.id, framework_slug='digital-outcomes-and-specialists', document_name=agreement_filename) }}" ><span class="visually-hidden">Download Digital Outcomes and Specialists </span>Agreement</a>
       {% endcall %}
       {% call summary.field(rowspan=3) %}
-        <a href="{{ url_for(".view_signed_agreement", supplier_id=item.id, framework_slug="g-cloud-8") }}">View agreement</a>
+        <a href="{{ url_for('.view_signed_agreement', supplier_id=item.id, framework_slug='g-cloud-8') }}">View agreement<span class="visually-hidden"> for G-Cloud 8</span></a>
       {% endcall %}
       {% call summary.field(rowspan=3) %}
-        <a href="{{ url_for(".view_signed_agreement", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists-2") }}">View agreement</a>
+        <a href="{{ url_for('.view_signed_agreement', supplier_id=item.id, framework_slug='digital-outcomes-and-specialists-2') }}">View agreement<span class="visually-hidden"> for Digital Outcomes and Specialists 2</span></a>
       {% endcall %}
       {% call summary.field(rowspan=3) %}
-        <a href="{{ url_for(".view_signed_agreement", supplier_id=item.id, framework_slug="g-cloud-9") }}">View agreement</a>
+        <a href="{{ url_for('.view_signed_agreement', supplier_id=item.id, framework_slug='g-cloud-9') }}">View agreement<span class="visually-hidden">for G-Cloud 9</span></a>
       {% endcall %}
     {% endcall %}
 
     {% call summary.row(no_border=True) %}
       {% call summary.field() %}
-        ⬇ <a href="{{ url_for(".download_signed_agreement_file", supplier_id=item.id, framework_slug="g-cloud-7") }}">Signed agreement</a>
+        ⬇ <a href="{{ url_for('.download_signed_agreement_file', supplier_id=item.id, framework_slug='g-cloud-7') }}"><span class="visually-hidden">Download G-Cloud 7 </span>Signed agreement</a>
       {% endcall %}
       {% call summary.field() %}
-        ⬇ <a href="{{ url_for(".download_signed_agreement_file", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists") }}">Signed agreement</a>
+        ⬇ <a href="{{ url_for('.download_signed_agreement_file', supplier_id=item.id, framework_slug='digital-outcomes-and-specialists') }}"><span class="visually-hidden">Download Digital Outcomes and Specialists </span>Signed agreement</a>
       {% endcall %}
     {% endcall %}
 
     {% call summary.row(no_border=True) %}
       {% call summary.field() %}
-        ⬆ <a href="{{ url_for(".list_countersigned_agreement_file", supplier_id=item.id, framework_slug="g-cloud-7") }}">Countersigned agreement</a>
+        ⬆ <a href="{{ url_for('.list_countersigned_agreement_file', supplier_id=item.id, framework_slug='g-cloud-7') }}"><span class="visually-hidden">Upload G-Cloud 7 </span>Countersigned agreement</a>
       {% endcall %}
       {% call summary.field() %}
-        ⬆ <a href="{{ url_for(".list_countersigned_agreement_file", supplier_id=item.id, framework_slug="digital-outcomes-and-specialists") }}">Countersigned agreement</a>
+        ⬆ <a href="{{ url_for('.list_countersigned_agreement_file', supplier_id=item.id, framework_slug='digital-outcomes-and-specialists') }}"><span class="visually-hidden">Upload Digital Outcomes and Specialists </span>Countersigned agreement</a>
       {% endcall %}
     {% endcall %}
   {% endcall %}

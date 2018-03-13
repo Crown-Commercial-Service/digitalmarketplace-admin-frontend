@@ -71,10 +71,8 @@
                 {% endcall %}
                 {{ summary.edit_link(
                   "View changes",
-                  url_for(
-                    '.service_updates',
-                    service_id=item.data.serviceId,
-                  )
+                  url_for('.service_updates', service_id=item.data.serviceId),
+                  hidden_text="for " + item.data.supplierName
                 ) }}
               {% endcall %}
             {% endcall %}

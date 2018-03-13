@@ -35,7 +35,7 @@
 
   {% for section in content.summary(declaration) %}
     {{ summary.heading(section.name) }}
-    {{ summary.top_link("Edit", url_for('.edit_supplier_declaration_section', supplier_id=supplier.id, framework_slug=framework.slug, section_id=section.id)) }}
+    {{ summary.top_link("Edit", url_for('.edit_supplier_declaration_section', supplier_id=supplier.id, framework_slug=framework.slug, section_id=section.id), hidden_text=section.name) }}
     {% call(item) summary.list_table(
       section.questions,
       caption="Declaration",
