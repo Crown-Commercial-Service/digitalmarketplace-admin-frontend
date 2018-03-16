@@ -20,39 +20,18 @@
 {% endblock %}
 
 {% block main_content %}
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-  {% for category, message in messages %}
-  {% if category == 'upload_countersigned_agreement' %}
-    {%
-      with
-      message = "Countersigned agreement file was uploaded",
-      type = "success"
-    %}
-      {% include "toolkit/notification-banner.html" %}
-    {% endwith %}
-  {% elif category == 'not_pdf' %}
-    {%
-      with
-      message = "Countersigned agreement file is not a PDF",
-      type = "destructive"
-    %}
-      {% include "toolkit/notification-banner.html" %}
-    {% endwith %}
-    {% elif category == 'remove_countersigned_agreement' %}
-    <form method="post" action='{{ url_for(".remove_countersigned_agreement_file", supplier_id=supplier.id, framework_slug=framework.slug) }}'>
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-    <div class="banner-destructive-with-action">
-      <p class="banner-message">
-        Do you want to remove the countersigned agreement?
-      </p>
-      <button class="button-destructive banner-action" type="submit">Yes</button>
-    </div>
-  {% endif %}
+  {% include "toolkit/flash_messages.html" %}
 
-  {% endfor %}
+  {% if remove_countersigned_agreement_confirm %}
+      <form method="post" action='{{ url_for(".remove_countersigned_agreement_file", supplier_id=supplier.id, framework_slug=framework.slug) }}'>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <div class="banner-destructive-with-action">
+        <p class="banner-message">
+          Do you want to remove the countersigned agreement?
+        </p>
+        <button class="button-destructive banner-action" type="submit">Yes</button>
+      </div>
   {% endif %}
-  {% endwith %}
 
   <div class="grid-row">
     <div class="service-title">

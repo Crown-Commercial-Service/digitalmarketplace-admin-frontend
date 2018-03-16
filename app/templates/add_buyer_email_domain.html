@@ -19,19 +19,7 @@
 {% endblock %}
 
 {% block main_content %}
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-      {% for category, message in messages %}
-          {%
-          with
-            message = message,
-            type = "destructive" if category == 'error' else 'success'
-          %}
-          {% include "toolkit/notification-banner.html" %}
-          {% endwith %}
-      {% endfor %}
-  {% endif %}
-  {% endwith %}
+  {% include "toolkit/flash_messages.html" %}
 
   {% for error in email_domain_form.new_buyer_domain.errors %}
     {%

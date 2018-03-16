@@ -40,13 +40,7 @@
       </div>
     {% endif %}
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        {% with message = message, type = "destructive" if category == 'error' else 'success' %}
-          {% include "toolkit/notification-banner.html" %}
-        {% endwith %}
-      {% endfor %}
-    {% endwith %}
+    {% include "toolkit/flash_messages.html" %}
   {% endblock %}
 
   <div class="grid-row">

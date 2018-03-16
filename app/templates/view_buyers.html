@@ -18,22 +18,7 @@
 {% endblock %}
 
 {% block main_content %}
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-      {% for category, message in messages %}
-          {% if message == 'no_brief' %}
-              {% set displayed_message = "There are no opportunities with ID {}".format(brief_id) %}
-          {% endif %}
-          {%
-          with
-              message = displayed_message,
-              type = "destructive" if category == 'error' else "success"
-          %}
-          {% include "toolkit/notification-banner.html" %}
-          {% endwith %}
-      {% endfor %}
-  {% endif %}
-  {% endwith %}
+  {% include "toolkit/flash_messages.html" %}
 
   {% with heading = "Find a buyer" %}
   {% include "toolkit/page-heading.html" %}

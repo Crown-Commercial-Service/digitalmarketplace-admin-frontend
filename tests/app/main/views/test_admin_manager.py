@@ -5,7 +5,6 @@ import pytest
 from dmapiclient import HTTPError
 
 from ...helpers import LoggedInApplicationTest, Response
-from ..helpers.flash_tester import assert_flashes
 
 
 @mock.patch("app.main.views.admin_manager.data_api_client")
@@ -267,7 +266,7 @@ class TestInviteAdminUserView(LoggedInApplicationTest):
         data_api_client.email_is_valid_for_admin_user.return_value = True
         res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
         assert res.status_code == 302
-        assert_flashes(self, 'An invitation has been sent to test@test.com.', 'success')
+        self.assert_flashes('An invitation has been sent to test@test.com.')
 
 
 @mock.patch("app.main.views.admin_manager.data_api_client")
@@ -407,14 +406,14 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
             }
         )
         assert response1.status_code == 302
-        assert_flashes(self, "reality.auditor@digital.cabinet-office.gov.uk has been updated", "message")
+        self.assert_flashes("reality.auditor@digital.cabinet-office.gov.uk has been updated.", "message")
         assert data_api_client.update_user.call_args_list == [mock.call(
             "2345", name="Lady Myria Lejean", role=role, active=False
         )]
 
         assert response1.location == "http://localhost/admin/admin-users"
         response2 = self.client.get(response1.location)
-        assert "reality.auditor@digital.cabinet-office.gov.uk has been updated" in response2.get_data(as_text=True)
+        assert "reality.auditor@digital.cabinet-office.gov.uk has been updated." in response2.get_data(as_text=True)
 
     def test_admin_user_name_cannot_be_submitted_when_empty(self, data_api_client):
         self.user_role = "admin-manager"

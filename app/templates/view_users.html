@@ -20,22 +20,7 @@
 {% endblock %}
 
 {% block main_content %}
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-      {% for category, message in messages %}
-          {% if message == 'no_users' %}
-              {% set displayed_message = "Sorry, we couldn't find an account with that email address" %}
-          {% endif %}
-          {%
-          with
-              message = displayed_message,
-              type = "destructive" if category == 'error' else "success"
-          %}
-          {% include "toolkit/notification-banner.html" %}
-          {% endwith %}
-      {% endfor %}
-  {% endif %}
-  {% endwith %}
+  {% include "toolkit/flash_messages.html" %}
 
   {% with heading = "Find a user" %}
   {% include "toolkit/page-heading.html" %}

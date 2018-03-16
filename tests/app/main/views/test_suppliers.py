@@ -10,7 +10,6 @@ from flask import current_app
 from freezegun import freeze_time
 from lxml import html
 
-from ..helpers.flash_tester import assert_flashes
 from ...helpers import LoggedInApplicationTest, Response
 
 
@@ -1146,6 +1145,36 @@ class TestListCountersignedAgreementFile(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/countersigned-agreements/g-cloud-7')
         assert 'No agreements have been uploaded' in response.get_data(as_text=True)
 
+    @pytest.mark.parametrize(
+        'confirmation_param_value,confirmation_message_shown',
+        [('true', True), ('false', False), (0, False), ('', False)]
+    )
+    def test_remove_countersigned_agreement_confirmation_flag(
+            self, s3, data_api_client, confirmation_param_value, confirmation_message_shown
+    ):
+        s3.S3.return_value.get_key.return_value = {
+            'size': '7050',
+            'path': u'g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf',
+            'ext': u'pdf',
+            'last_modified': u'2016-01-15T12:58:08.000000Z',
+            'filename': u'93495-countersigned-framework-agreement'
+        }
+        data_api_client.get_supplier_framework_info.return_value = \
+            {"frameworkInterest": {
+                "onFramework": True,
+                "agreementStatus": "signed",
+                "countersignedPath": "g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf"
+            }}
+
+        response = self.client.get(
+            '/admin/suppliers/1234/countersigned-agreements/g-cloud-7?remove_countersigned_agreement={}'.format(
+                confirmation_param_value
+            )
+        )
+
+        assert ('Do you want to remove the countersigned agreement?' in response.get_data(as_text=True)) == \
+            confirmation_message_shown
+
 
 @freeze_time('2016-12-25 06:30:01')
 @mock.patch('app.main.views.suppliers.data_api_client')
@@ -1574,7 +1603,7 @@ class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
         )
 
         data_api_client.put_signed_agreement_on_hold.assert_called_once_with('123', 'test@example.com')
-        assert_flashes(self, "The agreement for Test was put on hold.")
+        self.assert_flashes("The agreement for Test was put on hold.")
         assert res.status_code == 302
 
         parsed_location = urlparse(res.location)
@@ -1589,7 +1618,7 @@ class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
         )
 
         data_api_client.put_signed_agreement_on_hold.assert_called_once_with('123', 'test@example.com')
-        assert_flashes(self, "The agreement for Test was put on hold.")
+        self.assert_flashes("The agreement for Test was put on hold.")
         assert res.status_code == 302
 
         parsed_location = urlparse(res.location)
@@ -1632,7 +1661,7 @@ class TestApproveAgreement(LoggedInApplicationTest):
         data_api_client.approve_agreement_for_countersignature.assert_called_once_with('123',
                                                                                        'test@example.com',
                                                                                        '1234')
-        assert_flashes(self, "The agreement for Test was approved. They will receive a countersigned version soon.")
+        self.assert_flashes("The agreement for Test was approved. They will receive a countersigned version soon.")
         assert res.status_code == 302
 
         parsed_location = urlparse(res.location)
@@ -1650,8 +1679,8 @@ class TestApproveAgreement(LoggedInApplicationTest):
         data_api_client.approve_agreement_for_countersignature.assert_called_once_with('123',
                                                                                        'test@example.com',
                                                                                        '1234')
-        assert_flashes(self, u"The agreement for Test O\u2019Connor was approved. They will receive a countersigned "
-                             "version soon.")
+        self.assert_flashes(u"The agreement for Test O\u2019Connor was approved. They will receive a countersigned "
+                            "version soon.")
         assert res.status_code == 302
 
         parsed_location = urlparse(res.location)
@@ -1696,7 +1725,7 @@ class TestUnapproveAgreement(LoggedInApplicationTest):
             'test@example.com',
             '1234',
         )
-        assert_flashes(self, "The agreement for Test had its approval cancelled. You can approve it again at any time.")
+        self.assert_flashes("The agreement for Test had its approval cancelled. You can approve it again at any time.")
         assert res.status_code == 302
 
         parsed_location = urlparse(res.location)
@@ -1716,8 +1745,7 @@ class TestUnapproveAgreement(LoggedInApplicationTest):
             'test@example.com',
             '1234',
         )
-        assert_flashes(
-            self,
+        self.assert_flashes(
             u"The agreement for Test O\u2019Connor had its approval cancelled. You can approve it again at any time.",
         )
         assert res.status_code == 302

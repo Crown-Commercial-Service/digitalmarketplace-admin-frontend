@@ -89,10 +89,9 @@ class TestCommunicationsView(LoggedInApplicationTest):
         )
 
         # check that we did actually mock-send two files
-        self.s3.return_value.save.call_count == 2
-        flash_messages = self._get_flash_messages()
-        # arguably a misunderstanding here about what an appropriate 'message category' looks like
-        assert set(flash_messages.getlist('upload_communication')) == set(('clarification', 'communication',))
+        assert self.s3.return_value.save.call_count == 2
+        self.assert_flashes('New communication was uploaded.')
+        self.assert_flashes('New clarification was uploaded.')
 
         assert response.status_code == 302
 
@@ -120,10 +119,8 @@ class TestCommunicationsView(LoggedInApplicationTest):
             }
         )
 
-        flash_messages = self._get_flash_messages()
-        # definitely a misunderstanding here about what an appropriate 'message category' looks like
-        assert flash_messages.get('not_open_document_format_or_csv') == 'communication'
-        assert flash_messages.get('not_pdf') == 'clarification'
+        self.assert_flashes('Communication file is not an open document format or a CSV.', expected_category='error')
+        self.assert_flashes('Clarification file is not a PDF.', expected_category='error')
 
     def test_communications_file_saves_with_correct_path(self, get_framework_mock):
 

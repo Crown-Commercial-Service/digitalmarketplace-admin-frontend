@@ -41,27 +41,26 @@ def upload_communication(framework_slug):
         the_file = request.files['communication']
         if not (file_is_open_document_format(the_file) or file_is_csv(the_file)):
             errors['communication'] = 'not_open_document_format_or_csv'
+            flash('Communication file is not an open document format or a CSV.', 'error')
 
         if 'communication' not in errors.keys():
             path = "{}/communications/updates/communications/{}".format(framework_slug, the_file.filename)
             communications_bucket.save(
                 path, the_file, acl='bucket-owner-full-control', download_filename=the_file.filename
             )
-            flash('communication', 'upload_communication')
+            flash('New communication was uploaded.')
 
     if request.files.get('clarification'):
         the_file = request.files['clarification']
         if not file_is_pdf(the_file):
             errors['clarification'] = 'not_pdf'
+            flash('Clarification file is not a PDF.', 'error')
 
         if 'clarification' not in errors.keys():
             path = "{}/communications/updates/clarifications/{}".format(framework_slug, the_file.filename)
             communications_bucket.save(
                 path, the_file, acl='bucket-owner-full-control', download_filename=the_file.filename
             )
-            flash('clarification', 'upload_communication')
+            flash('New clarification was uploaded.')
 
-    if len(errors) > 0:
-        for category, message in errors.items():
-            flash(category, message)
     return redirect(url_for('.manage_communications', framework_slug=framework_slug))
