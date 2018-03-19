@@ -132,7 +132,16 @@ class LoggedInApplicationTest(BaseApplicationTest):
     def user_loader(self, user_id):
         if user_id:
             return User(
-                user_id, 'test@example.com', None, None, False, True, 'tester', self.user_role
+                user_id=user_id,
+                email_address='test@example.com',
+                supplier_id=None,
+                supplier_name=None,
+                supplier_organisation_size='micro',
+                locked=False,
+                active=True,
+                name='tester',
+                role=self.user_role,
+                user_research_opted_in=True,
             )
 
     def teardown_method(self, method):
