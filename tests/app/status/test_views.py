@@ -27,11 +27,10 @@ class TestStatus(BaseApplicationTest):
 
     @mock.patch('app.status.views.data_api_client')
     def test_status_error(self, data_api_client):
-
         data_api_client.get_status.return_value = {
             'status': 'error',
             'app_version': None,
-            'message': 'Cannot connect to (Data) API'
+            'message': 'Cannot connect to Data API'
         }
 
         response = self.client.get('/admin/_status')
