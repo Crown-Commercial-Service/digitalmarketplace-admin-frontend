@@ -2,7 +2,7 @@ from datetime import datetime
 
 from dmutils import csv_generator
 from dmutils.config import convert_to_boolean
-from flask import abort, render_template, request, Response
+from flask import abort, render_template, request, Response, url_for
 from flask_login import flash, current_user
 
 from .. import main
@@ -45,6 +45,26 @@ def user_list_page_for_framework(framework_slug):
     return render_template(
         "download_framework_users.html",
         framework=framework,
+    ), 200
+
+
+@main.route('/users/download/suppliers', methods=['GET'])
+@role_required('admin')
+def supplier_user_research_participants_by_framework():
+    bad_statuses = ['coming', 'expired']
+    frameworks = data_api_client.find_frameworks().get("frameworks")
+    frameworks = sorted(filter(lambda i: i['status'] not in bad_statuses, frameworks), key=lambda i: i['name'])
+    items = [
+        {
+            "title": "User research participants on {}".format(framework['name']),
+            "link": url_for('.download_users', framework_slug=framework['slug'], user_research_opted_in=True),
+            "file_type": "CSV"
+        }
+        for framework in frameworks
+    ]
+    return render_template(
+        "user_research_participants.html",
+        items=items
     ), 200
 
 
