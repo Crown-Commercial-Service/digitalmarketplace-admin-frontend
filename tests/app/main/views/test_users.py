@@ -530,3 +530,121 @@ class TestBuyersExport(LoggedInApplicationTest):
             ['chris@gov.uk', 'Chris'],
             ['winifred@gov.uk', 'Winifred'],
         ]
+
+
+class TestUserResearchParticipantsExport(LoggedInApplicationTest):
+    user_role = 'admin'
+
+    _valid_framework = {
+        'name': 'G-Cloud 7',
+        'slug': 'g-cloud-7',
+        'status': 'live'
+    }
+
+    _invalid_framework = {
+        'name': 'G-Cloud 8',
+        'slug': 'g-cloud-8',
+        'status': 'coming'
+    }
+
+    @pytest.mark.parametrize(
+        ('role', 'exists'),
+        (
+            ('admin', True),
+            ('admin-ccs-category', False),
+            ('admin-ccs-sourcing', False),
+            ('admin-manager', False),
+            ('admin-framework-manager', False)
+        )
+    )
+    def test_correct_role_can_view_download_buyer_user_research_participants_link(self, role, exists):
+        self.user_role = role
+
+        xpath = "//a[@href='{href}'][normalize-space(text()) = '{selector_text}']".format(
+            href='/admin/users/download/buyers',
+            selector_text='Download list of potential user research participants'
+        )
+
+        response = self.client.get('/admin')
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert bool(document.xpath(xpath)) is exists
+
+    @pytest.mark.parametrize(
+        ('role', 'exists'),
+        (
+            ('admin', True),
+            ('admin-ccs-category', False),
+            ('admin-ccs-sourcing', False),
+            ('admin-manager', False),
+            ('admin-framework-manager', False)
+        )
+    )
+    def test_correct_role_can_view_supplier_user_research_participants_link(self, role, exists):
+        self.user_role = role
+
+        xpath = "//a[@href='{href}'][normalize-space(text()) = '{selector_text}']".format(
+            href='/admin/users/download/suppliers',
+            selector_text='Download lists of potential user research participants'
+        )
+
+        response = self.client.get('/admin')
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert bool(document.xpath(xpath)) is exists
+
+    @pytest.mark.parametrize(
+        ('role', 'status_code'),
+        (
+            ('admin', 200),
+            ('admin-ccs-category', 403),
+            ('admin-ccs-sourcing', 403),
+            ('admin-manager', 403),
+            ('admin-framework-manager', 403)
+        )
+    )
+    def test_correct_role_can_view_supplier_user_research_participants_page(self, role, status_code):
+        self.user_role = role
+
+        response = self.client.get('/admin/users/download/suppliers')
+        assert response.status_code == status_code
+
+    @mock.patch('app.main.views.users.data_api_client')
+    def test_supplier_csvs_shown_for_valid_frameworks(self, data_api_client):
+        data_api_client.find_frameworks.return_value = {'frameworks': [self._valid_framework, self._invalid_framework]}
+
+        response = self.client.get('/admin/users/download/suppliers')
+        assert response.status_code == 200
+
+        text = response.get_data(as_text=True)
+        document = html.fromstring(text)
+        href_xpath = "//a[@href='/admin/frameworks/{}/users/download?user_research_opted_in=True']"
+
+        assert document.xpath(href_xpath.format(self._valid_framework['slug']))
+        assert 'User research participants on {}'.format(self._valid_framework['name']) in text
+
+        assert not document.xpath(href_xpath.format(self._invalid_framework['slug']))
+        assert not 'User research participants on {}'.format(self._invalid_framework['name']) in text
+
+    @mock.patch('app.main.views.users.data_api_client')
+    def test_supplier_csvs_shown_in_alphabetical_name_order(self, data_api_client):
+        framework_1 = self._valid_framework.copy()
+        framework_2 = self._valid_framework.copy()
+        framework_3 = self._valid_framework.copy()
+        framework_1['name'] = 'aframework_1'
+        framework_2['name'] = 'bframework_1'
+        framework_3['name'] = 'bframework_2'
+
+        data_api_client.find_frameworks.return_value = {'frameworks': [framework_3, framework_1, framework_2]}
+
+        response = self.client.get('/admin/users/download/suppliers')
+        assert response.status_code == 200
+
+        text = response.get_data(as_text=True)
+
+        framework_1_link_text = 'User research participants on ' + framework_1['name']
+        framework_2_link_text = 'User research participants on ' + framework_2['name']
+        framework_3_link_text = 'User research participants on ' + framework_3['name']
+        assert text.find(framework_1_link_text) < text.find(framework_2_link_text) < text.find(framework_3_link_text)
