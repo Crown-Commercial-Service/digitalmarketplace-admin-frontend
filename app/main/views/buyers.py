@@ -8,6 +8,10 @@ from ..forms import EmailDomainForm
 from ... import data_api_client
 
 
+ADDED_BUYER_DOMAIN_MESSAGE = 'You’ve added {buyer_domain}.'
+NO_BRIEFS_ERROR_MESSAGE = "There are no opportunities with ID {brief_id}"
+
+
 @main.route('/buyers', methods=['GET'])
 @role_required('admin', 'admin-ccs-category')
 def find_buyer_by_brief_id():
@@ -19,7 +23,7 @@ def find_buyer_by_brief_id():
         brief = data_api_client.get_brief(brief_id)
     except HTTPError:
         if 'brief_id' in request.args:
-            flash('no_brief', 'error')
+            flash(NO_BRIEFS_ERROR_MESSAGE.format(brief_id=brief_id), 'error')
             status_code = 404
 
     return render_template(
@@ -38,7 +42,7 @@ def add_buyer_domains():
         try:
             new_domain = request.form.get('new_buyer_domain')
             data_api_client.create_buyer_email_domain(new_domain, current_user.email_address)
-            flash('You’ve added {}.'.format(new_domain), 'message')
+            flash(ADDED_BUYER_DOMAIN_MESSAGE.format(buyer_domain=new_domain))
             return redirect(url_for('.add_buyer_domains'))
         except HTTPError as e:
             status_code = 400

@@ -68,9 +68,13 @@ class BaseApplicationTest(object):
         pattern = re.compile(r'\s+')
         return re.sub(pattern, '', content)
 
-    def _get_flash_messages(self):
+    def assert_flashes(self, expected_message, expected_category='message'):
         with self.client.session_transaction() as session:
-            return MultiDict(session['_flashes'])
+            if '_flashes' not in session:
+                raise AssertionError('nothing flashed')
+            messages = MultiDict(session['_flashes'])
+            assert expected_message in messages.getlist(expected_category), \
+                "Didn't find '{}' in '{}'".format(expected_message, messages.getlist(expected_category))
 
     @staticmethod
     def _get_fixture_data(fixture_filename):

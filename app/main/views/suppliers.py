@@ -6,6 +6,7 @@ from dateutil.parser import parse as parse_date
 from dmapiclient import HTTPError, APIError
 from dmapiclient.audit import AuditTypes
 from dmutils import s3
+from dmutils.config import convert_to_boolean
 from dmutils.documents import (
     AGREEMENT_FILENAME, COUNTERPART_FILENAME,
     file_is_pdf, get_document_path, get_extension, get_signed_url,
@@ -20,6 +21,22 @@ from .. import main
 from ..auth import role_required
 from ..forms import EmailAddressForm, MoveUserForm
 from ... import data_api_client, content_loader
+
+
+AGREEMENT_ON_HOLD_MESSAGE = 'The agreement for {organisation_name} was put on hold.'
+AGREEMENT_APPROVED_MESSAGE = 'The agreement for {organisation_name} was approved. ' \
+                             'They will receive a countersigned version soon.'
+AGREEMENT_APPROVAL_CANCELLED_MESSAGE = 'The agreement for {organisation_name} had its approval cancelled. ' \
+                                       'You can approve it again at any time.'
+UPLOAD_COUNTERSIGNED_AGREEMENT_MESSAGE = "Countersigned agreement file was uploaded"
+COUNTERSIGNED_AGREEMENT_NOT_PDF_MESSAGE = "Countersigned agreement file is not a PDF"
+SUPPLIER_SERVICES_REMOVED_MESSAGE = "You removed all of {supplier_name}'s '{framework_name}' services"
+SUPPLIER_USER_MESSAGES = {
+    'user_invited': 'User invited',
+    'user_moved': 'User moved to this supplier',
+    'user_not_moved': 'User not moved to this supplier - please check you entered the address of an '
+                      'existing supplier user'
+}
 
 
 @main.route('/suppliers', methods=['GET'])
@@ -139,8 +156,7 @@ def put_signed_agreement_on_hold(agreement_id):
 
     agreement = data_api_client.put_signed_agreement_on_hold(agreement_id, current_user.email_address)["agreement"]
 
-    organisation = request.form['nameOfOrganisation']
-    flash(u'The agreement for {} was put on hold.'.format(organisation), 'message')
+    flash(AGREEMENT_ON_HOLD_MESSAGE.format(organisation_name=request.form['nameOfOrganisation']))
 
     return redirect(url_for(
         '.next_agreement',
@@ -161,9 +177,8 @@ def approve_agreement_for_countersignature(agreement_id):
         current_user.email_address,
         current_user.id,
     )["agreement"]
-    organisation = request.form['nameOfOrganisation']
-    flash(u'The agreement for {} was approved. They will receive a countersigned version soon.'
-          .format(organisation), 'message')
+
+    flash(AGREEMENT_APPROVED_MESSAGE.format(organisation_name=request.form['nameOfOrganisation']))
 
     return redirect(url_for(
         '.next_agreement',
@@ -184,9 +199,8 @@ def unapprove_agreement_for_countersignature(agreement_id):
         current_user.email_address,
         current_user.id,
     )["agreement"]
-    organisation = request.form['nameOfOrganisation']
-    flash(u'The agreement for {} had its approval cancelled. You can approve it again at any time.'
-          .format(organisation), 'message')
+
+    flash(AGREEMENT_APPROVAL_CANCELLED_MESSAGE.format(organisation_name=request.form['nameOfOrganisation']))
 
     return redirect(url_for(
         '.view_signed_agreement',
@@ -232,6 +246,8 @@ def list_countersigned_agreement_file(supplier_id, framework_slug):
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
     countersigned_agreement_document = agreements_bucket.get_key(supplier_framework.get('countersignedPath'))
 
+    remove_countersigned_agreement_confirm = convert_to_boolean(request.args.get('remove_countersigned_agreement'))
+
     countersigned_agreement = []
     if countersigned_agreement_document:
         last_modified = datetimeformat(parse_date(countersigned_agreement_document['last_modified']))
@@ -242,7 +258,8 @@ def list_countersigned_agreement_file(supplier_id, framework_slug):
         "suppliers/upload_countersigned_agreement.html",
         supplier=supplier,
         framework=framework,
-        countersigned_agreement=countersigned_agreement
+        countersigned_agreement=countersigned_agreement,
+        remove_countersigned_agreement_confirm=remove_countersigned_agreement_confirm
     )
 
 
@@ -260,6 +277,7 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
         the_file = request.files['countersigned_agreement']
         if not file_is_pdf(the_file):
             errors['countersigned_agreement'] = 'not_pdf'
+            flash(COUNTERSIGNED_AGREEMENT_NOT_PDF_MESSAGE)
 
         if 'countersigned_agreement' not in errors.keys():
             supplier_name = supplier_framework.get('declaration', {}).get('nameOfOrganisation')
@@ -293,11 +311,7 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
                 object_id=supplier_id,
                 data={'upload_countersigned_agreement': path})
 
-            flash('countersigned_agreement', 'upload_countersigned_agreement')
-
-    if len(errors) > 0:
-        for category, message in errors.items():
-            flash(category, message)
+            flash(UPLOAD_COUNTERSIGNED_AGREEMENT_MESSAGE)
 
     return redirect(url_for(
         '.list_countersigned_agreement_file',
@@ -315,7 +329,11 @@ def remove_countersigned_agreement_file(supplier_id, framework_slug):
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
 
     if request.method == 'GET':
-        flash('countersigned_agreement', 'remove_countersigned_agreement')
+        return redirect(url_for(
+            '.list_countersigned_agreement_file',
+            supplier_id=supplier_id,
+            framework_slug=framework_slug) + "?remove_countersigned_agreement=true"
+        )
 
     if request.method == 'POST':
         # Remove path first - as we don't want path to exist in DB with no corresponding file in S3
@@ -481,9 +499,9 @@ def move_user_to_new_supplier(supplier_id):
                 active=True,
                 updater=current_user.email_address
             )
-            flash("user_moved", "success")
+            flash(SUPPLIER_USER_MESSAGES["user_moved"])
         else:
-            flash("user_not_moved", "error")
+            flash(SUPPLIER_USER_MESSAGES["user_not_moved"], "error")
         return redirect(url_for('.find_supplier_users', supplier_id=supplier_id))
     else:
         return render_template(
@@ -550,7 +568,10 @@ def disable_supplier_services(supplier_id):
     for service in services:
         data_api_client.update_service_status(service['id'], 'disabled', current_user.email_address)
 
-    flash("You removed all of {}'s '{}' services".format(services[0]['supplierName'], services[0]['frameworkName']))
+    flash(SUPPLIER_SERVICES_REMOVED_MESSAGE.format(
+        supplier_name=services[0]['supplierName'],
+        framework_name=services[0]['frameworkName'])
+    )
     return redirect(url_for('.find_supplier_services', supplier_id=supplier_id))
 
 
@@ -591,7 +612,7 @@ def invite_user(supplier_id):
             object_id=supplier_id,
             data={'invitedEmail': invite_form.email_address.data})
 
-        flash('user_invited', 'success')
+        flash(SUPPLIER_USER_MESSAGES['user_invited'])
         return redirect(url_for('.find_supplier_users', supplier_id=supplier_id))
     else:
         return render_template(

@@ -3,7 +3,6 @@ import pytest
 from dmapiclient import HTTPError
 from lxml import html
 
-from tests.app.main.helpers.flash_tester import assert_flashes
 from ...helpers import LoggedInApplicationTest, Response
 
 
@@ -134,7 +133,7 @@ class TestAddBuyerDomainsView(LoggedInApplicationTest):
                                      data={'new_buyer_domain': 'kev.uk'}
                                      )
         assert response1.status_code == 302
-        assert_flashes(self, "You’ve added kev.uk", "message")
+        self.assert_flashes("You’ve added kev.uk.")
         assert data_api_client.create_buyer_email_domain.call_args_list == [mock.call("kev.uk", "test@example.com")]
 
         response2 = self.client.get(response1.location)

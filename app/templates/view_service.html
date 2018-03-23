@@ -62,26 +62,7 @@
       </form>
     {% endif %}
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        {% with message = message, type = "destructive" if category == 'error' else 'success' %}
-          {% if message['status_updated'] %}
-            {% if message['status_updated'] == 'public' %}
-              {% set message = "You published ‘{}’.".format(service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName']) %}
-              {% include "toolkit/notification-banner.html" %}
-            {% endif %}
-          {% elif message['bad_status'] %}
-            {% set message = "Not a valid status: {}".format(message['bad_status']) %}
-            {% include "toolkit/notification-banner.html" %}
-          {% elif message['status_error'] %}
-            {% set message = "Error trying to update status of service: ".format(message['status_error']) %}
-            {% include "toolkit/notification-banner.html" %}
-          {% else %}
-            {% include "toolkit/notification-banner.html" %}
-          {% endif %}
-        {% endwith %}
-      {% endfor %}
-    {% endwith %}
+    {% include "toolkit/flash_messages.html" %}
 
     {% if service_data['status'] != 'published' and removed_by %}
       {%

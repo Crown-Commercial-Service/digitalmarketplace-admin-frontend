@@ -11,6 +11,10 @@ from ..forms import InviteAdminForm, EditAdminUserForm
 from ... import data_api_client
 
 
+INVITATION_SENT_MESSAGE = "An invitation has been sent to {email_address}."
+EMAIL_ADDRESS_UPDATED_MESSAGE = "{email_address} has been updated."
+
+
 @main.route('/admin-users', methods=['GET'])
 @role_required('admin-manager')
 def manage_admin_users():
@@ -53,7 +57,7 @@ def invite_admin_user():
             notify_template_id,
             personalisation={'name': current_user.name}
         )
-        flash('An invitation has been sent to {}.'.format(email_address), category='success')
+        flash(INVITATION_SENT_MESSAGE.format(email_address=email_address))
         return redirect(url_for('main.manage_admin_users'))
 
     errors = {
@@ -90,7 +94,7 @@ def edit_admin_user(admin_user_id):
                 role=edited_admin_permissions,
                 active=edited_admin_status
             )
-            flash("{} has been updated.".format(admin_user["emailAddress"]), "message")
+            flash(EMAIL_ADDRESS_UPDATED_MESSAGE.format(email_address=admin_user["emailAddress"]))
             return redirect(url_for('.manage_admin_users'))
         except HTTPError as e:
             status_code = 400

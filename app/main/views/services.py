@@ -17,6 +17,14 @@ from ... import content_loader
 from ... import data_api_client
 
 
+NO_SERVICE_MESSAGE = "Could not find a service with ID: {service_id}"
+API_ERROR_MESSAGE = "Error trying to retrieve service with ID: {service_id}"
+UPDATE_SERVICE_STATUS_ERROR_MESSAGE = "Error trying to update status of service: {error_message}"
+BAD_SERVICE_STATUS_MESSAGE = "Not a valid status: {service_status}"
+SERVICE_STATUS_UPDATED_MESSAGE = "Service status has been updated to: {service_status}"
+SERVICE_PUBLISHED_MESSAGE = "You published ‘{service_name}’."
+
+
 @main.route('', methods=['GET'])
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager', 'admin-manager')
 def index():
@@ -41,11 +49,11 @@ def view_service(service_id):
     try:
         service = data_api_client.get_service(service_id)
         if service is None:
-            flash({'no_service': service_id}, 'error')
+            flash(NO_SERVICE_MESSAGE.format(service_id=service_id), 'error')
             return redirect(url_for('.find_suppliers_and_services'))
         service_data = service['services']
     except HTTPError:
-        flash({'api_error': service_id}, 'error')
+        flash(API_ERROR_MESSAGE.format(service_id=service_id), 'error')
         return redirect(url_for('.find_suppliers_and_services'))
 
     # we don't actually need the framework here; using this to 404 if framework for the service is not live
@@ -96,7 +104,7 @@ def update_service_status(service_id):
     if frontend_status in translate_frontend_to_api.keys():
         backend_status = translate_frontend_to_api[frontend_status]
     else:
-        flash({'bad_status': frontend_status}, 'error')
+        flash(BAD_SERVICE_STATUS_MESSAGE.format(service_status=frontend_status), 'error')
         return redirect(url_for('.view_service', service_id=service_id))
 
     try:
@@ -105,13 +113,20 @@ def update_service_status(service_id):
             current_user.email_address)
 
     except HTTPError as e:
-        flash({'status_error': e.message}, 'error')
+        flash(UPDATE_SERVICE_STATUS_ERROR_MESSAGE.format(error_message=e.message), 'error')
         return redirect(url_for('.view_service', service_id=service_id))
 
     message = "admin.status.updated: " \
               "Service ID %s updated to '%s'"
     current_app.logger.info(message, service_id, frontend_status)
-    flash({'status_updated': frontend_status})
+    if frontend_status == 'public':
+        flash(
+            SERVICE_PUBLISHED_MESSAGE.format(
+                service_name=service['serviceName'] or service['frameworkName'] + ' - ' + service['lotName']
+            )
+        )
+    else:
+        flash(SERVICE_STATUS_UPDATED_MESSAGE.format(service_status=frontend_status))
     return redirect(url_for('.view_service', service_id=service_id))
 
 

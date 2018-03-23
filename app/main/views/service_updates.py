@@ -7,6 +7,9 @@ from ..auth import role_required
 from ... import data_api_client
 
 
+APPROVED_SERVICE_EDITS_MESSAGE = "The changes to service {service_id} were approved."
+
+
 @main.route('/services/updates/unapproved', methods=['GET'])
 @role_required('admin-ccs-category')
 def service_update_audits():
@@ -40,5 +43,5 @@ def submit_service_update_approval(service_id, audit_id):
         audit_event["id"],
         current_user.email_address
     )
-    flash("The changes to service {} were approved.".format(service_id), 'message')
+    flash(APPROVED_SERVICE_EDITS_MESSAGE.format(service_id=service_id))
     return redirect(url_for('.service_update_audits'))

@@ -24,7 +24,7 @@ def find_user_by_email_address():
         if email_address:
             users = data_api_client.get_user(email_address=email_address)
         if not users:
-            flash('no_users', 'error')
+            flash("Sorry, we couldn't find an account with that email address", 'error')
             response_code = 404
 
     return render_template(

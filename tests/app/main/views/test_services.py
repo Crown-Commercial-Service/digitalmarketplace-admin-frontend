@@ -11,7 +11,6 @@ from dmutils import s3
 from flask import Markup
 from lxml import html
 
-from tests.app.main.helpers.flash_tester import assert_flashes
 from ...helpers import LoggedInApplicationTest
 
 
@@ -1358,7 +1357,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
 
         assert response.status_code == 302
         assert response.location == 'http://localhost/admin/services/1'
-        assert_flashes(self, 'status_updated')
+        self.assert_flashes('Service status has been updated to: removed')
 
     def test_cannot_update_status_to_private(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -1374,7 +1373,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         assert not data_api_client.update_service_status.called
         assert response.status_code == 302
         assert response.location == 'http://localhost/admin/services/1'
-        assert_flashes(self, 'bad_status', 'error')
+        self.assert_flashes("Not a valid status: private", expected_category='error')
 
     def test_status_update_to_published(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -1393,7 +1392,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
 
         assert response.status_code == 302
         assert response.location == 'http://localhost/admin/services/1'
-        assert_flashes(self, 'status_updated')
+        self.assert_flashes("You published ‘test’.")
 
     def test_bad_status_gives_error_message(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
@@ -1408,7 +1407,25 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
 
         assert response.status_code == 302
         assert response.location == 'http://localhost/admin/services/1'
-        assert_flashes(self, 'bad_status', 'error')
+        self.assert_flashes("Not a valid status: suspended", expected_category='error')
+
+    def test_http_error_on_status_update_redirects_with_flash_error_message(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkSlug': 'g-cloud-7',
+            'serviceName': 'test',
+            'supplierId': 1000,
+            'status': 'published',
+        }}
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-7', 'status': 'live'}}
+        data_api_client.update_service_status.side_effect = HTTPError(message='Something went wrong.')
+        response = self.client.post('/admin/services/status/1', data={'service_status': 'public'})
+
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/services/1'
+        self.assert_flashes(
+            "Error trying to update status of service: Something went wrong.", expected_category='error'
+        )
 
     def test_services_with_missing_id(self, data_api_client):
         response = self.client.get('/admin/services')

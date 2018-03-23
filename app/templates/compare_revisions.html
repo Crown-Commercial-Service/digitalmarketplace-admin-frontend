@@ -22,27 +22,7 @@
 {% endblock %}
 
 {% block main_content %}
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-  {% for category, message in messages %}
-    {% if category == 'error' %}
-        <div class="banner-destructive-without-action">
-    {% else %}
-        <div class="banner-success-without-action">
-    {% endif %}
-      <p class="banner-message">
-          {% if message['bad_status'] %}
-          Not a valid status: '{{ message['bad_status'] }}'
-          {% elif message['status_error'] %}
-          Error trying to update status of service: {{ message['status_error'] }}
-          {% elif message['status_updated'] %}
-          Service status has been updated to: {{ message['status_updated']|title }}
-          {% endif %}
-      </p>
-      {% endfor %}
-  </div>
-  {% endif %}
-  {% endwith %}
+  {% include "toolkit/flash_messages.html" %}
 
   {%
     with
