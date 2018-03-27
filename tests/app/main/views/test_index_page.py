@@ -149,7 +149,7 @@ class TestIndex(LoggedInApplicationTest):
             assert link_text == expected_link_text
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
-        ("admin", False),
+        ("admin", True),
         ("admin-ccs-category", False),
         ("admin-ccs-sourcing", False),
         ("admin-framework-manager", True),
