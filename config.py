@@ -97,6 +97,12 @@ class Live(Config):
     AUTHENTICATION = True
     DM_HTTP_PROTO = 'https'
 
+    # use of invalid email addresses with live api keys annoys Notify
+    DM_NOTIFY_REDIRECT_DOMAINS_TO_ADDRESS = {
+        "example.com": "success@simulator.amazonses.com",
+        "example.gov.uk": "success@simulator.amazonses.com",
+    }
+
     NOTIFY_TEMPLATES = {
         'invite_contributor': '5eefe42d-1694-4388-8908-991cdfba0a71'
     }
