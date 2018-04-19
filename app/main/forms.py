@@ -1,5 +1,5 @@
 from dmutils.forms import StripWhitespaceStringField
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import RadioField, validators
 from wtforms.validators import DataRequired
 
@@ -39,27 +39,27 @@ class AdminEmailAddressValidator(object):
             raise validators.StopValidation(self.message)
 
 
-class EmailAddressForm(Form):
+class EmailAddressForm(FlaskForm):
     email_address = StripWhitespaceStringField('Email address', validators=[
         validators.DataRequired(message="Email can not be empty"),
         validators.Email(message="Please enter a valid email address")
     ])
 
 
-class MoveUserForm(Form):
+class MoveUserForm(FlaskForm):
     user_to_move_email_address = StripWhitespaceStringField('Move an existing user to this supplier', validators=[
         validators.DataRequired(message="Email can not be empty"),
         validators.Email(message="Please enter a valid email address")
     ])
 
 
-class EmailDomainForm(Form):
+class EmailDomainForm(FlaskForm):
     new_buyer_domain = StripWhitespaceStringField('Add a buyer email domain', validators=[
         validators.DataRequired(message="The domain field can not be empty.")
     ])
 
 
-class InviteAdminForm(Form):
+class InviteAdminForm(FlaskForm):
 
     email_address = StripWhitespaceStringField(
         'Email address',
@@ -86,7 +86,7 @@ class InviteAdminForm(Form):
         ]
 
 
-class EditAdminUserForm(Form):
+class EditAdminUserForm(FlaskForm):
     edit_admin_name = StripWhitespaceStringField('Name', validators=[
         DataRequired(message="You must provide a name.")
     ])
