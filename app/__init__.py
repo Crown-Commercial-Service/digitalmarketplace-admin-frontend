@@ -3,7 +3,7 @@ from datetime import timedelta
 from dmcontent.errors import ContentNotFoundError
 from flask import Flask, request, redirect
 from flask_login import LoginManager
-from flask_wtf.csrf import CsrfProtect
+from flask_wtf.csrf import CSRFProtect
 
 import dmapiclient
 from dmutils import init_app, flask_featureflags, formats
@@ -13,7 +13,7 @@ from dmcontent.content_loader import ContentLoader
 from config import configs
 
 
-csrf = CsrfProtect()
+csrf = CSRFProtect()
 data_api_client = dmapiclient.DataAPIClient()
 feature_flags = flask_featureflags.FeatureFlag()
 login_manager = LoginManager()
