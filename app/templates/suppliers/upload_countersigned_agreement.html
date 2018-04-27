@@ -20,8 +20,6 @@
 {% endblock %}
 
 {% block main_content %}
-  {% include "toolkit/flash_messages.html" %}
-
   {% if remove_countersigned_agreement_confirm %}
       <form method="post" action='{{ url_for(".remove_countersigned_agreement_file", supplier_id=supplier.id, framework_slug=framework.slug) }}'>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />

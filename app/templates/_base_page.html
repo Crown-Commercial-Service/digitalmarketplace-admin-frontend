@@ -22,6 +22,7 @@
   {% block breadcrumb %}{% endblock %}
   <div id="wrapper">
     <main id="content" role="main">
+      {% include "toolkit/flash_messages.html" %}
       {% block main_content %}{% endblock %}
     </main>
   </div>

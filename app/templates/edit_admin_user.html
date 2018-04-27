@@ -20,8 +20,6 @@
 {% endblock %}
 
 {% block main_content %}
-  {% include "toolkit/flash_messages.html" %}
-
   {% for error in edit_admin_user_form.edit_admin_name.errors %}
     {%
       with
