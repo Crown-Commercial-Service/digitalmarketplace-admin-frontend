@@ -10,6 +10,10 @@
   %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
+  </div>
+</div>
+<div class="grid-row">
+  <div class="column-two-thirds">
     <div class="dmspeak">
   {% if current_user.has_role('admin-manager') %}
       <p>
@@ -110,6 +114,13 @@
     {% endfor %}
   {% endif %}
     </div>
+  </div>
+  <div class="column-one-third dmspeak">
+    <h2 class="heading-xmedium">Account settings</h2>
+
+    <p>
+      <a href="{{ url_for('external.change_password') }}">Change your password</a>
+    </p>
   </div>
 </div>
 {% endblock %}
