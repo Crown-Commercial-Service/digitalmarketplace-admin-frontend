@@ -9,9 +9,17 @@ from app.main.views.agreements import status_labels
 from ...helpers import LoggedInApplicationTest
 
 
-@mock.patch('app.main.views.agreements.data_api_client')
 class TestListAgreements(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.agreements.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
 
     @property
     def find_framework_suppliers_return_value_g8(self):
@@ -47,8 +55,8 @@ class TestListAgreements(LoggedInApplicationTest):
             ],
         }
 
-    def test_happy_path(self, data_api_client):
-        data_api_client.get_framework.return_value = {
+    def test_happy_path(self):
+        self.data_api_client.get_framework.return_value = {
             "frameworks": {
                 "status": "live",
                 "name": "G-Cloud 7",
@@ -57,7 +65,7 @@ class TestListAgreements(LoggedInApplicationTest):
             }
         }
 
-        data_api_client.find_framework_suppliers.return_value = {
+        self.data_api_client.find_framework_suppliers.return_value = {
             'supplierFrameworks': [
                 {
                     'supplierName': 'My other supplier',
@@ -98,16 +106,16 @@ class TestListAgreements(LoggedInApplicationTest):
             mi_elems[0].xpath("normalize-space(string())"),
         )
 
-    def test_happy_path_all_g8(self, data_api_client):
-        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
-        data_api_client.find_framework_suppliers.return_value = self.find_framework_suppliers_return_value_g8
+    def test_happy_path_all_g8(self):
+        self.data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        self.data_api_client.find_framework_suppliers.return_value = self.find_framework_suppliers_return_value_g8
 
         response = self.client.get('/admin/agreements/g-cloud-8')
         page = html.fromstring(response.get_data(as_text=True))
 
         assert response.status_code == 200
 
-        call_args = data_api_client.find_framework_suppliers.call_args
+        call_args = self.data_api_client.find_framework_suppliers.call_args
         assert call_args[0] == ("g-cloud-8",)
         # slightly elaborate assertion here to allow for missing kwargs defaulting to None
         assert all(call_args[1].get(key) == value for key, value in (
@@ -145,12 +153,12 @@ class TestListAgreements(LoggedInApplicationTest):
         summary_elem = page.xpath("//p[@class='search-summary-border-bottom']")[0]
         assert summary_elem.xpath("normalize-space(string())") == '2 agreements returned'
 
-    def test_happy_path_notall_g8(self, data_api_client):
-        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+    def test_happy_path_notall_g8(self):
+        self.data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
         find_framework_suppliers_return_value_g8 = self.find_framework_suppliers_return_value_g8
         # deliberately returning supplierFrameworks this time in "wrong" order to test view isn't doing any re-sorting
         find_framework_suppliers_return_value_g8["supplierFrameworks"].reverse()
-        data_api_client.find_framework_suppliers.return_value = find_framework_suppliers_return_value_g8
+        self.data_api_client.find_framework_suppliers.return_value = find_framework_suppliers_return_value_g8
 
         # choose the second status (if there is one, otherwise first)
         chosen_status_key = tuple(status_labels.keys())[:2][-1]
@@ -160,7 +168,7 @@ class TestListAgreements(LoggedInApplicationTest):
 
         assert response.status_code == 200
 
-        call_args = data_api_client.find_framework_suppliers.call_args
+        call_args = self.data_api_client.find_framework_suppliers.call_args
         assert call_args[0] == ("g-cloud-8",)
         # slightly elaborate assertion here to allow for missing kwargs defaulting to None
         assert all(call_args[1].get(key) == value for key, value in (
@@ -216,22 +224,30 @@ class TestListAgreements(LoggedInApplicationTest):
         ("admin-framework-manager", 200),
         ("admin-manager", 403),
     ])
-    def test_list_agreements_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+    def test_list_agreements_is_only_accessible_to_specific_user_roles(self, role, expected_code):
         self.user_role = role
         response = self.client.get('/admin/agreements/g-cloud-7')
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
-    def test_invalid_status_raises_400(self, data_api_client):
-
+    def test_invalid_status_raises_400(self):
         response = self.client.get('/admin/agreements/g-cloud-7?status=bad')
-
         assert response.status_code == 400
 
 
-@mock.patch('app.main.views.agreements.data_api_client')
 class TestNextAgreementRedirect(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.agreements.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+        self.data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
 
     @property
     def dummy_supplier_frameworks(self):
@@ -283,8 +299,7 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
             ],
         }
 
-    def test_happy_path(self, data_api_client):
-        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+    def test_happy_path(self):
         res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8/next')
         assert res.status_code == 302
 
@@ -292,13 +307,11 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
         assert parsed_location.path == "/admin/suppliers/31415/agreements/g-cloud-8"
         assert parse_qs(parsed_location.query) == {}
 
-    def test_unknown_supplier_returns_404(self, data_api_client):
-        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+    def test_unknown_supplier_returns_404(self):
         res = self.client.get('/admin/suppliers/999/agreements/g-cloud-8/next')
         assert res.status_code == 404
 
-    def test_final_supplier_redirects_to_list(self, data_api_client):
-        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+    def test_final_supplier_redirects_to_list(self):
         res = self.client.get('/admin/suppliers/99/agreements/g-cloud-8/next')
         assert res.status_code == 302
 
@@ -306,8 +319,7 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
         assert parsed_location.path == "/admin/agreements/g-cloud-8"
         assert parse_qs(parsed_location.query) == {}
 
-    def test_status_filtered_simple_status(self, data_api_client):
-        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+    def test_status_filtered_simple_status(self):
         res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8/next?status=on-hold')
         assert res.status_code == 302
 
@@ -319,11 +331,10 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
         # get it right. should also be conserving bandwidth by omitting declarations.
         assert any(
             (ca_kwargs.get("with_declarations") is False and not ca_kwargs.get("status"))
-            for ca_args, ca_kwargs in data_api_client.find_framework_suppliers.call_args_list
+            for ca_args, ca_kwargs in self.data_api_client.find_framework_suppliers.call_args_list
         )
 
-    def test_status_filtered_compound_status(self, data_api_client):
-        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+    def test_status_filtered_compound_status(self):
         res = self.client.get('/admin/suppliers/141/agreements/g-cloud-8/next?status=approved,countersigned')
         assert res.status_code == 302
 
@@ -335,11 +346,10 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
         # get it right. should also be conserving bandwidth by omitting declarations.
         assert any(
             (ca_kwargs.get("with_declarations") is False and not ca_kwargs.get("status"))
-            for ca_args, ca_kwargs in data_api_client.find_framework_suppliers.call_args_list
+            for ca_args, ca_kwargs in self.data_api_client.find_framework_suppliers.call_args_list
         )
 
-    def test_status_filtered_different_status_supplier(self, data_api_client):
-        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+    def test_status_filtered_different_status_supplier(self):
         res = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8/next?status=signed')
         assert res.status_code == 302
 
@@ -351,11 +361,10 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
         # get it right. should also be conserving bandwidth by omitting declarations.
         assert any(
             (ca_kwargs.get("with_declarations") is False and not ca_kwargs.get("status"))
-            for ca_args, ca_kwargs in data_api_client.find_framework_suppliers.call_args_list
+            for ca_args, ca_kwargs in self.data_api_client.find_framework_suppliers.call_args_list
         )
 
-    def test_status_filtered_final_with_status_redirects_to_list(self, data_api_client):
-        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
+    def test_status_filtered_final_with_status_redirects_to_list(self):
         res = self.client.get('/admin/suppliers/151/agreements/g-cloud-8/next?status=on-hold')
         assert res.status_code == 302
 
@@ -367,10 +376,10 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
         # get it right. should also be conserving bandwidth by omitting declarations.
         assert any(
             (ca_kwargs.get("with_declarations") is False and not ca_kwargs.get("status"))
-            for ca_args, ca_kwargs in data_api_client.find_framework_suppliers.call_args_list
+            for ca_args, ca_kwargs in self.data_api_client.find_framework_suppliers.call_args_list
         )
 
-    def test_invalid_status_raises_400(self, data_api_client):
+    def test_invalid_status_raises_400(self):
         response = self.client.get('/admin/suppliers/151/agreements/g-cloud-8/next?status=bad')
         assert response.status_code == 400
 
@@ -381,9 +390,8 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
         ("admin-framework-manager", 302),
         ("admin-manager", 403),
     ])
-    def test_next_agreement_redirect_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+    def test_next_agreement_redirect_only_accessible_to_specific_user_roles(self, role, expected_code):
         self.user_role = role
-        data_api_client.find_framework_suppliers.return_value = self.dummy_supplier_frameworks
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8/next')
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
