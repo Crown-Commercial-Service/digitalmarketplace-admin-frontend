@@ -92,7 +92,7 @@ def download_users(framework_slug):
         "application_result",
         "framework_agreement",
         "variations_agreed",
-        "published_service_count"
+        "published_service"
     ]
 
     if on_framework_only:
