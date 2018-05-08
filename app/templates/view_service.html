@@ -62,8 +62,6 @@
       </form>
     {% endif %}
 
-    {% include "toolkit/flash_messages.html" %}
-
     {% if service_data['status'] != 'published' and removed_by %}
       {%
         with

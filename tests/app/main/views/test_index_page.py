@@ -7,6 +7,20 @@ from ...helpers import LoggedInApplicationTest
 
 
 class TestIndex(LoggedInApplicationTest):
+
+    @pytest.mark.parametrize("role", [
+        "admin",
+        "admin-ccs-category",
+        "admin-ccs-sourcing",
+        "admin-framework-manager",
+        "admin-manager"
+    ])
+    def test_change_password_link_is_shown_to_all_admin_users(self, role):
+        self.user_role = role
+        response = self.client.get('/admin')
+        document = html.fromstring(response.get_data(as_text=True))
+        assert bool(document.xpath('.//a[@href="/user/change-password"]')), "Role {} cannot see the link".format(role)
+
     @pytest.mark.parametrize("role, link_should_be_visible", [
         ("admin", True),
         ("admin-ccs-category", False),

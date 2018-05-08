@@ -19,8 +19,6 @@
 {% endblock %}
 
 {% block main_content %}
-  {% include "toolkit/flash_messages.html" %}
-
   {% for error in email_domain_form.new_buyer_domain.errors %}
     {%
       with
