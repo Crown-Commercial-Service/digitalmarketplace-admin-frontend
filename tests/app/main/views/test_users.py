@@ -232,7 +232,6 @@ class TestUsersExport(LoggedInApplicationTest):
         "email address": "test.user@sme.com",
         "user_name": "Test User",
         "variations_agreed": "var1",
-        "published_service_count": "0",
         "user_research_opted_in": True
     }
 
@@ -294,7 +293,6 @@ class TestUsersExport(LoggedInApplicationTest):
             'application_result',
             'framework_agreement',
             'variations_agreed',
-            'published_service_count',
         ]
 
         assert rows[0] == expected_headings
@@ -316,7 +314,6 @@ class TestUsersExport(LoggedInApplicationTest):
                 "email address": "test.user@sme2.com",
                 "user_name": "Test User 2",
                 "variations_agreed": "",
-                "published_service_count": 0,
             }
         ]
 
