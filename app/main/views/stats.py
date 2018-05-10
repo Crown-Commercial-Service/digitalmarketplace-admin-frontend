@@ -4,15 +4,17 @@ from dmapiclient.audit import AuditTypes
 from dmutils.formats import DATETIME_FORMAT
 from flask import render_template, request
 
-from .. import main
-from ..auth import role_required
+from .. import public
 from ..helpers.sum_counts import format_snapshots
 from ... import data_api_client
 
 
-@main.route('/statistics/<string:framework_slug>', methods=['GET'])
-@role_required('admin-ccs-sourcing', 'admin-framework-manager')
+@public.route('/statistics/<string:framework_slug>', methods=['GET'])
 def view_statistics(framework_slug):
+    """This view is not protected by a role_required check as of 10/05/2018 and a decision that the protection offered
+    by the admin-frontend's IP restriction is sufficient. The data displayed here is not particularly sensitive and
+    this allows us to easily display it on screens e.g. in the office, without having to leave a privileged user logged
+    into the admin site (which would be Bad)."""
 
     snapshots = data_api_client.find_audit_events(
         audit_type=AuditTypes.snapshot_framework_stats,
