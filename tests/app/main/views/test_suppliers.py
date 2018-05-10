@@ -336,9 +336,23 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
 class TestSupplierServicesView(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+        self.data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        self.data_api_client.find_services.return_value = self.load_example_listing("services_response")
+        self.data_api_client.find_frameworks.return_value = {
+            'frameworks': [self.load_example_listing("framework_response")['frameworks']]
+        }
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
 
     @pytest.mark.parametrize("role, expected_code", [
         ("admin", 200),
@@ -347,9 +361,8 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         ("admin-framework-manager", 200),
         ("admin-manager", 403),
     ])
-    def test_supplier_services_accessible_to_users_with_right_roles(self, data_api_client, role, expected_code):
+    def test_supplier_services_accessible_to_users_with_right_roles(self, role, expected_code):
         self.user_role = role
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
 
         response = self.client.get('/admin/suppliers/1000/services')
         actual_code = response.status_code
@@ -360,13 +373,8 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         ("admin-ccs-category", True),
         ("admin-framework-manager", False),
     ])
-    def test_supplier_services_can_only_edit_users_with_right_roles(self, data_api_client, role, can_edit):
+    def test_supplier_services_can_only_edit_users_with_right_roles(self, role, can_edit):
         self.user_role = role
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_services.return_value = self.load_example_listing("services_response")
-        data_api_client.find_frameworks.return_value = {
-            'frameworks': [self.load_example_listing("framework_response")['frameworks']]
-        }
 
         response = self.client.get('/admin/suppliers/1000/services')
         assert response.status_code == 200
@@ -378,48 +386,39 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         view_service_links = document.xpath('.//a[contains(text(), "View")]')
         assert len(view_service_links) == (0 if can_edit else 1)
 
-    def test_should_404_if_supplier_does_not_exist_on_services(self, data_api_client):
-        data_api_client.get_supplier.side_effect = HTTPError(Response(404))
+    def test_should_404_if_supplier_does_not_exist_on_services(self):
+        self.data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers/999/services')
         assert response.status_code == 404
 
-    def test_should_404_if_no_supplier_id_on_services(self, data_api_client):
+    def test_should_404_if_no_supplier_id_on_services(self):
         response = self.client.get('/admin/suppliers/services')
         assert response.status_code == 404
 
-    def test_should_call_service_apis_with_supplier_id(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+    def test_should_call_service_apis_with_supplier_id(self):
         response = self.client.get('/admin/suppliers/1000/services')
 
         assert response.status_code == 200
 
-        data_api_client.get_supplier.assert_called_once_with(1000)
-        data_api_client.find_services.assert_called_once_with(1000)
+        self.data_api_client.get_supplier.assert_called_once_with(1000)
+        self.data_api_client.find_services.assert_called_once_with(1000)
 
-    def test_should_indicate_if_supplier_has_no_services(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_services.return_value = {'services': []}
+    def test_should_indicate_if_supplier_has_no_services(self):
+        self.data_api_client.find_services.return_value = {'services': []}
         response = self.client.get('/admin/suppliers/1000/services')
 
         assert response.status_code == 200
         assert "This supplier has no services on the Digital Marketplace" in response.get_data(as_text=True)
 
-    def test_should_have_supplier_name_on_services_page(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_services.return_value = {'services': []}
+    def test_should_have_supplier_name_on_services_page(self):
+        self.data_api_client.find_services.return_value = {'services': []}
 
         response = self.client.get('/admin/suppliers/1000/services')
 
         assert response.status_code == 200
         assert "Supplier Name" in response.get_data(as_text=True)
 
-    def test_should_show_service_details_on_page(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_services.return_value = self.load_example_listing("services_response")
-        data_api_client.find_frameworks.return_value = {
-            'frameworks': [self.load_example_listing("framework_response")['frameworks']]
-        }
-
+    def test_should_show_service_details_on_page(self):
         response = self.client.get('/admin/suppliers/1000/services')
 
         assert response.status_code == 200
@@ -432,15 +431,10 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert '<a href="/admin/services/5687123785023488">' in response.get_data(as_text=True)
         assert "Edit" in response.get_data(as_text=True)
 
-    def test_should_show_correct_fields_for_disabled_service(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_frameworks.return_value = {
-            'frameworks': [self.load_example_listing("framework_response")['frameworks']]
-        }
-
+    def test_should_show_correct_fields_for_disabled_service(self):
         service = self.load_example_listing("services_response")["services"][0]
         service["status"] = "disabled"
-        data_api_client.find_services.return_value = {'services': [service]}
+        self.data_api_client.find_services.return_value = {'services': [service]}
 
         response = self.client.get('/admin/suppliers/1000/services')
 
@@ -448,15 +442,10 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert "Removed" in response.get_data(as_text=True)
         assert "Edit" in response.get_data(as_text=True)
 
-    def test_should_show_correct_fields_for_enabled_service(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_frameworks.return_value = {
-            'frameworks': [self.load_example_listing("framework_response")['frameworks']]
-        }
-
+    def test_should_show_correct_fields_for_enabled_service(self):
         service = self.load_example_listing("services_response")["services"][0]
         service["status"] = "enabled"
-        data_api_client.find_services.return_value = {'services': [service]}
+        self.data_api_client.find_services.return_value = {'services': [service]}
 
         response = self.client.get('/admin/suppliers/1000/services')
 
@@ -464,15 +453,14 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert "Private" in response.get_data(as_text=True)
         assert "Edit" in response.get_data(as_text=True)
 
-    def test_should_show_separate_tables_for_frameworks_if_supplier_has_service_on_framework(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+    def test_should_show_separate_tables_for_frameworks_if_supplier_has_service_on_framework(self):
 
         service_1 = self.load_example_listing("services_response")['services'][0]
         service_2 = service_1.copy()
         service_3 = service_1.copy()
         service_2['frameworkSlug'] = 'digital-outcomes-and-specialists-2'
         service_3['frameworkSlug'] = 'g-cloud-11'
-        data_api_client.find_services.return_value = {'services': [service_1, service_2, service_3]}
+        self.data_api_client.find_services.return_value = {'services': [service_1, service_2, service_3]}
 
         framework_1 = self.load_example_listing("framework_response")['frameworks']
         framework_2 = framework_1.copy()
@@ -481,7 +469,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         framework_2['id'] = 5
         framework_3['slug'] = 'g-cloud-11'
         framework_3['id'] = 22
-        data_api_client.find_frameworks.return_value = {'frameworks': [framework_1, framework_2, framework_3]}
+        self.data_api_client.find_frameworks.return_value = {'frameworks': [framework_1, framework_2, framework_3]}
 
         response = self.client.get('/admin/suppliers/1000/services')
 
@@ -497,18 +485,14 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         gcloud11_table_index = response_data.find('g-cloud-11_services')
         assert gcloud11_table_index < gcloud8_table_index < dos_table_index
 
-    def test_remove_all_services_link_if_supplier_has_a_published_service_on_framework(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.find_frameworks.return_value = {
-            'frameworks': [self.load_example_listing("framework_response")['frameworks']]
-        }
+    def test_remove_all_services_link_if_supplier_has_a_published_service_on_framework(self):
         service_1 = self.load_example_listing("services_response")["services"][0]
         service_2 = service_1.copy()
         service_2["status"] = "disabled"
         service_3 = service_1.copy()
         service_3["status"] = "enabled"
 
-        data_api_client.find_services.return_value = {'services': [service_1, service_2, service_3]}
+        self.data_api_client.find_services.return_value = {'services': [service_1, service_2, service_3]}
 
         response = self.client.get('/admin/suppliers/1000/services')
         assert response.status_code == 200
@@ -520,15 +504,11 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert expected_link.text == expected_link_text
 
     @pytest.mark.parametrize('service_status', ['enabled', 'disabled', 'a_new_status'])
-    def test_no_remove_all_services_link_if_supplier_service_not_published(self, data_api_client, service_status):
+    def test_no_remove_all_services_link_if_supplier_service_not_published(self, service_status):
         service = self.load_example_listing('services_response')['services'][0]
         service["status"] = service_status
 
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.find_services.return_value = {'services': [service]}
-        data_api_client.find_frameworks.return_value = {
-            'frameworks': [self.load_example_listing("framework_response")['frameworks']]
-        }
+        self.data_api_client.find_services.return_value = {'services': [service]}
 
         response = self.client.get('/admin/suppliers/1000/services')
         assert response.status_code == 200
