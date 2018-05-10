@@ -2,7 +2,6 @@ import mock
 import pytest
 from lxml import html
 
-from app import data_api_client
 from ...helpers import LoggedInApplicationTest
 
 
@@ -182,6 +181,16 @@ class TestIndex(LoggedInApplicationTest):
 
 class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
 
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.services.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+        self.data_api_client.find_frameworks.return_value = self._get_frameworks_list_fixture_data()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
     @staticmethod
     def _get_mock_framework_response(framework_status):
         return {"frameworks": [
@@ -205,8 +214,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
     def test_framework_action_lists_not_shown_for_expired_frameworks(
         self, framework_status, header_shown
     ):
-        data_api_client.find_frameworks = mock.Mock()
-        data_api_client.find_frameworks.return_value = self._get_mock_framework_response(framework_status)
+        self.data_api_client.find_frameworks.return_value = self._get_mock_framework_response(framework_status)
 
         self.user_role = "admin-framework-manager"
         response = self.client.get('/admin')
@@ -225,8 +233,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
     def test_framework_action_lists_only_shown_when_framework_standstill_or_live_for_category_users(
         self, framework_status, header_shown
     ):
-        data_api_client.find_frameworks = mock.Mock()
-        data_api_client.find_frameworks.return_value = self._get_mock_framework_response(framework_status)
+        self.data_api_client.find_frameworks.return_value = self._get_mock_framework_response(framework_status)
 
         self.user_role = "admin-ccs-category"
         response = self.client.get('/admin')
@@ -243,10 +250,9 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         ('expired', False, False, False, False),
     ])
     def test_framework_action_lists_only_contain_actions_for_framework_status(
-            self, framework_status, agreements_shown, stats_shown, comms_shown, contact_shown
+        self, framework_status, agreements_shown, stats_shown, comms_shown, contact_shown
     ):
-        data_api_client.find_frameworks = mock.Mock()
-        data_api_client.find_frameworks.return_value = self._get_mock_framework_response(framework_status)
+        self.data_api_client.find_frameworks.return_value = self._get_mock_framework_response(framework_status)
         self.user_role = "admin-framework-manager"
         response = self.client.get('/admin')
         document = html.fromstring(response.get_data(as_text=True))
