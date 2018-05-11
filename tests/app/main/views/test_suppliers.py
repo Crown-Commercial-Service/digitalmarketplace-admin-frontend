@@ -821,78 +821,93 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         assert res.status_code == 503
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
 class TestUpdatingSupplierName(LoggedInApplicationTest):
 
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
     @pytest.mark.parametrize("allowed_role", ["admin", "admin-ccs-category"])
-    def test_admin_and_ccs_category_roles_can_update_supplier_name(self, data_api_client, allowed_role):
+    def test_admin_and_ccs_category_roles_can_update_supplier_name(self, allowed_role):
         self.user_role = allowed_role
-        data_api_client.get_supplier.return_value = {"suppliers": {"id": 1234, "name": "Something Old"}}
+        self.data_api_client.get_supplier.return_value = {"suppliers": {"id": 1234, "name": "Something Old"}}
         response = self.client.post(
             '/admin/suppliers/1234/edit/name',
             data={'new_supplier_name': 'Something New'}
         )
         assert response.status_code == 302
         assert response.location == 'http://localhost/admin/suppliers?supplier_id=1234'
-        data_api_client.update_supplier.assert_called_once_with(1234, {'name': "Something New"}, "test@example.com")
+        self.data_api_client.update_supplier.assert_called_once_with(
+            1234, {'name': "Something New"}, "test@example.com"
+        )
 
-    def test_ccs_sourcing_role_can_not_update_supplier_name(self, data_api_client):
+    def test_ccs_sourcing_role_can_not_update_supplier_name(self):
         self.user_role = 'admin-ccs-sourcing'
         response = self.client.post(
             '/admin/suppliers/1234/edit/name',
             data={'new_supplier_name': 'Something New'}
         )
         assert response.status_code == 403
-        assert data_api_client.update_supplier.call_args_list == []
+        assert self.data_api_client.update_supplier.call_args_list == []
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
 class TestViewingASupplierDeclaration(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
-    def test_should_not_be_visible_to_admin_users(self, data_api_client):
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+        self.data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        self.data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        self.data_api_client.get_supplier_declaration.return_value = self.load_example_listing('declaration_response')
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def test_should_not_be_visible_to_admin_users(self):
         self.user_role = 'admin'
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
         assert response.status_code == 403
 
-    def test_should_404_if_supplier_does_not_exist(self, data_api_client):
-        data_api_client.get_supplier.side_effect = APIError(Response(404))
+    def test_should_404_if_supplier_does_not_exist(self):
+        self.data_api_client.get_supplier.side_effect = APIError(Response(404))
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
         assert response.status_code == 404
-        data_api_client.get_supplier.assert_called_once_with('1234')
-        assert data_api_client.get_framework.call_args_list == []
+        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        assert self.data_api_client.get_framework.call_args_list == []
 
-    def test_should_404_if_framework_does_not_exist(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.get_framework.side_effect = APIError(Response(404))
+    def test_should_404_if_framework_does_not_exist(self):
+        self.data_api_client.get_framework.side_effect = APIError(Response(404))
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
         assert response.status_code == 404
-        data_api_client.get_supplier.assert_called_with('1234')
-        data_api_client.get_framework.assert_called_with('g-cloud-7')
+        self.data_api_client.get_supplier.assert_called_with('1234')
+        self.data_api_client.get_framework.assert_called_with('g-cloud-7')
 
-    def test_should_not_404_if_declaration_does_not_exist(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
-        data_api_client.get_supplier_declaration.side_effect = APIError(Response(404))
+    def test_should_not_404_if_declaration_does_not_exist(self):
+        self.data_api_client.get_supplier_declaration.side_effect = APIError(Response(404))
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
         assert response.status_code == 200
-        data_api_client.get_supplier.assert_called_once_with('1234')
-        data_api_client.get_framework.assert_called_once_with('g-cloud-7')
-        data_api_client.get_supplier_declaration.assert_called_once_with('1234', 'g-cloud-7')
+        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_framework.assert_called_once_with('g-cloud-7')
+        self.data_api_client.get_supplier_declaration.assert_called_once_with('1234', 'g-cloud-7')
 
-    def test_should_show_declaration(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
-        data_api_client.get_supplier_declaration.return_value = self.load_example_listing('declaration_response')
-
+    def test_should_show_declaration(self):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -900,11 +915,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         data = document.cssselect('.summary-item-row td.summary-item-field')
         assert data[0].text_content().strip() == "Yes"
 
-    def test_should_show_dos_declaration(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
-        data_api_client.get_supplier_declaration.return_value = self.load_example_listing('declaration_response')
-
+    def test_should_show_dos_declaration(self):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/digital-outcomes-and-specialists')
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -912,11 +923,8 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         data = document.cssselect('.summary-item-row td.summary-item-field')
         assert data[0].text_content().strip() == "Yes"
 
-    def test_should_403_if_framework_is_open(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
-        data_api_client.get_framework.return_value['frameworks']['status'] = 'open'
-        data_api_client.get_supplier_declaration.return_value = self.load_example_listing('declaration_response')
+    def test_should_403_if_framework_is_open(self):
+        self.data_api_client.get_framework.return_value['frameworks']['status'] = 'open'
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/digital-outcomes-and-specialists')
         assert response.status_code == 403
