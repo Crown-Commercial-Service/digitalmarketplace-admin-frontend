@@ -518,64 +518,58 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert len(document.xpath('.//a[contains(@href,"{}")]'.format(href))) == 0
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
 class TestSupplierServicesViewWithRemoveParam(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
 
-    def test_400_if_supplier_has_no_services(self, data_api_client):
-        framework = 'digital-outcomes-and-specialists-2'
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+        self.data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        self.data_api_client.find_services.return_value = self.load_example_listing('services_response')
+        self.data_api_client.find_frameworks.return_value = {
+            'frameworks': [self.load_example_listing("framework_response")['frameworks']]
+        }
 
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.find_services.return_value = {'services': []}
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def test_400_if_supplier_has_no_services(self):
+        framework = 'digital-outcomes-and-specialists-2'
+        self.data_api_client.find_services.return_value = {'services': []}
 
         response = self.client.get('/admin/suppliers/1000/services?remove={}'.format(framework))
 
         assert response.status_code == 400
 
-    def test_400_if_supplier_has_no_service_on_framework(self, data_api_client):
+    def test_400_if_supplier_has_no_service_on_framework(self):
         framework = 'digital-outcomes-and-specialists-2'
-
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.find_services.return_value = self.load_example_listing('services_response')
 
         response = self.client.get('/admin/suppliers/1000/services?remove={}'.format(framework))
 
         assert response.status_code == 400
 
     @pytest.mark.parametrize('service_status', ['enabled', 'disabled', 'a_new_status'])
-    def test_400_if_supplier_has_no_published_service_on_framework(self, data_api_client, service_status):
+    def test_400_if_supplier_has_no_published_service_on_framework(self, service_status):
         framework = 'g-cloud-8'
         service = self.load_example_listing('services_response')['services'][0]
         service["status"] = service_status
-
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.find_services.return_value = {'services': [service]}
+        self.data_api_client.find_services.return_value = {'services': [service]}
 
         response = self.client.get('/admin/suppliers/1000/services?remove={}'.format(framework))
 
         assert response.status_code == 400
 
-    def test_200_if_supplier_has_published_service_on_framework(self, data_api_client):
+    def test_200_if_supplier_has_published_service_on_framework(self):
         framework = 'g-cloud-8'
-
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.find_services.return_value = self.load_example_listing('services_response')
-        data_api_client.find_frameworks.return_value = {
-            'frameworks': [self.load_example_listing("framework_response")['frameworks']]
-        }
 
         response = self.client.get('/admin/suppliers/1000/services?remove={}'.format(framework))
 
         assert response.status_code == 200
 
-    def test_are_you_sure_banner_if_supplier_has_published_service_on_framework(self, data_api_client):
+    def test_are_you_sure_banner_if_supplier_has_published_service_on_framework(self):
         framework = 'g-cloud-8'
-
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.find_services.return_value = self.load_example_listing('services_response')
-        data_api_client.find_frameworks.return_value = {
-            'frameworks': [self.load_example_listing("framework_response")['frameworks']]
-        }
 
         response = self.client.get('/admin/suppliers/1000/services?remove={}'.format(framework))
         assert response.status_code == 200
