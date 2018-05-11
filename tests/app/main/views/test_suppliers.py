@@ -580,37 +580,47 @@ class TestSupplierServicesViewWithRemoveParam(LoggedInApplicationTest):
         assert banner_message == expected_banner_message
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
 class TestDisableSupplierServicesView(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
 
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+        self.data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        self.data_api_client.find_services.return_value = self.load_example_listing('services_response')
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
     @pytest.mark.parametrize('url_suffix', ['', '?remove=', '?foo=bar'])
-    def test_400_if_no_framework_provided(self, data_api_client, url_suffix):
+    def test_400_if_no_framework_provided(self, url_suffix):
 
         response = self.client.post('/admin/suppliers/1000/services{}'.format(url_suffix))
 
         assert response.status_code == 400
 
-    def test_400_if_supplier_has_no_service_on_framework(self, data_api_client):
+    def test_400_if_supplier_has_no_service_on_framework(self):
         framework = 'g-cloud-8'
-        data_api_client.find_services.return_value = {'services': []}
+        self.data_api_client.find_services.return_value = {'services': []}
 
         response = self.client.post('/admin/suppliers/1000/services?remove={}'.format(framework))
 
         assert response.status_code == 400
 
-    def test_disables_service(self, data_api_client):
+    def test_disables_service(self):
         framework = 'g-cloud-8'
-        data_api_client.find_services.return_value = self.load_example_listing('services_response')
 
         response = self.client.post('/admin/suppliers/1000/services?remove={}'.format(framework))
 
         assert response.status_code == 302
-        assert data_api_client.update_service_status.called_once_with(
+        assert self.data_api_client.update_service_status.call_args_list == [mock.call(
             '5687123785023488', 'disabled', 'test@example.com'
-        )
+        )]
 
-    def test_disables_multiple_services(self, data_api_client):
+    def test_disables_multiple_services(self):
         framework = 'g-cloud-8'
         service_1 = self.load_example_listing('services_response')['services'][0]
         service_2 = service_1.copy()
@@ -618,21 +628,19 @@ class TestDisableSupplierServicesView(LoggedInApplicationTest):
         service_3 = service_1.copy()
         service_3['id'] = '5687123785023490'
 
-        data_api_client.find_services.return_value = {'services': [service_1, service_2, service_3]}
+        self.data_api_client.find_services.return_value = {'services': [service_1, service_2, service_3]}
 
         response = self.client.post('/admin/suppliers/1000/services?remove={}'.format(framework))
 
         assert response.status_code == 302
-        assert data_api_client.update_service_status.call_args_list == [
+        assert self.data_api_client.update_service_status.call_args_list == [
             mock.call('5687123785023488', 'disabled', 'test@example.com'),
             mock.call('5687123785023489', 'disabled', 'test@example.com'),
             mock.call('5687123785023490', 'disabled', 'test@example.com'),
         ]
 
-    def test_flashes_success_message(self, data_api_client):
+    def test_flashes_success_message(self):
         framework = 'g-cloud-8'
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.find_services.return_value = self.load_example_listing('services_response')
 
         response = self.client.post('/admin/suppliers/1000/services?remove={}'.format(framework))
 
