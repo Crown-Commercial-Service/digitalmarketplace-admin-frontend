@@ -1647,14 +1647,14 @@ class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
         assert parse_qs(parsed_location.query) == {"status": ["on-hold"]}
 
 
-@mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
 class TestApproveAgreement(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
-    @property
-    def approve_agreement_for_countersignature_return_value(self):
-        # a property so we always get a clean *copy* of this to work with
-        return {
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+        self.data_api_client.approve_agreement_for_countersignature.return_value = {
             "agreement": {
                 "id": 123,
                 "supplierId": 4321,
@@ -1662,26 +1662,26 @@ class TestApproveAgreement(LoggedInApplicationTest):
             },
         }
 
-    def test_it_fails_if_not_ccs_admin(self, data_api_client):
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def test_it_fails_if_not_ccs_admin(self):
         self.user_role = 'admin'
-        data_api_client.approve_agreement_for_countersignature.return_value = \
-            self.approve_agreement_for_countersignature_return_value
         res = self.client.post('/admin/suppliers/agreements/123/approve', data={"nameOfOrganisation": "Test"})
 
-        assert data_api_client.approve_agreement_for_countersignature.call_args_list == []
+        assert self.data_api_client.approve_agreement_for_countersignature.call_args_list == []
         assert res.status_code == 403
 
-    def test_happy_path(self, data_api_client):
-        data_api_client.approve_agreement_for_countersignature.return_value = \
-            self.approve_agreement_for_countersignature_return_value
+    def test_happy_path(self):
         res = self.client.post(
             "/admin/suppliers/agreements/123/approve",
             data={"nameOfOrganisation": "Test"},
         )
 
-        data_api_client.approve_agreement_for_countersignature.assert_called_once_with('123',
-                                                                                       'test@example.com',
-                                                                                       '1234')
+        self.data_api_client.approve_agreement_for_countersignature.assert_called_once_with(
+            '123', 'test@example.com', '1234'
+        )
         self.assert_flashes("The agreement for Test was approved. They will receive a countersigned version soon.")
         assert res.status_code == 302
 
@@ -1689,17 +1689,15 @@ class TestApproveAgreement(LoggedInApplicationTest):
         assert parsed_location.path == "/admin/suppliers/4321/agreements/g-cloud-99p-world/next"
         assert parse_qs(parsed_location.query) == {}
 
-    def test_happy_path_with_next_status_and_unicode_supplier_name(self, data_api_client):
-        data_api_client.approve_agreement_for_countersignature.return_value = \
-            self.approve_agreement_for_countersignature_return_value
+    def test_happy_path_with_next_status_and_unicode_supplier_name(self):
         res = self.client.post(
             "/admin/suppliers/agreements/123/approve?next_status=on-hold",
             data={"nameOfOrganisation": u"Test O\u2019Connor"},
         )
 
-        data_api_client.approve_agreement_for_countersignature.assert_called_once_with('123',
-                                                                                       'test@example.com',
-                                                                                       '1234')
+        self.data_api_client.approve_agreement_for_countersignature.assert_called_once_with(
+            '123', 'test@example.com', '1234'
+        )
         self.assert_flashes(u"The agreement for Test O\u2019Connor was approved. They will receive a countersigned "
                             "version soon.")
         assert res.status_code == 302
@@ -1709,14 +1707,14 @@ class TestApproveAgreement(LoggedInApplicationTest):
         assert parse_qs(parsed_location.query) == {"status": ["on-hold"]}
 
 
-@mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
 class TestUnapproveAgreement(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
-    @property
-    def unapprove_agreement_for_countersignature_return_value(self):
-        # a property so we always get a clean *copy* of this to work with
-        return {
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+        self.data_api_client.unapprove_agreement_for_countersignature.return_value = {
             "agreement": {
                 "id": 123,
                 "supplierId": 4321,
@@ -1724,24 +1722,25 @@ class TestUnapproveAgreement(LoggedInApplicationTest):
             },
         }
 
-    def test_it_fails_if_not_ccs_admin(self, data_api_client):
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def test_it_fails_if_not_ccs_admin(self):
         self.user_role = 'admin'
-        data_api_client.unapprove_agreement_for_countersignature.return_value = \
-            self.unapprove_agreement_for_countersignature_return_value
+
         res = self.client.post('/admin/suppliers/agreements/123/unapprove', data={"nameOfOrganisation": "Test"})
 
-        assert data_api_client.unapprove_agreement_for_countersignature.call_args_list == []
+        assert self.data_api_client.unapprove_agreement_for_countersignature.call_args_list == []
         assert res.status_code == 403
 
-    def test_happy_path(self, data_api_client):
-        data_api_client.unapprove_agreement_for_countersignature.return_value = \
-            self.unapprove_agreement_for_countersignature_return_value
+    def test_happy_path(self):
         res = self.client.post(
             "/admin/suppliers/agreements/123/unapprove",
             data={"nameOfOrganisation": "Test"},
         )
 
-        data_api_client.unapprove_agreement_for_countersignature.assert_called_once_with(
+        self.data_api_client.unapprove_agreement_for_countersignature.assert_called_once_with(
             '123',
             'test@example.com',
             '1234',
@@ -1753,15 +1752,13 @@ class TestUnapproveAgreement(LoggedInApplicationTest):
         assert parsed_location.path == "/admin/suppliers/4321/agreements/g-cloud-99p-world"
         assert parse_qs(parsed_location.query) == {}
 
-    def test_happy_path_with_next_status_and_unicode_supplier_name(self, data_api_client):
-        data_api_client.unapprove_agreement_for_countersignature.return_value = \
-            self.unapprove_agreement_for_countersignature_return_value
+    def test_happy_path_with_next_status_and_unicode_supplier_name(self):
         res = self.client.post(
             "/admin/suppliers/agreements/123/unapprove?next_status=on-hold",
             data={"nameOfOrganisation": u"Test O\u2019Connor"},
         )
 
-        data_api_client.unapprove_agreement_for_countersignature.assert_called_once_with(
+        self.data_api_client.unapprove_agreement_for_countersignature.assert_called_once_with(
             '123',
             'test@example.com',
             '1234',
