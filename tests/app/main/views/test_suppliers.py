@@ -1107,19 +1107,27 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
         assert response.status_code == 302
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
 @mock.patch('app.main.views.suppliers.s3')
 class TestListCountersignedAgreementFile(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
-    def test_should_not_be_visible_to_admin_users(self, s3, data_api_client):
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def test_should_not_be_visible_to_admin_users(self, s3):
         self.user_role = 'admin'
 
         response = self.client.get('/admin/suppliers/1234/countersigned-agreements/g-cloud-7')
 
         assert response.status_code == 403
 
-    def test_should_be_visible_to_admin_sourcing_users(self, s3, data_api_client):
+    def test_should_be_visible_to_admin_sourcing_users(self, s3):
         s3.S3.return_value.get_key.return_value = {
             'size': '7050',
             'path': u'g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf',
@@ -1127,7 +1135,7 @@ class TestListCountersignedAgreementFile(LoggedInApplicationTest):
             'last_modified': u'2016-01-15T12:58:08.000000Z',
             'filename': u'93495-countersigned-framework-agreement'
         }
-        data_api_client.get_supplier_framework_info.return_value = \
+        self.data_api_client.get_supplier_framework_info.return_value = \
             {"frameworkInterest": {
                 "onFramework": True,
                 "agreementStatus": "signed",
@@ -1137,9 +1145,9 @@ class TestListCountersignedAgreementFile(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/countersigned-agreements/g-cloud-7')
         assert response.status_code == 200
 
-    def test_should_display_no_documents_if_no_documents_listed(self, s3, data_api_client):
+    def test_should_display_no_documents_if_no_documents_listed(self, s3):
         s3.S3.return_value.get_key.return_value = []
-        data_api_client.get_supplier_framework_info.return_value = {
+        self.data_api_client.get_supplier_framework_info.return_value = {
             "frameworkInterest": {
                 "onFramework": True,
                 "agreementStatus": "signed",
@@ -1155,7 +1163,7 @@ class TestListCountersignedAgreementFile(LoggedInApplicationTest):
         [('true', True), ('false', False), (0, False), ('', False)]
     )
     def test_remove_countersigned_agreement_confirmation_flag(
-            self, s3, data_api_client, confirmation_param_value, confirmation_message_shown
+            self, s3, confirmation_param_value, confirmation_message_shown
     ):
         s3.S3.return_value.get_key.return_value = {
             'size': '7050',
@@ -1164,7 +1172,7 @@ class TestListCountersignedAgreementFile(LoggedInApplicationTest):
             'last_modified': u'2016-01-15T12:58:08.000000Z',
             'filename': u'93495-countersigned-framework-agreement'
         }
-        data_api_client.get_supplier_framework_info.return_value = \
+        self.data_api_client.get_supplier_framework_info.return_value = \
             {"frameworkInterest": {
                 "onFramework": True,
                 "agreementStatus": "signed",
