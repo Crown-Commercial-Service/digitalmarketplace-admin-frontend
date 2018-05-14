@@ -429,3 +429,17 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         assert response.status_code == 400
         assert "You must provide a name." in response.get_data(as_text=True)
         assert data_api_client.update_user.call_args_list == []
+
+    def test_strip_whitespace_from_admin_user_name(self, data_api_client):
+        self.user_role = "admin-manager"
+        data_api_client.get_user.return_value = self.admin_user_to_edit
+        self.client.post(
+            "/admin/admin-users/2345/edit",
+            data={
+                "edit_admin_name": "Lady Myria Lejean    ",
+                "edit_admin_permissions": "admin",
+                "edit_admin_status": "True"
+            }
+        )
+        data_api_client.update_user.assert_called_once()
+        assert data_api_client.update_user.call_args[1]["name"] == "Lady Myria Lejean"
