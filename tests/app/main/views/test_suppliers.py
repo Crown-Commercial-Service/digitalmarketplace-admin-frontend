@@ -1190,12 +1190,20 @@ class TestListCountersignedAgreementFile(LoggedInApplicationTest):
 
 
 @freeze_time('2016-12-25 06:30:01')
-@mock.patch('app.main.views.suppliers.data_api_client')
 @mock.patch('app.main.views.suppliers.s3')
 class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
-    def test_countersigned_agreement_displays_error_for_wrong_format(self, s3, data_api_client):
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def test_countersigned_agreement_displays_error_for_wrong_format(self, s3):
         s3.S3.return_value.get_key.return_value = {
             'size': '7050',
             'path': u'g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf',
@@ -1203,7 +1211,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             'last_modified': u'2016-01-15T12:58:08.000000Z',
             'filename': u'93495-countersigned-framework-agreement'
         }
-        data_api_client.get_supplier_framework_info.return_value = \
+        self.data_api_client.get_supplier_framework_info.return_value = \
             {"frameworkInterest": {
                 "onFramework": True,
                 "agreementStatus": "signed",
@@ -1219,7 +1227,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
         assert 'This must be a pdf' in response.get_data(as_text=True)
         assert response.status_code == 200
 
-    def test_can_upload_countersigned_agreement_for_signed_agreement(self, s3, data_api_client):
+    def test_can_upload_countersigned_agreement_for_signed_agreement(self, s3):
         expected_countersign_path = 'g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf'
         s3.S3.return_value.get_key.return_value = {
             'size': '7050',
@@ -1228,7 +1236,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             'last_modified': u'2016-01-15T12:58:08.000000Z',
             'filename': u'1234-countersigned-framework-agreement'
         }
-        data_api_client.get_supplier_framework_info.return_value = {
+        self.data_api_client.get_supplier_framework_info.return_value = {
             "frameworkInterest": {
                 "onFramework": True,
                 "agreementStatus": "signed",
@@ -1242,7 +1250,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             data={'countersigned_agreement': (BytesIO(b"this is a test"), 'countersigned_agreement.pdf')}
         )
 
-        data_api_client.approve_agreement_for_countersignature.assert_called_once_with(
+        self.data_api_client.approve_agreement_for_countersignature.assert_called_once_with(
             1212,
             'test@example.com',
             '1234'
@@ -1256,13 +1264,13 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             download_filename='Supplier_Mc_Supply_Face-1234-agreement-countersignature.pdf'
         )
 
-        data_api_client.update_framework_agreement.assert_called_once_with(
+        self.data_api_client.update_framework_agreement.assert_called_once_with(
             1212,
             {"countersignedAgreementPath": expected_countersign_path},
             'test@example.com'
         )
 
-        data_api_client.create_audit_event.assert_called_once_with(
+        self.data_api_client.create_audit_event.assert_called_once_with(
             audit_type=AuditTypes.upload_countersigned_agreement,
             user='test@example.com',
             object_type='suppliers',
@@ -1273,7 +1281,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == 'http://localhost/admin/suppliers/1234/countersigned-agreements/g-cloud-7'
 
-    def test_can_upload_countersigned_agreement_for_already_countersigned_agreement(self, s3, data_api_client):
+    def test_can_upload_countersigned_agreement_for_already_countersigned_agreement(self, s3):
         s3.S3.return_value.get_key.return_value = {
             'size': '7050',
             'path': u'g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf',
@@ -1281,7 +1289,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             'last_modified': u'2016-01-15T12:58:08.000000Z',
             'filename': u'1234-countersigned-framework-agreement'
         }
-        data_api_client.get_supplier_framework_info.return_value = \
+        self.data_api_client.get_supplier_framework_info.return_value = \
             {"frameworkInterest": {
                 "onFramework": True,
                 "agreementStatus": "countersigned",
@@ -1295,7 +1303,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
                                                                  'countersigned_agreement.pdf'),
                                     ))
 
-        assert data_api_client.approve_agreement_for_countersignature.call_args_list == []
+        assert self.data_api_client.approve_agreement_for_countersignature.call_args_list == []
 
         s3.S3.return_value.save.assert_called_once_with(
             "g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf",
@@ -1305,13 +1313,13 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             download_filename='Supplier_Mc_Supply_Face-1234-agreement-countersignature.pdf'
         )
 
-        data_api_client.update_framework_agreement.assert_called_once_with(
+        self.data_api_client.update_framework_agreement.assert_called_once_with(
             1212,
             {"countersignedAgreementPath": "g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf"},  # noqa
             'test@example.com'
         )
 
-        data_api_client.create_audit_event.assert_called_once_with(
+        self.data_api_client.create_audit_event.assert_called_once_with(
             audit_type=AuditTypes.upload_countersigned_agreement,
             user='test@example.com',
             object_type='suppliers',
@@ -1324,7 +1332,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == 'http://localhost/admin/suppliers/1234/countersigned-agreements/g-cloud-7'
 
-    def test_can_upload_countersigned_agreement_for_framework_without_declaration(self, s3, data_api_client):
+    def test_can_upload_countersigned_agreement_for_framework_without_declaration(self, s3):
         s3.S3.return_value.get_key.return_value = {
             'size': '7050',
             'path': u'g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf',
@@ -1332,14 +1340,14 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             'last_modified': u'2016-01-15T12:58:08.000000Z',
             'filename': u'1234-countersigned-framework-agreement'
         }
-        data_api_client.get_supplier_framework_info.return_value = \
+        self.data_api_client.get_supplier_framework_info.return_value = \
             {"frameworkInterest": {
                 "onFramework": True,
                 "agreementStatus": "signed",
                 "agreementId": 1212,
                 "countersignedPath": None
             }}
-        data_api_client.get_supplier.return_value = \
+        self.data_api_client.get_supplier.return_value = \
             {"suppliers": {
                 "name": "DM Supplier Name"
             }}
@@ -1349,7 +1357,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
                                                                  'countersigned_agreement.pdf'),
                                     ))
 
-        data_api_client.approve_agreement_for_countersignature.assert_called_once_with(
+        self.data_api_client.approve_agreement_for_countersignature.assert_called_once_with(
             1212,
             'test@example.com',
             '1234'
@@ -1363,7 +1371,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             download_filename='DM_Supplier_Name-1234-agreement-countersignature.pdf'
         )
 
-        data_api_client.update_framework_agreement.assert_called_once_with(
+        self.data_api_client.update_framework_agreement.assert_called_once_with(
             1212,
             {
                 "countersignedAgreementPath": "g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf"},  # noqa
@@ -1372,7 +1380,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
 
         assert response.status_code == 302
         assert response.location == 'http://localhost/admin/suppliers/1234/countersigned-agreements/g-cloud-7'
-        data_api_client.create_audit_event.assert_called_once_with(
+        self.data_api_client.create_audit_event.assert_called_once_with(
             audit_type=AuditTypes.upload_countersigned_agreement,
             user='test@example.com',
             object_type='suppliers',
