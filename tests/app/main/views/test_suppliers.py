@@ -1440,7 +1440,6 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
         assert response.status_code == 200
 
 
-@mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
 @mock.patch('app.main.views.suppliers.s3')
 class TestViewingSignedAgreement(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
@@ -1463,55 +1462,59 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
         },
     )
 
-    def test_should_404_if_supplier_does_not_exist(self, s3, data_api_client):
-        data_api_client.get_supplier.side_effect = APIError(Response(404))
-
-        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
-
-        assert response.status_code == 404
-        data_api_client.get_supplier.assert_called_with('1234')
-        assert data_api_client.get_framework.call_args_list == []
-
-    def test_should_404_if_framework_does_not_exist(self, s3, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.get_framework.side_effect = APIError(Response(404))
-
-        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
-
-        assert response.status_code == 404
-        data_api_client.get_supplier.assert_called_once_with('1234')
-        data_api_client.get_framework.assert_called_once_with('g-cloud-8')
-
-    def test_should_404_if_agreement_not_returned(self, s3, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
-        not_returned = self.load_example_listing('supplier_framework_response')
-        not_returned['frameworkInterest']['agreementReturned'] = False
-        data_api_client.get_supplier_framework_info.return_value = not_returned
-        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
-
-        assert response.status_code == 404
-        data_api_client.get_supplier.assert_called_once_with('1234')
-        data_api_client.get_framework.assert_called_once_with('g-cloud-8')
-        data_api_client.get_supplier_framework_info.assert_called_once_with('1234', 'g-cloud-8')
-
-    def test_should_404_if_agreement_has_no_version(self, s3, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.get_framework.return_value = {'frameworks': {}}
-        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
-
-        assert response.status_code == 404
-        data_api_client.get_supplier.assert_called_once_with('1234')
-        data_api_client.get_framework.assert_called_once_with('g-cloud-8')
-
-    def test_should_show_agreement_details_on_page(self, s3, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
-        data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+        self.data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
+        self.data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+        self.data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
             'supplier_framework_response'
         )
 
-        data_api_client.find_services_iter.return_value = iter(self.services_response)
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def test_should_404_if_supplier_does_not_exist(self, s3):
+        self.data_api_client.get_supplier.side_effect = APIError(Response(404))
+
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+
+        assert response.status_code == 404
+        self.data_api_client.get_supplier.assert_called_with('1234')
+        assert self.data_api_client.get_framework.call_args_list == []
+
+    def test_should_404_if_framework_does_not_exist(self, s3):
+        self.data_api_client.get_framework.side_effect = APIError(Response(404))
+
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+
+        assert response.status_code == 404
+        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_framework.assert_called_once_with('g-cloud-8')
+
+    def test_should_404_if_agreement_not_returned(self, s3):
+        not_returned = self.load_example_listing('supplier_framework_response')
+        not_returned['frameworkInterest']['agreementReturned'] = False
+        self.data_api_client.get_supplier_framework_info.return_value = not_returned
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+
+        assert response.status_code == 404
+        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_framework.assert_called_once_with('g-cloud-8')
+        self.data_api_client.get_supplier_framework_info.assert_called_once_with('1234', 'g-cloud-8')
+
+    def test_should_404_if_agreement_has_no_version(self, s3):
+        self.data_api_client.get_framework.return_value = {'frameworks': {}}
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+
+        assert response.status_code == 404
+        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_framework.assert_called_once_with('g-cloud-8')
+
+    def test_should_show_agreement_details_on_page(self, s3):
+        self.data_api_client.find_services_iter.return_value = iter(self.services_response)
 
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
             mock_get_url.return_value = "http://example.com/document/1234.pdf"
@@ -1535,24 +1538,13 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
             assert len(document.xpath('//p[contains(text(), "Uploader Name")]')) == 1
             assert len(document.xpath('//span[contains(text(), "uploader@email.com")]')) == 1
 
-    def test_should_404_if_no_signed_url(self, s3, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
-        data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
-            'supplier_framework_response'
-        )
+    def test_should_404_if_no_signed_url(self, s3):
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
             mock_get_url.return_value = None
             response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
             assert response.status_code == 404
 
-    def test_should_embed_for_pdf_file(self, s3, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
-        data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
-            'supplier_framework_response'
-        )
-
+    def test_should_embed_for_pdf_file(self, s3):
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
             mock_get_url.return_value = "http://example.com/document/1234.pdf"
             response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
@@ -1561,14 +1553,12 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
             assert len(document.xpath('//embed[@src="http://example.com/document/1234.pdf"]')) == 1
             assert len(document.xpath('//img[@src="http://example.com/document/1234.pdf"]')) == 0
 
-    def test_should_img_for_image_file(self, s3, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
+    def test_should_img_for_image_file(self, s3):
         supplier_framework_info = self.load_example_listing(
             'supplier_framework_response'
         )
         supplier_framework_info['frameworkInterest']['agreementPath'] = 'path/to/img.jpg'
-        data_api_client.get_supplier_framework_info.return_value = supplier_framework_info
+        self.data_api_client.get_supplier_framework_info.return_value = supplier_framework_info
 
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
             mock_get_url.return_value = "http://example.com/document/1234.png"
@@ -1585,13 +1575,8 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
         ("admin-framework-manager", 200),
         ("admin-manager", 403),
     ])
-    def test_view_signed_agreement_accessible_to_specific_user_roles(self, s3, data_api_client, role, expected_code):
+    def test_view_signed_agreement_accessible_to_specific_user_roles(self, s3, role, expected_code):
         self.user_role = role
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
-        data_api_client.get_supplier_framework_info.return_value = self.load_example_listing(
-            'supplier_framework_response'
-        )
 
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
             mock_get_url.return_value = "http://example.com/document/1234.pdf"
