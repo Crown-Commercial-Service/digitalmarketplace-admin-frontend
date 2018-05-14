@@ -1586,9 +1586,18 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
             assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
 
-@mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
 class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+        self.data_api_client.put_signed_agreement_on_hold.return_value = self.put_signed_agreement_on_hold_return_value
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
 
     @property
     def put_signed_agreement_on_hold_return_value(self):
@@ -1601,22 +1610,21 @@ class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
             },
         }
 
-    def test_it_fails_if_not_ccs_admin(self, data_api_client):
+    def test_it_fails_if_not_ccs_admin(self):
         self.user_role = 'admin'
-        data_api_client.put_signed_agreement_on_hold.return_value = self.put_signed_agreement_on_hold_return_value
+
         res = self.client.post('/admin/suppliers/agreements/123/on-hold', data={"nameOfOrganisation": "Test"})
 
-        assert data_api_client.put_signed_agreement_on_hold.call_args_list == []
+        assert self.data_api_client.put_signed_agreement_on_hold.call_args_list == []
         assert res.status_code == 403
 
-    def test_happy_path(self, data_api_client):
-        data_api_client.put_signed_agreement_on_hold.return_value = self.put_signed_agreement_on_hold_return_value
+    def test_happy_path(self):
         res = self.client.post(
             "/admin/suppliers/agreements/123/on-hold",
             data={"nameOfOrganisation": "Test"},
         )
 
-        data_api_client.put_signed_agreement_on_hold.assert_called_once_with('123', 'test@example.com')
+        self.data_api_client.put_signed_agreement_on_hold.assert_called_once_with('123', 'test@example.com')
         self.assert_flashes("The agreement for Test was put on hold.")
         assert res.status_code == 302
 
@@ -1624,14 +1632,13 @@ class TestPutSignedAgreementOnHold(LoggedInApplicationTest):
         assert parsed_location.path == "/admin/suppliers/4321/agreements/g-cloud-99-flake/next"
         assert parse_qs(parsed_location.query) == {}
 
-    def test_happy_path_with_next_status(self, data_api_client):
-        data_api_client.put_signed_agreement_on_hold.return_value = self.put_signed_agreement_on_hold_return_value
+    def test_happy_path_with_next_status(self):
         res = self.client.post(
             "/admin/suppliers/agreements/123/on-hold?next_status=on-hold",
             data={"nameOfOrganisation": "Test"},
         )
 
-        data_api_client.put_signed_agreement_on_hold.assert_called_once_with('123', 'test@example.com')
+        self.data_api_client.put_signed_agreement_on_hold.assert_called_once_with('123', 'test@example.com')
         self.assert_flashes("The agreement for Test was put on hold.")
         assert res.status_code == 302
 
