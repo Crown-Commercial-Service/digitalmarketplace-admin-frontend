@@ -1009,13 +1009,21 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
             '1234', 'g-cloud-7', declaration, 'test@example.com')
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
 @mock.patch('app.main.views.suppliers.download_agreement_file')
 class TestDownloadSignedAgreementFile(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
 
-    def test_download_agreement_is_called_with_the_right_parameters(self, download_agreement_file, data_api_client):
-        data_api_client.get_supplier_framework_info.return_value = {
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def test_download_agreement_is_called_with_the_right_parameters(self, download_agreement_file):
+        self.data_api_client.get_supplier_framework_info.return_value = {
             'frameworkInterest': {'agreementPath': '/path/to/file/in/s3/1234-signed-agreement-file.pdf'}
         }
         # Mock out a response from download_agreement_file() - we don't care what it is
@@ -1024,10 +1032,22 @@ class TestDownloadSignedAgreementFile(LoggedInApplicationTest):
         download_agreement_file.assert_called_once_with('1234', 'g-cloud-7', 'signed-agreement-file.pdf')
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
 @mock.patch('app.main.views.suppliers.s3')
 class TestDownloadAgreementFile(LoggedInApplicationTest):
     user_role = 'admin-ccs-sourcing'
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+        self.data_api_client.get_supplier_framework_info.return_value = {
+            'frameworkInterest': {'declaration': {'key': 'Supplier name'}}
+        }
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
 
     @pytest.mark.parametrize("role, expected_code", [
         ("admin", 403),
@@ -1036,26 +1056,23 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
         ("admin-framework-manager", 302),
         ("admin-manager", 403),
     ])
-    def test_download_agreement_file_accessible_to_specific_user_roles(self, s3, data_api_client, role, expected_code):
+    def test_download_agreement_file_accessible_to_specific_user_roles(self, s3, role, expected_code):
         self.user_role = role
-        data_api_client.get_supplier_framework_info.return_value = {
-            'frameworkInterest': {'declaration': {'key': 'Supplier name'}}
-        }
         s3.S3.return_value.get_signed_url.return_value = 'http://foo/blah?extra'
 
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
-    def test_should_404_if_no_supplier_framework_declaration(self, s3, data_api_client):
-        data_api_client.get_supplier_framework_info.return_value = {
+    def test_should_404_if_no_supplier_framework_declaration(self, s3):
+        self.data_api_client.get_supplier_framework_info.return_value = {
             'frameworkInterest': {'declaration': None}
         }
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-7/foo.pdf')
         assert response.status_code == 404
 
-    def test_should_404_if_document_does_not_exist(self, s3, data_api_client):
-        data_api_client.get_supplier_framework_info.return_value = {
+    def test_should_404_if_document_does_not_exist(self, s3):
+        self.data_api_client.get_supplier_framework_info.return_value = {
             'frameworkInterest': {'declaration': {'SQ1-1a': 'Supplier name'}}
         }
         s3.S3.return_value.get_signed_url.return_value = None
@@ -1065,10 +1082,7 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
         s3.S3.return_value.get_signed_url.assert_called_once_with('g-cloud-7/agreements/1234/1234-foo.pdf')
         assert response.status_code == 404
 
-    def test_should_redirect(self, s3, data_api_client):
-        data_api_client.get_supplier_framework_info.return_value = {
-            'frameworkInterest': {'declaration': {'key': 'Supplier name'}}
-        }
+    def test_should_redirect(self, s3):
         s3.S3.return_value.get_signed_url.return_value = 'http://foo/blah?extra'
 
         self.app.config['DM_ASSETS_URL'] = 'https://example'
@@ -1079,10 +1093,7 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == 'https://example/blah?extra'
 
-    def test_admin_should_be_able_to_download_countersigned_agreement(self, s3, data_api_client):
-        data_api_client.get_supplier_framework_info.return_value = {
-            'frameworkInterest': {'declaration': {'key': 'value'}}
-        }
+    def test_admin_should_be_able_to_download_countersigned_agreement(self, s3):
         s3.S3.return_value.get_signed_url.return_value = 'http://foo/blah?extra'
         self.app.config['DM_ASSETS_URL'] = 'https://example'
 
