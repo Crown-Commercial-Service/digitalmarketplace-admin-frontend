@@ -84,9 +84,9 @@ def edit_admin_user(admin_user_id):
 
     if edit_admin_user_form.validate_on_submit():
         try:
-            edited_admin_name = request.form.get("edit_admin_name")
-            edited_admin_permissions = request.form.get("edit_admin_permissions")
-            edited_admin_status = bool(strtobool(request.form.get("edit_admin_status")))
+            edited_admin_name = edit_admin_user_form.edit_admin_name.data
+            edited_admin_permissions = edit_admin_user_form.edit_admin_permissions.data
+            edited_admin_status = strtobool(edit_admin_user_form.edit_admin_status.data)
 
             data_api_client.update_user(
                 admin_user_id,
