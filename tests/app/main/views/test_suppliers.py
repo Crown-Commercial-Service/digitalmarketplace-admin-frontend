@@ -1773,7 +1773,6 @@ class TestUnapproveAgreement(LoggedInApplicationTest):
         assert parse_qs(parsed_location.query) == {"next_status": ["on-hold"]}
 
 
-@mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
 @mock.patch('app.main.views.suppliers.get_signed_url')
 @mock.patch('app.main.views.suppliers.s3')
 class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
@@ -1781,20 +1780,30 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
 
     decl_nameOfOrganization = u"\u00a3\u00a3\u00a3 4 greengrocer's"
 
-    def set_mocks(self, s3, get_signed_url, data_api_client, **kwargs):
-        data_api_client.get_supplier.return_value = {
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+        self.data_api_client.get_supplier.return_value = {
             'suppliers': {
                 "id": 1234,
             },
         }
-        data_api_client.get_framework.return_value = {
+        self.data_api_client.get_framework.return_value = {
             'frameworks': {
                 'frameworkAgreementVersion': 'v1.0',
                 'slug': 'g-cloud-8',
                 'status': 'live',
             },
         }
-        data_api_client.get_supplier_framework_info.return_value = {
+        self.data_api_client.find_services_iter.return_value = []
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def set_mocks(self, s3, get_signed_url, **kwargs):
+        self.data_api_client.get_supplier_framework_info.return_value = {
             'frameworkInterest': {
                 'agreementReturned': True,
                 'agreementStatus': kwargs['agreement_status'],
@@ -1809,7 +1818,6 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
                 "frameworkSlug": "g-cloud-8",
             }
         }
-        data_api_client.find_services_iter.return_value = []
         get_signed_url.return_value = '#'
         s3.S3.return_value.list.return_value = [
             {'path': 'g-cloud-8/agreements/4321/4321-signed-framework-agreement.png',
@@ -1833,10 +1841,10 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         ("admin-manager", 403, None),
     ])
     def test_get_page_should_only_be_accessible_to_specific_user_roles(
-            self, s3, get_signed_url, data_api_client, role, expected_code, read_only
+        self, s3, get_signed_url, role, expected_code, read_only
     ):
         self.user_role = role
-        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
+        self.set_mocks(s3, get_signed_url, agreement_status='signed')
         response = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8")
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
@@ -1847,8 +1855,8 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
             assert len(input_elems) == 0
 
     @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
-    def test_buttons_shown_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, data_api_client, next_status):
-        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='signed')
+    def test_buttons_shown_if_ccs_admin_and_agreement_signed(self, s3, get_signed_url, next_status):
+        self.set_mocks(s3, get_signed_url, agreement_status='signed')
 
         res = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8{}".format(
             "" if next_status is None else "?next_status={}".format(next_status)
@@ -1898,8 +1906,8 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert not document.xpath("//form[contains(@action, 'unapprove')]")
 
     @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
-    def test_only_counter_sign_shown_if_agreement_on_hold(self, s3, get_signed_url, data_api_client, next_status):
-        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='on-hold')
+    def test_only_counter_sign_shown_if_agreement_on_hold(self, s3, get_signed_url, next_status):
+        self.set_mocks(s3, get_signed_url, agreement_status='on-hold')
 
         res = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8{}".format(
             "" if next_status is None else "?next_status={}".format(next_status)
@@ -1938,8 +1946,8 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert not document.xpath("//form[contains(@action, 'unapprove')]")
 
     @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
-    def test_cancel_shown_if_agreement_approved(self, s3, get_signed_url, data_api_client, next_status):
-        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='approved')
+    def test_cancel_shown_if_agreement_approved(self, s3, get_signed_url, next_status):
+        self.set_mocks(s3, get_signed_url, agreement_status='approved')
 
         res = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8{}".format(
             "" if next_status is None else "?next_status={}".format(next_status)
@@ -1974,8 +1982,8 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         )
 
     @pytest.mark.parametrize("next_status", (None, "on-hold", "approved,countersigned",))
-    def test_none_shown_if_agreement_countersigned(self, s3, get_signed_url, data_api_client, next_status):
-        self.set_mocks(s3, get_signed_url, data_api_client, agreement_status='countersigned')
+    def test_none_shown_if_agreement_countersigned(self, s3, get_signed_url, next_status):
+        self.set_mocks(s3, get_signed_url, agreement_status='countersigned')
 
         res = self.client.get("/admin/suppliers/1234/agreements/g-cloud-8{}".format(
             "" if next_status is None else "?next_status={}".format(next_status)
