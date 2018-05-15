@@ -9,8 +9,18 @@ from lxml import html
 from ...helpers import LoggedInApplicationTest
 
 
-@mock.patch('app.main.views.users.data_api_client')
 class TestUsersView(LoggedInApplicationTest):
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.users.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+        self.data_api_client.get_user.return_value = self.load_example_listing("user_response")
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 200),
         ("admin-ccs-category", 200),
@@ -18,15 +28,14 @@ class TestUsersView(LoggedInApplicationTest):
         ("admin-manager", 403),
         ("admin-framework-manager", 403),
     ])
-    def test_find_users_page_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+    def test_find_users_page_is_only_accessible_to_specific_user_roles(self, role, expected_code):
         self.user_role = role
-        data_api_client.get_user.return_value = self.load_example_listing("user_response")
         response = self.client.get('/admin/users?email_address=some@email.com')
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
-    def test_should_show_find_users_page(self, data_api_client):
-        data_api_client.get_user.return_value = None
+    def test_should_show_find_users_page(self):
+        self.data_api_client.get_user.return_value = None
         response = self.client.get('/admin/users')
         page_html = response.get_data(as_text=True)
         document = html.fromstring(page_html)
@@ -37,8 +46,8 @@ class TestUsersView(LoggedInApplicationTest):
         assert "Sorry, we couldn't find an account with that email address" not in page_html
         assert heading == "Find a user"
 
-    def test_should_be_a_404_if_user_not_found(self, data_api_client):
-        data_api_client.get_user.return_value = None
+    def test_should_be_a_404_if_user_not_found(self):
+        self.data_api_client.get_user.return_value = None
         response = self.client.get('/admin/users?email_address=some@email.com')
         assert response.status_code == 404
 
@@ -52,8 +61,8 @@ class TestUsersView(LoggedInApplicationTest):
             '//p[@class="summary-item-no-content"]//text()')[0].strip()
         assert page_title == "No users to show"
 
-    def test_should_be_a_404_if_no_email_provided(self, data_api_client):
-        data_api_client.get_user.return_value = None
+    def test_should_be_a_404_if_no_email_provided(self):
+        self.data_api_client.get_user.return_value = None
         response = self.client.get('/admin/users?email_address=')
         assert response.status_code == 404
 
@@ -67,11 +76,11 @@ class TestUsersView(LoggedInApplicationTest):
             '//p[@class="summary-item-no-content"]//text()')[0].strip()
         assert page_title == "No users to show"
 
-    def test_should_show_buyer_user(self, data_api_client):
+    def test_should_show_buyer_user(self):
         buyer = self.load_example_listing("user_response")
         buyer.pop('supplier', None)
         buyer['users']['role'] = 'buyer'
-        data_api_client.get_user.return_value = buyer
+        self.data_api_client.get_user.return_value = buyer
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         assert response.status_code == 200
 
@@ -113,9 +122,7 @@ class TestUsersView(LoggedInApplicationTest):
             '//input[@class="button-destructive"]')[0].value
         assert button == 'Deactivate'
 
-    def test_should_show_supplier_user(self, data_api_client):
-        buyer = self.load_example_listing("user_response")
-        data_api_client.get_user.return_value = buyer
+    def test_should_show_supplier_user(self):
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         assert response.status_code == 200
 
@@ -133,11 +140,11 @@ class TestUsersView(LoggedInApplicationTest):
             '//tr[@class="summary-item-row"]//td/span/a')[0]
         assert supplier_link.attrib['href'] == '/admin/suppliers?supplier_id=1000'
 
-    def test_should_show_unlock_button(self, data_api_client):
+    def test_should_show_unlock_button(self):
         buyer = self.load_example_listing("user_response")
         buyer['users']['locked'] = True
 
-        data_api_client.get_user.return_value = buyer
+        self.data_api_client.get_user.return_value = buyer
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         assert response.status_code == 200
 
@@ -153,10 +160,7 @@ class TestUsersView(LoggedInApplicationTest):
         assert unlock_button == 'Unlock'
         assert return_link.attrib['value'] == '/admin/users?email_address=test.user%40sme.com'
 
-    def test_should_show_deactivate_button(self, data_api_client):
-        buyer = self.load_example_listing("user_response")
-
-        data_api_client.get_user.return_value = buyer
+    def test_should_show_deactivate_button(self):
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         assert response.status_code == 200
 
@@ -173,7 +177,6 @@ class TestUsersView(LoggedInApplicationTest):
         assert return_link.attrib['value'] == '/admin/users?email_address=test.user%40sme.com'
 
 
-@mock.patch('app.main.views.users.data_api_client')
 class TestUserListPage(LoggedInApplicationTest):
     user_role = 'admin-framework-manager'
 
@@ -183,6 +186,15 @@ class TestUserListPage(LoggedInApplicationTest):
         'status': 'live'
     }
 
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.users.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 403),
         ("admin-ccs-category", 403),
@@ -190,14 +202,14 @@ class TestUserListPage(LoggedInApplicationTest):
         ("admin-framework-manager", 200),
         ("admin-manager", 403),
     ])
-    def test_get_user_lists_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+    def test_get_user_lists_is_only_accessible_to_specific_user_roles(self, role, expected_code):
         self.user_role = role
         response = self.client.get("/admin/frameworks/g-cloud-9/users")
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
-    def test_get_user_lists_shows_framework_name_in_heading(self, data_api_client):
-        data_api_client.get_framework.return_value = {"frameworks": self._framework}
+    def test_get_user_lists_shows_framework_name_in_heading(self):
+        self.data_api_client.get_framework.return_value = {"frameworks": self._framework}
         response = self.client.get("/admin/frameworks/g-cloud-9/users")
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -206,7 +218,6 @@ class TestUserListPage(LoggedInApplicationTest):
         assert page_heading == "Download supplier lists for G-Cloud 9"
 
 
-@mock.patch('app.main.views.users.data_api_client')
 class TestUsersExport(LoggedInApplicationTest):
     user_role = 'admin-framework-manager'
     _bad_statuses = ['coming', 'expired']
@@ -236,6 +247,15 @@ class TestUsersExport(LoggedInApplicationTest):
         "user_research_opted_in": True
     }
 
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.users.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
     @pytest.mark.parametrize("role, url_params, expected_code", [
         ("admin", "?user_research_opted_in=True", 200),
         ("admin", "?user_research_opted_in=False", 403),
@@ -245,13 +265,13 @@ class TestUsersExport(LoggedInApplicationTest):
         ("admin-framework-manager", "?on_framework_only=False", 200),
         ("admin-manager", "", 403),
     ])
-    def test_supplier_csv_is_only_accessible_to_specific_user_roles(self, data_api_client, role,
+    def test_supplier_csv_is_only_accessible_to_specific_user_roles(self, role,
                                                                     url_params, expected_code):
         self.user_role = role
         users = [self._supplier_user]
-        data_api_client.export_users.return_value = {"users": copy.copy(users)}
-        data_api_client.find_frameworks.return_value = {"frameworks": [self._valid_framework]}
-        data_api_client.get_framework.return_value = {"frameworks": self._valid_framework}
+        self.data_api_client.export_users.return_value = {"users": copy.copy(users)}
+        self.data_api_client.find_frameworks.return_value = {"frameworks": [self._valid_framework]}
+        self.data_api_client.get_framework.return_value = {"frameworks": self._valid_framework}
 
         response = self.client.get(
             '/admin/frameworks/{}/users/download{}'.format(
@@ -263,13 +283,13 @@ class TestUsersExport(LoggedInApplicationTest):
 
         assert response.status_code == expected_code
 
-    def test_download_csv_for_all_framework_users(self, data_api_client):
+    def test_download_csv_for_all_framework_users(self):
         users = [self._supplier_user]
 
-        data_api_client.export_users.return_value = {"users": copy.copy(users)}
-        data_api_client.find_frameworks.return_value = {"frameworks": [self._valid_framework]}
+        self.data_api_client.export_users.return_value = {"users": copy.copy(users)}
+        self.data_api_client.find_frameworks.return_value = {"frameworks": [self._valid_framework]}
 
-        data_api_client.get_framework.return_value = {"frameworks": self._valid_framework}
+        self.data_api_client.get_framework.return_value = {"frameworks": self._valid_framework}
         response = self.client.get(
             '/admin/frameworks/{}/users/download'.format(
                 self._valid_framework['slug']
@@ -304,7 +324,7 @@ class TestUsersExport(LoggedInApplicationTest):
                 [str(val) for key, val in user.items() if key in expected_headings]
             ) == sorted(rows[index + 1])
 
-    def test_download_csv_for_on_framework_only(self, data_api_client):
+    def test_download_csv_for_on_framework_only(self):
         users = [
             self._supplier_user,
             {
@@ -320,10 +340,10 @@ class TestUsersExport(LoggedInApplicationTest):
             }
         ]
 
-        data_api_client.export_users.return_value = {"users": copy.copy(users)}
-        data_api_client.find_frameworks.return_value = {"frameworks": [self._valid_framework]}
+        self.data_api_client.export_users.return_value = {"users": copy.copy(users)}
+        self.data_api_client.find_frameworks.return_value = {"frameworks": [self._valid_framework]}
 
-        data_api_client.get_framework.return_value = {"frameworks": self._valid_framework}
+        self.data_api_client.get_framework.return_value = {"frameworks": self._valid_framework}
         response = self.client.get(
             '/admin/frameworks/{}/users/download?on_framework_only=True'.format(
                 self._valid_framework['slug'],
@@ -342,14 +362,22 @@ class TestUsersExport(LoggedInApplicationTest):
         assert rows[1] == ["test.user@sme2.com", "Test User 2", "2"]
 
 
-@mock.patch('app.main.views.users.data_api_client')
 class TestBuyersExport(LoggedInApplicationTest):
     user_role = "admin-framework-manager"
 
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.users.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
     @pytest.mark.parametrize('user_role', ('admin', 'admin-framework-manager'))
-    def test_csv_is_sorted_by_name(self, data_api_client, user_role):
+    def test_csv_is_sorted_by_name(self, user_role):
         self.user_role = user_role
-        data_api_client.find_users_iter.return_value = [
+        self.data_api_client.find_users_iter.return_value = [
             {
                 'id': 1,
                 "name": "Zebedee",
@@ -393,9 +421,9 @@ class TestBuyersExport(LoggedInApplicationTest):
         assert [row[1] for row in rows[1:5]] == ['Brian', 'Dougal', 'Florence', 'Zebedee']
 
     @pytest.mark.parametrize('user_role', ('admin', 'admin-framework-manager'))
-    def test_response_is_a_csv(self, data_api_client, user_role):
+    def test_response_is_a_csv(self, user_role):
         self.user_role = user_role
-        data_api_client.find_users_iter.return_value = [
+        self.data_api_client.find_users_iter.return_value = [
             {
                 'id': 1,
                 "name": "Chris",
@@ -411,11 +439,11 @@ class TestBuyersExport(LoggedInApplicationTest):
         assert response.mimetype == 'text/csv'
 
     @pytest.mark.parametrize('user_role', ('admin', 'admin-framework-manager'))
-    def test_filename_includes_a_timestamp(self, data_api_client, user_role):
+    def test_filename_includes_a_timestamp(self, user_role):
         self.user_role = user_role
         with mock.patch('app.main.views.users.datetime') as mock_date:
             mock_date.utcnow.return_value = datetime(2016, 8, 5, 16, 0, 0)
-            data_api_client.find_users_iter.return_value = [
+            self.data_api_client.find_users_iter.return_value = [
                 {
                     'id': 1,
                     "name": "Chris",
@@ -435,9 +463,9 @@ class TestBuyersExport(LoggedInApplicationTest):
         ("admin-framework-manager", 200),
         ("admin-manager", 403),
     ])
-    def test_buyer_csv_is_only_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
+    def test_buyer_csv_is_only_accessible_to_specific_user_roles(self, role, expected_code):
         self.user_role = role
-        data_api_client.find_users_iter.return_value = [
+        self.data_api_client.find_users_iter.return_value = [
             {
                 'id': 1,
                 "name": "Chris",
@@ -451,9 +479,9 @@ class TestBuyersExport(LoggedInApplicationTest):
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
-    def test_response_data_has_correct_buyer_info_for_framework_manager_role(self, data_api_client):
+    def test_response_data_has_correct_buyer_info_for_framework_manager_role(self):
         self.user_role = "admin-framework-manager"
-        data_api_client.find_users_iter.return_value = [
+        self.data_api_client.find_users_iter.return_value = [
             {
                 'id': 1,
                 "name": "Chris",
@@ -484,10 +512,10 @@ class TestBuyersExport(LoggedInApplicationTest):
             ['topher@gov.uk', 'Topher'],
         ]
 
-    def test_response_data_has_correct_buyer_info_for_admin_role(self, data_api_client):
+    def test_response_data_has_correct_buyer_info_for_admin_role(self):
         self.user_role = "admin"
 
-        data_api_client.find_users_iter.return_value = [
+        self.data_api_client.find_users_iter.return_value = [
             {
                 'id': 1,
                 "name": "Chris",
@@ -546,6 +574,15 @@ class TestUserResearchParticipantsExport(LoggedInApplicationTest):
         'slug': 'g-cloud-8',
         'status': 'coming'
     }
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.users.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
 
     @pytest.mark.parametrize(
         ('role', 'exists'),
@@ -611,9 +648,10 @@ class TestUserResearchParticipantsExport(LoggedInApplicationTest):
         response = self.client.get('/admin/users/download/suppliers')
         assert response.status_code == status_code
 
-    @mock.patch('app.main.views.users.data_api_client')
-    def test_supplier_csvs_shown_for_valid_frameworks(self, data_api_client):
-        data_api_client.find_frameworks.return_value = {'frameworks': [self._valid_framework, self._invalid_framework]}
+    def test_supplier_csvs_shown_for_valid_frameworks(self):
+        self.data_api_client.find_frameworks.return_value = {
+            'frameworks': [self._valid_framework, self._invalid_framework]
+        }
 
         response = self.client.get('/admin/users/download/suppliers')
         assert response.status_code == 200
@@ -628,8 +666,7 @@ class TestUserResearchParticipantsExport(LoggedInApplicationTest):
         assert not document.xpath(href_xpath.format(self._invalid_framework['slug']))
         assert not 'User research participants on {}'.format(self._invalid_framework['name']) in text
 
-    @mock.patch('app.main.views.users.data_api_client')
-    def test_supplier_csvs_shown_in_alphabetical_name_order(self, data_api_client):
+    def test_supplier_csvs_shown_in_alphabetical_name_order(self):
         framework_1 = self._valid_framework.copy()
         framework_2 = self._valid_framework.copy()
         framework_3 = self._valid_framework.copy()
@@ -637,7 +674,7 @@ class TestUserResearchParticipantsExport(LoggedInApplicationTest):
         framework_2['name'] = 'bframework_1'
         framework_3['name'] = 'bframework_2'
 
-        data_api_client.find_frameworks.return_value = {'frameworks': [framework_3, framework_1, framework_2]}
+        self.data_api_client.find_frameworks.return_value = {'frameworks': [framework_3, framework_1, framework_2]}
 
         response = self.client.get('/admin/users/download/suppliers')
         assert response.status_code == 200
