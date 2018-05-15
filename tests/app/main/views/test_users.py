@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import copy
-from datetime import datetime
 
+from freezegun import freeze_time
 import mock
 import pytest
 from lxml import html
@@ -441,8 +441,7 @@ class TestBuyersExport(LoggedInApplicationTest):
     @pytest.mark.parametrize('user_role', ('admin', 'admin-framework-manager'))
     def test_filename_includes_a_timestamp(self, user_role):
         self.user_role = user_role
-        with mock.patch('app.main.views.users.datetime') as mock_date:
-            mock_date.utcnow.return_value = datetime(2016, 8, 5, 16, 0, 0)
+        with freeze_time("2016-08-05 16:00:00"):
             self.data_api_client.find_users_iter.return_value = [
                 {
                     'id': 1,
@@ -497,8 +496,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "createdAt": "2016-08-05T12:00:00.000000Z",
             },
         ]
-        with mock.patch('app.main.views.users.datetime') as mock_date:
-            mock_date.utcnow.return_value = datetime(2016, 8, 5, 16, 0, 0)
+        with freeze_time("2016-08-05 16:00:00"):
             response = self.client.get('/admin/users/download/buyers')
         assert response.status_code == 200
 
@@ -541,8 +539,7 @@ class TestBuyersExport(LoggedInApplicationTest):
                 "userResearchOptedIn": True
             },
         ]
-        with mock.patch('app.main.views.users.datetime') as mock_date:
-            mock_date.utcnow.return_value = datetime(2016, 8, 5, 16, 0, 0)
+        with freeze_time("2016-08-05 16:00:00"):
             response = self.client.get('/admin/users/download/buyers')
         assert response.status_code == 200
 
