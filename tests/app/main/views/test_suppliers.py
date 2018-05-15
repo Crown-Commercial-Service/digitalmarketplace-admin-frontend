@@ -196,12 +196,11 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert "29 June" in response.get_data(as_text=True)
         assert "No" in response.get_data(as_text=True)
 
-        assert '<input type="submit" class="button-destructive"  value="Deactivate" />' in \
-            response.get_data(as_text=True)
-        assert '<form action="/admin/suppliers/users/999/deactivate" method="post">' in response.get_data(as_text=True)
-        assert '<button class="button-save">Move user to this supplier</button>' in response.get_data(as_text=True)
-        assert '<form action="/admin/suppliers/1234/move-existing-user" method="post">' in \
-            response.get_data(as_text=True)
+        document = html.fromstring(response.get_data(as_text=True))
+        assert document.xpath('//input[@value="Deactivate"][@type="submit"][@class="button-destructive"]')
+        assert document.xpath('//form[@action="/admin/suppliers/users/999/deactivate"][@method="post"]')
+        assert document.xpath('//button[@class="button-save"][contains(text(), "Move user to this supplier")]')
+        assert document.xpath('//form[@action="/admin/suppliers/1234/move-existing-user"][@method="post"]')
 
     def test_should_show_unlock_button_if_user_locked(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
@@ -213,8 +212,10 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
 
         assert response.status_code == 200
-        assert '<form action="/admin/suppliers/users/999/unlock" method="post">' in response.get_data(as_text=True)
-        assert '<input type="submit" class="button-secondary"  value="Unlock" />' in response.get_data(as_text=True)
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert document.xpath('//form[@action="/admin/suppliers/users/999/unlock"][@method="post"]')
+        assert document.xpath('//input[@value="Unlock"][@type="submit"][@class="button-secondary"]')
 
     def test_should_show_activate_button_if_user_deactivated(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
@@ -226,8 +227,10 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
 
         assert response.status_code == 200
-        assert '<form action="/admin/suppliers/users/999/activate" method="post">' in response.get_data(as_text=True)
-        assert '<input type="submit" class="button-secondary"  value="Activate" />' in response.get_data(as_text=True)
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert document.xpath('//form[@action="/admin/suppliers/users/999/activate"][@method="post"]')
+        assert document.xpath('//input[@value="Activate"][@type="submit"][@class="button-secondary"]')
 
     def test_should_call_api_to_unlock_user(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
