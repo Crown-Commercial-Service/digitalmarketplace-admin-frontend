@@ -86,7 +86,7 @@ def edit_admin_user(admin_user_id):
         try:
             edited_admin_name = edit_admin_user_form.edit_admin_name.data
             edited_admin_permissions = edit_admin_user_form.edit_admin_permissions.data
-            edited_admin_status = strtobool(edit_admin_user_form.edit_admin_status.data)
+            edited_admin_status = bool(strtobool(edit_admin_user_form.edit_admin_status.data))
 
             data_api_client.update_user(
                 admin_user_id,
