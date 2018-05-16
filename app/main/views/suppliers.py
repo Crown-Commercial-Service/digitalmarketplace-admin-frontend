@@ -431,11 +431,11 @@ def find_supplier_users():
         abort(404)
 
     supplier = data_api_client.get_supplier(request.args['supplier_id'])
-    users = data_api_client.find_users(request.args.get("supplier_id"))
+    users = data_api_client.find_users_iter(request.args.get("supplier_id"))
 
     return render_template(
         "view_supplier_users.html",
-        users=users["users"],
+        users=users,
         invite_form=EmailAddressForm(),
         move_user_form=MoveUserForm(),
         supplier=supplier["suppliers"]
@@ -476,7 +476,7 @@ def move_user_to_new_supplier(supplier_id):
 
     try:
         suppliers = data_api_client.get_supplier(supplier_id)
-        users = data_api_client.find_users(supplier_id)
+        users = data_api_client.find_users_iter(supplier_id)
     except HTTPError as e:
         current_app.logger.error(str(e), supplier_id)
         if e.status_code != 404:
@@ -508,7 +508,7 @@ def move_user_to_new_supplier(supplier_id):
             "view_supplier_users.html",
             invite_form=EmailAddressForm(),
             move_user_form=move_user_form,
-            users=users["users"],
+            users=users,
             supplier=suppliers["suppliers"]
         ), 400
 
@@ -582,7 +582,7 @@ def invite_user(supplier_id):
 
     try:
         suppliers = data_api_client.get_supplier(supplier_id)
-        users = data_api_client.find_users(supplier_id)
+        users = data_api_client.find_users_iter(supplier_id)
     except HTTPError as e:
         current_app.logger.error(str(e), supplier_id)
         if e.status_code != 404:
@@ -619,6 +619,6 @@ def invite_user(supplier_id):
             "view_supplier_users.html",
             invite_form=invite_form,
             move_user_form=MoveUserForm(),
-            users=users["users"],
+            users=users,
             supplier=suppliers["suppliers"]
         ), 400
