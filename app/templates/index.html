@@ -99,7 +99,7 @@
 
         {% if current_user.has_any_role('admin-ccs-sourcing', 'admin-framework-manager') %}
         <p>
-          <a href="{{ url_for('.view_statistics', framework_slug=framework['slug']) }}">View application statistics</a>
+          <a href="{{ url_for('public.view_statistics', framework_slug=framework['slug']) }}">View application statistics</a>
         </p>
         {% endif %}
         {% if current_user.has_any_role('admin-framework-manager') %}

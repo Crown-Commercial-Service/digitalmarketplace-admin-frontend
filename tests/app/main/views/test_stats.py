@@ -1,29 +1,15 @@
 import mock
-import pytest
 from dmapiclient import HTTPError
 from dmapiclient.audit import AuditTypes
 
-from ...helpers import LoggedInApplicationTest
+from ...helpers import BaseApplicationTest
 
 
 @mock.patch('app.main.views.stats.data_api_client')
-class TestStats(LoggedInApplicationTest):
-    def setup_method(self, method, *args, **kwargs):
-        super(TestStats, self).setup_method(method, *args, **kwargs)
-        self.user_role = 'admin-ccs-sourcing'
-
-    @pytest.mark.parametrize("role,expected_code", [
-        ("admin", 403),
-        ("admin-ccs-category", 403),
-        ("admin-ccs-sourcing", 200),
-        ("admin-framework-manager", 200),
-        ("admin-manager", 403),
-    ])
-    def test_get_page_should_only_be_accessible_to_specific_user_roles(self, data_api_client, role, expected_code):
-        self.user_role = role
+class TestStats(BaseApplicationTest):
+    def test_get_page_should_be_publically_accessible(self, data_api_client):
         response = self.client.get('/admin/statistics/g-cloud-7')
-        actual_code = response.status_code
-        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+        assert response.status_code == 200, "Expected 200 OK without logged-in user"
 
     def test_get_stats_page(self, data_api_client):
         data_api_client.find_audit_events.return_value = {
