@@ -148,8 +148,18 @@ class TestSuppliersListView(LoggedInApplicationTest):
         self.data_api_client.get_supplier.assert_called_once_with("12345")
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
 class TestSupplierUsersView(LoggedInApplicationTest):
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+        self.data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        self.data_api_client.find_users_iter.return_value = self.load_example_listing("users_response")['users']
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
 
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 200),
@@ -158,11 +168,8 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         ("admin-framework-manager", 200),
         ("admin-manager", 403),
     ])
-    def test_supplier_users_accessible_to_users_with_right_roles(self, data_api_client, role, expected_code):
+    def test_supplier_users_accessible_to_users_with_right_roles(self, role, expected_code):
         self.user_role = role
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_users_iter.return_value = self.load_example_listing("users_response")['users']
-
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
@@ -172,10 +179,8 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         ("admin-ccs-category", False),
         ("admin-framework-manager", False),
     ])
-    def test_supplier_users_only_editable_for_users_with_right_roles(self, data_api_client, role, can_edit):
+    def test_supplier_users_only_editable_for_users_with_right_roles(self, role, can_edit):
         self.user_role = role
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_users_iter.return_value = self.load_example_listing("users_response")['users']
 
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
         assert response.status_code == 200
@@ -183,43 +188,38 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         deactivate_buttons = document.xpath('.//input[contains(@value, "Deactivate")]')
         assert len(deactivate_buttons) == (1 if can_edit else 0)
 
-    def test_should_404_if_no_supplier_does_not_exist(self, data_api_client):
-        data_api_client.get_supplier.side_effect = HTTPError(Response(404))
+    def test_should_404_if_no_supplier_does_not_exist(self):
+        self.data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers/users?supplier_id=999')
         assert response.status_code == 404
 
-    def test_should_404_if_no_supplier_id(self, data_api_client):
+    def test_should_404_if_no_supplier_id(self):
         response = self.client.get('/admin/suppliers/users')
         assert response.status_code == 404
 
-    def test_should_call_apis_with_supplier_id(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+    def test_should_call_apis_with_supplier_id(self):
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
 
         assert response.status_code == 200
 
-        data_api_client.get_supplier.assert_called_once_with('1000')
-        data_api_client.find_users_iter.assert_called_once_with('1000')
+        self.data_api_client.get_supplier.assert_called_once_with('1000')
+        self.data_api_client.find_users_iter.assert_called_once_with('1000')
 
-    def test_should_have_supplier_name_on_page(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+    def test_should_have_supplier_name_on_page(self):
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
 
         assert response.status_code == 200
         assert "Supplier Name" in response.get_data(as_text=True)
 
-    def test_should_indicate_if_there_are_no_users(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_users_iter.return_value = {}
+    def test_should_indicate_if_there_are_no_users(self):
+        self.data_api_client.find_users_iter.return_value = {}
 
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
 
         assert response.status_code == 200
         assert "This supplier has no users on the Digital Marketplace" in response.get_data(as_text=True)
 
-    def test_should_show_user_details_on_page(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_users_iter.return_value = self.load_example_listing("users_response")['users']
+    def test_should_show_user_details_on_page(self):
 
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
 
@@ -238,12 +238,10 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert document.xpath('//button[@class="button-save"][contains(text(), "Move user to this supplier")]')
         assert document.xpath('//form[@action="/admin/suppliers/1234/move-existing-user"][@method="post"]')
 
-    def test_should_show_unlock_button_if_user_locked(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-
+    def test_should_show_unlock_button_if_user_locked(self):
         users = self.load_example_listing("users_response")
         users["users"][0]["locked"] = True
-        data_api_client.find_users_iter.return_value = users['users']
+        self.data_api_client.find_users_iter.return_value = users['users']
 
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
 
@@ -253,12 +251,10 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert document.xpath('//form[@action="/admin/suppliers/users/999/unlock"][@method="post"]')
         assert document.xpath('//input[@value="Unlock"][@type="submit"][@class="button-secondary"]')
 
-    def test_should_show_activate_button_if_user_deactivated(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-
+    def test_should_show_activate_button_if_user_deactivated(self):
         users = self.load_example_listing("users_response")
         users["users"][0]["active"] = False
-        data_api_client.find_users_iter.return_value = users['users']
+        self.data_api_client.find_users_iter.return_value = users['users']
 
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
 
@@ -268,81 +264,71 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert document.xpath('//form[@action="/admin/suppliers/users/999/activate"][@method="post"]')
         assert document.xpath('//input[@value="Activate"][@type="submit"][@class="button-secondary"]')
 
-    def test_should_call_api_to_unlock_user(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.update_user.return_value = self.load_example_listing("user_response")
+    def test_should_call_api_to_unlock_user(self):
+        self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
 
         response = self.client.post('/admin/suppliers/users/999/unlock')
 
-        data_api_client.update_user.assert_called_once_with(999, locked=False, updater="test@example.com")
+        self.data_api_client.update_user.assert_called_once_with(999, locked=False, updater="test@example.com")
 
         assert response.status_code == 302
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
-    def test_should_call_api_to_activate_user(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.update_user.return_value = self.load_example_listing("user_response")
+    def test_should_call_api_to_activate_user(self):
+        self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
 
         response = self.client.post('/admin/suppliers/users/999/activate')
 
-        data_api_client.update_user.assert_called_once_with(999, active=True, updater="test@example.com")
+        self.data_api_client.update_user.assert_called_once_with(999, active=True, updater="test@example.com")
 
         assert response.status_code == 302
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
-    def test_should_call_api_to_activate_user_and_redirect_to_source_if_present(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.update_user.return_value = self.load_example_listing("user_response")
-
+    def test_should_call_api_to_activate_user_and_redirect_to_source_if_present(self):
+        self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
         response = self.client.post(
             '/admin/suppliers/users/999/activate',
             data={'source': "http://example.com"}
         )
 
-        data_api_client.update_user.assert_called_once_with(999, active=True, updater="test@example.com")
+        self.data_api_client.update_user.assert_called_once_with(999, active=True, updater="test@example.com")
 
         assert response.status_code == 302
         assert response.location == "http://example.com"
 
-    def test_should_call_api_to_deactivate_user(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.update_user.return_value = self.load_example_listing("user_response")
-
+    def test_should_call_api_to_deactivate_user(self):
+        self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
         response = self.client.post(
             '/admin/suppliers/users/999/deactivate',
             data={'supplier_id': 1000}
         )
 
-        data_api_client.update_user.assert_called_once_with(999, active=False, updater="test@example.com")
+        self.data_api_client.update_user.assert_called_once_with(999, active=False, updater="test@example.com")
 
         assert response.status_code == 302
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
-    def test_should_call_api_to_deactivate_user_and_redirect_to_source_if_present(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.update_user.return_value = self.load_example_listing("user_response")
-
+    def test_should_call_api_to_deactivate_user_and_redirect_to_source_if_present(self):
         response = self.client.post(
             '/admin/suppliers/users/999/deactivate',
             data={'supplier_id': 1000, 'source': "http://example.com"}
         )
 
-        data_api_client.update_user.assert_called_once_with(999, active=False, updater="test@example.com")
+        self.data_api_client.update_user.assert_called_once_with(999, active=False, updater="test@example.com")
 
         assert response.status_code == 302
         assert response.location == "http://example.com"
 
-    def test_should_call_api_to_move_user_to_another_supplier(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.get_user.return_value = self.load_example_listing("user_response")
-        data_api_client.update_user.return_value = self.load_example_listing("user_response")
+    def test_should_call_api_to_move_user_to_another_supplier(self):
+        self.data_api_client.get_user.return_value = self.load_example_listing("user_response")
+        self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
 
         response = self.client.post(
             '/admin/suppliers/1000/move-existing-user',
             data={'user_to_move_email_address': 'test.user@sme.com'}
         )
 
-        data_api_client.update_user.assert_called_once_with(
+        self.data_api_client.update_user.assert_called_once_with(
             999, role='supplier', supplier_id=1000, active=True, updater="test@example.com"
         )
 
