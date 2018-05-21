@@ -7,6 +7,10 @@ from ...helpers import BaseApplicationTest
 
 @mock.patch('app.main.views.stats.data_api_client')
 class TestStats(BaseApplicationTest):
+
+    def setup_method(self, method):
+        super().setup_method(method)
+
     def test_get_page_should_be_publically_accessible(self, data_api_client):
         response = self.client.get('/admin/statistics/g-cloud-7')
         assert response.status_code == 200, "Expected 200 OK without logged-in user"

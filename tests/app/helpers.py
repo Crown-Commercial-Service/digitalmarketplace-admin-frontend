@@ -110,7 +110,7 @@ class LoggedInApplicationTest(BaseApplicationTest):
     user_role = 'admin'
 
     def setup_method(self, method):
-        super(LoggedInApplicationTest, self).setup_method(method)
+        super().setup_method(method)
 
         self.app.register_blueprint(login_for_tests)
 
@@ -150,7 +150,7 @@ class LoggedInApplicationTest(BaseApplicationTest):
 
     def teardown_method(self, method):
         login_manager.user_loader(self._user_callback)
-        super(LoggedInApplicationTest, self).teardown_method(method)
+        super().teardown_method(method)
 
     def _replace_whitespace(self, string, replacement_substring=""):
             # Replace all runs of whitespace with replacement_substring

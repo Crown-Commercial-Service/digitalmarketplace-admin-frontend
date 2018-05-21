@@ -12,8 +12,8 @@ from ...helpers import LoggedInApplicationTest
 class TestCommunicationsView(LoggedInApplicationTest):
     user_role = 'admin-framework-manager'
 
-    def setup_method(self, method, *args, **kwargs):
-        super(TestCommunicationsView, self).setup_method(method, *args, **kwargs)
+    def setup_method(self, method):
+        super().setup_method(method)
         self.dummy_file = BytesIO(u'Lorem ipsum dolor sit amet'.encode('utf8'))
         self.framework_slug = self.load_example_listing('framework_response')['frameworks']['slug']
 
