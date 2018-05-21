@@ -653,11 +653,19 @@ class TestDisableSupplierServicesView(LoggedInApplicationTest):
 
 class TestSupplierInviteUserView(LoggedInApplicationTest):
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_not_acccept_bad_email_on_invite_user(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_users_iter.return_value = self.load_example_listing("users_response")['users']
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
 
+        self.data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
+        self.data_api_client.find_users_iter.return_value = self.load_example_listing("users_response")['users']
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def test_should_not_accept_bad_email_on_invite_user(self):
         response = self.client.post(
             "/admin/suppliers/1234/invite-user",
             data={'email_address': 'notatallvalid'},
@@ -667,11 +675,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         assert response.status_code == 400
         assert "Please enter a valid email address" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_not_allow_missing_email_on_invite_user(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_users_iter.return_value = self.load_example_listing("users_response")['users']
-
+    def test_should_not_allow_missing_email_on_invite_user(self):
         response = self.client.post(
             "/admin/suppliers/1234/invite-user",
             data={},
@@ -681,9 +685,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         assert response.status_code == 400
         assert "Email can not be empty" in response.get_data(as_text=True)
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_be_a_404_if_non_int_supplier_id(self, data_api_client):
-
+    def test_should_be_a_404_if_non_int_supplier_id(self):
         response = self.client.post(
             "/admin/suppliers/bad/invite-user",
             data={},
@@ -691,12 +693,10 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         )
 
         assert response.status_code == 404
-        assert data_api_client.call_args_list == []
+        assert self.data_api_client.call_args_list == []
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_be_a_404_if_supplier_id_not_found(self, data_api_client):
-
-        data_api_client.get_supplier.side_effect = HTTPError(Response(404))
+    def test_should_be_a_404_if_supplier_id_not_found(self):
+        self.data_api_client.get_supplier.side_effect = HTTPError(Response(404))
 
         response = self.client.post(
             "/admin/suppliers/1234/invite-user",
@@ -704,14 +704,12 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             follow_redirects=True
         )
 
-        data_api_client.get_supplier.assert_called_once_with(1234)
-        assert data_api_client.find_users_iter.call_args_list == []
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
+        assert self.data_api_client.find_users_iter.call_args_list == []
         assert response.status_code == 404
 
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_be_a_404_if_supplier_users_not_found(self, data_api_client):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_users_iter.side_effect = HTTPError(Response(404))
+    def test_should_be_a_404_if_supplier_users_not_found(self):
+        self.data_api_client.find_users_iter.side_effect = HTTPError(Response(404))
 
         response = self.client.post(
             "/admin/suppliers/1234/invite-user",
@@ -719,15 +717,12 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             follow_redirects=True
         )
 
-        data_api_client.get_supplier.assert_called_once_with(1234)
-        data_api_client.find_users_iter.assert_called_once_with(1234)
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
+        self.data_api_client.find_users_iter.assert_called_once_with(1234)
         assert response.status_code == 404
 
     @mock.patch('app.main.views.suppliers.send_user_account_email')
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_create_audit_event(self, data_api_client, send_user_account_email):
-        data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        data_api_client.find_users_iter.return_value = self.load_example_listing('users_response')['users']
+    def test_should_create_audit_event(self, send_user_account_email):
 
         res = self.client.post(
             '/admin/suppliers/1234/invite-user',
@@ -735,7 +730,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
                 'email_address': 'email@example.com'
             })
 
-        data_api_client.create_audit_event.assert_called_once_with(
+        self.data_api_client.create_audit_event.assert_called_once_with(
             audit_type=AuditTypes.invite_user,
             user='test@example.com',
             object_type='suppliers',
@@ -746,10 +741,9 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         assert res.location == 'http://localhost/admin/suppliers/users?supplier_id=1234'
 
     @mock.patch('app.main.views.suppliers.send_user_account_email')
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_not_send_email_if_bad_supplier_id(self, data_api_client, send_user_account_email):
-        data_api_client.get_supplier.side_effect = HTTPError(Response(404))
-        data_api_client.find_users_iter.side_effect = HTTPError(Response(404))
+    def test_should_not_send_email_if_bad_supplier_id(self, send_user_account_email):
+        self.data_api_client.get_supplier.side_effect = HTTPError(Response(404))
+        self.data_api_client.find_users_iter.side_effect = HTTPError(Response(404))
 
         res = self.client.post(
             "/admin/suppliers/1234/invite-user",
@@ -757,17 +751,13 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
                 'email_address': 'this@isvalid.com',
             })
 
-        assert data_api_client.find_users_iter.call_args_list == []
+        assert self.data_api_client.find_users_iter.call_args_list == []
         assert send_user_account_email.call_args_list == []
         assert res.status_code == 404
 
     @mock.patch('app.main.views.suppliers.send_user_account_email')
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_call_send_email_with_correct_params(self, data_api_client, send_user_account_email):
+    def test_should_call_send_email_with_correct_params(self, send_user_account_email):
         with self.app.app_context():
-            data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-            data_api_client.find_users_iter.return_value = self.load_example_listing("users_response")['users']
-
             res = self.client.post(
                 "/admin/suppliers/1234/invite-user",
                 data={
@@ -793,14 +783,8 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             assert res.location == 'http://localhost/admin/suppliers/users?supplier_id=1234'
 
     @mock.patch('app.main.views.suppliers.send_user_account_email')
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_strip_whitespace_surrounding_invite_user_email_address_field(
-        self, data_api_client, send_user_account_email
-    ):
+    def test_should_strip_whitespace_surrounding_invite_user_email_address_field(self, send_user_account_email):
         with self.app.app_context():
-            data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-            data_api_client.find_users_iter.return_value = self.load_example_listing("users_response")['users']
-
             self.client.post(
                 "/admin/suppliers/1234/invite-user",
                 data={
@@ -823,10 +807,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             )
 
     @mock.patch('dmutils.email.user_account_email.DMNotifyClient')
-    @mock.patch('app.main.views.suppliers.data_api_client')
-    def test_should_be_a_503_if_email_fails(self, data_api_client, DMNotifyClient):
-        data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        data_api_client.find_users_iter.return_value = self.load_example_listing("users_response")['users']
+    def test_should_be_a_503_if_email_fails(self, DMNotifyClient):
         notify_client_mock = mock.Mock()
         notify_client_mock.send_email.side_effect = EmailError("Arrrgh")
         DMNotifyClient.return_value = notify_client_mock
