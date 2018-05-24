@@ -38,7 +38,8 @@ def find_buyer_by_brief_id():
         return render_template(
             "view_buyers.html",
             users=list(),
-            brief_id=brief_id
+            brief_id=brief_id,
+            brief=None
         ), 404
 
     users = brief.get('users')
@@ -104,6 +105,39 @@ def update_brief(brief_id):
         "view_buyers.html",
         users=users,
         title=title,
+        brief_id=brief_id,
+        brief=brief,
+        seller_email_list=convert_array_to_string(brief.get('sellerEmailList', [])),
+        area_of_expertise_list=AREA_OF_EXPERTISE_LIST,
+        area_of_expertise_selected=brief.get('areaOfExpertise', '')
+    )
+
+
+@main.route('/brief/<int:brief_id>/withdraw', methods=['POST'])
+@login_required
+@role_required('admin')
+def withdraw_brief(brief_id):
+    try:
+        brief = data_api_client.req.briefs(brief_id).withdraw().post({
+            'update_details': {'updated_by': current_user.email_address}
+        }).get('briefs')
+    except HTTPError, e:
+        flash(e.message, 'error')
+        brief = data_api_client.get_brief(brief_id).get('briefs')
+
+        return render_template_with_csrf(
+            'view_buyers.html',
+            users=brief.get('users'),
+            title=brief.get('title'),
+            brief_id=brief_id,
+            brief=brief
+        )
+
+    flash('brief_withdrawn', 'info')
+    return render_template_with_csrf(
+        'view_buyers.html',
+        users=brief.get('users'),
+        title=brief.get('title'),
         brief_id=brief_id,
         brief=brief,
         seller_email_list=convert_array_to_string(brief.get('sellerEmailList', [])),

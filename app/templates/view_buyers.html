@@ -26,10 +26,12 @@
           {% if message == 'no_brief' %}
               {% set displayed_message = "There are no opportunities with ID {}".format(brief_id) %}
           {% elif message == 'brief_updated' %}
-{% set displayed_message = "Brief updated ID {}".format(brief_id) %}
-{% else %}
-{% set displayed_message = message %}
-{% endif %}
+              {% set displayed_message = "Brief updated ID {}".format(brief_id) %}
+          {% elif message == 'brief_withdrawn' %}
+              {% set displayed_message = "Brief {} has been withdrawn".format(brief_id) %}
+          {% else %}
+              {% set displayed_message = message %}
+          {% endif %}
           {%
           with
               message = displayed_message,
@@ -133,5 +135,37 @@
       <input type="submit" value="Search" class="button-save">
   </form>
   </div>
+  {% if brief.status == 'live' %}
+    <dialog id="withdraw-dialog">
+        <form action="{{ url_for('.withdraw_brief', brief_id=brief_id) }}" method="post">
+            {{ form.csrf_token }}
+            <div>
+                <h3>Warning!</h3>
+                <p>This will permanently withdraw brief {{ brief.id }}. Are you sure you want to continue?</p>
+                <menu>
+                    <button id="cancel-button" type="reset">Cancel</button>
+                    <button type="submit" value="true">Withdraw</button>
+                </menu>
+            </div>
+        </form>
+    </dialog>
+    <br/>
+    <button id="withdraw-button">Withdraw</button>
+    {% block javascript %}
+        <script>
+            var cancelButton = document.getElementById('cancel-button'),
+                withdrawButton = document.getElementById('withdraw-button'),
+                withdrawDialog = document.getElementById('withdraw-dialog');
+            
+            withdrawButton.addEventListener('click', function() {
+                withdrawDialog.showModal();
+            });
+            
+            cancelButton.addEventListener('click', function() {
+                withdrawDialog.close();
+            });
+        </script>
+    {% endblock %}
+  {% endif %}
 
 {% endblock %}

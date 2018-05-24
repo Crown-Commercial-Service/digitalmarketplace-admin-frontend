@@ -1,4 +1,4 @@
--e git+https://github.com/AusDTO/dto-digitalmarketplace-content-loader.git@1.5.1#egg=dto-digitalmarketplace-content-loader==1.5.1
+-e git+https://github.com/AusDTO/dto-digitalmarketplace-content-loader.git@663ca400be81deeb4aec40445e45889e9ed1663e#egg=dto-digitalmarketplace-content-loader
 -e git+https://github.com/AusDTO/dto-digitalmarketplace-utils.git@master#egg=dto-digitalmarketplace-utils
 -e git+https://github.com/AusDTO/dto-digitalmarketplace-apiclient.git@master#egg=dto-digitalmarketplace-apiclient
 
