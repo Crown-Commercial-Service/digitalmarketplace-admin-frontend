@@ -69,6 +69,34 @@ class TestSuppliersListView(LoggedInApplicationTest):
             "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
         )
 
+    @pytest.mark.parametrize("role, links_should_be_visible", [
+        ("admin", False),
+        ("admin-ccs-category", False),
+        ("admin-ccs-sourcing", True),
+        ("admin-framework-manager", False),
+    ])
+    def test_declaration_and_agreement_links_visible_for_ccs_sourcing(self, data_api_client, role,
+                                                                      links_should_be_visible):
+        self.user_role = role
+        data_api_client.find_suppliers.return_value = {
+            "suppliers": [{"id": "12345"}]
+        }
+        response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
+        data = response.get_data(as_text=True)
+        document = html.fromstring(data)
+
+        headings = [header.strip() for header in document.xpath('//thead//th/text()')]
+        assert links_should_be_visible is (headings == ['Name', 'G-Cloud 7', 'Digital Outcomes and Specialists',
+                                                        'G-Cloud 8', 'Digital Outcomes and Specialists 2', 'G-Cloud 9',
+                                                        'G-Cloud 10'])
+
+        if links_should_be_visible:
+            g_cloud_10_edit_declaration = ''.join(document.xpath('//tbody//tr[2]/td[6]//text()')).strip()
+            assert g_cloud_10_edit_declaration == 'Edit G-Cloud 10 declaration'
+
+            g_cloud_10_edit_declaration = ''.join(document.xpath('//tbody//tr[3]/td[6]//text()')).strip()
+            assert g_cloud_10_edit_declaration == 'View agreement for G-Cloud 10'
+
     def test_should_raise_http_error_from_api(self, data_api_client):
         data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers')
