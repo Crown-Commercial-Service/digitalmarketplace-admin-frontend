@@ -122,7 +122,7 @@ def update_service_status(service_id):
     if frontend_status == 'public':
         flash(
             SERVICE_PUBLISHED_MESSAGE.format(
-                service_name=service['serviceName'] or service['frameworkName'] + ' - ' + service['lotName']
+                service_name=service.get('serviceName') or service['frameworkName'] + ' - ' + service['lotName']
             )
         )
     else:
