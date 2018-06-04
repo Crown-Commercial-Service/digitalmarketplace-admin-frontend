@@ -7,8 +7,8 @@ from dmapiclient import HTTPError
 from ...helpers import LoggedInApplicationTest, Response
 
 
-@mock.patch("app.main.views.admin_manager.data_api_client")
 class TestAdminManagerListView(LoggedInApplicationTest):
+    user_role = "admin-manager"
 
     SUPPORT_USERS = [
         {"active": True,
@@ -67,23 +67,30 @@ class TestAdminManagerListView(LoggedInApplicationTest):
          },
     ]
 
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.admin_manager.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
     @pytest.mark.parametrize(
         "role_not_allowed", ["admin", "admin-ccs-category", "admin-ccs-sourcing", "admin-framework-manager"]
     )
-    def test_should_403_forbidden_user_roles(self, data_api_client, role_not_allowed):
+    def test_should_403_forbidden_user_roles(self, role_not_allowed):
         self.user_role = role_not_allowed
         response = self.client.get("/admin/admin-users")
         assert response.status_code == 403
 
-    def test_should_raise_http_error_from_api(self, data_api_client):
-        self.user_role = "admin-manager"
-        data_api_client.find_users_iter.side_effect = HTTPError(Response(404))
+    def test_should_raise_http_error_from_api(self):
+        self.data_api_client.find_users_iter.side_effect = HTTPError(Response(404))
         response = self.client.get("/admin/admin-users")
         assert response.status_code == 404
 
-    def test_should_list_admin_users(self, data_api_client):
-        self.user_role = "admin-manager"
-        data_api_client.find_users_iter.side_effect = [
+    def test_should_list_admin_users(self):
+        self.data_api_client.find_users_iter.side_effect = [
             iter(self.SUPPORT_USERS),
             iter(self.CATEGORY_USERS),
             iter(self.SOURCING_USERS),
@@ -95,9 +102,8 @@ class TestAdminManagerListView(LoggedInApplicationTest):
         assert response.status_code == 200
         assert len(document.cssselect(".summary-item-row")) == 8
 
-    def test_should_list_alphabetically_with_all_suspended_users_below_active_users(self, data_api_client):
-        self.user_role = "admin-manager"
-        data_api_client.find_users_iter.side_effect = [
+    def test_should_list_alphabetically_with_all_suspended_users_below_active_users(self):
+        self.data_api_client.find_users_iter.side_effect = [
             iter(self.SUPPORT_USERS),
             iter(self.CATEGORY_USERS),
             iter(self.SOURCING_USERS),
@@ -149,9 +155,8 @@ class TestAdminManagerListView(LoggedInApplicationTest):
         assert "Has-been Sourcing Support" in rows[7].text_content()
         assert "Audit framework" in rows[7].text_content()
 
-    def test_should_link_to_edit_admin_user_page(self, data_api_client):
-        self.user_role = "admin-manager"
-        data_api_client.find_users_iter.side_effect = [
+    def test_should_link_to_edit_admin_user_page(self):
+        self.data_api_client.find_users_iter.side_effect = [
             iter(self.SUPPORT_USERS),
             iter(self.CATEGORY_USERS),
             iter(self.SOURCING_USERS),
@@ -173,8 +178,7 @@ class TestAdminManagerListView(LoggedInApplicationTest):
             "/admin/admin-users/9091/edit",
         ]
 
-    def test_should_have_invite_user_link(self, data_api_client):
-        self.user_role = "admin-manager"
+    def test_should_have_invite_user_link(self):
         response = self.client.get("/admin/admin-users")
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -187,25 +191,33 @@ class TestAdminManagerListView(LoggedInApplicationTest):
         assert expected_link.text == expected_link_text
 
 
-@mock.patch('app.main.forms.data_api_client', autospec=True)
 class TestInviteAdminUserView(LoggedInApplicationTest):
     user_role = 'admin-manager'
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.forms.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
 
     def get_validation_message(self, res):
         validation_message_xpath = '//span[@class="validation-message"]//text()'
         return html.fromstring(res.get_data(as_text=True)).xpath(validation_message_xpath)[0].strip()
 
-    def test_get_with_correct_login_returns_200(self, data_api_client):
+    def test_get_with_correct_login_returns_200(self):
         res = self.client.get('/admin/admin-users/invite')
         assert res.status_code == 200
 
-    def test_post_requires_email(self, data_api_client):
+    def test_post_requires_email(self):
         res = self.client.post('/admin/admin-users/invite', data={'role': 'admin'})
 
         assert res.status_code == 400
         assert self.get_validation_message(res) == "You must provide an email address"
 
-    def test_post_requires_valid_email(self, data_api_client):
+    def test_post_requires_valid_email(self):
         res = self.client.post(
             '/admin/admin-users/invite',
             data={'role': 'admin', 'email_address': 'not_a_valid_email'}
@@ -213,19 +225,19 @@ class TestInviteAdminUserView(LoggedInApplicationTest):
         assert res.status_code == 400
         assert self.get_validation_message(res) == "Please enter a valid email address"
 
-    def test_post_requires_valid_admin_email(self, data_api_client):
-        data_api_client.email_is_valid_for_admin_user.return_value = False
+    def test_post_requires_valid_admin_email(self):
+        self.data_api_client.email_is_valid_for_admin_user.return_value = False
         res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
 
         assert res.status_code == 400
         assert self.get_validation_message(res) == "The email address must belong to an approved domain"
 
-    def test_post_requires_role(self, data_api_client):
+    def test_post_requires_role(self):
         res = self.client.post('/admin/admin-users/invite', data={'email_address': 'test@test.com'})
         assert res.status_code == 400
         assert self.get_validation_message(res) == "You must choose a permission"
 
-    def test_post_requires_valid_role(self, data_api_client):
+    def test_post_requires_valid_role(self):
         """This case won't happen unless they mess with the post."""
         res = self.client.post(
             '/admin/admin-users/invite',
@@ -235,22 +247,22 @@ class TestInviteAdminUserView(LoggedInApplicationTest):
         assert self.get_validation_message(res) == "Not a valid choice"
 
     @mock.patch('app.main.views.admin_manager.send_user_account_email')
-    def test_successful_post_redirects(self, send_user_account_email, data_api_client):
-        data_api_client.email_is_valid_for_admin_user.return_value = True
+    def test_successful_post_redirects(self, send_user_account_email):
+        self.data_api_client.email_is_valid_for_admin_user.return_value = True
         res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
         assert res.status_code == 302
         assert res.location == "http://localhost/admin/admin-users"
 
     @mock.patch('app.main.views.admin_manager.send_user_account_email')
     @pytest.mark.parametrize('role', ('admin', 'admin-ccs-sourcing', 'admin-ccs-category', 'admin-framework-manager'))
-    def test_post_is_successful_for_valid_roles(self, send_user_account_email, data_api_client, role):
-        data_api_client.email_is_valid_for_admin_user.return_value = True
+    def test_post_is_successful_for_valid_roles(self, send_user_account_email, role):
+        self.data_api_client.email_is_valid_for_admin_user.return_value = True
         res = self.client.post('/admin/admin-users/invite', data={'role': role, 'email_address': 'test@test.com'})
         assert res.status_code == 302
 
     @mock.patch('app.main.views.admin_manager.send_user_account_email')
-    def test_successful_post_sends_email(self, send_user_account_email, data_api_client):
-        data_api_client.email_is_valid_for_admin_user.return_value = True
+    def test_successful_post_sends_email(self, send_user_account_email):
+        self.data_api_client.email_is_valid_for_admin_user.return_value = True
         res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
 
         assert res.status_code == 302
@@ -262,15 +274,15 @@ class TestInviteAdminUserView(LoggedInApplicationTest):
         )
 
     @mock.patch('app.main.views.admin_manager.send_user_account_email')
-    def test_successful_post_flashes(self, data_api_client, send_user_account_email):
-        data_api_client.email_is_valid_for_admin_user.return_value = True
+    def test_successful_post_flashes(self, send_user_account_email):
+        self.data_api_client.email_is_valid_for_admin_user.return_value = True
         res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
         assert res.status_code == 302
         self.assert_flashes('An invitation has been sent to test@test.com.')
 
 
-@mock.patch("app.main.views.admin_manager.data_api_client")
 class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
+    user_role = "admin-manager"
 
     admin_user_to_edit = {
         "users": {
@@ -284,9 +296,17 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         }
     }
 
-    def test_should_load_edit_admin_user_page_heading_and_submit_button_correctly(self, data_api_client):
-        self.user_role = "admin-manager"
-        data_api_client.get_user.return_value = self.admin_user_to_edit
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.admin_manager.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def test_should_load_edit_admin_user_page_heading_and_submit_button_correctly(self):
+        self.data_api_client.get_user.return_value = self.admin_user_to_edit
 
         response = self.client.get("/admin/admin-users/2345/edit")
         assert response.status_code == 200
@@ -296,9 +316,8 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         assert document.xpath('//h1')[0].text.strip() == "reality.auditor@digital.cabinet-office.gov.uk"
         assert document.xpath('//input[@class="button-save"]')[0].value.strip() == "Update user"
 
-    def test_edit_admin_user_form_prefills_edit_name_with_user_name(self, data_api_client):
-        self.user_role = "admin-manager"
-        data_api_client.get_user.return_value = self.admin_user_to_edit
+    def test_edit_admin_user_form_prefills_edit_name_with_user_name(self):
+        self.data_api_client.get_user.return_value = self.admin_user_to_edit
 
         response = self.client.get("/admin/admin-users/2345/edit")
         assert response.status_code == 200
@@ -308,9 +327,8 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         assert document.xpath('//span[@class="question-heading"]')[0].text.strip() == "Name"
         assert document.cssselect('#input-edit_admin_name')[0].value == "Auditor of Reality"
 
-    def test_edit_admin_user_form_prefills_permission_for_category_user(self, data_api_client):
-        self.user_role = "admin-manager"
-        data_api_client.get_user.return_value = self.admin_user_to_edit
+    def test_edit_admin_user_form_prefills_permission_for_category_user(self):
+        self.data_api_client.get_user.return_value = self.admin_user_to_edit
 
         response = self.client.get("/admin/admin-users/2345/edit")
         assert response.status_code == 200
@@ -339,9 +357,8 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
             'Helps buyers and suppliers solve problems with their accounts.'
         ]
 
-    def test_edit_admin_user_form_prefills_status_with_active(self, data_api_client):
-        self.user_role = "admin-manager"
-        data_api_client.get_user.return_value = self.admin_user_to_edit
+    def test_edit_admin_user_form_prefills_status_with_active(self):
+        self.data_api_client.get_user.return_value = self.admin_user_to_edit
 
         response = self.client.get("/admin/admin-users/2345/edit")
         assert response.status_code == 200
@@ -363,9 +380,9 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         ("admin-ccs-sourcing", 403),
         ("admin-framework-manager", 403),
     ])
-    def test_get_page_should_only_be_accessible_to_admin_manager(self, data_api_client, role, expected_code):
+    def test_get_page_should_only_be_accessible_to_admin_manager(self, role, expected_code):
         self.user_role = role
-        data_api_client.get_user.return_value = self.admin_user_to_edit
+        self.data_api_client.get_user.return_value = self.admin_user_to_edit
 
         response = self.client.get("/admin/admin-users/2345/edit")
         actual_code = response.status_code
@@ -378,9 +395,9 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         ("admin-ccs-sourcing", 403),
         ("admin-framework-manager", 403),
     ])
-    def test_post_page_should_only_be_accessible_to_admin_manager(self, data_api_client, role, expected_code):
+    def test_post_page_should_only_be_accessible_to_admin_manager(self, role, expected_code):
         self.user_role = role
-        data_api_client.get_user.return_value = self.admin_user_to_edit
+        self.data_api_client.get_user.return_value = self.admin_user_to_edit
 
         response = self.client.post(
             "/admin/admin-users/2345/edit",
@@ -394,9 +411,8 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
 
     @pytest.mark.parametrize('role', ['admin', 'admin-ccs-sourcing', 'admin-ccs-category', 'admin-framework-manager'])
-    def test_admin_manager_can_edit_admin_user_details(self, data_api_client, role):
-        self.user_role = "admin-manager"
-        data_api_client.get_user.return_value = self.admin_user_to_edit
+    def test_admin_manager_can_edit_admin_user_details(self, role):
+        self.data_api_client.get_user.return_value = self.admin_user_to_edit
         response1 = self.client.post(
             "/admin/admin-users/2345/edit",
             data={
@@ -407,7 +423,7 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         )
         assert response1.status_code == 302
         self.assert_flashes("reality.auditor@digital.cabinet-office.gov.uk has been updated.", "message")
-        assert data_api_client.update_user.call_args_list == [mock.call(
+        assert self.data_api_client.update_user.call_args_list == [mock.call(
             "2345", name="Lady Myria Lejean", role=role, active=False
         )]
 
@@ -415,9 +431,8 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         response2 = self.client.get(response1.location)
         assert "reality.auditor@digital.cabinet-office.gov.uk has been updated." in response2.get_data(as_text=True)
 
-    def test_admin_user_name_cannot_be_submitted_when_empty(self, data_api_client):
-        self.user_role = "admin-manager"
-        data_api_client.get_user.return_value = self.admin_user_to_edit
+    def test_admin_user_name_cannot_be_submitted_when_empty(self):
+        self.data_api_client.get_user.return_value = self.admin_user_to_edit
         response = self.client.post(
             "/admin/admin-users/2345/edit",
             data={
@@ -428,11 +443,11 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         )
         assert response.status_code == 400
         assert "You must provide a name." in response.get_data(as_text=True)
-        assert data_api_client.update_user.call_args_list == []
+        assert self.data_api_client.update_user.call_args_list == []
 
-    def test_strip_whitespace_from_admin_user_name(self, data_api_client):
+    def test_strip_whitespace_from_admin_user_name(self):
         self.user_role = "admin-manager"
-        data_api_client.get_user.return_value = self.admin_user_to_edit
+        self.data_api_client.get_user.return_value = self.admin_user_to_edit
         self.client.post(
             "/admin/admin-users/2345/edit",
             data={
@@ -441,12 +456,12 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
                 "edit_admin_status": "True"
             }
         )
-        data_api_client.update_user.assert_called_once()
-        assert data_api_client.update_user.call_args[1]["name"] == "Lady Myria Lejean"
+        self.data_api_client.update_user.assert_called_once()
+        assert self.data_api_client.update_user.call_args[1]["name"] == "Lady Myria Lejean"
 
-    def test_admin_user_active_to_bool(self, data_api_client):
+    def test_admin_user_active_to_bool(self):
         self.user_role = "admin-manager"
-        data_api_client.get_user.return_value = self.admin_user_to_edit
+        self.data_api_client.get_user.return_value = self.admin_user_to_edit
         self.client.post(
             "/admin/admin-users/2345/edit",
             data={
@@ -455,5 +470,5 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
                 "edit_admin_status": "True"
             }
         )
-        data_api_client.update_user.assert_called_once()
-        assert data_api_client.update_user.call_args[1]["active"] is True
+        self.data_api_client.update_user.assert_called_once()
+        assert self.data_api_client.update_user.call_args[1]["active"] is True

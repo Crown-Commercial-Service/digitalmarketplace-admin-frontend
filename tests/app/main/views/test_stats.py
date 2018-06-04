@@ -5,19 +5,28 @@ from dmapiclient.audit import AuditTypes
 from ...helpers import BaseApplicationTest
 
 
-@mock.patch('app.main.views.stats.data_api_client')
 class TestStats(BaseApplicationTest):
-    def test_get_page_should_be_publically_accessible(self, data_api_client):
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.stats.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def test_get_page_should_be_publicly_accessible(self):
         response = self.client.get('/admin/statistics/g-cloud-7')
         assert response.status_code == 200, "Expected 200 OK without logged-in user"
 
-    def test_get_stats_page(self, data_api_client):
-        data_api_client.find_audit_events.return_value = {
+    def test_get_stats_page(self):
+        self.data_api_client.find_audit_events.return_value = {
             'auditEvents': []
         }
         response = self.client.get('/admin/statistics/g-cloud-7')
 
-        data_api_client.find_audit_events.assert_called_once_with(
+        self.data_api_client.find_audit_events.assert_called_once_with(
             audit_type=AuditTypes.snapshot_framework_stats,
             object_type='frameworks',
             object_id='g-cloud-7',
@@ -26,20 +35,20 @@ class TestStats(BaseApplicationTest):
 
         assert response.status_code == 200
 
-    def test_get_stats_page_for_open_framework_includes_framework_stats(self, data_api_client):
-        data_api_client.find_audit_events.return_value = {
+    def test_get_stats_page_for_open_framework_includes_framework_stats(self):
+        self.data_api_client.find_audit_events.return_value = {
             'auditEvents': []
         }
-        data_api_client.get_framework.return_value = {
+        self.data_api_client.get_framework.return_value = {
             'frameworks': {'status': 'open', 'lots': []}
         }
         response = self.client.get('/admin/statistics/g-cloud-7')
 
-        data_api_client.get_framework_stats.assert_called_once_with('g-cloud-7')
+        self.data_api_client.get_framework_stats.assert_called_once_with('g-cloud-7')
         assert response.status_code == 200
 
-    def test_supplier_counts_on_stats_page(self, data_api_client):
-        data_api_client.find_audit_events.return_value = {
+    def test_supplier_counts_on_stats_page(self):
+        self.data_api_client.find_audit_events.return_value = {
             "auditEvents": [
                 {
                     "acknowledged": False,
@@ -86,7 +95,7 @@ class TestStats(BaseApplicationTest):
 
         response = self.client.get('/admin/statistics/g-cloud-7')
 
-        data_api_client.find_audit_events.assert_called_once_with(
+        self.data_api_client.find_audit_events.assert_called_once_with(
             audit_type=AuditTypes.snapshot_framework_stats,
             object_type='frameworks',
             object_id='g-cloud-7',
@@ -100,16 +109,16 @@ class TestStats(BaseApplicationTest):
         assert '<span>230</span>' in page_without_whitespace  # Completed services only 103 + 127
         assert '<span>109</span>' in page_without_whitespace  # Eligible application
 
-    def test_get_stats_page_for_invalid_framework(self, data_api_client):
+    def test_get_stats_page_for_invalid_framework(self):
         api_response = mock.Mock()
         api_response.status_code = 404
-        data_api_client.find_audit_events.side_effect = HTTPError(api_response)
+        self.data_api_client.find_audit_events.side_effect = HTTPError(api_response)
         response = self.client.get('/admin/statistics/g-cloud-11')
         assert response.status_code == 404
 
-    def test_get_stats_page_when_API_is_down(self, data_api_client):
+    def test_get_stats_page_when_API_is_down(self):
         api_response = mock.Mock()
         api_response.status_code = 500
-        data_api_client.find_audit_events.side_effect = HTTPError(api_response)
+        self.data_api_client.find_audit_events.side_effect = HTTPError(api_response)
         response = self.client.get('/admin/statistics/g-cloud-7')
         assert response.status_code == 500

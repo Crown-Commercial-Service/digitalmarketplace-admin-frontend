@@ -6,9 +6,17 @@ from lxml import html
 from ...helpers import LoggedInApplicationTest
 
 
-@mock.patch('app.main.views.service_updates.data_api_client', autospec=True)
 class TestServiceUpdates(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.service_updates.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
 
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 403),
@@ -16,7 +24,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         ("admin-ccs-sourcing", 403),
         ("admin-manager", 403),
     ])
-    def test_view_service_updates_only_for_allowed_user_roles(self, data_api_client, role, expected_code):
+    def test_view_service_updates_only_for_allowed_user_roles(self, role, expected_code):
         self.user_role = role
         response = self.client.get('/admin/services/updates/unapproved')
         actual_code = response.status_code
@@ -62,9 +70,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
             '1 edited service',
         ),
     ))
-    def test_should_show_unacknowledged_services(
-            self, data_api_client, audit_events, expected_table_contents, expected_count):
-        data_api_client.find_audit_events.return_value = {
+    def test_should_show_unacknowledged_services(self, audit_events, expected_table_contents, expected_count):
+        self.data_api_client.find_audit_events.return_value = {
             "auditEvents": [
                 {
                     "data": {
@@ -101,7 +108,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 for tr in document.xpath('//table[@class="summary-item-body"]/thead/tr')
             ) == (('Supplier', 'Service ID', 'Edited', 'Changes'),)
 
-    def test_acknowledge_audit_event_happy_path(self, data_api_client):
+    def test_acknowledge_audit_event_happy_path(self):
         audit_event = {
             'auditEvents': {
                 'acknowledged': False,
@@ -122,29 +129,29 @@ class TestServiceUpdates(LoggedInApplicationTest):
             'links': {}
         }
 
-        data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
+        self.data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
         response = self.client.post('/admin/services/321/updates/123/approve')
         assert response.status_code == 302
         self.assert_flashes("The changes to service 321 were approved.")
         assert response.location == 'http://localhost/admin/services/updates/unapproved'
 
-        data_api_client.acknowledge_service_update_including_previous.assert_called_with(
+        self.data_api_client.acknowledge_service_update_including_previous.assert_called_with(
             u'321',
             123,
             'test@example.com'
         )
 
-    def test_should_404_wrong_service_id(self, data_api_client):
+    def test_should_404_wrong_service_id(self):
         response = self.client.post('/admin/services/123/updates/321/approve')
         assert response.status_code == 404
 
     @pytest.mark.parametrize("role_not_allowed", ["admin", "admin-ccs-sourcing", "admin-manager"])
-    def test_post_should_403_forbidden_user_roles(self, data_api_client, role_not_allowed):
+    def test_post_should_403_forbidden_user_roles(self, role_not_allowed):
         self.user_role = role_not_allowed
         response = self.client.post('/admin/services/123/updates/321/approve')
         assert response.status_code == 403
 
-    def test_should_410_already_acknowledged_event(self, data_api_client):
+    def test_should_410_already_acknowledged_event(self):
         audit_event = {
             'auditEvents': {
                 'acknowledged': True,
@@ -165,11 +172,11 @@ class TestServiceUpdates(LoggedInApplicationTest):
             'links': {}
         }
 
-        data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
+        self.data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
         response = self.client.post('/admin/services/321/updates/123/approve')
         assert response.status_code == 410
 
-    def test_should_404_wrong_audit_event_type(self, data_api_client):
+    def test_should_404_wrong_audit_event_type(self):
         audit_event = {
             'auditEvents': {
                 'acknowledged': False,
@@ -190,6 +197,6 @@ class TestServiceUpdates(LoggedInApplicationTest):
             'links': {}
         }
 
-        data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
+        self.data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
         response = self.client.post('/admin/services/321/updates/123/approve')
         assert response.status_code == 404

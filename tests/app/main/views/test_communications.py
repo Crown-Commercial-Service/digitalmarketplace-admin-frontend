@@ -8,14 +8,21 @@ from lxml import html
 from ...helpers import LoggedInApplicationTest
 
 
-@mock.patch('app.main.views.communications.data_api_client.get_framework', return_value={"frameworks": []})
 class TestCommunicationsView(LoggedInApplicationTest):
     user_role = 'admin-framework-manager'
 
-    def setup_method(self, method, *args, **kwargs):
-        super(TestCommunicationsView, self).setup_method(method, *args, **kwargs)
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.communications.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+        self.data_api_client.get_framework.return_value = {"frameworks": []}
+
         self.dummy_file = BytesIO(u'Lorem ipsum dolor sit amet'.encode('utf8'))
         self.framework_slug = self.load_example_listing('framework_response')['frameworks']['slug']
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
 
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 403),
@@ -24,15 +31,15 @@ class TestCommunicationsView(LoggedInApplicationTest):
         ("admin-framework-manager", 200),
         ("admin-manager", 403),
     ])
-    def test_get_page_should_only_be_accessible_to_specific_user_roles(self, get_framework_mock, role, expected_code):
+    def test_get_page_should_only_be_accessible_to_specific_user_roles(self, role, expected_code):
         self.user_role = role
         response = self.client.get("/admin/communications/{}".format(self.framework_slug))
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
-    def test_page_shows_empty_messages_if_no_files_uploaded(self, get_framework_mock):
+    def test_page_shows_empty_messages_if_no_files_uploaded(self):
         self.s3.return_value.list.side_effect = ([], [])  # Empty lists for both communication and clarification files
-        get_framework_mock.return_value = {"frameworks": {"status": "open"}}
+        self.data_api_client.get_framework.return_value = {"frameworks": {"status": "open"}}
         response = self.client.get("/admin/communications/{}".format(self.framework_slug))
         document = html.fromstring(response.get_data(as_text=True))
         file_upload_messages = document.xpath('//p[@class="file-upload-existing-value"]')
@@ -41,7 +48,7 @@ class TestCommunicationsView(LoggedInApplicationTest):
         assert file_upload_messages[0].text_content().strip() == "No communications have been uploaded yet"
         assert file_upload_messages[1].text_content().strip() == "No clarification answers have been uploaded yet"
 
-    def test_page_shows_timestamp_from_last_file_in_list_if_some_files_already_uploaded(self, get_framework_mock):
+    def test_page_shows_timestamp_from_last_file_in_list_if_some_files_already_uploaded(self):
         # The first list is for communication files, the second for clarifications
         self.s3.return_value.list.side_effect = (
             [
@@ -69,7 +76,7 @@ class TestCommunicationsView(LoggedInApplicationTest):
                 },
             ],
         )
-        get_framework_mock.return_value = {"frameworks": {"status": "open"}}
+        self.data_api_client.get_framework.return_value = {"frameworks": {"status": "open"}}
         response = self.client.get("/admin/communications/{}".format(self.framework_slug))
         document = html.fromstring(response.get_data(as_text=True))
         file_upload_messages = document.xpath('//p[@class="file-upload-existing-value"]')
@@ -78,7 +85,7 @@ class TestCommunicationsView(LoggedInApplicationTest):
         assert file_upload_messages[0].text_content().strip() == "Last modified Saturday 3 March 2018 at 3:03am GMT"
         assert file_upload_messages[1].text_content().strip() == "Last modified Wednesday 25 July 2018 at 3:02am BST"
 
-    def test_post_documents_for_framework(self, get_framework_mock):
+    def test_post_documents_for_framework(self):
 
         response = self.client.post(
             "/admin/communications/{}".format(self.framework_slug),
@@ -96,7 +103,7 @@ class TestCommunicationsView(LoggedInApplicationTest):
         assert response.status_code == 302
 
     @pytest.mark.parametrize("disallowed_role", ["admin", "admin-ccs-category", "admin-ccs-sourcing", "admin-manager"])
-    def test_disallowed_roles_can_not_post_documents_for_framework(self, get_framework_mock, disallowed_role):
+    def test_disallowed_roles_can_not_post_documents_for_framework(self, disallowed_role):
 
         self.user_role = disallowed_role
 
@@ -109,7 +116,7 @@ class TestCommunicationsView(LoggedInApplicationTest):
         )
         assert response.status_code == 403
 
-    def test_post_bad_documents_for_framework(self, get_framework_mock):
+    def test_post_bad_documents_for_framework(self):
 
         self.client.post(
             "/admin/communications/{}".format(self.framework_slug),
@@ -122,7 +129,7 @@ class TestCommunicationsView(LoggedInApplicationTest):
         self.assert_flashes('Communication file is not an open document format or a CSV.', expected_category='error')
         self.assert_flashes('Clarification file is not a PDF.', expected_category='error')
 
-    def test_communications_file_saves_with_correct_path(self, get_framework_mock):
+    def test_communications_file_saves_with_correct_path(self):
 
         response = self.client.post(
             "/admin/communications/{}".format(self.framework_slug),
@@ -139,7 +146,7 @@ class TestCommunicationsView(LoggedInApplicationTest):
             download_filename='test-comm.pdf'
         )
 
-    def test_clarification_file_saves_with_correct_path(self, get_framework_mock):
+    def test_clarification_file_saves_with_correct_path(self):
 
         response = self.client.post(
             "/admin/communications/{}".format(self.framework_slug),
