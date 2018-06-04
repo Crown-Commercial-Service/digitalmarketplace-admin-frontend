@@ -1359,6 +1359,23 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         assert response.location == 'http://localhost/admin/services/1'
         self.assert_flashes('Service status has been updated to: removed')
 
+    def test_status_update_to_service_with_no_name(self, data_api_client):
+        data_api_client.get_service.return_value = {'services': {
+            'frameworkName': 'G-cloud 7',
+            'lotName': 'Cloud Hosting',
+            'frameworkSlug': 'g-cloud-7',
+            'supplierId': 1000,
+            'status': 'published',
+        }}
+        data_api_client.find_audit_events.return_value = {'auditEvents': []}
+        data_api_client.get_framework.return_value = {'frameworks': {'slug': 'g-cloud-7', 'status': 'live'}}
+        response = self.client.post('/admin/services/status/1', data={'service_status': 'public'})
+        data_api_client.update_service_status.assert_called_with('1', 'published', 'test@example.com')
+
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/services/1'
+        self.assert_flashes("You published ‘G-cloud 7 - Cloud Hosting’.")
+
     def test_cannot_update_status_to_private(self, data_api_client):
         data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
