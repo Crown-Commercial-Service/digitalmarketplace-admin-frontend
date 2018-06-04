@@ -13,8 +13,16 @@ from lxml import html
 from ...helpers import LoggedInApplicationTest, Response
 
 
-@mock.patch('app.main.views.suppliers.data_api_client')
 class TestSuppliersListView(LoggedInApplicationTest):
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
 
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 200),
@@ -23,9 +31,9 @@ class TestSuppliersListView(LoggedInApplicationTest):
         ("admin-framework-manager", 200),
         ("admin-manager", 403),
     ])
-    def test_supplier_list_is_shown_to_users_with_right_roles(self, data_api_client, role, expected_code):
+    def test_supplier_list_is_shown_to_users_with_right_roles(self, role, expected_code):
         self.user_role = role
-        data_api_client.find_suppliers.return_value = {
+        self.data_api_client.find_suppliers.return_value = {
             "suppliers": [{"id": "12345"}]
         }
         response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
@@ -38,9 +46,9 @@ class TestSuppliersListView(LoggedInApplicationTest):
         ("admin-ccs-sourcing", False),
         ("admin-framework-manager", True),
     ])
-    def test_services_link_is_shown_to_users_with_right_roles(self, data_api_client, role, link_should_be_visible):
+    def test_services_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
-        data_api_client.find_suppliers.return_value = {
+        self.data_api_client.find_suppliers.return_value = {
             "suppliers": [{"id": "12345"}]
         }
         response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
@@ -56,9 +64,9 @@ class TestSuppliersListView(LoggedInApplicationTest):
         ("admin-ccs-category", True),
         ("admin-framework-manager", False),
     ])
-    def test_change_name_link_is_shown_to_users_with_right_roles(self, data_api_client, role, link_should_be_visible):
+    def test_change_name_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
-        data_api_client.find_suppliers.return_value = {
+        self.data_api_client.find_suppliers.return_value = {
             "suppliers": [{"id": "12345"}]
         }
         response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
@@ -75,10 +83,10 @@ class TestSuppliersListView(LoggedInApplicationTest):
         ("admin-ccs-sourcing", True),
         ("admin-framework-manager", False),
     ])
-    def test_declaration_and_agreement_links_visible_for_ccs_sourcing(self, data_api_client, role,
+    def test_declaration_and_agreement_links_visible_for_ccs_sourcing(self, role,
                                                                       links_should_be_visible):
         self.user_role = role
-        data_api_client.find_suppliers.return_value = {
+        self.data_api_client.find_suppliers.return_value = {
             "suppliers": [{"id": "12345"}]
         }
         response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
@@ -97,19 +105,19 @@ class TestSuppliersListView(LoggedInApplicationTest):
             g_cloud_10_edit_declaration = ''.join(document.xpath('//tbody//tr[3]/td[6]//text()')).strip()
             assert g_cloud_10_edit_declaration == 'View agreement for G-Cloud 10'
 
-    def test_should_raise_http_error_from_api(self, data_api_client):
-        data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
+    def test_should_raise_http_error_from_api(self):
+        self.data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers')
         assert response.status_code == 404
 
-    def test_should_list_suppliers(self, data_api_client):
-        data_api_client.find_suppliers.return_value = {
+    def test_should_list_suppliers(self):
+        self.data_api_client.find_suppliers.return_value = {
             "suppliers": [
                 {"id": 1234, "name": "Supplier 1"},
                 {"id": 1235, "name": "Supplier 2"},
             ]
         }
-        data_api_client.get_supplier_framework_info.side_effect = [
+        self.data_api_client.get_supplier_framework_info.side_effect = [
             {"frameworkInterest": {"agreementPath": "path/the/first/1234-g7-agreement.pdf"}},
             {"frameworkInterest": {"agreementPath": None}},  # Supplier 1234 has not returned their DOS agreement yet
             HTTPError(Response(404)),                        # Supplier 1235 is not on G-Cloud 7
@@ -121,23 +129,23 @@ class TestSuppliersListView(LoggedInApplicationTest):
         assert response.status_code == 200
         assert len(document.cssselect('.summary-item-row')) == 2
 
-    def test_should_search_by_prefix(self, data_api_client):
-        data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
+    def test_should_search_by_prefix(self):
+        self.data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
         self.client.get("/admin/suppliers?supplier_name_prefix=foo")
 
-        data_api_client.find_suppliers.assert_called_once_with(prefix="foo", duns_number=None)
+        self.data_api_client.find_suppliers.assert_called_once_with(prefix="foo", duns_number=None)
 
-    def test_should_search_by_duns_number(self, data_api_client):
-        data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
+    def test_should_search_by_duns_number(self):
+        self.data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
         self.client.get("/admin/suppliers?supplier_duns_number=987654321")
 
-        data_api_client.find_suppliers.assert_called_once_with(prefix=None, duns_number="987654321")
+        self.data_api_client.find_suppliers.assert_called_once_with(prefix=None, duns_number="987654321")
 
-    def test_should_find_by_supplier_id(self, data_api_client):
-        data_api_client.get_supplier.side_effect = HTTPError(Response(404))
+    def test_should_find_by_supplier_id(self):
+        self.data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         self.client.get("/admin/suppliers?supplier_id=12345")
 
-        data_api_client.get_supplier.assert_called_once_with("12345")
+        self.data_api_client.get_supplier.assert_called_once_with("12345")
 
 
 @mock.patch('app.main.views.suppliers.data_api_client')
