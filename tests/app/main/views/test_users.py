@@ -386,8 +386,24 @@ class TestSuppliersExport(LoggedInApplicationTest):
         self.data_api_client_patch.stop()
         super().teardown_method(method)
 
-    def test_supplier_csv_only_accessible_to_specific_roles(self):
-        pass
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 200),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 403),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_supplier_csv_is_only_accessible_to_specific_user_roles(self, role, expected_code):
+        self.user_role = role
+        self.data_api_client.export_suppliers.return_value = {"suppliers": []}
+        self.data_api_client.find_frameworks.return_value = {"frameworks": [self._valid_framework]}
+        self.data_api_client.get_framework.return_value = {"frameworks": self._valid_framework}
+
+        response = self.client.get(
+            '/admin/frameworks/{}/suppliers/download'.format(self._valid_framework['slug'])
+        )
+
+        assert response.status_code == expected_code
 
     def test_download_supplier_csv_for_framework_users(self):
         list_of_expected_supplier_results = [
