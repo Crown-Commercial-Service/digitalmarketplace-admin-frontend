@@ -265,7 +265,7 @@ class TestUsersExport(LoggedInApplicationTest):
         ("admin-framework-manager", "?on_framework_only=False", 200),
         ("admin-manager", "", 403),
     ])
-    def test_supplier_user_csv_is_only_accessible_to_specific_user_roles(self, role,
+    def test_supplier_user_csvs_are_only_accessible_to_specific_user_roles(self, role,
                                                                     url_params, expected_code):
         self.user_role = role
         users = [self._supplier_user]

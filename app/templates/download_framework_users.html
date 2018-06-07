@@ -18,28 +18,43 @@
 {% endblock %}
 
 {% block main_content %}
-  {%
-    with heading = "Download supplier lists for {}".format(framework['name'])
-  %}
-    {% include "toolkit/page-heading.html" %}
-  {% endwith %}
+  <div class="grid-row">
+    <div class="column-two-thirds">
+      {%
+        with heading = "Download supplier lists for {}".format(framework['name'])
+      %}
+        {% include "toolkit/page-heading.html" %}
+      {% endwith %}
 
-  {%
-    with
-    items = [
-      {
-          "title": "Suppliers who’ve applied or started an application",
-          "link": url_for('.download_users', framework_slug=framework['slug']),
-          "file_type": "CSV"
-      },
-      {
-          "title": "Suppliers on the framework",
-          "link": url_for('.download_users', framework_slug=framework['slug'], on_framework_only=True),
-          "file_type": "CSV"
-      },
-    ]
-  %}
-    {% include "toolkit/documents.html" %}
-  {% endwith %}
+      <div class="explanation-list">
+          <p class="lead">These lists contain details of all suppliers who:</p>
+          <ul class='list-bullet'>
+            <li>started an application</li>
+            <li>are on the framework</li>
+            <li>weren't accepted on the framework</li>
+            <li>have been excluded from the framework</li>
+          </ul>
+      </div>
+      <br />
+      {%
+        with
+        items = [
+          {
+              "title": "Official details for suppliers",
+              "link": url_for('.download_suppliers', framework_slug=framework['slug']),
+              "file_type": "CSV"
+          },
+          {
+              "title": "All email accounts for suppliers",
+              "link": url_for('.download_users', framework_slug=framework['slug']),
+              "file_type": "CSV"
+          },
+        ]
+      %}
+        {% include "toolkit/documents.html" %}
+      {% endwith %}
+
+    </div>
+  </div>
 
 {% endblock %}
