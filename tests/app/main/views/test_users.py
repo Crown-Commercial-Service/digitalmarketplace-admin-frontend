@@ -265,7 +265,7 @@ class TestUsersExport(LoggedInApplicationTest):
         ("admin-framework-manager", "?on_framework_only=False", 200),
         ("admin-manager", "", 403),
     ])
-    def test_supplier_csv_is_only_accessible_to_specific_user_roles(self, role,
+    def test_supplier_user_csv_is_only_accessible_to_specific_user_roles(self, role,
                                                                     url_params, expected_code):
         self.user_role = role
         users = [self._supplier_user]
@@ -360,6 +360,121 @@ class TestUsersExport(LoggedInApplicationTest):
         assert rows[0] == ["email address", "user_name", "supplier_id"]
         # Only users with application_result = "pass" should appear in the CSV
         assert rows[1] == ["test.user@sme2.com", "Test User 2", "2"]
+
+
+class TestSuppliersExport(LoggedInApplicationTest):
+    user_role = 'admin-framework-manager'
+
+    _valid_framework = {
+        'name': 'Digital Outcomes and Specialists 2',
+        'slug': 'digital-outcomes-and-specialists-2',
+        'status': 'live',
+        'lots': [
+            {"id": 1, "slug": "digital-outcomes"},
+            {"id": 2, "slug": "digital-specialists"},
+            {"id": 3, "slug": "user-research-studios"},
+            {"id": 4, "slug": "user-research-participants"}
+        ]
+    }
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.users.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def test_supplier_csv_only_accessible_to_specific_roles(self):
+        pass
+
+    def test_download_supplier_csv_for_framework_users(self):
+        list_of_expected_supplier_results = [
+            {
+                'supplier_id': 1,
+                'application_result': 'no result',
+                'application_status': 'no_application',
+                'declaration_status': 'unstarted',
+                'framework_agreement': False,
+                'supplier_name': "Supplier 1",
+                'supplier_organisation_size': "small",
+                'duns_number': "100000001",
+                'registered_name': 'Registered Supplier Name 1',
+                'companies_house_number': 'ABC123',
+                "published_services_count": {
+                    "digital-outcomes": 0,
+                    "digital-specialists": 0,
+                    "user-research-studios": 0,
+                    "user-research-participants": 0,
+                },
+                "contact_information": {
+                    'contact_name': 'Contact for Supplier 1',
+                    'contact_email': '1@contact.com',
+                    'contact_phone_number': '12345',
+                    'address_first_line': '7 Gem Lane',
+                    'address_city': 'Cantelot',
+                    'address_postcode': 'CN1A 1AA',
+                    'address_country': 'country:GB',
+                },
+                'variations_agreed': '',
+            }
+        ]
+        self.data_api_client.export_suppliers.return_value = {"suppliers": list_of_expected_supplier_results}
+        self.data_api_client.find_frameworks.return_value = {"frameworks": [self._valid_framework]}
+
+        self.data_api_client.get_framework.return_value = {"frameworks": self._valid_framework}
+        response = self.client.get(
+            '/admin/frameworks/{}/suppliers/download'.format(
+                self._valid_framework['slug']
+            )
+        )
+        assert response.status_code == 200
+        assert response.mimetype == 'text/csv'
+        assert (response.headers['Content-Disposition'] ==
+                'attachment;filename=suppliers-on-digital-outcomes-and-specialists-2.csv')
+
+        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+
+        assert len(rows) == len(list_of_expected_supplier_results) + 1
+        expected_top_level_headings = [
+            "supplier_id",
+            "supplier_name",
+            "supplier_organisation_size",
+            "duns_number",
+            "companies_house_number",
+            "registered_name",
+            "declaration_status",
+            "application_status",
+            "application_result",
+            "framework_agreement",
+            "variations_agreed",
+        ]
+        expected_service_count_headings = [
+            "service-count-digital-outcomes",
+            "service-count-digital-specialists",
+            "service-count-user-research-studios",
+            "service-count-user-research-participants",
+        ]
+        expected_contact_info_headings = [
+            'contact_name',
+            'contact_email',
+            'contact_phone_number',
+            'address_first_line',
+            'address_city',
+            'address_postcode',
+            'address_country',
+        ]
+
+        assert rows[0] == expected_top_level_headings + expected_service_count_headings + expected_contact_info_headings
+        # All suppliers returned from the API should appear in the CSV
+
+        for index, expected_supplier in enumerate(list_of_expected_supplier_results):
+            assert rows[index + 1] == (
+                [str(expected_supplier[key]) for key in expected_top_level_headings] +
+                ['0', '0', '0', '0'] +
+                [str(expected_supplier['contact_information'][key]) for key in expected_contact_info_headings]
+            )
 
 
 class TestBuyersExport(LoggedInApplicationTest):
