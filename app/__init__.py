@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from dmcontent.errors import ContentNotFoundError
-from flask import Flask, request, redirect
+from flask import Flask, request, redirect, session
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 
@@ -57,7 +57,6 @@ def create_app(config_name):
     # Should be incorporated into digitalmarketplace-utils as well
     csrf.init_app(application)
 
-    application.permanent_session_lifetime = timedelta(hours=1)
     from .main import main as main_blueprint
     from .main import public as public_blueprint
     from .status import status as status_blueprint
@@ -78,6 +77,11 @@ def create_app(config_name):
     def remove_trailing_slash():
         if request.path != '/' and request.path.endswith('/'):
             return redirect(request.path[:-1], code=301)
+
+    @application.before_request
+    def refresh_session():
+        session.permanent = True
+        session.modified = True
 
     application.add_template_filter(parse_document_upload_time)
 
