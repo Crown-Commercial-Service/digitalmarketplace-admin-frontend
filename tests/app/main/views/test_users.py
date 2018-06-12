@@ -419,9 +419,9 @@ class TestSuppliersExport(LoggedInApplicationTest):
                 'registered_name': 'Registered Supplier Name 1',
                 'companies_house_number': 'ABC123',
                 "published_services_count": {
-                    "digital-outcomes": 0,
+                    "digital-outcomes": 2,
                     "digital-specialists": 0,
-                    "user-research-studios": 0,
+                    "user-research-studios": 1,
                     "user-research-participants": 0,
                 },
                 "contact_information": {
@@ -453,7 +453,7 @@ class TestSuppliersExport(LoggedInApplicationTest):
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
 
         assert len(rows) == len(list_of_expected_supplier_results) + 1
-        expected_top_level_headings = [
+        expected_headings = [
             "supplier_id",
             "supplier_name",
             "supplier_organisation_size",
@@ -465,14 +465,11 @@ class TestSuppliersExport(LoggedInApplicationTest):
             "application_result",
             "framework_agreement",
             "variations_agreed",
-        ]
-        expected_service_count_headings = [
+            "total_number_of_services",
             "service-count-digital-outcomes",
             "service-count-digital-specialists",
             "service-count-user-research-studios",
             "service-count-user-research-participants",
-        ]
-        expected_contact_info_headings = [
             'contact_name',
             'contact_email',
             'contact_phone_number',
@@ -482,15 +479,16 @@ class TestSuppliersExport(LoggedInApplicationTest):
             'address_country',
         ]
 
-        assert rows[0] == expected_top_level_headings + expected_service_count_headings + expected_contact_info_headings
-        # All suppliers returned from the API should appear in the CSV
-
-        for index, expected_supplier in enumerate(list_of_expected_supplier_results):
-            assert rows[index + 1] == (
-                [str(expected_supplier[key]) for key in expected_top_level_headings] +
-                ['0', '0', '0', '0'] +
-                [str(expected_supplier['contact_information'][key]) for key in expected_contact_info_headings]
-            )
+        assert rows[0] == expected_headings
+        assert rows[1] == [
+            '1', 'Supplier 1', 'small', '100000001', 'ABC123', 'Registered Supplier Name 1',
+            'unstarted', 'no_application', 'no result', 'False', '',
+            '3',  # Total number of services
+            '2', '0', '1', '0',  # Services for each lot
+            'Contact for Supplier 1',
+            '1@contact.com', '12345',
+            '7 Gem Lane', 'Cantelot', 'CN1A 1AA', 'country:GB'
+        ]
 
 
 class TestBuyersExport(LoggedInApplicationTest):

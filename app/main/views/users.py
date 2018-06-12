@@ -155,14 +155,20 @@ def download_suppliers(framework_slug):
     download_filename = "suppliers-on-{}.csv".format(framework_slug)
 
     formatted_rows = [
-        supplier_and_framework_headers + [
-            "service-count-{}".format(h) for h in service_count_headers
-        ] + contact_info_headers
+        supplier_and_framework_headers +
+        ["total_number_of_services"] +
+        ["service-count-{}".format(h) for h in service_count_headers] +
+        contact_info_headers
     ]
     for row in supplier_rows:
+        # Include an extra column with the total number of services across all lots
+        service_counts = [row['published_services_count'][heading] for heading in service_count_headers]
+        total_number_of_services = sum(service_counts)
+
         formatted_rows.append(
             [row[heading] for heading in supplier_and_framework_headers] +
-            [row['published_services_count'][heading] for heading in service_count_headers] +
+            [total_number_of_services] +
+            service_counts +
             [row['contact_information'][heading] for heading in contact_info_headers]
         )
 
