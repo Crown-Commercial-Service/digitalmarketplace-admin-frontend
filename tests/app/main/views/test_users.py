@@ -265,8 +265,7 @@ class TestUsersExport(LoggedInApplicationTest):
         ("admin-framework-manager", "?on_framework_only=False", 200),
         ("admin-manager", "", 403),
     ])
-    def test_supplier_user_csvs_are_only_accessible_to_specific_user_roles(self, role,
-                                                                    url_params, expected_code):
+    def test_supplier_user_csvs_are_only_accessible_to_specific_user_roles(self, role, url_params, expected_code):
         self.user_role = role
         users = [self._supplier_user]
         self.data_api_client.export_users.return_value = {"users": copy.copy(users)}
@@ -434,6 +433,34 @@ class TestSuppliersExport(LoggedInApplicationTest):
                     'address_country': 'country:GB',
                 },
                 'variations_agreed': '',
+            },
+            {
+                'supplier_id': 2,
+                'application_result': 'pass',
+                'application_status': 'application',
+                'declaration_status': 'complete',
+                'framework_agreement': True,
+                'supplier_name': "Supplier 2",
+                'supplier_organisation_size': "micro",
+                'duns_number': "200000002",
+                'registered_name': 'Registered Supplier Name 2',
+                'companies_house_number': 'ABC456',
+                "published_services_count": {
+                    "digital-outcomes": 2,
+                    "digital-specialists": 2,
+                    "user-research-studios": 2,
+                    "user-research-participants": 2,
+                },
+                "contact_information": {
+                    'contact_name': 'Contact for Supplier 2',
+                    'contact_email': '2@contact.com',
+                    'contact_phone_number': '22345',
+                    'address_first_line': '27 Gem Lane',
+                    'address_city': 'Cantelot',
+                    'address_postcode': 'CN2A 2AA',
+                    'address_country': 'country:GB',
+                },
+                'variations_agreed': "1,2",
             }
         ]
         self.data_api_client.export_suppliers.return_value = {"suppliers": list_of_expected_supplier_results}
@@ -450,7 +477,7 @@ class TestSuppliersExport(LoggedInApplicationTest):
         assert (response.headers['Content-Disposition'] ==
                 'attachment;filename=suppliers-on-digital-outcomes-and-specialists-2.csv')
 
-        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
+        rows = response.get_data(as_text=True).splitlines()
 
         assert len(rows) == len(list_of_expected_supplier_results) + 1
         expected_headings = [
@@ -479,8 +506,8 @@ class TestSuppliersExport(LoggedInApplicationTest):
             'address_country',
         ]
 
-        assert rows[0] == expected_headings
-        assert rows[1] == [
+        assert rows[0] == ",".join(expected_headings)
+        assert rows[1] == ",".join([
             '1', 'Supplier 1', 'small', '100000001', 'ABC123', 'Registered Supplier Name 1',
             'unstarted', 'no_application', 'no result', 'False', '',
             '3',  # Total number of services
@@ -488,7 +515,17 @@ class TestSuppliersExport(LoggedInApplicationTest):
             'Contact for Supplier 1',
             '1@contact.com', '12345',
             '7 Gem Lane', 'Cantelot', 'CN1A 1AA', 'country:GB'
-        ]
+        ])
+        assert rows[2] == ",".join([
+            '2', 'Supplier 2', 'micro', '200000002', 'ABC456', 'Registered Supplier Name 2',
+            'complete', 'application', 'pass', 'True',
+            '"1,2"',  # Comma separated list of agreed variations
+            '8',
+            '2', '2', '2', '2',
+            'Contact for Supplier 2',
+            '2@contact.com', '22345',
+            '27 Gem Lane', 'Cantelot', 'CN2A 2AA', 'country:GB'
+        ])
 
 
 class TestBuyersExport(LoggedInApplicationTest):
