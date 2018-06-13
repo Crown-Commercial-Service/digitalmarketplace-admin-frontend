@@ -121,6 +121,67 @@ def download_users(framework_slug):
     )
 
 
+@main.route('/frameworks/<framework_slug>/suppliers/download', methods=['GET'])
+@role_required('admin-framework-manager', 'admin')
+def download_suppliers(framework_slug):
+    framework = data_api_client.get_framework(framework_slug).get("frameworks")
+
+    supplier_rows = data_api_client.export_suppliers(framework_slug).get('suppliers', [])
+
+    supplier_and_framework_headers = [
+        "supplier_id",
+        "supplier_name",
+        "supplier_organisation_size",
+        "duns_number",
+        "companies_house_number",
+        "registered_name",
+        "declaration_status",
+        "application_status",
+        "application_result",
+        "framework_agreement",
+        "variations_agreed",
+    ]
+    service_count_headers = [lot['slug'] for lot in framework['lots']]
+    contact_info_headers = [
+        'contact_name',
+        'contact_email',
+        'contact_phone_number',
+        'address_first_line',
+        'address_city',
+        'address_postcode',
+        'address_country',
+    ]
+
+    download_filename = "suppliers-on-{}.csv".format(framework_slug)
+
+    formatted_rows = [
+        supplier_and_framework_headers +
+        ["total_number_of_services"] +
+        ["service-count-{}".format(h) for h in service_count_headers] +
+        contact_info_headers
+    ]
+    for row in supplier_rows:
+        # Include an extra column with the total number of services across all lots
+        service_counts = [row['published_services_count'][heading] for heading in service_count_headers]
+        total_number_of_services = sum(service_counts)
+
+        formatted_rows.append(
+            [row[heading] for heading in supplier_and_framework_headers] +
+            [total_number_of_services] +
+            service_counts +
+            [row['contact_information'][heading] for heading in contact_info_headers]
+        )
+
+    return Response(
+        csv_generator.iter_csv(formatted_rows),
+        mimetype='text/csv',
+        headers={
+            "Content-Disposition": "attachment;filename={}".format(download_filename),
+            "Content-Type": "text/csv; header=present"
+        }
+    )
+
+
 @main.route('/users/download/buyers', methods=['GET'])
 @role_required('admin-framework-manager', 'admin')
 def download_buyers():
