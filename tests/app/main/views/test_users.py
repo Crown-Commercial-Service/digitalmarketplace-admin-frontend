@@ -386,7 +386,7 @@ class TestSuppliersExport(LoggedInApplicationTest):
         super().teardown_method(method)
 
     @pytest.mark.parametrize("role, expected_code", [
-        ("admin", 200),
+        ("admin", 403),
         ("admin-ccs-category", 403),
         ("admin-ccs-sourcing", 403),
         ("admin-framework-manager", 200),
