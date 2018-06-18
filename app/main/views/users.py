@@ -105,7 +105,7 @@ def download_users(framework_slug):
         download_filename = "user-research-suppliers-on-{}.csv".format(framework_slug)
     else:
         supplier_headers = on_framework_only_headers + additional_full_headers
-        download_filename = "{}-suppliers-who-applied-or-started-application.csv".format(framework_slug)
+        download_filename = "all-email-accounts-for-suppliers-{}.csv".format(framework_slug)
     formatted_rows = []
     for row in supplier_rows:
         formatted_rows.append([row[heading] for heading in supplier_headers])
@@ -152,7 +152,7 @@ def download_suppliers(framework_slug):
         'address_country',
     ]
 
-    download_filename = "suppliers-on-{}.csv".format(framework_slug)
+    download_filename = "official-details-for-suppliers-{}.csv".format(framework_slug)
 
     formatted_rows = [
         supplier_and_framework_headers +
