@@ -299,7 +299,7 @@ class TestUsersExport(LoggedInApplicationTest):
         assert response.status_code == 200
         assert response.mimetype == 'text/csv'
         assert (response.headers['Content-Disposition'] ==
-                'attachment;filename=g-cloud-7-suppliers-who-applied-or-started-application.csv')
+                'attachment;filename=all-email-accounts-for-suppliers-g-cloud-7.csv')
 
         rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
 
@@ -475,7 +475,7 @@ class TestSuppliersExport(LoggedInApplicationTest):
         assert response.status_code == 200
         assert response.mimetype == 'text/csv'
         assert (response.headers['Content-Disposition'] ==
-                'attachment;filename=suppliers-on-digital-outcomes-and-specialists-2.csv')
+                'attachment;filename=official-details-for-suppliers-digital-outcomes-and-specialists-2.csv')
 
         rows = response.get_data(as_text=True).splitlines()
 
