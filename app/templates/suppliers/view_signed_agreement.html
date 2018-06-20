@@ -37,17 +37,17 @@
   <div class="column-one-third">
       <h2>Registered address</h2>
       <ul class="padding-bottom-small">
-          <li>{{ supplier_framework.declaration.registeredAddressBuilding }}</li>
-          <li>{{ supplier_framework.declaration.registeredAddressTown }}</li>
-          <li>{{ supplier_framework.declaration.registeredAddressPostcode }}</li>
+          <li>{{ supplier_framework.declaration.registeredAddressBuilding or supplier_framework.declaration.supplierRegisteredBuilding }}</li>
+          <li>{{ supplier_framework.declaration.registeredAddressTown or supplier_framework.declaration.supplierRegisteredTown }}</li>
+          <li>{{ supplier_framework.declaration.registeredAddressPostcode or supplier_framework.declaration.supplierRegisteredPostcode }}</li>
       </ul>
 
       <h2>Company number</h2>
       <div class="padding-bottom-small">
           {%
           with
-              text = supplier_framework.declaration.companyRegistrationNumber,
-              link = "https://beta.companieshouse.gov.uk/company/%s" | format(supplier_framework.declaration.companyRegistrationNumber),
+              text = supplier_framework.declaration.companyRegistrationNumber or supplier_framework.declaration.supplierCompanyRegistrationNumber,
+              link = "https://beta.companieshouse.gov.uk/company/%s" | format(supplier_framework.declaration.companyRegistrationNumber or supplier_framework.declaration.supplierCompanyRegistrationNumber),
               target = "_blank"
           %}
           {% include "toolkit/external-link.html" %}
