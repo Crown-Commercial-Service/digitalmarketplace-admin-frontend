@@ -106,6 +106,8 @@
         <p>
           <a href="{{ url_for('.manage_communications', framework_slug=framework['slug']) }}">Upload communications</a>
         </p>
+        {% endif %}
+        {% if current_user.has_any_role('admin-ccs-category', 'admin-framework-manager') %}
         <p>
           <a href="{{ url_for('.user_list_page_for_framework', framework_slug=framework['slug']) }}">Contact suppliers</a>
         </p>
