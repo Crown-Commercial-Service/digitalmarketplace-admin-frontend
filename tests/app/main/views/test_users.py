@@ -387,7 +387,7 @@ class TestSuppliersExport(LoggedInApplicationTest):
 
     @pytest.mark.parametrize("role, expected_code", [
         ("admin", 403),
-        ("admin-ccs-category", 403),
+        ("admin-ccs-category", 200),
         ("admin-ccs-sourcing", 403),
         ("admin-framework-manager", 200),
         ("admin-manager", 403),

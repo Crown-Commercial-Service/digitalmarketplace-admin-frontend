@@ -122,7 +122,7 @@ def download_users(framework_slug):
 
 
 @main.route('/frameworks/<framework_slug>/suppliers/download', methods=['GET'])
-@role_required('admin-framework-manager')
+@role_required('admin-framework-manager', 'admin-ccs-category')
 def download_suppliers(framework_slug):
     framework = data_api_client.get_framework(framework_slug).get("frameworks")
 
