@@ -259,7 +259,8 @@ class TestUsersExport(LoggedInApplicationTest):
     @pytest.mark.parametrize("role, url_params, expected_code", [
         ("admin", "?user_research_opted_in=True", 200),
         ("admin", "?user_research_opted_in=False", 403),
-        ("admin-ccs-category", "", 403),
+        ("admin-ccs-category", "", 200),
+        ("admin-ccs-category", "?user_research_opted_in=True", 403),
         ("admin-ccs-sourcing", "", 403),
         ("admin-framework-manager", "?on_framework_only=True", 200),
         ("admin-framework-manager", "?on_framework_only=False", 200),

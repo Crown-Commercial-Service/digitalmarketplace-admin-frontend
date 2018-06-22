@@ -69,14 +69,15 @@ def supplier_user_research_participants_by_framework():
 
 
 @main.route('/frameworks/<framework_slug>/users/download', methods=['GET'])
-@role_required('admin-framework-manager', 'admin')
+@role_required('admin-framework-manager', 'admin', 'admin-ccs-category')
 def download_users(framework_slug):
     user_research_opted_in = convert_to_boolean(request.args.get('user_research_opted_in'))
     on_framework_only = convert_to_boolean(request.args.get('on_framework_only'))
 
     if (
         current_user.role == 'admin' and not user_research_opted_in or
-        current_user.role == 'admin-framework-manager' and user_research_opted_in
+        current_user.role == 'admin-framework-manager' and user_research_opted_in or
+        current_user.role == 'admin-ccs-category' and user_research_opted_in
     ):
         abort(403)
 
