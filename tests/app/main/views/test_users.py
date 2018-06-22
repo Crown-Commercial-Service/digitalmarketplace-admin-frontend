@@ -262,6 +262,8 @@ class TestUsersExport(LoggedInApplicationTest):
         ("admin-ccs-category", "", 200),
         ("admin-ccs-category", "?user_research_opted_in=True", 403),
         ("admin-ccs-sourcing", "", 403),
+        ("admin-framework-manager", "?user_research_opted_in=True", 403),
+        ("admin-framework-manager", "", 200),
         ("admin-manager", "", 403),
     ])
     def test_supplier_user_csvs_are_only_accessible_to_specific_user_roles(self, role, url_params, expected_code):
