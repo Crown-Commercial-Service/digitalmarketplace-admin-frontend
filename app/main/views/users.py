@@ -69,24 +69,22 @@ def supplier_user_research_participants_by_framework():
 
 
 @main.route('/frameworks/<framework_slug>/users/download', methods=['GET'])
-@role_required('admin-framework-manager', 'admin')
+@role_required('admin-framework-manager', 'admin', 'admin-ccs-category')
 def download_users(framework_slug):
     user_research_opted_in = convert_to_boolean(request.args.get('user_research_opted_in'))
-    on_framework_only = convert_to_boolean(request.args.get('on_framework_only'))
 
     if (
         current_user.role == 'admin' and not user_research_opted_in or
-        current_user.role == 'admin-framework-manager' and user_research_opted_in
+        current_user.role == 'admin-framework-manager' and user_research_opted_in or
+        current_user.role == 'admin-ccs-category' and user_research_opted_in
     ):
         abort(403)
 
     supplier_rows = data_api_client.export_users(framework_slug).get('users', [])
-    on_framework_only_headers = [
+    supplier_headers = [
         "email address",
         "user_name",
         "supplier_id",
-    ]
-    additional_full_headers = [
         "declaration_status",
         "application_status",
         "application_result",
@@ -94,17 +92,11 @@ def download_users(framework_slug):
         "variations_agreed",
         "published_service_count"
     ]
-
-    if on_framework_only:
-        supplier_headers = on_framework_only_headers
-        supplier_rows = [row for row in supplier_rows if row['application_result'] == 'pass']
-        download_filename = "suppliers-on-{}.csv".format(framework_slug)
-    elif user_research_opted_in:
-        supplier_headers = on_framework_only_headers
+    if user_research_opted_in:
         supplier_rows = [row for row in supplier_rows if row['user_research_opted_in']]
         download_filename = "user-research-suppliers-on-{}.csv".format(framework_slug)
     else:
-        supplier_headers = on_framework_only_headers + additional_full_headers
+
         download_filename = "all-email-accounts-for-suppliers-{}.csv".format(framework_slug)
     formatted_rows = []
     for row in supplier_rows:
