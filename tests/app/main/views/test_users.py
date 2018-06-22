@@ -262,8 +262,6 @@ class TestUsersExport(LoggedInApplicationTest):
         ("admin-ccs-category", "", 200),
         ("admin-ccs-category", "?user_research_opted_in=True", 403),
         ("admin-ccs-sourcing", "", 403),
-        ("admin-framework-manager", "?on_framework_only=True", 200),
-        ("admin-framework-manager", "?on_framework_only=False", 200),
         ("admin-manager", "", 403),
     ])
     def test_supplier_user_csvs_are_only_accessible_to_specific_user_roles(self, role, url_params, expected_code):
@@ -323,43 +321,6 @@ class TestUsersExport(LoggedInApplicationTest):
             assert sorted(
                 [str(val) for key, val in user.items() if key in expected_headings]
             ) == sorted(rows[index + 1])
-
-    def test_download_csv_for_on_framework_only(self):
-        users = [
-            self._supplier_user,
-            {
-                "application_result": "pass",
-                "application_status": "application",
-                "declaration_status": "complete",
-                "framework_agreement": False,
-                "supplier_id": 2,
-                "email address": "test.user@sme2.com",
-                "user_name": "Test User 2",
-                "variations_agreed": "",
-                "published_service_count": 0,
-            }
-        ]
-
-        self.data_api_client.export_users.return_value = {"users": copy.copy(users)}
-        self.data_api_client.find_frameworks.return_value = {"frameworks": [self._valid_framework]}
-
-        self.data_api_client.get_framework.return_value = {"frameworks": self._valid_framework}
-        response = self.client.get(
-            '/admin/frameworks/{}/users/download?on_framework_only=True'.format(
-                self._valid_framework['slug'],
-            ),
-            data={'framework_slug': self._valid_framework['slug']}
-        )
-        assert response.status_code == 200
-        assert response.mimetype == 'text/csv'
-        assert response.headers['Content-Disposition'] == 'attachment;filename=suppliers-on-g-cloud-7.csv'
-
-        rows = [line.split(",") for line in response.get_data(as_text=True).splitlines()]
-
-        assert len(rows) == 2
-        assert rows[0] == ["email address", "user_name", "supplier_id"]
-        # Only users with application_result = "pass" should appear in the CSV
-        assert rows[1] == ["test.user@sme2.com", "Test User 2", "2"]
 
 
 class TestSuppliersExport(LoggedInApplicationTest):
