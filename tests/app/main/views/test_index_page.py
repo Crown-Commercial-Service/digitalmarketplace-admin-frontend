@@ -333,3 +333,20 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         assert link_is_visible is link_should_be_visible, (
             "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
         )
+
+    @pytest.mark.parametrize("role, link_should_be_visible", [
+        ("admin", False),
+        ("admin-ccs-category", True),
+        ("admin-ccs-sourcing", True),
+        ("admin-framework-manager", True),
+        ("admin-manager", False),
+    ])
+    def test_download_g_cloud_outcomes_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
+        self.user_role = role
+        response = self.client.get('/admin')
+        document = html.fromstring(response.get_data(as_text=True))
+        link_is_visible = bool(document.xpath('.//a[@href="/admin/direct-award/outcomes"]'))
+
+        assert link_is_visible is link_should_be_visible, (
+            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+        )
