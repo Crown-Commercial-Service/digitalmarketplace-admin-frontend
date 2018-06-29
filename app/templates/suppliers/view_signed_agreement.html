@@ -26,7 +26,7 @@
   <div class="column-one-whole">
     {%
         with
-        heading = supplier_framework.declaration.nameOfOrganisation,
+        heading = supplier_framework.declaration.nameOfOrganisation or supplier_framework.declaration.supplierRegisteredName,
         smaller = True
     %}
     {% include "toolkit/page-heading.html" %}
