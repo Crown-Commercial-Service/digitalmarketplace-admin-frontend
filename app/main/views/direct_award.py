@@ -40,6 +40,7 @@ def download_outcomes():
         service = data_api_client.get_archived_service(
             archived_service_id=resultOfDirectAward['archivedService']['id']
         )['services']
+
         user = project['users'][0]
 
         row = [
