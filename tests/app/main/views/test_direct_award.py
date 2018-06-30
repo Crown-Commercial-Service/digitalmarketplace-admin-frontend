@@ -125,6 +125,10 @@ class TestDirectAwardView(LoggedInApplicationTest):
         for row in data:
             rows.append(row)
 
+        # checks that only awarded outcomes are shown
+        assert len(rows) == 2
+
+        # checks headers
         assert rows[0] == [
             'ID', 'Name', 'Submitted at', 'Result',
             'Award service ID', 'Award service name',
@@ -134,6 +138,7 @@ class TestDirectAwardView(LoggedInApplicationTest):
             'User id', 'User name', 'User email'
         ]
 
+        # checks results
         assert rows[1] == [
             '272774709812396', '22', '2018-06-19T13:37:59.713497Z', 'awarded',
             '316684326093280', 'testServiceName', '266018', 'Somerford Associates Limited',
