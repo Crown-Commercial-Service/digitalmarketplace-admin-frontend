@@ -34,7 +34,7 @@ class TestIndex(LoggedInApplicationTest):
         link_is_visible = bool(document.xpath('.//a[@href="/admin/buyers/add-buyer-domains"]'))
 
         assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+            "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
 
     @pytest.mark.parametrize("role, header_should_be_visible", [
@@ -51,7 +51,7 @@ class TestIndex(LoggedInApplicationTest):
         header_is_visible = bool(document.xpath('.//h2[contains(text(),"User support")]'))
 
         assert header_is_visible is header_should_be_visible, (
-            "Role {} {} see the header".format(role, "can not" if header_should_be_visible else "can")
+            "Role {} {} see the header".format(role, "cannot" if header_should_be_visible else "can")
         )
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
@@ -68,7 +68,7 @@ class TestIndex(LoggedInApplicationTest):
         link_is_visible = bool(document.xpath('.//a[@href="/admin/users"]'))
 
         assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+            "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
@@ -85,7 +85,7 @@ class TestIndex(LoggedInApplicationTest):
         link_is_visible = bool(document.xpath('.//a[@href="/admin/admin-users"]'))
 
         assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+            "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
@@ -102,7 +102,7 @@ class TestIndex(LoggedInApplicationTest):
         link_is_visible = bool(document.xpath('.//a[@href="/admin/services/updates/unapproved"]'))
 
         assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+            "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
 
     @pytest.mark.parametrize("role, header_should_be_visible", [
@@ -119,7 +119,7 @@ class TestIndex(LoggedInApplicationTest):
         header_is_visible = bool(document.xpath('.//h2[contains(text(),"Manage applications")]'))
 
         assert header_is_visible is header_should_be_visible, (
-            "Role {} {} see the header".format(role, "can not" if header_should_be_visible else "can")
+            "Role {} {} see the header".format(role, "cannot" if header_should_be_visible else "can")
         )
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
@@ -136,7 +136,7 @@ class TestIndex(LoggedInApplicationTest):
         link_is_visible = bool(document.xpath('.//a[@href="/admin/buyers"]'))
 
         assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+            "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
 
     @pytest.mark.parametrize("role, link_should_be_visible, expected_link_text", [
@@ -155,7 +155,7 @@ class TestIndex(LoggedInApplicationTest):
         link_is_visible = bool(document.xpath('.//a[@href="/admin/find-suppliers-and-services"]'))
 
         assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+            "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
         if link_should_be_visible:
             link_text = document.xpath('.//a[@href="/admin/find-suppliers-and-services"]//text()')[0]
@@ -175,7 +175,7 @@ class TestIndex(LoggedInApplicationTest):
         link_is_visible = bool(document.xpath('.//a[@href="/admin/users/download/buyers"]'))
 
         assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+            "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
 
 
@@ -297,7 +297,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         link_is_visible = bool(document.xpath('.//a[contains(text(),"Contact suppliers")]'))
 
         assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+            "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
@@ -314,7 +314,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         link_is_visible = bool(document.xpath('.//a[contains(text(),"Upload communications")]'))
 
         assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+            "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
@@ -331,5 +331,22 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         link_is_visible = bool(document.xpath('.//a[contains(text(),"View application statistics")]'))
 
         assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+            "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
+        )
+
+    @pytest.mark.parametrize("role, link_should_be_visible", [
+        ("admin", False),
+        ("admin-ccs-category", True),
+        ("admin-ccs-sourcing", True),
+        ("admin-framework-manager", True),
+        ("admin-manager", False),
+    ])
+    def test_download_g_cloud_outcomes_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
+        self.user_role = role
+        response = self.client.get('/admin')
+        document = html.fromstring(response.get_data(as_text=True))
+        link_is_visible = bool(document.xpath('.//a[@href="/admin/direct-award/outcomes"]'))
+
+        assert link_is_visible is link_should_be_visible, (
+            "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
