@@ -13,8 +13,9 @@ from dmutils.documents import (
     generate_timestamped_document_upload_path, degenerate_document_path_and_return_doc_name,
     generate_download_filename)
 from dmutils.email import send_user_account_email
+from dmutils.flask import timed_render_template as render_template
 from dmutils.formats import datetimeformat
-from flask import render_template, request, redirect, url_for, abort, current_app
+from flask import request, redirect, url_for, abort, current_app
 from flask_login import current_user, flash
 
 from .. import main

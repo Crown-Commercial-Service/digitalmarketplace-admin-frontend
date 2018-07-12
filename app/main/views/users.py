@@ -2,7 +2,8 @@ from datetime import datetime
 
 from dmutils import csv_generator
 from dmutils.config import convert_to_boolean
-from flask import abort, render_template, request, Response, url_for
+from dmutils.flask import timed_render_template as render_template
+from flask import abort, request, Response, url_for
 from flask_login import flash, current_user
 
 from .. import main

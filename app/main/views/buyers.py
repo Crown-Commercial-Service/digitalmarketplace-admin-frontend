@@ -1,5 +1,6 @@
 from dmapiclient import HTTPError
-from flask import flash, redirect, render_template, request, url_for
+from dmutils.flask import timed_render_template as render_template
+from flask import flash, redirect, request, url_for
 from flask_login import current_user
 
 from .. import main

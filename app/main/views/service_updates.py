@@ -1,5 +1,6 @@
 from dmapiclient.audit import AuditTypes
-from flask import abort, flash, redirect, render_template, url_for
+from dmutils.flask import timed_render_template as render_template
+from flask import abort, flash, redirect, url_for
 from flask_login import current_user
 
 from .. import main
