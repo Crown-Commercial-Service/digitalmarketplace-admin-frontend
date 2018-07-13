@@ -6,7 +6,8 @@ from dmapiclient.audit import AuditTypes
 from dmcontent.formats import format_service_price
 from dmutils import s3  # this style of import so we only have to mock once
 from dmutils.documents import upload_service_documents
-from flask import abort, current_app, flash, redirect, render_template, request, url_for
+from dmutils.flask import timed_render_template as render_template
+from flask import abort, current_app, flash, redirect, request, url_for
 from flask_login import current_user
 
 from .. import main

@@ -2,8 +2,9 @@ from collections import OrderedDict
 
 from dateutil.parser import parse as parse_date
 from dmutils.documents import degenerate_document_path_and_return_doc_name
+from dmutils.flask import timed_render_template as render_template
 from dmutils.formats import datetimeformat
-from flask import render_template, redirect, url_for, abort, request
+from flask import redirect, url_for, abort, request
 
 from .. import main
 from ..auth import role_required

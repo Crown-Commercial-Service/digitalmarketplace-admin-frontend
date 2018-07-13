@@ -2,7 +2,8 @@ from distutils.util import strtobool
 
 from dmapiclient import HTTPError
 from dmutils.email.user_account_email import send_user_account_email
-from flask import render_template, request, redirect, url_for, flash
+from dmutils.flask import timed_render_template as render_template
+from flask import request, redirect, url_for, flash
 from flask_login import current_user
 
 from .. import main

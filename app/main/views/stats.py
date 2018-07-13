@@ -1,8 +1,9 @@
 from datetime import datetime
 
 from dmapiclient.audit import AuditTypes
+from dmutils.flask import timed_render_template as render_template
 from dmutils.formats import DATETIME_FORMAT
-from flask import render_template, request
+from flask import request
 
 from .. import public
 from ..helpers.sum_counts import format_snapshots

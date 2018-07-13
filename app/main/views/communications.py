@@ -1,6 +1,7 @@
 from dmutils import s3  # this style of import so we only have to mock once
 from dmutils.documents import file_is_pdf, file_is_csv, file_is_open_document_format
-from flask import render_template, redirect, url_for, current_app, request, flash
+from dmutils.flask import timed_render_template as render_template
+from flask import redirect, url_for, current_app, request, flash
 
 from .. import main
 from ..auth import role_required
