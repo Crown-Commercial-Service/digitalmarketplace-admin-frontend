@@ -73,6 +73,7 @@
       },
       "frameworkName": "G-Cloud 8",
       "frameworkFramework": "g-cloud",
+      "frameworkFamily": "g-cloud",
       "frameworkSlug": "g-cloud-8",
       "freeOption": false,
       "governanceFramework": {

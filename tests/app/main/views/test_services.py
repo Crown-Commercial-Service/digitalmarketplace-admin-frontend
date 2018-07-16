@@ -422,6 +422,7 @@ class TestServiceView(LoggedInApplicationTest):
             'supplierId': 1000,
             'frameworkSlug': 'g-cloud-8',
             'frameworkFramework': 'g-cloud',
+            'frameworkFamily': 'g-cloud',
             'id': "1",
             'status': 'published'
         }}
@@ -443,6 +444,7 @@ class TestServiceView(LoggedInApplicationTest):
             'supplierId': 1000,
             'frameworkSlug': 'digital-outcomes-and-specialists-2',
             'frameworkFramework': 'digital-outcomes-and-specialists',
+            'frameworkFamily': 'digital-outcomes-and-specialists',
             'id': "1",
             'status': 'published'
         }}
@@ -463,6 +465,7 @@ class TestServiceView(LoggedInApplicationTest):
             'supplierId': 1000,
             'frameworkSlug': 'digital-outcomes-and-specialists-2',
             'frameworkFramework': 'digital-outcomes-and-specialists',
+            'frameworkFamily': 'digital-outcomes-and-specialists',
             'id': "1",
             'status': 'published'
         }}
@@ -486,6 +489,7 @@ class TestServiceView(LoggedInApplicationTest):
             'supplierId': 1000,
             'frameworkSlug': 'digital-outcomes-and-specialists-2',
             'frameworkFramework': 'digital-outcomes-and-specialists',
+            'frameworkFamily': 'digital-outcomes-and-specialists',
             'id': "1",
             'status': 'published'
         }}
@@ -501,6 +505,7 @@ class TestServiceView(LoggedInApplicationTest):
             'supplierId': 1000,
             'frameworkSlug': 'digital-outcomes-and-specialists-2',
             'frameworkFramework': 'digital-outcomes-and-specialists',
+            'frameworkFamily': 'digital-outcomes-and-specialists',
             'id': "1",
             'status': service_status
         }}
@@ -522,6 +527,7 @@ class TestServiceView(LoggedInApplicationTest):
             'supplierId': 1000,
             'frameworkSlug': 'digital-outcomes-and-specialists-2',
             'frameworkFramework': 'digital-outcomes-and-specialists',
+            'frameworkFamily': 'digital-outcomes-and-specialists',
             'id': "1",
             'status': 'disabled'
         }}
@@ -543,6 +549,7 @@ class TestServiceView(LoggedInApplicationTest):
             'supplierId': 1000,
             'frameworkSlug': 'digital-outcomes-and-specialists-2',
             'frameworkFramework': 'digital-outcomes-and-specialists',
+            'frameworkFamily': 'digital-outcomes-and-specialists',
             'id': "1",
             'status': 'published'
         }}
