@@ -49,6 +49,7 @@
     },
     "slug":"g-cloud-8",
     "framework":"g-cloud",
+    "family": "g-cloud",
     "id":6
   }
 }

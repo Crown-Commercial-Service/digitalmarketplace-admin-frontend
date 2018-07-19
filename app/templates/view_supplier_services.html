@@ -72,7 +72,7 @@
         ) %}
           {% call summary.row() %}
             {% if item.serviceName %}
-              {{ summary.service_link(item.serviceName, '/' + item.frameworkFramework + '/services/' + item.id|string) }}
+              {{ summary.service_link(item.serviceName, '/' + item.frameworkFamily + '/services/' + item.id|string) }}
             {% else %}
               {% call summary.field(first=True, wide=True) %}
                 {{ item.lotName }}
