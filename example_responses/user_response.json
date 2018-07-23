@@ -15,6 +15,7 @@
       "name": "SME Corp UK Limited",
       "supplierId": 1000
     },
-    "updatedAt": "2015-07-23T09:33:53.507659Z"
+    "updatedAt": "2015-07-23T09:33:53.507659Z",
+    "personalDataRemoved": false
   }
 }
