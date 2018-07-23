@@ -238,7 +238,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert document.xpath('//button[@class="button-save"][contains(text(), "Move user to this supplier")]')
         assert document.xpath('//form[@action="/admin/suppliers/1234/move-existing-user"][@method="post"]')
 
-    def test_should_show_unlock_button_if_user_locked(self):
+    def test_should_show_unlock_button_if_user_locked_and_not_personal_data_removed(self):
         users = self.load_example_listing("users_response")
         users["users"][0]["locked"] = True
         self.data_api_client.find_users_iter.return_value = users['users']
@@ -251,7 +251,32 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert document.xpath('//form[@action="/admin/suppliers/users/999/unlock"][@method="post"]')
         assert document.xpath('//input[@value="Unlock"][@type="submit"][@class="button-secondary"]')
 
-    def test_should_show_activate_button_if_user_deactivated(self):
+    def test_should_not_show_unlock_button_if_user_not_locked(self):
+        users = self.load_example_listing("users_response")
+        self.data_api_client.find_users_iter.return_value = users['users']
+
+        response = self.client.get('/admin/suppliers/users?supplier_id=1000')
+
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert not document.xpath('//form[@action="/admin/suppliers/users/999/unlock"][@method="post"]')
+        assert not document.xpath('//input[@value="Unlock"][@type="submit"][@class="button-secondary"]')
+
+    def test_should_not_show_unlock_button_if_user_personal_data_removed(self):
+        users = self.load_example_listing("users_response")
+        users["users"][0]["personalDataRemoved"] = True
+        self.data_api_client.find_users_iter.return_value = users['users']
+
+        response = self.client.get('/admin/suppliers/users?supplier_id=1000')
+
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert not document.xpath('//form[@action="/admin/suppliers/users/999/unlock"][@method="post"]')
+        assert not document.xpath('//input[@value="Unlock"][@type="submit"][@class="button-secondary"]')
+
+    def test_should_show_activate_button_if_user_deactivated_and_not_personal_data_removed(self):
         users = self.load_example_listing("users_response")
         users["users"][0]["active"] = False
         self.data_api_client.find_users_iter.return_value = users['users']
@@ -263,6 +288,33 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
         assert document.xpath('//form[@action="/admin/suppliers/users/999/activate"][@method="post"]')
         assert document.xpath('//input[@value="Activate"][@type="submit"][@class="button-secondary"]')
+
+    def test_should_not_show_activate_button_if_user_personal_data_removed(self):
+        users = self.load_example_listing("users_response")
+        users["users"][0]["personalDataRemoved"] = True
+        self.data_api_client.find_users_iter.return_value = users['users']
+
+        response = self.client.get('/admin/suppliers/users?supplier_id=1000')
+
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert not document.xpath('//form[@action="/admin/suppliers/users/999/activate"][@method="post"]')
+        assert not document.xpath('//input[@value="Activate"][@type="submit"][@class="button-secondary"]')
+
+    def test_should_not_show_activate_button_if_user_active(self):
+        users = self.load_example_listing("users_response")
+        self.data_api_client.find_users_iter.return_value = users['users']
+
+        response = self.client.get('/admin/suppliers/users?supplier_id=1000')
+
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert not document.xpath('//form[@action="/admin/suppliers/users/999/activate"][@method="post"]')
+        assert not document.xpath('//input[@value="Activate"][@type="submit"][@class="button-secondary"]')
 
     def test_should_call_api_to_unlock_user(self):
         self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
