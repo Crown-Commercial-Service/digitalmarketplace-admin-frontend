@@ -186,10 +186,9 @@ class TestUsersView(LoggedInApplicationTest):
         assert deactivate_button == 'Deactivate'
         assert return_link.attrib['value'] == '/admin/users?email_address=test.user%40sme.com'
 
-    @pytest.mark.parametrize('case', ({'active': False}, {'personalDataRemoved': True}))
-    def test_should_not_show_deactivate_button_if_user_deactivated_or_personal_data_removed(self, case):
+    def test_should_not_show_deactivate_button_if_user_deactivated(self):
         buyer = self.load_example_listing("user_response")
-        buyer['users'].update(case)
+        buyer['users'].update({'active': False})
         self.data_api_client.get_user.return_value = buyer
 
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
