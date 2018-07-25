@@ -160,6 +160,16 @@ class TestUsersView(LoggedInApplicationTest):
         assert unlock_button == 'Unlock'
         assert return_link.attrib['value'] == '/admin/users?email_address=test.user%40sme.com'
 
+    def test_should_not_show_unlock_button_if_user_personal_data_removed(self):
+        buyer = self.load_example_listing("user_response")
+        buyer['users'].update({'locked': True, 'personalDataRemoved': True})
+        self.data_api_client.get_user.return_value = buyer
+
+        response = self.client.get('/admin/users?email_address=test.user@sme.com')
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert not document.xpath('//input[@value="Unlock"][@type="submit"]')
+
     def test_should_show_deactivate_button(self):
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         assert response.status_code == 200
@@ -175,6 +185,26 @@ class TestUsersView(LoggedInApplicationTest):
         assert deactivate_link.attrib['action'] == '/admin/suppliers/users/999/deactivate'
         assert deactivate_button == 'Deactivate'
         assert return_link.attrib['value'] == '/admin/users?email_address=test.user%40sme.com'
+
+    def test_should_not_show_deactivate_button_if_user_deactivated(self):
+        buyer = self.load_example_listing("user_response")
+        buyer['users'].update({'active': False})
+        self.data_api_client.get_user.return_value = buyer
+
+        response = self.client.get('/admin/users?email_address=test.user@sme.com')
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert not document.xpath('//input[@value="Deactivate"][@type="submit"]')
+
+    def test_should_show_activate_button_if_user_deactivated_and_not_personal_data_removed(self):
+        buyer = self.load_example_listing("user_response")
+        buyer['users'].update({'active': False, 'personalDataRemoved': False})
+        self.data_api_client.get_user.return_value = buyer
+
+        response = self.client.get('/admin/users?email_address=test.user@sme.com')
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert document.xpath('//input[@value="Activate"][@type="submit"]')
 
 
 class TestUserListPage(LoggedInApplicationTest):
