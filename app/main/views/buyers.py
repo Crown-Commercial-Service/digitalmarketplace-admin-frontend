@@ -11,7 +11,6 @@ from dmapiclient.errors import HTTPError
 NEW_LINE = '\n'
 AREA_OF_EXPERTISE_LIST = [
     'Agile delivery and Governance',
-    'Change, Training and Transformation',
     'Content and Publishing',
     'Cyber security',
     'Data science',
@@ -20,7 +19,9 @@ AREA_OF_EXPERTISE_LIST = [
     'Software engineering and Development',
     'Strategy and Policy',
     'Support and Operations',
-    'User research and Design'
+    'User research and Design',
+    'Change and Transformation',
+    'Training, Learning and Development'
 ]
 
 
