@@ -1,0 +1,141 @@
+version: 2
+references:
+  venv-cache-key: &venv-cache-key
+    key: venv-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements_for_test.txt" }}
+  npm-cache-key: &npm-cache-key
+    key: npm-cache-{{ .Branch }}-{{ checksum "package.json" }}
+  cf-install: &cf-install
+    run:
+      name: Install Cloud Foundry CLI
+      command: |
+        curl -v -L -o cf-cli_amd64.deb 'https://cli.run.pivotal.io/stable?release=debian64&source=github'
+        sudo dpkg -i cf-cli_amd64.deb
+        cf install-plugin https://github.com/govau/autopilot/releases/download/0.0.5-venapp/autopilot-linux -f
+        cf install-plugin https://github.com/govau/cf-run-and-wait/releases/download/0.1/run-and-wait.linux64 -f
+        cf -v
+  deploy-docker: &deploy-docker
+    docker:
+      - image: circleci/python:2.7.15-stretch
+        environment:
+          TZ: "/usr/share/zoneinfo/Australia/Sydney"
+
+jobs:
+  build:
+    docker:
+      - image: circleci/python:2.7.15-stretch-node-browsers
+        environment:
+          TZ: "/usr/share/zoneinfo/Australia/Sydney"
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+
+      - restore_cache:
+          <<: *venv-cache-key
+      - run: 
+          name: Pip Install
+          command: |
+            virtualenv venv
+            source venv/bin/activate
+            pip install -r requirements_for_test.txt
+      - save_cache:
+          <<: *venv-cache-key
+          paths:
+            - venv
+
+      - restore_cache:
+          <<: *npm-cache-key
+      - run: 
+          name: Npm Install
+          command: |
+            npm install
+      - save_cache:
+          <<: *npm-cache-key
+          paths:
+            - node_modules
+
+      - run: 
+          name: Check Styles
+          command: |
+            source venv/bin/activate
+            pycodestyle
+
+      - run: 
+          name: Npm Build
+          command: |
+            npm run frontend-build:production
+
+      - run: 
+          name: Run Tests
+          command: |
+            source venv/bin/activate
+            py.test tests
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ~
+
+  deploy_to_rc:
+    <<: *deploy-docker
+    steps:
+      - attach_workspace:
+          at: .
+      - *cf-install
+      - run:
+          name: Deploy to RC
+          command: |
+            cf login -a https://api.system.y.cld.gov.au -o dta -s marketplace -u $CF_USER_STAGING -p $CF_PASSWORD_STAGING
+            cf zero-downtime-push dm-rc-admin -f manifest.rc.yml --show-app-log
+
+  deploy_to_staging:
+    <<: *deploy-docker
+    steps:
+      - attach_workspace:
+          at: .
+      - *cf-install
+      - run:
+          name: Deploy to Staging
+          command: |
+            cf login -a https://api.system.y.cld.gov.au -o dta -s marketplace -u $CF_USER_STAGING -p $CF_PASSWORD_STAGING
+            cf zero-downtime-push dm-dev-admin -f manifest.yml --show-app-log
+
+  deploy_to_production:
+    <<: *deploy-docker
+    steps:
+      - attach_workspace:
+          at: .
+      - *cf-install
+      - run:
+          name: Deploy to Production
+          command: |
+            echo hello
+            # cf login -a https://api.system.b.cld.gov.au -o dta -s marketplace -u $CF_USER_PROD -p $CF_PASSWORD_PROD
+            # cf zero-downtime-push dm-admin -f manifest.production.yml --show-app-log
+
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build
+      - deploy_to_rc:
+          requires:
+            - build
+          filters:
+            branches:
+              only: rc
+      - deploy_to_staging:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+      - deploy_to_production:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /test-tag-.*/
+            branches:
+              ignore: /.*/

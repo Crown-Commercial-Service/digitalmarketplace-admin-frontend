@@ -34,7 +34,7 @@ def find_buyer_by_brief_id():
     try:
         brief = data_api_client.get_brief(brief_id).get('briefs')
 
-    except:
+    except:  # noqa
         flash('no_brief', 'error')
         return render_template(
             "view_buyers.html",
@@ -79,12 +79,12 @@ def update_brief(brief_id):
             brief = data_api_client.req.briefs(brief_id).admin() \
                 .post({'briefs': {'sellerEmailList': [_.strip() for _ in edit_seller_email_list if _ != '']
                                   },
-                      'update_details': {'updated_by': current_user.email_address}}).get('briefs')
+                       'update_details': {'updated_by': current_user.email_address}}).get('briefs')
         elif 'edit_area_of_expertise' in request.form:
             brief = data_api_client.req.briefs(brief_id).admin() \
                 .post({'briefs': {'areaOfExpertise': request.form['edit_area_of_expertise']
                                   },
-                      'update_details': {'updated_by': current_user.email_address}}).get('briefs')
+                       'update_details': {'updated_by': current_user.email_address}}).get('briefs')
 
     except HTTPError, e:
         flash(e.message, 'error')

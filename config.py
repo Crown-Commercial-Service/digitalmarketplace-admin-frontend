@@ -141,6 +141,7 @@ class Staging(Config):
     REACT_RENDER = True
     DM_MAIN_SERVER_NAME = "dm-dev.apps.y.cld.gov.au"
 
+
 configs = {
     'development': Development,
     'preview': Live,

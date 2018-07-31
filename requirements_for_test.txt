@@ -1,21 +1,11 @@
--e git+https://github.com/AusDTO/dto-digitalmarketplace-content-loader.git@663ca400be81deeb4aec40445e45889e9ed1663e#egg=dto-digitalmarketplace-content-loader
--e git+https://github.com/AusDTO/dto-digitalmarketplace-utils.git@master#egg=dto-digitalmarketplace-utils
--e git+https://github.com/AusDTO/dto-digitalmarketplace-apiclient.git@master#egg=dto-digitalmarketplace-apiclient
+-r requirements.txt
 
--e .
-
-pytest
-pep8==1.5.7
-nose
+pycodestyle==2.4.0
+nose==1.3.7
 mock==1.0.1
-requests-mock
-lxml
-cssselect
-watchdog
-coverage
-pytest-cov
-pytest-sugar
-python-coveralls
-blinker
-rollbar
-responses
+requests-mock==1.3.0
+coverage==4.0.3
+pytest==3.0.7
+pytest-cov==2.4.0
+pytest-sugar==0.8.0
+python-coveralls==2.9.0
