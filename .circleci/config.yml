@@ -85,8 +85,9 @@ jobs:
       - run:
           name: Deploy to RC
           command: |
-            cf login -a https://api.system.y.cld.gov.au -o dta -s marketplace -u $CF_USER_STAGING -p $CF_PASSWORD_STAGING
-            cf zero-downtime-push dm-rc-admin -f manifest.rc.yml --show-app-log
+            echo Deploy to RC
+            # cf login -a https://api.system.y.cld.gov.au -o dta -s marketplace -u $CF_USER_STAGING -p $CF_PASSWORD_STAGING
+            # cf zero-downtime-push dm-rc-admin -f manifest.rc.yml --show-app-log
 
   deploy_to_staging:
     <<: *deploy-docker
@@ -97,8 +98,9 @@ jobs:
       - run:
           name: Deploy to Staging
           command: |
-            cf login -a https://api.system.y.cld.gov.au -o dta -s marketplace -u $CF_USER_STAGING -p $CF_PASSWORD_STAGING
-            cf zero-downtime-push dm-dev-admin -f manifest.yml --show-app-log
+            echo Deploy to Staging
+            # cf login -a https://api.system.y.cld.gov.au -o dta -s marketplace -u $CF_USER_STAGING -p $CF_PASSWORD_STAGING
+            # cf zero-downtime-push dm-dev-admin -f manifest.yml --show-app-log
 
   deploy_to_production:
     <<: *deploy-docker
@@ -109,7 +111,7 @@ jobs:
       - run:
           name: Deploy to Production
           command: |
-            echo hello
+            echo Deploy to Production
             # cf login -a https://api.system.b.cld.gov.au -o dta -s marketplace -u $CF_USER_PROD -p $CF_PASSWORD_PROD
             # cf zero-downtime-push dm-admin -f manifest.production.yml --show-app-log
 
@@ -118,17 +120,24 @@ workflows:
   version: 2
   build_and_deploy:
     jobs:
-      - build
+      - build:
+          filters:
+            tags:
+              only: /test-tag-.*/
       - deploy_to_rc:
           requires:
             - build
           filters:
+            tags:
+              only: /test-tag-.*/
             branches:
               only: rc
       - deploy_to_staging:
           requires:
             - build
           filters:
+            tags:
+              only: /test-tag-.*/
             branches:
               only: master
       - deploy_to_production:
