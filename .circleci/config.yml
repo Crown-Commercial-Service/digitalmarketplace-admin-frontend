@@ -1,9 +1,9 @@
 version: 2
 references:
   venv-cache-key: &venv-cache-key
-    key: venv-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements_for_test.txt" }}
+    key: venv-cache-{{ checksum "requirements.txt" }}-{{ checksum "requirements_for_test.txt" }}
   npm-cache-key: &npm-cache-key
-    key: npm-cache-{{ .Branch }}-{{ checksum "package.json" }}
+    key: npm-cache-{{ checksum "package.json" }}
   cf-install: &cf-install
     run:
       name: Install Cloud Foundry CLI
@@ -89,6 +89,19 @@ jobs:
             # cf login -a https://api.system.y.cld.gov.au -o dta -s marketplace -u $CF_USER_STAGING -p $CF_PASSWORD_STAGING
             # cf zero-downtime-push dm-rc-admin -f manifest.rc.yml --show-app-log
 
+  deploy_to_production_clone:
+    <<: *deploy-docker
+    steps:
+      - attach_workspace:
+          at: .
+      - *cf-install
+      - run:
+          name: Deploy to Production Clone
+          command: |
+            echo Deploy to Production Clone
+            # cf login -a https://api.system.y.cld.gov.au -o dta -s marketplace -u $CF_USER_STAGING -p $CF_PASSWORD_STAGING
+            # cf zero-downtime-push dm-dev-admin -f manifest.production.clone.yml --show-app-log
+
   deploy_to_staging:
     <<: *deploy-docker
     steps:
@@ -123,7 +136,7 @@ workflows:
       - build:
           filters:
             tags:
-              only: /test-tag-.*/
+              only: /release-.*/
       - deploy_to_rc:
           requires:
             - build
@@ -145,6 +158,14 @@ workflows:
             - build
           filters:
             tags:
-              only: /test-tag-.*/
+              only: /release-.*/
+            branches:
+              ignore: /.*/
+      - deploy_to_production_clone:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /release-.*/
             branches:
               ignore: /.*/
