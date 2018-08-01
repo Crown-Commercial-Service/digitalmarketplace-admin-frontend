@@ -111,9 +111,8 @@ jobs:
       - run:
           name: Deploy to Staging
           command: |
-            echo Deploy to Staging
-            # cf login -a https://api.system.y.cld.gov.au -o dta -s marketplace -u $CF_USER_STAGING -p $CF_PASSWORD_STAGING
-            # cf zero-downtime-push dm-dev-admin -f manifest.yml --show-app-log
+            cf login -a https://api.system.y.cld.gov.au -o dta -s marketplace -u $CF_USER_STAGING -p $CF_PASSWORD_STAGING
+            cf zero-downtime-push dm-dev-admin -f manifest.yml --show-app-log
 
   deploy_to_production:
     <<: *deploy-docker
@@ -124,9 +123,8 @@ jobs:
       - run:
           name: Deploy to Production
           command: |
-            echo Deploy to Production
-            # cf login -a https://api.system.b.cld.gov.au -o dta -s marketplace -u $CF_USER_PROD -p $CF_PASSWORD_PROD
-            # cf zero-downtime-push dm-admin -f manifest.production.yml --show-app-log
+            cf login -a https://api.system.b.cld.gov.au -o dta -s marketplace -u $CF_USER_PROD -p $CF_PASSWORD_PROD
+            cf zero-downtime-push dm-admin -f manifest.production.yml --show-app-log
 
 
 workflows:
