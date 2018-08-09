@@ -35,27 +35,8 @@
 
       <form method="POST" action="{{ url_for('.invite_admin_user') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-        {%
-              with
-              name = "email_address",
-              question = form.email_address.label.text,
-              type = "textbox",
-              value = form.email_address.data,
-              error = errors.get('email_address', {}).get('message', None)
-              %}
-          {% include "toolkit/forms/textbox.html" %}
-        {% endwith %}
-        {%
-              with
-              name = "role",
-              question = form.role.label.text,
-              type = "radio",
-              options = form.role.toolkit_macro_options,
-              value = form.role.data,
-              error = errors.get('role', {}).get('message', None)
-              %}
-          {% include "toolkit/forms/selection-buttons.html" %}
-        {% endwith %}
+        {{ form.email_address }}
+        {{ form.role }}
         {% block save_button %}
           {%
             with

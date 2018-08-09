@@ -46,7 +46,7 @@ def manage_admin_users():
 def invite_admin_user():
     notify_template_id = '08ab7791-6038-4ad2-9560-740bbcb675b7'
 
-    form = InviteAdminForm(request.form)
+    form = InviteAdminForm()
 
     if request.method == 'POST' and form.validate_on_submit():
         email_address = form.data.get('email_address')
