@@ -39,16 +39,16 @@
         <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
         <p>
           <a href="https://www.gov.uk/government/publications/public-sector-organisations-eligible-to-use-cloudstore">
-            Check 'Public sector organisations eligible to use Digital Marketplace'
+            Check ‘Public sector organisations eligible to use Digital Marketplace’
           </a> before you add a domain.
         </p>
 
         {%
           with
           question = "",
-          hint = "For example, police.uk",
+          hint = email_domain_form.new_buyer_domain.hint,
           name = email_domain_form.new_buyer_domain.name,
-          value = email_domain_form.new_buyer_domain.data,
+          value = email_domain_form.new_buyer_domain.value,
           error = ""
         %}
           {% include "toolkit/forms/textbox.html" %}

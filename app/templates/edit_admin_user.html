@@ -38,37 +38,10 @@
     <div class="grid-row">
       <div class="column-two-thirds">
         <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
-        {%
-          with
-          question = "Name",
-          name = edit_admin_user_form.edit_admin_name.name,
-          value = edit_admin_user_form.edit_admin_name.data,
-          error = ""
-        %}
-          {% include "toolkit/forms/textbox.html" %}
-        {% endwith %}
 
-        {%
-          with
-          question = "Permissions",
-          type = "radio",
-          name = edit_admin_user_form.edit_admin_permissions.name,
-          value = edit_admin_user_form.edit_admin_permissions.data,
-          options = edit_admin_user_form.edit_admin_permissions.toolkit_macro_options
-        %}
-          {% include "toolkit/forms/selection-buttons.html" %}
-        {% endwith %}
-
-        {%
-          with
-          question = "Status",
-          type = "radio",
-          name = edit_admin_user_form.edit_admin_status.name,
-          value = edit_admin_user_form.edit_admin_status.data,
-          options = edit_admin_user_form.edit_admin_status.toolkit_macro_options
-        %}
-          {% include "toolkit/forms/selection-buttons.html" %}
-        {% endwith %}
+        {{ edit_admin_user_form.edit_admin_name }}
+        {{ edit_admin_user_form.edit_admin_permissions }}
+        {{ edit_admin_user_form.edit_admin_status }}
 
         {%
           with
