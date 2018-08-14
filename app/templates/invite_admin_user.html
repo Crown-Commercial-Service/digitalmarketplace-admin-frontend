@@ -18,11 +18,7 @@
 
 {% block main_content %}
 
-  {% if errors %}
-    {% with errors = errors.values() %}
-      {% include 'toolkit/forms/validation.html' %}
-    {% endwith %}
-  {% endif %}
+  {% include 'toolkit/forms/validation.html' %}
 
   <div class="grid-row">
     <div class="column-two-thirds">
