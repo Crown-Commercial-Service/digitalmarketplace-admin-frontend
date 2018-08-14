@@ -8,7 +8,7 @@ Flask-WTF==0.14.2
 lxml==3.8.0
 
 git+https://github.com/alphagov/digitalmarketplace-content-loader.git@4.4.1#egg=digitalmarketplace-content-loader==4.4.1
-git+https://github.com/alphagov/digitalmarketplace-utils.git@42.3.0#egg=digitalmarketplace-utils==42.3.0
+git+https://github.com/alphagov/digitalmarketplace-utils.git@42.6.0#egg=digitalmarketplace-utils==42.6.0
 git+https://github.com/alphagov/digitalmarketplace-apiclient.git@19.0.0#egg=digitalmarketplace-apiclient==19.0.0
 git+https://github.com/alphagov/Flask-FeatureFlags.git@1.0#egg=Flask-FeatureFlags==1.0
 
@@ -16,7 +16,7 @@ git+https://github.com/alphagov/Flask-FeatureFlags.git@1.0#egg=Flask-FeatureFlag
 asn1crypto==0.24.0
 boto3==1.4.8
 botocore==1.8.50
-certifi==2018.4.16
+certifi==2018.8.13
 cffi==1.11.5
 chardet==3.0.4
 contextlib2==0.4.0
