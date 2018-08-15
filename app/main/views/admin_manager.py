@@ -2,6 +2,7 @@ from distutils.util import strtobool
 
 from dmapiclient import HTTPError
 from dmutils.email.user_account_email import send_user_account_email
+from dmutils.forms.helpers import get_errors_from_wtform
 from dmutils.flask import timed_render_template as render_template
 from flask import request, redirect, url_for, flash
 from flask_login import current_user
@@ -61,10 +62,7 @@ def invite_admin_user():
         flash(INVITATION_SENT_MESSAGE.format(email_address=email_address))
         return redirect(url_for('main.manage_admin_users'))
 
-    errors = {
-        key: {'question': form[key].label.text, 'input_name': key, 'message': form[key].errors[0]}
-        for key, value in form.errors.items()
-    }
+    errors = get_errors_from_wtform(form)
 
     return render_template(
         "invite_admin_user.html",

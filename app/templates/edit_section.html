@@ -33,11 +33,7 @@
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
 
-  {% if errors %}
-    {% with errors = errors.values() %}
-      {% include 'toolkit/forms/validation.html' %}
-    {% endwith %}
-  {% endif %}
+  {% include 'toolkit/forms/validation.html' %}
 
   <form method="post" enctype="multipart/form-data">
     <div class="grid-row">

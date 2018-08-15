@@ -1199,8 +1199,8 @@ class TestServiceUpdate(LoggedInApplicationTest):
 
         document = html.fromstring(response.get_data(as_text=True))
 
-        validation_banner_h1 = document.xpath("//h1[@class='validation-masthead-heading']//text()")[0].strip()
-        assert validation_banner_h1 == "There was a problem with your answer to:"
+        validation_banner_h2 = document.xpath("//h2[@class='validation-masthead-heading']//text()")[0].strip()
+        assert validation_banner_h2 == "There was a problem with your answer to:"
 
         validation_banner_links = [
             (anchor.text_content(), anchor.get('href')) for anchor in

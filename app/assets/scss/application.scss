@@ -25,6 +25,7 @@ $path: "/admin/static/images/";
 @import "toolkit/_phase-banner";
 @import "toolkit/_previous-next-navigation";
 @import "toolkit/_proposition-header";
+@import "toolkit/_report-a-problem.scss";
 @import "toolkit/_secondary-action-link";
 @import "toolkit/_service-id";
 @import "toolkit/forms/_hint";
@@ -38,6 +39,7 @@ $path: "/admin/static/images/";
 @import "toolkit/forms/_word-counter";
 @import "toolkit/forms/_option-select";
 @import "toolkit/forms/_keyword-search";
+@import "toolkit/_user-research-consent-banner.scss";
 
 // App specific styles
 @import "_footer";

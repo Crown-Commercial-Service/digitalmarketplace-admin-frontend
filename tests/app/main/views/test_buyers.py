@@ -192,14 +192,14 @@ class TestAddBuyerDomainsView(LoggedInApplicationTest):
             mock.call("inv@lid.co", "test@example.com")
         ]
 
-    def test_raises_unexpected_api_error(self):
+    def test_unexpected_api_error_falls_back_to_default_error_page(self):
         mock_api_error = mock.Mock(status_code=418)
         mock_api_error.json.return_value = {"error": "Something happened that we don't understand"}
         self.data_api_client.create_buyer_email_domain.side_effect = HTTPError(mock_api_error)
         response = self.client.post('/admin/buyers/add-buyer-domains',
                                     data={'new_buyer_domain': 'coffee.gov'}
                                     )
-        assert response.status_code == 418
+        assert response.status_code == 500
         assert "Sorry, we’re experiencing technical difficulties" in response.get_data(as_text=True)
         assert self.data_api_client.create_buyer_email_domain.call_args_list == [
             mock.call("coffee.gov", "test@example.com")

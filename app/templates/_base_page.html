@@ -1,37 +1,6 @@
-{% extends "govuk/govuk_template.html" %}
-
-{% block head %}
-  {% include "_stylesheets.html" %}
-{% endblock %}
-
-{% block cookie_message %}
-  {% include "_cookie_message.html" %}
-{% endblock %}
-
-{% block header_class %}with-proposition{% endblock %}
-
-{% block inside_header %}
-  {% include "toolkit/inside-header.html" %}
-{% endblock %}
-
-{% block proposition_header %}
-    {% include "toolkit/proposition-header.html" %}
-{% endblock %}
-
-{% block content %}
-  {% block breadcrumb %}{% endblock %}
-  <div id="wrapper">
-    <main id="content" role="main">
-      {% include "toolkit/flash_messages.html" %}
-      {% block main_content %}{% endblock %}
-    </main>
-  </div>
-{% endblock %}
+{% extends "toolkit/layouts/_base_page.html" %}
 
 {% block footer_top %}
-  {% include "_footer_categories.html" %}
 {% endblock %}
-
-{% block body_end %}
-  {% include "_javascripts.html" %}
+{% block footer_support_links %}
 {% endblock %}
