@@ -98,8 +98,14 @@
     </form>
     <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
         {{ form.csrf_token }}
-        <label class="question-heading" for="edit_seller_email_list">Edit seller email list (one on each line)</label>
+        <label class="question-heading" for="edit_seller_email_list">Edit seller email list (List of sellers). One on each line</label>
         <textarea rows="5" name="edit_seller_email_list" id="edit_seller_email_list" class="text-area">{{seller_email_list}}</textarea>
+        <input type="submit" value="Save" class="button-save">
+    </form>
+    <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
+        {{ form.csrf_token }}
+        <label class="question-heading" for="edit_seller_email">Edit seller email (Individual seller)</label>
+        <input type="email" name="edit_seller_email" id="edit_seller_email" class="text-box" value="{{seller_email}}" />
         <input type="submit" value="Save" class="button-save">
     </form>
     <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
@@ -135,6 +141,11 @@
       <input type="submit" value="Search" class="button-save">
   </form>
   </div>
+  <br />
+  <form method="get" action="{{ url_for( '.brief_edit_json', brief_id=brief_id) }}">
+    <button id="edit-json-button">JSON Editor</button>
+  </form>
+  <br />
   {% if brief.status == 'live' %}
     <dialog id="withdraw-dialog">
         <form action="{{ url_for('.withdraw_brief', brief_id=brief_id) }}" method="post">

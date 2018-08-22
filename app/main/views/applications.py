@@ -127,6 +127,20 @@ def download_single_file(id, slug):
     return Response(file, mimetype=mimetype)
 
 
+@main.route('/applications/<int:application_id>/update', methods=['POST'])
+@login_required
+@role_required('admin')
+def update_application(application_id):
+    json_payload = request.get_json(force=True)
+    result = (data_api_client
+              .req
+              .applications(application_id)
+              .admin()
+              .put({"application": json_payload}))
+
+    return jsonify(result)
+
+
 @main.route('/applications/convert_to_seller', methods=['POST'])
 @login_required
 @role_required('admin')
@@ -193,6 +207,31 @@ def application_users(id):
                 'application': application,
                 'url_move_existing_user': url_for('.move_user_to_application', application_id=id),
                 'url_invite_user': url_for('.invite_user_to_application', application_id=id),
+            }
+        }
+    )
+
+    return render_template(
+        '_react.html',
+        component=rendered_component
+    )
+
+
+@main.route('/applications/<int:id>/edit', methods=['GET'])
+@login_required
+@role_required('admin')
+def application_edit(id):
+    application = data_api_client.get_application(id)['application']
+
+    if 'supplier' in application:
+        del application['supplier']
+
+    rendered_component = render_component(
+        'bundles/ApplicationsAdmin/ApplicationsAdminWidget.js',
+        {
+            'application': application,
+            'meta': {
+                'url_app_update': url_for('.update_application', application_id=id),
             }
         }
     )
