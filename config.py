@@ -42,9 +42,6 @@ class Config(object):
     DM_PLAIN_TEXT_LOGS = False
     DM_APP_NAME = 'admin-frontend'
 
-    # Feature Flags
-    RAISE_ERROR_ON_MISSING_FEATURES = True
-
     SHARED_EMAIL_KEY = None
     INVITE_EMAIL_SALT = 'InviteEmailSalt'
 
