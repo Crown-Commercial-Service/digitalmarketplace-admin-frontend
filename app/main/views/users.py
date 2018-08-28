@@ -3,8 +3,8 @@ from datetime import datetime
 from dmutils import csv_generator
 from dmutils.config import convert_to_boolean
 from dmutils.flask import timed_render_template as render_template
-from flask import abort, request, Response, url_for
-from flask_login import flash, current_user
+from flask import abort, flash, request, Response, url_for
+from flask_login import current_user
 
 from .. import main
 from ..auth import role_required

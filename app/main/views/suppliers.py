@@ -15,8 +15,8 @@ from dmutils.documents import (
 from dmutils.email import send_user_account_email
 from dmutils.flask import timed_render_template as render_template
 from dmutils.formats import datetimeformat
-from flask import request, redirect, url_for, abort, current_app
-from flask_login import current_user, flash
+from flask import request, redirect, url_for, abort, current_app, flash
+from flask_login import current_user
 
 from .. import main
 from ..auth import role_required
