@@ -15,7 +15,7 @@ from app.main import errors
 @main.before_request
 @login_required
 def require_login():
-    if current_user.is_authenticated() and not current_user.role.startswith('admin'):
+    if current_user.is_authenticated and not current_user.role.startswith('admin'):
         return current_app.login_manager.unauthorized()
 
 
