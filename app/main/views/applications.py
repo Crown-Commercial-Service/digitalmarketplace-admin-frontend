@@ -226,6 +226,9 @@ def application_edit(id):
     if 'supplier' in application:
         del application['supplier']
 
+    if 'signed_agreements' in application:
+        del application['signed_agreements']
+
     rendered_component = render_component(
         'bundles/ApplicationsAdmin/ApplicationsAdminWidget.js',
         {
