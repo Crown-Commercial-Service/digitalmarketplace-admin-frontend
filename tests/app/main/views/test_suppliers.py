@@ -5,6 +5,7 @@ import mock
 import pytest
 from dmapiclient import HTTPError, APIError
 from dmapiclient.audit import AuditTypes
+from dmutils import api_stubs
 from dmutils.email.exceptions import EmailError
 from flask import current_app
 from freezegun import freeze_time
@@ -19,6 +20,7 @@ class TestSuppliersListView(LoggedInApplicationTest):
         super().setup_method(method)
         self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
         self.data_api_client = self.data_api_client_patch.start()
+        self.data_api_client.find_frameworks.return_value = {'frameworks': [api_stubs.framework()['frameworks']]}
 
     def teardown_method(self, method):
         self.data_api_client_patch.stop()
@@ -89,21 +91,133 @@ class TestSuppliersListView(LoggedInApplicationTest):
         self.data_api_client.find_suppliers.return_value = {
             "suppliers": [{"id": "12345"}]
         }
+        self.data_api_client.find_frameworks.return_value = {
+            'frameworks': [
+                api_stubs.framework(slug='g-cloud-7', framework_id=1)['frameworks'],
+                api_stubs.framework(slug='g-cloud-10', framework_id=2)['frameworks'],
+            ]
+        }
         response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
         data = response.get_data(as_text=True)
         document = html.fromstring(data)
 
-        headings = [header.strip() for header in document.xpath('//thead//th/text()')]
-        assert links_should_be_visible is (headings == ['Name', 'G-Cloud 7', 'Digital Outcomes and Specialists',
-                                                        'G-Cloud 8', 'Digital Outcomes and Specialists 2', 'G-Cloud 9',
-                                                        'G-Cloud 10'])
+        framework_column_entries = [framework.strip() for framework in document.xpath('//tr/td/span/text()')]
+        assert links_should_be_visible is (framework_column_entries == ['G-Cloud 10', 'G-Cloud 7'])
 
         if links_should_be_visible:
-            g_cloud_10_edit_declaration = ''.join(document.xpath('//tbody//tr[2]/td[6]//text()')).strip()
-            assert g_cloud_10_edit_declaration == 'Edit G-Cloud 10 declaration'
+            g_cloud_10_edit_declaration = ''.join(document.xpath('//tbody//tr[1]/td[2]//a//text()')).strip()
+            assert g_cloud_10_edit_declaration == 'Edit declaration for G-Cloud 10'
 
-            g_cloud_10_edit_declaration = ''.join(document.xpath('//tbody//tr[3]/td[6]//text()')).strip()
-            assert g_cloud_10_edit_declaration == 'View agreement for G-Cloud 10'
+            g_cloud_10_view_agreement = ''.join(document.xpath('//tbody//tr[1]/td[3]//a//text()')).strip()
+            assert g_cloud_10_view_agreement == 'View agreement for G-Cloud 10'
+
+            g_cloud_7_edit_declaration = ''.join(document.xpath('//tbody//tr[2]/td[2]//a//text()')).strip()
+            assert g_cloud_7_edit_declaration == 'Edit declaration for G-Cloud 7'
+
+            g_cloud_7_download_agreement = ''.join(document.xpath('//tbody//tr[2]/td[3]//a//text()')).strip()
+            assert g_cloud_7_download_agreement == 'Download agreement for G-Cloud 7'
+
+            g_cloud_7_download_signed_agreement = ''.join(document.xpath('//tbody//tr[2]/td[4]//a//text()')).strip()
+            assert g_cloud_7_download_signed_agreement == 'Download signed agreement for G-Cloud 7'
+
+            g_cloud_7_upload_countrsigned_agreement = ''.join(document.xpath('//tbody//tr[2]/td[5]//a//text()')).strip()
+            assert g_cloud_7_upload_countrsigned_agreement == 'Upload countersigned agreement for G-Cloud 7'
+        else:
+            for text in [
+                'Edit declaration',
+                'View agreement',
+                'Download agreement',
+                'Download signed agreement',
+                'Upload countersigned agreement'
+            ]:
+                assert not document.xpath("//tbody//text()='$text'", text=text)
+
+    def test_agreements_template_only_lists_frameworks_that_we_care_about_in_reverse_order(self):
+        interesting_frameworks = [
+            {'slug': 'digital-mash-2', 'name': 'Digital Mash 2', 'framework_id': 4},
+            {'slug': 'digital-mash-1', 'name': 'Digital Mash 1', 'framework_id': 2},
+            {'slug': 'sausage-cloud-1', 'name': 'Sausage Cloud 1', 'framework_id': 1},
+            {'slug': 'sausage-cloud-3', 'name': 'Sausage Cloud 3', 'framework_id': 5},
+            {'slug': 'sausage-cloud-2', 'name': 'Sausage Cloud 2', 'framework_id': 3},
+        ]
+        self.data_api_client.find_frameworks.return_value = {
+            'frameworks': [api_stubs.framework(**framework)['frameworks'] for framework in interesting_frameworks]
+        }
+        self.user_role = 'admin-ccs-sourcing'
+        self.data_api_client.find_suppliers.return_value = {
+            "suppliers": [{"id": "12345"}]
+        }
+        with mock.patch('app.main.views.suppliers.OLDEST_INTERESTING_FRAMEWORK_SLUG', new='sausage-cloud-2'):
+            response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
+
+        data = response.get_data(as_text=True)
+        document = html.fromstring(data)
+
+        assert document.xpath('//tbody//tr/td[1]/span/text()') == [
+            'Sausage Cloud 3', 'Digital Mash 2', 'Sausage Cloud 2'
+        ]
+
+    def test_agreements_template_shows_down_and_upload_links_for_old_signing_flow_frameworks_only(self):
+        interesting_frameworks = [
+            {'slug': 'sausage-cloud-1', 'name': 'Sausage Cloud 1', 'framework_id': 1},
+            {'slug': 'digital-mash-1', 'name': 'Digital Mash 1', 'framework_id': 2},
+        ]
+        self.data_api_client.find_frameworks.return_value = {
+            'frameworks': [api_stubs.framework(**framework)['frameworks'] for framework in interesting_frameworks]
+        }
+        self.user_role = 'admin-ccs-sourcing'
+        self.data_api_client.find_suppliers.return_value = {
+            "suppliers": [{"id": "12345"}]
+        }
+
+        with mock.patch('app.main.views.suppliers.OLDEST_INTERESTING_FRAMEWORK_SLUG', new='sausage-cloud-1'):
+            with mock.patch('app.main.views.suppliers.OLD_SIGNING_FLOW_SLUGS', new=['sausage-cloud-1']):
+                response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
+
+        data = response.get_data(as_text=True)
+        document = html.fromstring(data)
+
+        assert document.xpath("//tbody//tr[1]/td[1]/span[text()='Digital Mash 1']/../..//a/text()") == [
+            'Edit declaration', 'View agreement'
+        ]
+        assert document.xpath("//tbody//tr[2]/td[1]/span[text()='Sausage Cloud 1']/../..//a/text()") == [
+            'Edit declaration', 'Download agreement', 'Download signed agreement', 'Upload countersigned agreement'
+        ]
+
+    @pytest.mark.parametrize('status', ('coming', 'open', 'pending', 'standstill', 'live', 'expired'))
+    def test_agreements_template_does_not_show_coming_frameworks(self, status):
+        self.data_api_client.find_frameworks.return_value = {
+            'frameworks': [
+                api_stubs.framework(
+                    slug='sausage-cloud-1', name='Sausage Cloud 1', status=status
+                )['frameworks']
+            ]
+        }
+        self.user_role = 'admin-ccs-sourcing'
+        self.data_api_client.find_suppliers.return_value = {
+            "suppliers": [{"id": "12345"}]
+        }
+
+        with mock.patch('app.main.views.suppliers.OLDEST_INTERESTING_FRAMEWORK_SLUG', new='sausage-cloud-1'):
+            response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
+
+        data = response.get_data(as_text=True)
+        document = html.fromstring(data)
+
+        if status == 'coming':
+            assert not document.xpath("//tbody//tr[1]/td[1]/span[text()='Sausage Cloud 1']")
+        else:
+            assert document.xpath("//tbody//tr[1]/td[1]/span[text()='Sausage Cloud 1']")
+
+    @mock.patch('app.main.views.suppliers.current_app')
+    def test_should_500_if_no_framework_found_matching_the_oldest_interesting_defined(self, current_app):
+        with mock.patch('app.main.views.suppliers.OLDEST_INTERESTING_FRAMEWORK_SLUG', new='not-a-framework'):
+            response = self.client.get('/admin/suppliers')
+
+        assert response.status_code == 500
+        assert current_app.logger.error.call_args_list == [
+            mock.call('No framework found with slug: "not-a-framework"')
+        ]
 
     def test_should_raise_http_error_from_api(self):
         self.data_api_client.find_suppliers.side_effect = HTTPError(Response(404))

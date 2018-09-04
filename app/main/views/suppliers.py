@@ -38,6 +38,8 @@ SUPPLIER_USER_MESSAGES = {
     'user_not_moved': 'User not moved to this supplier - please check you entered the address of an '
                       'existing supplier user'
 }
+OLDEST_INTERESTING_FRAMEWORK_SLUG = 'g-cloud-7'
+OLD_SIGNING_FLOW_SLUGS = ['g-cloud-7', 'digital-outcomes-and-specialists']
 
 
 @main.route('/suppliers', methods=['GET'])
@@ -51,10 +53,28 @@ def find_suppliers():
             duns_number=request.args.get("supplier_duns_number")
         )['suppliers']
 
+    frameworks = data_api_client.find_frameworks()['frameworks']
+    try:
+        oldest_interesting_framework_id = [
+            fw for fw in frameworks if fw['slug'] == OLDEST_INTERESTING_FRAMEWORK_SLUG
+        ][0]['id']
+    except IndexError:
+        current_app.logger.error(f'No framework found with slug: "{OLDEST_INTERESTING_FRAMEWORK_SLUG}"')
+        abort(500)
+
+    interesting_frameworks = sorted(
+        [framework for framework in frameworks if framework['id'] >= oldest_interesting_framework_id
+            and framework['status'] != 'coming'],
+        key=lambda fw: fw['id'],
+        reverse=True,
+    )
+
     return render_template(
         "view_suppliers.html",
         suppliers=suppliers,
-        agreement_filename=AGREEMENT_FILENAME
+        agreement_filename=AGREEMENT_FILENAME,
+        interesting_frameworks=interesting_frameworks,
+        old_flow_slugs=OLD_SIGNING_FLOW_SLUGS,
     )
 
 

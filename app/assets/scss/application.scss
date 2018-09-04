@@ -94,8 +94,10 @@ $path: "/admin/static/images/";
   padding-left: 10px;
 }
 
-.six-columns-fixed-width-table {
+.five-columns-table {
   .summary-item-field-first, .summary-item-field {
-    width: 16.666%;
+    @include media(1080px) {
+      white-space: nowrap;
+    }
   }
 }
