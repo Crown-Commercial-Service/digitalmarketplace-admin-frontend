@@ -48,7 +48,7 @@ class Config(object):
     DM_NOTIFY_API_KEY = None
 
     NOTIFY_TEMPLATES = {
-        'invite_contributor': '1cca85e8-d647-46e6-9c0d-6af90b9e69b0'
+        "invite_contributor": "5eefe42d-1694-4388-8908-991cdfba0a71",
     }
 
     @staticmethod
@@ -102,10 +102,6 @@ class Live(Config):
         "example.com": "success@simulator.amazonses.com",
         "example.gov.uk": "success@simulator.amazonses.com",
         "user.marketplace.team": "success@simulator.amazonses.com",
-    }
-
-    NOTIFY_TEMPLATES = {
-        'invite_contributor': '5eefe42d-1694-4388-8908-991cdfba0a71'
     }
 
 
