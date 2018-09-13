@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from dmutils import csv_generator
-from dmutils.config import convert_to_boolean
+from dmutils import csv_generator, s3
+from dmutils.documents import get_signed_url
 from dmutils.flask import timed_render_template as render_template
-from flask import abort, flash, request, Response, url_for
+from flask import abort, current_app, flash, redirect, request, Response, url_for
 from flask_login import current_user
 
 from .. import main
@@ -43,10 +43,38 @@ def user_list_page_for_framework(framework_slug):
     if not framework or framework['status'] in bad_statuses:
         abort(404)
 
+    supplier_csv_url = url_for(
+        '.download_supplier_user_list_report', framework_slug=framework_slug, report_type='official'
+    )
+    user_csv_url = url_for(
+        '.download_supplier_user_list_report', framework_slug=framework_slug, report_type='accounts'
+    )
+
     return render_template(
         "download_framework_users.html",
         framework=framework,
+        supplier_csv_url=supplier_csv_url,
+        user_csv_url=user_csv_url,
     ), 200
+
+
+@main.route('/frameworks/<framework_slug>/users/<report_type>/download', methods=['GET'])
+@role_required('admin-framework-manager', 'admin-ccs-category')
+def download_supplier_user_list_report(framework_slug, report_type):
+    reports_bucket = s3.S3(current_app.config['DM_REPORTS_BUCKET'])
+
+    if report_type == 'official':
+        path = f"{framework_slug}/official-details-for-suppliers-{framework_slug}.csv"
+    elif report_type == 'accounts':
+        path = f"{framework_slug}/all-email-accounts-for-suppliers-{framework_slug}.csv"
+    else:
+        abort(404)
+
+    url = get_signed_url(reports_bucket, path, current_app.config['DM_ASSETS_URL'])
+    if not url:
+        abort(404)
+
+    return redirect(url)
 
 
 @main.route('/users/download/suppliers', methods=['GET'])
@@ -55,10 +83,11 @@ def supplier_user_research_participants_by_framework():
     bad_statuses = ['coming', 'expired']
     frameworks = data_api_client.find_frameworks().get("frameworks")
     frameworks = sorted(filter(lambda i: i['status'] not in bad_statuses, frameworks), key=lambda i: i['name'])
+
     items = [
         {
             "title": "User research participants on {}".format(framework['name']),
-            "link": url_for('.download_users', framework_slug=framework['slug'], user_research_opted_in=True),
+            "link": url_for('.download_supplier_user_research_report', framework_slug=framework['slug']),
             "file_type": "CSV"
         }
         for framework in frameworks
@@ -69,110 +98,19 @@ def supplier_user_research_participants_by_framework():
     ), 200
 
 
-@main.route('/frameworks/<framework_slug>/users/download', methods=['GET'])
-@role_required('admin-framework-manager', 'admin', 'admin-ccs-category')
-def download_users(framework_slug):
-    user_research_opted_in = convert_to_boolean(request.args.get('user_research_opted_in'))
+@main.route('/frameworks/<framework_slug>/user-research/download', methods=['GET'])
+@role_required('admin')
+def download_supplier_user_research_report(framework_slug):
 
-    if (
-        current_user.role == 'admin' and not user_research_opted_in or
-        current_user.role == 'admin-framework-manager' and user_research_opted_in or
-        current_user.role == 'admin-ccs-category' and user_research_opted_in
-    ):
-        abort(403)
-
-    supplier_rows = data_api_client.export_users(framework_slug).get('users', [])
-    supplier_headers = [
-        "email address",
-        "user_name",
-        "supplier_id",
-        "declaration_status",
-        "application_status",
-        "application_result",
-        "framework_agreement",
-        "variations_agreed",
-        "published_service_count"
-    ]
-    if user_research_opted_in:
-        supplier_rows = [row for row in supplier_rows if row['user_research_opted_in']]
-        download_filename = "user-research-suppliers-on-{}.csv".format(framework_slug)
-    else:
-
-        download_filename = "all-email-accounts-for-suppliers-{}.csv".format(framework_slug)
-    formatted_rows = []
-    for row in supplier_rows:
-        formatted_rows.append([row[heading] for heading in supplier_headers])
-    formatted_rows.insert(0, supplier_headers)
-
-    return Response(
-        csv_generator.iter_csv(formatted_rows),
-        mimetype='text/csv',
-        headers={
-            "Content-Disposition": "attachment;filename={}".format(download_filename),
-            "Content-Type": "text/csv; header=present"
-        }
+    reports_bucket = s3.S3(current_app.config['DM_REPORTS_BUCKET'])
+    path = "{framework_slug}/user-research-suppliers-on-{framework_slug}.csv"
+    url = get_signed_url(
+        reports_bucket, path.format(framework_slug=framework_slug), current_app.config['DM_ASSETS_URL']
     )
+    if not url:
+        abort(404)
 
-
-@main.route('/frameworks/<framework_slug>/suppliers/download', methods=['GET'])
-@role_required('admin-framework-manager', 'admin-ccs-category')
-def download_suppliers(framework_slug):
-    framework = data_api_client.get_framework(framework_slug).get("frameworks")
-
-    supplier_rows = data_api_client.export_suppliers(framework_slug).get('suppliers', [])
-
-    supplier_and_framework_headers = [
-        "supplier_id",
-        "supplier_name",
-        "supplier_organisation_size",
-        "duns_number",
-        "companies_house_number",
-        "registered_name",
-        "declaration_status",
-        "application_status",
-        "application_result",
-        "framework_agreement",
-        "variations_agreed",
-    ]
-    service_count_headers = [lot['slug'] for lot in framework['lots']]
-    contact_info_headers = [
-        'contact_name',
-        'contact_email',
-        'contact_phone_number',
-        'address_first_line',
-        'address_city',
-        'address_postcode',
-        'address_country',
-    ]
-
-    download_filename = "official-details-for-suppliers-{}.csv".format(framework_slug)
-
-    formatted_rows = [
-        supplier_and_framework_headers +
-        ["total_number_of_services"] +
-        ["service-count-{}".format(h) for h in service_count_headers] +
-        contact_info_headers
-    ]
-    for row in supplier_rows:
-        # Include an extra column with the total number of services across all lots
-        service_counts = [row['published_services_count'][heading] for heading in service_count_headers]
-        total_number_of_services = sum(service_counts)
-
-        formatted_rows.append(
-            [row[heading] for heading in supplier_and_framework_headers] +
-            [total_number_of_services] +
-            service_counts +
-            [row['contact_information'][heading] for heading in contact_info_headers]
-        )
-
-    return Response(
-        csv_generator.iter_csv(formatted_rows),
-        mimetype='text/csv',
-        headers={
-            "Content-Disposition": "attachment;filename={}".format(download_filename),
-            "Content-Type": "text/csv; header=present"
-        }
-    )
+    return redirect(url)
 
 
 @main.route('/users/download/buyers', methods=['GET'])

@@ -27,7 +27,7 @@
       {% endwith %}
 
       <div class="explanation-list">
-          <p class="lead">These lists contain details of all suppliers who:</p>
+          <p class="lede">These lists contain details of all suppliers who:</p>
           <ul class='list-bullet'>
             <li>started an application</li>
             <li>are on the framework</li>
@@ -41,19 +41,19 @@
         items = [
           {
               "title": "Official details for suppliers",
-              "link": url_for('.download_suppliers', framework_slug=framework['slug']),
+              "link": supplier_csv_url,
               "file_type": "CSV"
           },
           {
-              "title": "All email accounts for suppliers",
-              "link": url_for('.download_users', framework_slug=framework['slug']),
+              "title": "Supplier names and emails",
+              "link": user_csv_url,
               "file_type": "CSV"
           },
         ]
       %}
         {% include "toolkit/documents.html" %}
       {% endwith %}
-
+        <p class="lede">Lists are generated daily. </p>
     </div>
   </div>
 
