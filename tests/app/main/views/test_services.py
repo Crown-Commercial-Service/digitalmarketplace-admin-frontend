@@ -1206,10 +1206,10 @@ class TestServiceUpdate(LoggedInApplicationTest):
             (anchor.text_content(), anchor.get('href')) for anchor in
             document.xpath("//a[@class='validation-masthead-link']")
         ]
-        assert validation_banner_links == [
+        assert sorted(validation_banner_links) == sorted([
             ("Service benefits", "#serviceBenefits"),
             ("Service features", "#serviceFeatures")
-        ]
+        ])
 
         validation_errors = [error.strip() for error in document.xpath("//span[@class='validation-message']//text()")]
         assert validation_errors == [
