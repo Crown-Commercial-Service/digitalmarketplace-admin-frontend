@@ -248,6 +248,40 @@ def application_edit(id):
     )
 
 
+@main.route('/applications/<int:id>/diff', methods=['GET'])
+@login_required
+@role_required('admin')
+def application_diff(id):
+    data = data_api_client.req.applications(id).admin().get()
+    application = data['application']
+    supplier = application.get('supplier', None)
+
+    if 'supplier' in application:
+        del application['supplier']
+
+    if 'signed_agreements' in application:
+        del application['signed_agreements']
+
+    if 'assessed_domains' in application:
+        del application['assessed_domains']
+
+    rendered_component = render_component(
+        'bundles/ApplicationsAdmin/ApplicationsAdminWidget.js',
+        {
+            'application': application,
+            'meta': {
+                'supplier': supplier,
+                'url_app_update': url_for('.update_application', application_id=id),
+            }
+        }
+    )
+
+    return render_template(
+        '_react.html',
+        component=rendered_component
+    )
+
+
 @main.route('/applications/<int:application_id>/move-existing-user', methods=['POST'])
 @login_required
 @role_required('admin')
