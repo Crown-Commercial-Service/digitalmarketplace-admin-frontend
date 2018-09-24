@@ -27,6 +27,7 @@ class Config(object):
 
     DM_AGREEMENTS_BUCKET = None
     DM_COMMUNICATIONS_BUCKET = None
+    DM_REPORTS_BUCKET = None
     DM_ASSETS_URL = None
 
     STATIC_URL_PATH = '/admin/static'
@@ -83,6 +84,7 @@ class Development(Config):
     DM_AGREEMENTS_BUCKET = 'digitalmarketplace-dev-uploads'
     DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-dev-uploads'
     DM_S3_DOCUMENT_BUCKET = "digitalmarketplace-dev-uploads"
+    DM_REPORTS_BUCKET = "digitalmarketplace-dev-uploads"
     DM_ASSETS_URL = "https://{}.s3-eu-west-1.amazonaws.com".format(DM_S3_DOCUMENT_BUCKET)
 
     DM_DATA_API_URL = "http://localhost:5000"
