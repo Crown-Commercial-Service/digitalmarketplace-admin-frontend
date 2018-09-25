@@ -258,7 +258,9 @@ class TestUserListPage(LoggedInApplicationTest):
 
         assert get_signed_url.call_args_list == [
             mock.call(
-                s3.S3.return_value, 'g-cloud-9/all-email-accounts-for-suppliers-g-cloud-9.csv', 'http://example.com'
+                s3.S3.return_value,
+                'g-cloud-9/reports/all-email-accounts-for-suppliers-g-cloud-9.csv',
+                'http://example.com'
             ),
         ]
 
@@ -272,7 +274,9 @@ class TestUserListPage(LoggedInApplicationTest):
 
         assert get_signed_url.call_args_list == [
             mock.call(
-                s3.S3.return_value, 'g-cloud-9/official-details-for-suppliers-g-cloud-9.csv', 'http://example.com'
+                s3.S3.return_value,
+                'g-cloud-9/reports/official-details-for-suppliers-g-cloud-9.csv',
+                'http://example.com'
             ),
         ]
 
@@ -414,5 +418,9 @@ class TestUserResearchParticipantsExport(LoggedInApplicationTest):
         assert response.status_code == 302
 
         assert get_signed_url.call_args_list == [
-            mock.call(s3.S3.return_value, 'g-cloud-9/user-research-suppliers-on-g-cloud-9.csv', 'http://example.com'),
+            mock.call(
+                s3.S3.return_value,
+                'g-cloud-9/reports/user-research-suppliers-on-g-cloud-9.csv',
+                'http://example.com'
+            ),
         ]

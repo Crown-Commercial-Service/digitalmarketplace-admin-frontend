@@ -64,9 +64,9 @@ def download_supplier_user_list_report(framework_slug, report_type):
     reports_bucket = s3.S3(current_app.config['DM_REPORTS_BUCKET'])
 
     if report_type == 'official':
-        path = f"{framework_slug}/official-details-for-suppliers-{framework_slug}.csv"
+        path = f"{framework_slug}/reports/official-details-for-suppliers-{framework_slug}.csv"
     elif report_type == 'accounts':
-        path = f"{framework_slug}/all-email-accounts-for-suppliers-{framework_slug}.csv"
+        path = f"{framework_slug}/reports/all-email-accounts-for-suppliers-{framework_slug}.csv"
     else:
         abort(404)
 
@@ -103,7 +103,7 @@ def supplier_user_research_participants_by_framework():
 def download_supplier_user_research_report(framework_slug):
 
     reports_bucket = s3.S3(current_app.config['DM_REPORTS_BUCKET'])
-    path = "{framework_slug}/user-research-suppliers-on-{framework_slug}.csv"
+    path = "{framework_slug}/reports/user-research-suppliers-on-{framework_slug}.csv"
     url = get_signed_url(
         reports_bucket, path.format(framework_slug=framework_slug), current_app.config['DM_ASSETS_URL']
     )
