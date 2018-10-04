@@ -2,6 +2,7 @@
 import mock
 import pytest
 from lxml import html
+from dmutils import api_stubs
 
 from ...helpers import LoggedInApplicationTest
 
@@ -248,6 +249,31 @@ class TestUserListPage(LoggedInApplicationTest):
             '//h1//text()')[0].strip()
         assert page_heading == "Download supplier lists for G-Cloud 9"
 
+    @pytest.mark.parametrize(
+        ('slug_suffix', 'name_suffix', 'should_be_shown'),
+        (
+            ('', '', False),
+            ('-2', ' 2', True),
+            ('-3', ' 3', False),
+        )
+    )
+    def test_dos2_framework_only_expired_framework_available(self, s3, slug_suffix, name_suffix, should_be_shown):
+        self.data_api_client.get_framework.return_value = api_stubs.framework(
+            status='expired',
+            slug= f'digital-outcomes-and-specialists{slug_suffix}',
+            name=f'Digital Outcomes and Specialists{name_suffix}',
+        )
+
+        response = self.client.get(f"/admin/frameworks/{slug_suffix}/users")
+        document = html.fromstring(response.get_data(as_text=True))
+
+        if should_be_shown:
+            page_heading = document.xpath(
+                '//h1//text()')[0].strip()
+            assert page_heading == f"Download supplier lists for Digital Outcomes and Specialists{name_suffix}"
+        else:
+            assert response.status_code == 404
+
     @mock.patch('app.main.views.users.get_signed_url')
     def test_download_supplier_user_account_list_report_redirects_to_s3_url(self, get_signed_url, s3):
         get_signed_url.return_value = 'http://path/to/csv?querystring'
@@ -385,6 +411,29 @@ class TestUserResearchParticipantsExport(LoggedInApplicationTest):
 
         assert len(document.xpath(href_xpath)) == 1  # Invalid framework not shown
         assert 'User research participants on {}'.format(self._valid_framework['name']) in text
+
+    def test_dos2_framework_only_expired_framework_available(self, s3):
+        framework_suffixs = (('', ''), ('-2', ' 2'), ('-3', ' 3'))
+        self.data_api_client.find_frameworks.return_value = {
+            'frameworks': [
+                api_stubs.framework(
+                    status='expired',
+                    slug=f'digital-outcomes-and-specialists{suffixs[0]}',
+                    name=f'Digital Outcomes and Specialists{suffixs[1]}',
+                )['frameworks'] for suffixs in framework_suffixs
+            ]
+        }
+        s3.S3.return_value.get_signed_url.return_value = 'http://asseturl/path/to/csv?querystring'
+
+        response = self.client.get('/admin/users/download/suppliers')
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        href_xpath = "//a[@class='document-link-with-icon']"
+        links = document.xpath("//a[@class='document-link-with-icon']")
+
+        assert len(links) == 1  # Invalid frameworks not shown
+        assert 'User research participants on Digital Outcomes and Specialists 2' in links[0].text_content()
 
     def test_supplier_csvs_shown_in_alphabetical_name_order(self, s3):
         framework_1 = self._valid_framework.copy()
