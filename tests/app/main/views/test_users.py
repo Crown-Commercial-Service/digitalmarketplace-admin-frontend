@@ -260,7 +260,7 @@ class TestUserListPage(LoggedInApplicationTest):
     def test_dos2_framework_only_expired_framework_available(self, s3, slug_suffix, name_suffix, should_be_shown):
         self.data_api_client.get_framework.return_value = api_stubs.framework(
             status='expired',
-            slug= f'digital-outcomes-and-specialists{slug_suffix}',
+            slug=f'digital-outcomes-and-specialists{slug_suffix}',
             name=f'Digital Outcomes and Specialists{name_suffix}',
         )
 
@@ -429,7 +429,6 @@ class TestUserResearchParticipantsExport(LoggedInApplicationTest):
         assert response.status_code == 200
 
         document = html.fromstring(response.get_data(as_text=True))
-        href_xpath = "//a[@class='document-link-with-icon']"
         links = document.xpath("//a[@class='document-link-with-icon']")
 
         assert len(links) == 1  # Invalid frameworks not shown

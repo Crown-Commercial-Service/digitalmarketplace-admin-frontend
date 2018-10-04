@@ -541,8 +541,13 @@ def find_supplier_services(supplier_id):
 
     frameworks = data_api_client.find_frameworks()['frameworks']
     supplier = data_api_client.get_supplier(supplier_id)["suppliers"]
-    services = data_api_client.find_services(supplier_id)['services']
-
+    services = data_api_client.find_services(
+        supplier_id=supplier_id,
+        framework=','.join(
+            [f['slug'] for f in frameworks if f['status'] == 'live'
+                or f['slug'] == 'digital-outcomes-and-specialists-2']
+        )
+    )['services']
     frameworks_services = {
         framework_slug: list(framework_services)
         for framework_slug, framework_services in

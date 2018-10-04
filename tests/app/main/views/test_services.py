@@ -82,9 +82,9 @@ class TestServiceView(LoggedInApplicationTest):
         ("pending", 404),
         ("standstill", 404),
         ("live", 200),
-        ("expired", 404),
+        ("expired", 200),
     ])
-    def test_view_service_only_accessible_for_live_framework_services(self, fwk_status, expected_code):
+    def test_view_service_only_accessible_for_live_and_expired_framework_services(self, fwk_status, expected_code):
         self.data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-8',
             'serviceName': 'test',
@@ -622,9 +622,9 @@ class TestServiceEdit(LoggedInApplicationTest):
         ("pending", 404),
         ("standstill", 404),
         ("live", 200),
-        ("expired", 404),
+        ("expired", 200),
     ])
-    def test_edit_service_only_accessible_for_live_framework_services(self, fwk_status, expected_code):
+    def test_edit_service_only_accessible_for_live_and_expired_framework_services(self, fwk_status, expected_code):
         service = {
             "id": 123,
             "frameworkSlug": "digital-outcomes-and-specialists",
@@ -899,9 +899,9 @@ class TestServiceUpdate(LoggedInApplicationTest):
         ("pending", 404),
         ("standstill", 404),
         ("live", 302),
-        ("expired", 404),
+        ("expired", 302),
     ])
-    def test_post_service_update_only_for_live_framework_services(self, fwk_status, expected_code):
+    def test_post_service_update_only_for_live_and_expired_framework_services(self, fwk_status, expected_code):
         self.data_api_client.get_service.return_value = {'services': {
             'id': 1,
             'supplierId': 2,
@@ -1345,9 +1345,9 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         ("pending", 404),
         ("standstill", 404),
         ("live", 302),
-        ("expired", 404),
+        ("expired", 302),
     ])
-    def test_post_status_update_only_for_live_framework_services(self, fwk_status, expected_code):
+    def test_post_status_update_only_for_live_and_expired_framework_services(self, fwk_status, expected_code):
         self.data_api_client.get_service.return_value = {'services': {
             'frameworkSlug': 'g-cloud-9',
             'serviceName': 'bad service',

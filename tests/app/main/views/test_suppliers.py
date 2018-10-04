@@ -567,7 +567,9 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert response.status_code == 200
 
         self.data_api_client.get_supplier.assert_called_once_with(1000)
-        self.data_api_client.find_services.assert_called_once_with(1000)
+        assert self.data_api_client.find_services.call_args_list == [
+            mock.call(framework='g-cloud-8', supplier_id=1000)
+        ]
 
     def test_should_indicate_if_supplier_has_no_services(self):
         self.data_api_client.find_services.return_value = {'services': []}
