@@ -30,7 +30,10 @@ SERVICE_PUBLISHED_MESSAGE = "You published ‘{service_name}’."
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager', 'admin-manager')
 def index():
     frameworks = data_api_client.find_frameworks()['frameworks']
-    frameworks = [fw for fw in frameworks if fw['status'] not in ('coming', 'expired')]
+    frameworks = [
+        fw for fw in frameworks if fw['status'] not in ('coming', 'expired')
+        or fw['slug'] == 'digital-outcomes-and-specialists-2'
+    ]
     frameworks = sorted(frameworks, key=lambda x: x['id'], reverse=True)
     return render_template("index.html", frameworks=frameworks)
 

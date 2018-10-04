@@ -89,10 +89,10 @@
       <h2 class="heading-large">Manage applications</h2>
 
     {% for framework in frameworks %}
-      {% if framework.status in ["standstill", "live"] or current_user.has_any_role('admin-framework-manager', 'admin-ccs-sourcing') %}
+      {% if framework.status in ["standstill", "live"] or framework.slug == 'digital-outcomes-and-specialists-2' or current_user.has_any_role('admin-framework-manager', 'admin-ccs-sourcing') %}
         <h3 class="heading-xmedium">{{framework.name}}</h3>
 
-        {% if framework.status in ["live", "standstill"] %}
+        {% if framework.status in ["live", "standstill"] or framework.slug == 'digital-outcomes-and-specialists-2' %}
           {% set agreement_link_text = {
               'admin-ccs-category': 'View agreements',
               'admin-ccs-sourcing': 'Countersign agreements',
