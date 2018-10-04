@@ -541,6 +541,7 @@ def find_supplier_services(supplier_id):
 
     frameworks = data_api_client.find_frameworks()['frameworks']
     supplier = data_api_client.get_supplier(supplier_id)["suppliers"]
+    # TODO replace this temporary fix for DOS2 when a better solution has been created.
     services = data_api_client.find_services(
         supplier_id=supplier_id,
         framework=','.join(

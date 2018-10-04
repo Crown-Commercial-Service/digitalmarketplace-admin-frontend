@@ -40,6 +40,7 @@ def find_user_by_email_address():
 def user_list_page_for_framework(framework_slug):
     bad_statuses = ['coming', 'expired']
     framework = data_api_client.get_framework(framework_slug).get("frameworks")
+    # TODO replace this temporary fix for DOS2 when a better solution has been created.
     if not framework or \
             (framework['status'] in bad_statuses and framework['slug'] != 'digital-outcomes-and-specialists-2'):
         abort(404)
