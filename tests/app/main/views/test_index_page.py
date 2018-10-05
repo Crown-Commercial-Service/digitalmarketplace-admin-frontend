@@ -1,6 +1,7 @@
 import mock
 import pytest
 from lxml import html
+from dmutils import api_stubs
 
 from ...helpers import LoggedInApplicationTest
 
@@ -221,6 +222,29 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
 
         assert bool(document.xpath('.//h3[contains(text(),"Amazing Digital Framework")]')) == header_shown
+
+    @pytest.mark.parametrize(
+        ('slug_suffix', 'name_suffix', 'should_be_shown'),
+        (
+            ('', '', False),
+            ('-2', ' 2', True),
+            ('-3', ' 3', False),
+        )
+    )
+    def test_dos2_only_expired_framework_action_lists_shown_for(self, slug_suffix, name_suffix, should_be_shown):
+        self.data_api_client.find_frameworks.return_value = {'frameworks': [api_stubs.framework(
+            status='expired',
+            slug=f'digital-outcomes-and-specialists{slug_suffix}',
+            name=f'Digital Outcomes and Specialists{name_suffix}',
+        )['frameworks']]}
+
+        self.user_role = "admin-framework-manager"
+        response = self.client.get('/admin')
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert bool(
+            document.xpath(f'.//h3[contains(text(),"Digital Outcomes and Specialists{name_suffix}")]')
+        ) == should_be_shown
 
     @pytest.mark.parametrize('framework_status, header_shown', [
         ('coming', False),

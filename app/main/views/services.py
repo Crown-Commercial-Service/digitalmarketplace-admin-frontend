@@ -30,7 +30,11 @@ SERVICE_PUBLISHED_MESSAGE = "You published ‘{service_name}’."
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager', 'admin-manager')
 def index():
     frameworks = data_api_client.find_frameworks()['frameworks']
-    frameworks = [fw for fw in frameworks if fw['status'] not in ('coming', 'expired')]
+    # TODO replace this temporary fix for DOS2 when a better solution has been created.
+    frameworks = [
+        fw for fw in frameworks if fw['status'] not in ('coming', 'expired')
+        or fw['slug'] == 'digital-outcomes-and-specialists-2'
+    ]
     frameworks = sorted(frameworks, key=lambda x: x['id'], reverse=True)
     return render_template("index.html", frameworks=frameworks)
 
@@ -57,8 +61,9 @@ def view_service(service_id):
         flash(API_ERROR_MESSAGE.format(service_id=service_id), 'error')
         return redirect(url_for('.find_suppliers_and_services'))
 
+    # TODO remove `expired` from below. It's a temporary fix to allow access to DOS2 as it's expired.
     # we don't actually need the framework here; using this to 404 if framework for the service is not live
-    get_framework_or_404(data_api_client, service_data['frameworkSlug'], allowed_statuses=['live'])
+    get_framework_or_404(data_api_client, service_data['frameworkSlug'], allowed_statuses=['live', 'expired'])
 
     removed_by = removed_at = None
     if service_data['status'] != 'published':
@@ -93,7 +98,8 @@ def update_service_status(service_id):
 
     # Only services on live frameworks should have their status changed.
     service = data_api_client.get_service(service_id)['services']
-    get_framework_or_404(data_api_client, service['frameworkSlug'], allowed_statuses=['live'])
+    # TODO remove `expired` from below. It's a temporary fix to allow access to DOS2 as it's expired.
+    get_framework_or_404(data_api_client, service['frameworkSlug'], allowed_statuses=['live', 'expired'])
 
     frontend_status = request.form['service_status']
 
@@ -138,7 +144,9 @@ def edit_service(service_id, section_id, question_slug=None):
     service_data = data_api_client.get_service(service_id)['services']
 
     # we don't actually need the framework here; using this to 404 if framework for the service is not live
-    get_framework_or_404(data_api_client, service_data['frameworkSlug'], allowed_statuses=['live'])
+    # TODO remove `expired` from below. It's a temporary fix to allow access to DOS2 as it's expired.
+
+    get_framework_or_404(data_api_client, service_data['frameworkSlug'], allowed_statuses=['live', 'expired'])
 
     content = content_loader.get_manifest(service_data['frameworkSlug'], 'edit_service_as_admin').filter(service_data)
 
@@ -169,7 +177,8 @@ def update_service(service_id, section_id, question_slug=None):
     service = service['services']
 
     # we don't actually need the framework here; using this to 404 if framework for the service is not live
-    get_framework_or_404(data_api_client, service['frameworkSlug'], allowed_statuses=['live'])
+    # TODO remove `expired` from below. It's a temporary fix to allow access to DOS2 as it's expired.
+    get_framework_or_404(data_api_client, service['frameworkSlug'], allowed_statuses=['live', 'expired'])
 
     content = content_loader.get_manifest(service['frameworkSlug'], 'edit_service_as_admin').filter(service)
     section = content.get_section(section_id)
