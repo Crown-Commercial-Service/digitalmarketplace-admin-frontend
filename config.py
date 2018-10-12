@@ -17,6 +17,7 @@ class Config(object):
     SESSION_COOKIE_PATH = '/admin'
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
 
     CSRF_ENABLED = True
     CSRF_TIME_LIMIT = 8*3600
