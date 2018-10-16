@@ -386,18 +386,41 @@ def move_user_to_new_supplier(supplier_code):
 @login_required
 @role_required('admin', 'admin-ccs-category')
 def find_supplier_services():
-
     if not request.args.get('supplier_code'):
         abort(404)
 
-    supplier = data_api_client.get_supplier(request.args['supplier_code'])
-    services = data_api_client.find_services(request.args.get('supplier_code'))
+    supplier_code = int(request.args['supplier_code'])
+    supplier = data_api_client.get_supplier(supplier_code)
+    services = data_api_client.find_services(supplier_code)
 
     return render_template_with_csrf(
         "view_supplier_services.html",
         services=services["services"],
         supplier=supplier['supplier']
     )
+
+
+@main.route('/suppliers/<int:supplier_code>', methods=['POST'])
+@login_required
+@role_required('admin')
+def update_supplier_domain_price_status(supplier_code):
+    if 'supplier_domain_id' in request.args:
+        supplier_domain_id = int(request.args['supplier_domain_id'])
+        price_status = request.args['price_status']
+        (
+            data_api_client
+            .req
+            .suppliers(supplier_code)
+            .domain(supplier_domain_id)
+            .post({
+                'update_details': {
+                    'updated_by': current_user.email_address
+                },
+                'price_status': price_status
+            })
+        )
+
+    return redirect(url_for('.find_supplier_services', supplier_code=supplier_code))
 
 
 @main.route('/suppliers/<int:supplier_code>/invite-user', methods=['POST'])

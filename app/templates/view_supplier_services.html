@@ -31,16 +31,38 @@
     <h3>Assessed</h3>
 
     <div class='page-section'>
-        {% call(domain) summary.list_table(
-            supplier.domains.assessed,
+        {% call(sd) summary.list_table(
+            supplier.domains.all,
             caption="Services",
             empty_message="This supplier has no services on the Digital Marketplace",
-            field_headings=['Service'],
+            field_headings=[
+                'Service',
+                'Status',
+                'Price Status',
+                'Actions'
+            ],
             field_headings_visible=True)
         %}
 
         {% call summary.row() %}
-            {{ summary.text(domain) }}
+            {% if sd.status == 'assessed' %}
+                {{ summary.text(sd.domain_name) }}
+                {{ summary.text(sd.status) }}
+                {{ summary.text(sd.price_status) }}
+                <td>
+                    <span>
+                        <form method="post">
+                            {{ form.csrf_token }}
+                            <button type="submit"
+                                    class="button-secondary"
+                                    formaction={{ url_for(".update_supplier_domain_price_status", supplier_code=supplier.code, supplier_domain_id=sd.id, price_status='approved') }}>Approve price</button>
+                            <button type="submit"
+                                    class="button-secondary"
+                                    formaction={{ url_for(".update_supplier_domain_price_status", supplier_code=supplier.code, supplier_domain_id=sd.id, price_status='rejected') }}>Reject price</button>
+                        </form>
+                    </span>
+                </td>
+            {% endif %}
         {% endcall %}
         {% endcall %}
     </div>

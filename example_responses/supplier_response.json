@@ -20,6 +20,19 @@
         "dataVersion": null,
         "description": null,
         "domains": {
+            "all": [{
+                "id": 1,
+                "domain_id": 11,
+                "domain_name": "Data science",
+                "status": "assessed",
+                "price_status": "unassessed"
+            }, {
+                "id": 2,
+                "domain_id": 12,
+                "domain_name": "Cyber security",
+                "status": "unassessed",
+                "price_status": "unassessed"
+            }],
             "assessed": [
                 "Data science"
             ],

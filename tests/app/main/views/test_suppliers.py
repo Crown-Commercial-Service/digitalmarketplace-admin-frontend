@@ -277,8 +277,8 @@ class TestSupplierServicesView(LoggedInApplicationTest):
 
         self.assertEquals(200, response.status_code)
 
-        data_api_client.get_supplier.assert_called_with('1000')
-        data_api_client.find_services.assert_called_with('1000')
+        data_api_client.get_supplier.assert_called_with(1000)
+        data_api_client.find_services.assert_called_with(1000)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_indicate_if_supplier_has_no_services(self, data_api_client):
