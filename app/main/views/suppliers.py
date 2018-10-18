@@ -393,10 +393,27 @@ def find_supplier_services():
     supplier = data_api_client.get_supplier(supplier_code)
     services = data_api_client.find_services(supplier_code)
 
+    if 'domains' not in supplier['supplier']:
+        domains = {}
+        supplier['supplier']['domains'] = domains
+    else:
+        domains = supplier['supplier']['domains']
+
+    assessed = [sd for sd in domains.get('all', []) if sd['status'] == 'assessed']
+    for a in assessed:
+        pricing = supplier['supplier'].get('pricing', None)
+        if pricing:
+            price = pricing.get(a['domain_name'], None)
+            if price:
+                a['price'] = price['maxPrice']
+        else:
+            a['price'] = 'Not specified'
+
     return render_template_with_csrf(
         "view_supplier_services.html",
         services=services["services"],
-        supplier=supplier['supplier']
+        supplier=supplier['supplier'],
+        assessed=assessed
     )
 
 

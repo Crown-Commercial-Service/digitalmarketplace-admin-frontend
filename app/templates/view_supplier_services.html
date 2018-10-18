@@ -22,7 +22,7 @@
     {% include "_breadcrumb.html" %}
     {% endwith %}
 {% endblock %}
-
+{% block main_class %}supplier-services-view{% endblock %}
 {% block main_content %}
     {% with heading = "Services" %}
         {% include "toolkit/page-heading.html" %}
@@ -32,12 +32,15 @@
 
     <div class='page-section'>
         {% call(sd) summary.list_table(
-            supplier.domains.all,
+            assessed,
             caption="Services",
             empty_message="This supplier has no services on the Digital Marketplace",
             field_headings=[
                 'Service',
                 'Status',
+                'Price Min',
+                'Price Max',
+                'Price',
                 'Price Status',
                 'Actions'
             ],
@@ -45,24 +48,25 @@
         %}
 
         {% call summary.row() %}
-            {% if sd.status == 'assessed' %}
-                {{ summary.text(sd.domain_name) }}
-                {{ summary.text(sd.status) }}
-                {{ summary.text(sd.price_status) }}
-                <td>
-                    <span>
-                        <form method="post">
-                            {{ form.csrf_token }}
-                            <button type="submit"
-                                    class="button-secondary"
-                                    formaction={{ url_for(".update_supplier_domain_price_status", supplier_code=supplier.code, supplier_domain_id=sd.id, price_status='approved') }}>Approve price</button>
-                            <button type="submit"
-                                    class="button-secondary"
-                                    formaction={{ url_for(".update_supplier_domain_price_status", supplier_code=supplier.code, supplier_domain_id=sd.id, price_status='rejected') }}>Reject price</button>
-                        </form>
-                    </span>
-                </td>
-            {% endif %}
+            {{ summary.text(sd.domain_name) }}
+            {{ summary.text(sd.status) }}
+            {{ summary.text(sd.domain_price_minimum) }}
+            {{ summary.text(sd.domain_price_maximum) }}
+            {{ summary.text(sd.price) }}
+            {{ summary.text(sd.price_status) }}
+            <td>
+                <span>
+                    <form method="post">
+                        {{ form.csrf_token }}
+                        <button type="submit"
+                                class="button-secondary"
+                                formaction={{ url_for(".update_supplier_domain_price_status", supplier_code=supplier.code, supplier_domain_id=sd.id, price_status='approved') }}>Approve price</button>
+                        <button type="submit"
+                                class="button-secondary"
+                                formaction={{ url_for(".update_supplier_domain_price_status", supplier_code=supplier.code, supplier_domain_id=sd.id, price_status='rejected') }}>Reject price</button>
+                    </form>
+                </span>
+            </td>
         {% endcall %}
         {% endcall %}
     </div>
