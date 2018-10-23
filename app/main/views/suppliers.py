@@ -2,6 +2,7 @@ from flask import render_template, request, redirect, url_for, abort, current_ap
 from flask_login import login_required, current_user
 from flask import flash
 from dateutil.parser import parse as parse_date
+from react.render import render_component
 
 from .. import main
 from ... import data_api_client, content_loader
@@ -538,3 +539,23 @@ def trigger_assessment():
     })
 
     return redirect(url_for('.assessments_review'))
+
+
+@main.route('/supplier/<int:supplier_code>/full', methods=['GET'])
+@login_required
+@role_required('admin')
+def full_supplier_view(supplier_code):
+    supplier = data_api_client.get_supplier(supplier_code)['supplier']
+
+    props = {}
+    props['application'] = dict(supplier)
+    props['application']['case_study_url'] = '{}://{}/case-study/'.format(
+        current_app.config['DM_HTTP_PROTO'],
+        current_app.config['DM_MAIN_SERVER_NAME']
+    )
+    rendered_component = render_component('bundles/SellerRegistration/ApplicationPreviewWidget.js', props)
+
+    return render_template(
+        '_react.html',
+        component=rendered_component
+    )

@@ -31,7 +31,7 @@
   <a href="{{ url_for('main.find_suppliers') }}?supplier_code={{ supplier.code }}" target="_blank">
     admin
   </a>&nbsp;
-  <a href="{{ config['DM_MAIN_SERVER_NAME'] }}/supplier/{{ supplier.code }}" target="_blank">
+  <a href="{{ config['DM_HTTP_PROTO'] }}://{{ config['DM_MAIN_SERVER_NAME'] }}/supplier/{{ supplier.code }}" target="_blank">
     profile
   </a>
   <br/>
@@ -41,7 +41,7 @@
 <ul>
       {% for brief in briefs %}
         {% if brief.status != 'draft' %}
-        <li> <a href="{{ config['DM_MAIN_SERVER_NAME'] }}/digital-marketplace/opportunities/{{ brief.id }}">{{ brief.title }} (#{{ brief.id }}) closing {{ brief.dates.closing_date }}</a></li>
+        <li> <a href="{{ config['DM_HTTP_PROTO'] }}://{{ config['DM_MAIN_SERVER_NAME'] }}/digital-marketplace/opportunities/{{ brief.id }}">{{ brief.title }} (#{{ brief.id }}) closing {{ brief.dates.closing_date }}</a></li>
         {%  endif %}
       {% endfor %}
     </ul>

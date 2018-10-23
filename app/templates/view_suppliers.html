@@ -52,7 +52,11 @@
       field_headings_visible=True)
     %}
       {% call summary.row() %}
-        {{ summary.field_name(item.name) }}
+        {% if current_user.has_role('admin') %}
+          {{ summary.edit_link(item.name, url_for(".full_supplier_view", supplier_code=item.code)) }}
+        {% else %}
+          {{ summary.field_name(item.name) }}
+        {% endif %}
         {% if current_user.has_role('admin') %}
           {{ summary.edit_link("Change name", url_for(".edit_supplier_name", supplier_code=item.code)) }}
         {% endif %}
