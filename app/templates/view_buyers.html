@@ -29,6 +29,8 @@
               {% set displayed_message = "Brief updated ID {}".format(brief_id) %}
           {% elif message == 'brief_withdrawn' %}
               {% set displayed_message = "Brief {} has been withdrawn".format(brief_id) %}
+          {% elif message == 'seller_feedback_email' %}
+              {% set displayed_message = "Seller feedback email sent to buyer" %}
           {% else %}
               {% set displayed_message = message %}
           {% endif %}
@@ -130,6 +132,16 @@
         <br/>
         <input type="submit" value="Save" class="button-save">
     </form>
+    <br/>
+    <form method="get" action="{{ url_for( '.brief_edit_json', brief_id=brief_id) }}">
+      <button id="edit-json-button">JSON Editor</button>
+    </form>
+    <br />
+    <form method="post" action="{{ url_for( '.seller_feedback_email', brief_id=brief_id) }}">
+      {{ form.csrf_token }}
+      <button id="seller-request-feedback-email">Send seller requested feedback email to buyer</button>
+    </form>
+    <br />
 {% endif %}
   <form action="{{ url_for('.find_buyer_by_brief_id') }}" method="get" class="question">
       <label class="question-heading" for="brief_id">Find buyer by opportunity ID</label>
@@ -141,10 +153,6 @@
       <input type="submit" value="Search" class="button-save">
   </form>
   </div>
-  <br />
-  <form method="get" action="{{ url_for( '.brief_edit_json', brief_id=brief_id) }}">
-    <button id="edit-json-button">JSON Editor</button>
-  </form>
   <br />
   {% if brief.status == 'live' %}
     <dialog id="withdraw-dialog">

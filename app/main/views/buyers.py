@@ -1,5 +1,5 @@
 from dmutils.forms import render_template_with_csrf
-from flask import render_template, request, flash, jsonify, url_for
+from flask import render_template, request, flash, jsonify, url_for, redirect
 from flask_login import login_required, current_user
 from react.render import render_component
 
@@ -202,3 +202,21 @@ def withdraw_brief(brief_id):
 
 def convert_array_to_string(array):
     return NEW_LINE.join(array)
+
+
+@main.route('/brief/<int:brief_id>/seller-feedback-email', methods=['POST'])
+@login_required
+@role_required('admin')
+def seller_feedback_email(brief_id):
+    (
+        data_api_client
+        .req
+        .briefs(brief_id)
+        .send_feedback_email()
+        .post({
+            'update_details': {'updated_by': current_user.email_address}
+        })
+    )
+
+    flash('seller_feedback_email', 'info')
+    return redirect(url_for('.find_buyer_by_brief_id', brief_id=brief_id))
