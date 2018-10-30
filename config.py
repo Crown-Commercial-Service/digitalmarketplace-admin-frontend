@@ -119,6 +119,7 @@ class Development(Config):
     REACT_RENDER_URL = 'https://dm-dev-frontend.apps.y.cld.gov.au/render'
 
     REACT_RENDER = True
+    DM_SEND_EMAIL_TO_STDERR = True
 
 
 class Live(Config):
