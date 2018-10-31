@@ -18,9 +18,8 @@
 //= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/show-hide-content.js
 //= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/user-research-consent-banner.js
 //= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/report-a-problem.js
-; // JavaScript in the govuk_frontend_toolkit doesn't have trailing semicolons
-
 //= require _scroll-through-statistics.js
 //= require _selection-buttons.js
 //= require _tables-to-charts.js
+//= require _analytics.js
 //= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/module-loader.js
