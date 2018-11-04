@@ -46,7 +46,7 @@ class Config(object):
     DM_LOG_LEVEL = 'DEBUG'
     DM_APP_NAME = 'admin-frontend'
     DM_LOG_PATH = None
-    DM_DOWNSTREAM_REQUEST_ID_HEADER = 'X-Amz-Cf-Id'
+    DM_DOWNSTREAM_REQUEST_ID_HEADER = 'X-Vcap-Request-Id'
 
     # Feature Flags
     RAISE_ERROR_ON_MISSING_FEATURES = True
