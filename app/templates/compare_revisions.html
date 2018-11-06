@@ -32,7 +32,7 @@
   {% endwith %}
   {%
     with
-      url = "/g-cloud/services/{}".format(service.id),
+      url = url_for("external.direct_award_service_page", framework_family=service['frameworkFamily'], service_id=service["id"]),
       text = "View service"
   %}
     {% include "toolkit/secondary-action-link.html" %}
