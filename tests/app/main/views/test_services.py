@@ -1523,6 +1523,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             "151": {
                 "id": "151",
                 "frameworkSlug": "g-cloud-9",
+                "frameworkFamily": "g-cloud",
                 "lot": "cloud-hosting",
                 "status": status,
                 "supplierId": 909090,
@@ -1860,6 +1861,10 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         assert doc.xpath("normalize-space(string(//header//*[@class='context']))") == "Barrington's"
         assert doc.xpath("normalize-space(string(//header//h1))") == "Lemonflavoured soap"
+
+        assert tuple(
+            a.attrib["href"] for a in doc.xpath("//a[normalize-space(string())=$t]", t="View service")
+        ) == ("/g-cloud/services/151",)
 
         assert len(doc.xpath(
             "//*[@class='dummy-diff-table']"
