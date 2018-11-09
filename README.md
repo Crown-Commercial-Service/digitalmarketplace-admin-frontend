@@ -83,7 +83,7 @@ regenerated with
 make freeze-requirements
 ```
 
-`requirements.txt` should be commited alongside `requirements-app.txt` changes.
+`requirements.txt` should be committed alongside `requirements-app.txt` changes.
 
 ## Frontend tasks
 
