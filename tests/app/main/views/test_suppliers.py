@@ -545,7 +545,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1000/services')
         assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
-        remove_all_links = document.xpath('.//a[contains(text(), "Remove services")]')
+        remove_all_links = document.xpath('.//a[contains(text(), "Suspend services")]')
         assert len(remove_all_links) == (1 if can_edit else 0)
         edit_service_links = document.xpath('.//a[contains(text(), "Edit")]')
         assert len(edit_service_links) == (1 if can_edit else 0)
@@ -607,7 +607,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1000/services')
 
         assert response.status_code == 200
-        assert "Removed" in response.get_data(as_text=True)
+        assert "Suspended" in response.get_data(as_text=True)
         assert "Edit" in response.get_data(as_text=True)
 
     def test_should_show_correct_fields_for_enabled_service(self):
@@ -666,7 +666,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert response.status_code == 200
 
         document = html.fromstring(response.get_data(as_text=True))
-        expected_link_text = "Remove services"
+        expected_link_text = "Suspend services"
         expected_href = '/admin/suppliers/1234/services?remove=g-cloud-8'
         expected_link = document.xpath('.//a[contains(@href,"{}")]'.format(expected_href))[0]
         assert expected_link.text == expected_link_text
@@ -743,7 +743,7 @@ class TestSupplierServicesViewWithRemoveParam(LoggedInApplicationTest):
         assert response.status_code == 200
 
         document = html.fromstring(response.get_data(as_text=True))
-        expected_banner_message = "Are you sure you want to remove Supplier Name's 'G-Cloud 8' services?"
+        expected_banner_message = "Are you sure you want to suspend G-Cloud 8 services for ‘Supplier Name’?"
         banner_message = document.xpath('//p[@class="banner-message"]//text()')[0].strip()
         assert banner_message == expected_banner_message
 
@@ -814,7 +814,7 @@ class TestDisableSupplierServicesView(LoggedInApplicationTest):
 
         assert response.status_code == 302
 
-        expected_flash_message = "You removed all of PROACTIS Group Ltd's 'G-Cloud 8' services"
+        expected_flash_message = "You suspended all G-Cloud 8 services for ‘PROACTIS Group Ltd’."
         with self.client.session_transaction() as session:
             assert session['_flashes'][0][1] == expected_flash_message
 

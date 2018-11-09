@@ -31,7 +31,7 @@ AGREEMENT_APPROVAL_CANCELLED_MESSAGE = 'The agreement for {organisation_name} ha
                                        'You can approve it again at any time.'
 UPLOAD_COUNTERSIGNED_AGREEMENT_MESSAGE = "Countersigned agreement file was uploaded"
 COUNTERSIGNED_AGREEMENT_NOT_PDF_MESSAGE = "Countersigned agreement file is not a PDF"
-SUPPLIER_SERVICES_REMOVED_MESSAGE = "You removed all of {supplier_name}'s '{framework_name}' services"
+SUPPLIER_SERVICES_REMOVED_MESSAGE = "You suspended all {framework_name} services for ‘{supplier_name}’."
 SUPPLIER_USER_MESSAGES = {
     'user_invited': 'User invited',
     'user_moved': 'User moved to this supplier',
