@@ -539,19 +539,35 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         ("admin-ccs-category", True),
         ("admin-framework-manager", False),
     ])
-    def test_supplier_services_can_only_edit_users_with_right_roles(self, role, can_edit):
+    def test_supplier_services_only_category_users_can_edit(self, role, can_edit):
         self.user_role = role
 
         response = self.client.get('/admin/suppliers/1000/services')
         assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
-        # TODO: Unsuspend services link
         remove_all_links = document.xpath('.//a[contains(text(), "Suspend services")]')
         assert len(remove_all_links) == (1 if can_edit else 0)
         edit_service_links = document.xpath('.//a[contains(text(), "Edit")]')
-        assert len(edit_service_links) == (1 if can_edit else 0)
+        assert len(edit_service_links) == (2 if can_edit else 0)
         view_service_links = document.xpath('.//a[contains(text(), "View")]')
-        assert len(view_service_links) == (0 if can_edit else 1)
+        assert len(view_service_links) == (0 if can_edit else 2)
+
+    @pytest.mark.parametrize("role, can_edit", [
+        ("admin", False),
+        ("admin-ccs-category", True),
+        ("admin-framework-manager", False),
+    ])
+    def test_only_category_users_can_unsuspend_all_services(self, role, can_edit):
+        self.user_role = role
+        service = self.load_example_listing("services_response")["services"][0]
+        service["status"] = "disabled"
+        self.data_api_client.find_services.return_value = {'services': [service]}
+
+        response = self.client.get('/admin/suppliers/1000/services')
+        assert response.status_code == 200
+        document = html.fromstring(response.get_data(as_text=True))
+        unsuspend_all_links = document.xpath('.//a[contains(text(), "Unsuspend services")]')
+        assert len(unsuspend_all_links) == (1 if can_edit else 0)
 
     def test_should_404_if_supplier_does_not_exist_on_services(self):
         self.data_api_client.get_supplier.side_effect = HTTPError(Response(404))
@@ -672,8 +688,12 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         expected_link = document.xpath('.//a[contains(@href,"{}")]'.format(expected_href))[0]
         assert expected_link.text == expected_link_text
 
-    @pytest.mark.parametrize('service_status', ['enabled', 'disabled', 'a_new_status'])
-    def test_no_remove_all_services_link_if_supplier_service_not_published(self, service_status):
+    @pytest.mark.parametrize('service_status, disallowed_actions', [
+        ('enabled', ['publish']), ('disabled', ['enabled']), ('a_new_status', ['publish', 'enabled'])
+    ])
+    def test_toggle_all_services_link_not_shown_for_incorrect_supplier_service_statuses(
+        self, service_status, disallowed_actions
+    ):
         service = self.load_example_listing('services_response')['services'][0]
         service["status"] = service_status
 
@@ -682,9 +702,10 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1000/services')
         assert response.status_code == 200
 
-        document = html.fromstring(response.get_data(as_text=True))
-        href = '/admin/suppliers/1234/services?remove=g-cloud-8'
-        assert len(document.xpath('.//a[contains(@href,"{}")]'.format(href))) == 0
+        for action in disallowed_actions:
+            document = html.fromstring(response.get_data(as_text=True))
+            href = '/admin/suppliers/1234/services?{}=g-cloud-8'.format(action)
+            assert len(document.xpath('.//a[contains(@href,"{}")]'.format(href))) == 0
 
 
 class TestSupplierServicesViewWithToggleSuspendedParam(LoggedInApplicationTest):
@@ -756,7 +777,7 @@ class TestSupplierServicesViewWithToggleSuspendedParam(LoggedInApplicationTest):
         assert banner_message == expected_banner_message
 
 
-class TestDisableSupplierServicesView(LoggedInApplicationTest):
+class TestToggleSupplierServicesView(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
 
     def setup_method(self, method):
@@ -805,6 +826,13 @@ class TestDisableSupplierServicesView(LoggedInApplicationTest):
         response = self.client.post('/admin/suppliers/1000/services?{}={}'.format(action, framework))
 
         assert response.status_code == 302
+        assert self.data_api_client.find_services.call_args_list == [
+            mock.call(
+                supplier_id=1000,
+                framework='g-cloud-8',
+                status=initial_status  # Enabled services should not be included
+            )
+        ]
         assert self.data_api_client.update_service_status.call_args_list == [
             mock.call('5687123785023488', result_status, 'test@example.com'),
             mock.call('5687123785023489', result_status, 'test@example.com'),
