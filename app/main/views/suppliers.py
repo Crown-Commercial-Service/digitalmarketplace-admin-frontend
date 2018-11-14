@@ -538,8 +538,8 @@ def move_user_to_new_supplier(supplier_id):
 @main.route('/suppliers/<int:supplier_id>/services', methods=['GET'])
 @role_required('admin', 'admin-ccs-category', 'admin-framework-manager')
 def find_supplier_services(supplier_id):
-    remove_services_for_framework_slug = request.args.get('remove', None)
-    publish_services_for_framework_slug = request.args.get('publish', None)  # TODO: doesn't this default to None anyway
+    remove_services_for_framework_slug = request.args.get('remove')
+    publish_services_for_framework_slug = request.args.get('publish')
 
     frameworks = data_api_client.find_frameworks()['frameworks']
     supplier = data_api_client.get_supplier(supplier_id)["suppliers"]
