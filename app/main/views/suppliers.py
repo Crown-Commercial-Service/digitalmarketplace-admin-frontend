@@ -593,7 +593,7 @@ def find_supplier_services(supplier_id):
 # TODO rename this to 'toggle_supplier_services'
 @main.route('/suppliers/<int:supplier_id>/services', methods=['POST'])
 @role_required('admin-ccs-category')
-def disable_supplier_services(supplier_id):
+def toggle_supplier_services(supplier_id):
     remove_services = request.args.get('remove')
     publish_services = request.args.get('publish')
 

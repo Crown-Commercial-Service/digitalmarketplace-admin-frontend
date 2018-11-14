@@ -27,11 +27,11 @@
     {% if remove_services_for_framework or publish_services_for_framework %}
 
         {% if remove_services_for_framework %}
-          {% set url = url_for('main.disable_supplier_services', supplier_id=supplier.id, remove=remove_services_for_framework.slug) %}
+          {% set url = url_for('main.toggle_supplier_services', supplier_id=supplier.id, remove=remove_services_for_framework.slug) %}
           {% set message = "Are you sure you want to suspend {} services for ‘{}’?".format(remove_services_for_framework.name, supplier.name) %}
           {% set action = '<button type="submit" class="button-destructive banner-action">Suspend all services</button>'|safe %}
         {% elif publish_services_for_framework %}
-          {% set url = url_for('main.disable_supplier_services', supplier_id=supplier.id, publish=publish_services_for_framework.slug) %}
+          {% set url = url_for('main.toggle_supplier_services', supplier_id=supplier.id, publish=publish_services_for_framework.slug) %}
           {% set message = "Are you sure you want to unsuspend {} services for ‘{}’?".format(publish_services_for_framework.name, supplier.name) %}
           {% set action = '<button type="submit" class="button-destructive banner-action">Unsuspend all services</button>'|safe %}
         {% endif %}
