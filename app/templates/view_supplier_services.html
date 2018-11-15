@@ -33,6 +33,7 @@
         {% elif publish_services_for_framework %}
           {% set url = url_for('main.toggle_supplier_services', supplier_id=supplier.id, publish=publish_services_for_framework.slug) %}
           {% set message = "Are you sure you want to unsuspend {} services for ‘{}’?".format(publish_services_for_framework.name, supplier.name) %}
+          {% set banner_content = "This won’t change the status for services that ‘{}’ suspended themselves.".format(supplier.name) %}
           {% set action = '<button type="submit" class="button-destructive banner-action">Unsuspend all services</button>'|safe %}
         {% endif %}
         <form action="{{ url }}" method="POST">
