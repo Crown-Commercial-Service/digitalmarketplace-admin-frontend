@@ -590,7 +590,6 @@ def find_supplier_services(supplier_id):
     )
 
 
-# TODO rename this to 'toggle_supplier_services'
 @main.route('/suppliers/<int:supplier_id>/services', methods=['POST'])
 @role_required('admin-ccs-category')
 def toggle_supplier_services(supplier_id):
