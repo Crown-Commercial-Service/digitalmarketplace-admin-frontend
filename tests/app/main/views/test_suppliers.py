@@ -539,18 +539,35 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         ("admin-ccs-category", True),
         ("admin-framework-manager", False),
     ])
-    def test_supplier_services_can_only_edit_users_with_right_roles(self, role, can_edit):
+    def test_supplier_services_only_category_users_can_edit(self, role, can_edit):
         self.user_role = role
 
         response = self.client.get('/admin/suppliers/1000/services')
         assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
-        remove_all_links = document.xpath('.//a[contains(text(), "Remove services")]')
+        remove_all_links = document.xpath('.//a[contains(text(), "Suspend services")]')
         assert len(remove_all_links) == (1 if can_edit else 0)
         edit_service_links = document.xpath('.//a[contains(text(), "Edit")]')
-        assert len(edit_service_links) == (1 if can_edit else 0)
+        assert len(edit_service_links) == (2 if can_edit else 0)
         view_service_links = document.xpath('.//a[contains(text(), "View")]')
-        assert len(view_service_links) == (0 if can_edit else 1)
+        assert len(view_service_links) == (0 if can_edit else 2)
+
+    @pytest.mark.parametrize("role, can_edit", [
+        ("admin", False),
+        ("admin-ccs-category", True),
+        ("admin-framework-manager", False),
+    ])
+    def test_only_category_users_can_unsuspend_all_services(self, role, can_edit):
+        self.user_role = role
+        service = self.load_example_listing("services_response")["services"][0]
+        service["status"] = "disabled"
+        self.data_api_client.find_services.return_value = {'services': [service]}
+
+        response = self.client.get('/admin/suppliers/1000/services')
+        assert response.status_code == 200
+        document = html.fromstring(response.get_data(as_text=True))
+        unsuspend_all_links = document.xpath('.//a[contains(text(), "Unsuspend services")]')
+        assert len(unsuspend_all_links) == (1 if can_edit else 0)
 
     def test_should_404_if_supplier_does_not_exist_on_services(self):
         self.data_api_client.get_supplier.side_effect = HTTPError(Response(404))
@@ -607,7 +624,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1000/services')
 
         assert response.status_code == 200
-        assert "Removed" in response.get_data(as_text=True)
+        assert "Suspended" in response.get_data(as_text=True)
         assert "Edit" in response.get_data(as_text=True)
 
     def test_should_show_correct_fields_for_enabled_service(self):
@@ -666,13 +683,17 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert response.status_code == 200
 
         document = html.fromstring(response.get_data(as_text=True))
-        expected_link_text = "Remove services"
+        expected_link_text = "Suspend services"
         expected_href = '/admin/suppliers/1234/services?remove=g-cloud-8'
         expected_link = document.xpath('.//a[contains(@href,"{}")]'.format(expected_href))[0]
         assert expected_link.text == expected_link_text
 
-    @pytest.mark.parametrize('service_status', ['enabled', 'disabled', 'a_new_status'])
-    def test_no_remove_all_services_link_if_supplier_service_not_published(self, service_status):
+    @pytest.mark.parametrize('service_status, disallowed_actions', [
+        ('enabled', ['publish']), ('disabled', ['enabled']), ('a_new_status', ['publish', 'enabled'])
+    ])
+    def test_toggle_all_services_link_not_shown_for_incorrect_supplier_service_statuses(
+        self, service_status, disallowed_actions
+    ):
         service = self.load_example_listing('services_response')['services'][0]
         service["status"] = service_status
 
@@ -681,12 +702,13 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1000/services')
         assert response.status_code == 200
 
-        document = html.fromstring(response.get_data(as_text=True))
-        href = '/admin/suppliers/1234/services?remove=g-cloud-8'
-        assert len(document.xpath('.//a[contains(@href,"{}")]'.format(href))) == 0
+        for action in disallowed_actions:
+            document = html.fromstring(response.get_data(as_text=True))
+            href = '/admin/suppliers/1234/services?{}=g-cloud-8'.format(action)
+            assert len(document.xpath('.//a[contains(@href,"{}")]'.format(href))) == 0
 
 
-class TestSupplierServicesViewWithRemoveParam(LoggedInApplicationTest):
+class TestSupplierServicesViewWithToggleSuspendedParam(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
 
     def setup_method(self, method):
@@ -694,7 +716,12 @@ class TestSupplierServicesViewWithRemoveParam(LoggedInApplicationTest):
         self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
         self.data_api_client = self.data_api_client_patch.start()
         self.data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        self.data_api_client.find_services.return_value = self.load_example_listing('services_response')
+        self.data_api_client.find_services.return_value = {
+            'services': [
+                {'id': 1, 'status': 'published', 'frameworkSlug': 'g-cloud-8'},
+                {'id': 2, 'status': 'disabled', 'frameworkSlug': 'g-cloud-8'},
+            ]
+        }
         self.data_api_client.find_frameworks.return_value = {
             'frameworks': [self.load_example_listing("framework_response")['frameworks']]
         }
@@ -729,26 +756,28 @@ class TestSupplierServicesViewWithRemoveParam(LoggedInApplicationTest):
 
         assert response.status_code == 400
 
-    def test_200_if_supplier_has_published_service_on_framework(self):
+    @pytest.mark.parametrize('action', ['remove', 'publish'])
+    def test_200_if_supplier_has_published_or_removed_service_on_framework(self, action):
         framework = 'g-cloud-8'
 
-        response = self.client.get('/admin/suppliers/1000/services?remove={}'.format(framework))
+        response = self.client.get('/admin/suppliers/1000/services?{}={}'.format(action, framework))
 
         assert response.status_code == 200
 
-    def test_are_you_sure_banner_if_supplier_has_published_service_on_framework(self):
+    @pytest.mark.parametrize('action, message', [('remove', 'suspend'), ('publish', 'unsuspend')])
+    def test_are_you_sure_banner_if_supplier_has_service_on_framework(self, action, message):
         framework = 'g-cloud-8'
 
-        response = self.client.get('/admin/suppliers/1000/services?remove={}'.format(framework))
+        response = self.client.get('/admin/suppliers/1000/services?{}={}'.format(action, framework))
         assert response.status_code == 200
 
         document = html.fromstring(response.get_data(as_text=True))
-        expected_banner_message = "Are you sure you want to remove Supplier Name's 'G-Cloud 8' services?"
+        expected_banner_message = "Are you sure you want to {} G-Cloud 8 services for ‘Supplier Name’?".format(message)
         banner_message = document.xpath('//p[@class="banner-message"]//text()')[0].strip()
         assert banner_message == expected_banner_message
 
 
-class TestDisableSupplierServicesView(LoggedInApplicationTest):
+class TestToggleSupplierServicesView(LoggedInApplicationTest):
     user_role = 'admin-ccs-category'
 
     def setup_method(self, method):
@@ -778,43 +807,49 @@ class TestDisableSupplierServicesView(LoggedInApplicationTest):
 
         assert response.status_code == 400
 
-    def test_disables_service(self):
-        framework = 'g-cloud-8'
-
-        response = self.client.post('/admin/suppliers/1000/services?remove={}'.format(framework))
-
-        assert response.status_code == 302
-        assert self.data_api_client.update_service_status.call_args_list == [mock.call(
-            '5687123785023488', 'disabled', 'test@example.com'
-        )]
-
-    def test_disables_multiple_services(self):
+    @pytest.mark.parametrize('action, initial_status, result_status', [
+        ('remove', 'published', 'disabled'), ('publish', 'disabled', 'published')
+    ])
+    def test_toggles_status_for_multiple_services(self, action, initial_status, result_status):
         framework = 'g-cloud-8'
         service_1 = self.load_example_listing('services_response')['services'][0]
         service_2 = service_1.copy()
         service_2['id'] = '5687123785023489'
         service_3 = service_1.copy()
         service_3['id'] = '5687123785023490'
+        map(lambda k: k.update({'status': initial_status}), [service_1, service_2, service_3])
 
-        self.data_api_client.find_services.return_value = {'services': [service_1, service_2, service_3]}
+        self.data_api_client.find_services.return_value = {
+            'services': [service_1, service_2, service_3]
+        }
 
-        response = self.client.post('/admin/suppliers/1000/services?remove={}'.format(framework))
+        response = self.client.post('/admin/suppliers/1000/services?{}={}'.format(action, framework))
 
         assert response.status_code == 302
+        assert self.data_api_client.find_services.call_args_list == [
+            mock.call(
+                supplier_id=1000,
+                framework='g-cloud-8',
+                status=initial_status  # Enabled services should not be included
+            )
+        ]
         assert self.data_api_client.update_service_status.call_args_list == [
-            mock.call('5687123785023488', 'disabled', 'test@example.com'),
-            mock.call('5687123785023489', 'disabled', 'test@example.com'),
-            mock.call('5687123785023490', 'disabled', 'test@example.com'),
+            mock.call('5687123785023488', result_status, 'test@example.com'),
+            mock.call('5687123785023489', result_status, 'test@example.com'),
+            mock.call('5687123785023490', result_status, 'test@example.com'),
         ]
 
-    def test_flashes_success_message(self):
+    @pytest.mark.parametrize('action, message_action', [
+        ('remove', 'suspended'), ('publish', 'unsuspended')
+    ])
+    def test_flashes_success_message(self, action, message_action):
         framework = 'g-cloud-8'
 
-        response = self.client.post('/admin/suppliers/1000/services?remove={}'.format(framework))
+        response = self.client.post('/admin/suppliers/1000/services?{}={}'.format(action, framework))
 
         assert response.status_code == 302
 
-        expected_flash_message = "You removed all of PROACTIS Group Ltd's 'G-Cloud 8' services"
+        expected_flash_message = "You {} all G-Cloud 8 services for ‘PROACTIS Group Ltd’.".format(message_action)
         with self.client.session_transaction() as session:
             assert session['_flashes'][0][1] == expected_flash_message
 

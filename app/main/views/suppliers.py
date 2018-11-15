@@ -31,7 +31,8 @@ AGREEMENT_APPROVAL_CANCELLED_MESSAGE = 'The agreement for {organisation_name} ha
                                        'You can approve it again at any time.'
 UPLOAD_COUNTERSIGNED_AGREEMENT_MESSAGE = "Countersigned agreement file was uploaded"
 COUNTERSIGNED_AGREEMENT_NOT_PDF_MESSAGE = "Countersigned agreement file is not a PDF"
-SUPPLIER_SERVICES_REMOVED_MESSAGE = "You removed all of {supplier_name}'s '{framework_name}' services"
+SUPPLIER_SERVICES_REMOVED_MESSAGE = "You suspended all {framework_name} services for ‘{supplier_name}’."
+SUPPLIER_SERVICES_UNSUSPENDED_MESSAGE = "You unsuspended all {framework_name} services for ‘{supplier_name}’."
 SUPPLIER_USER_MESSAGES = {
     'user_invited': 'User invited',
     'user_moved': 'User moved to this supplier',
@@ -537,7 +538,8 @@ def move_user_to_new_supplier(supplier_id):
 @main.route('/suppliers/<int:supplier_id>/services', methods=['GET'])
 @role_required('admin', 'admin-ccs-category', 'admin-framework-manager')
 def find_supplier_services(supplier_id):
-    remove_services_for_framework_slug = request.args.get('remove', None)
+    remove_services_for_framework_slug = request.args.get('remove')
+    publish_services_for_framework_slug = request.args.get('publish')
 
     frameworks = data_api_client.find_frameworks()['frameworks']
     supplier = data_api_client.get_supplier(supplier_id)["suppliers"]
@@ -555,6 +557,8 @@ def find_supplier_services(supplier_id):
         groupby(sorted(services, key=itemgetter('frameworkSlug')), key=itemgetter('frameworkSlug'))
     }
 
+    remove_services_for_framework, publish_services_for_framework = None, None
+
     if remove_services_for_framework_slug:
         if remove_services_for_framework_slug not in frameworks_services:
             abort(400, 'No services for framework')
@@ -565,8 +569,16 @@ def find_supplier_services(supplier_id):
             lambda i: i['slug'] == remove_services_for_framework_slug,
             frameworks
         ))
-    else:
-        remove_services_for_framework = None
+    elif publish_services_for_framework_slug:
+        if publish_services_for_framework_slug not in frameworks_services:
+            abort(400, 'No services for framework')
+        if not any(i['status'] == 'disabled' for i in frameworks_services[publish_services_for_framework_slug]):
+            abort(400, 'No suspended services on framework')
+
+        publish_services_for_framework = next(filter(
+            lambda i: i['slug'] == publish_services_for_framework_slug,
+            frameworks
+        ))
 
     return render_template(
         'view_supplier_services.html',
@@ -574,28 +586,37 @@ def find_supplier_services(supplier_id):
         frameworks_services=frameworks_services,
         supplier=supplier,
         remove_services_for_framework=remove_services_for_framework,
+        publish_services_for_framework=publish_services_for_framework,
     )
 
 
 @main.route('/suppliers/<int:supplier_id>/services', methods=['POST'])
 @role_required('admin-ccs-category')
-def disable_supplier_services(supplier_id):
-    remove_services_for_framework = request.args.get('remove')
-    if not remove_services_for_framework:
+def toggle_supplier_services(supplier_id):
+    remove_services = request.args.get('remove')
+    publish_services = request.args.get('publish')
+
+    toggle_action = {
+        'framework_slug': remove_services or publish_services,
+        'old_status': 'published' if remove_services else 'disabled',
+        'new_status': 'disabled' if remove_services else 'published',
+        'flash_message': SUPPLIER_SERVICES_REMOVED_MESSAGE if remove_services else SUPPLIER_SERVICES_UNSUSPENDED_MESSAGE
+    }
+    if not toggle_action['framework_slug']:
         abort(400, 'Invalid framework')
 
     services = data_api_client.find_services(
         supplier_id=supplier_id,
-        framework=remove_services_for_framework,
-        status='published'
+        framework=toggle_action['framework_slug'],
+        status=toggle_action['old_status']
     )['services']
     if not services:
-        abort(400, 'No published services on framework')
+        abort(400, 'No {} services on framework'.format(toggle_action['old_status']))
 
     for service in services:
-        data_api_client.update_service_status(service['id'], 'disabled', current_user.email_address)
+        data_api_client.update_service_status(service['id'], toggle_action['new_status'], current_user.email_address)
 
-    flash(SUPPLIER_SERVICES_REMOVED_MESSAGE.format(
+    flash(toggle_action['flash_message'].format(
         supplier_name=services[0]['supplierName'],
         framework_name=services[0]['frameworkName'])
     )
