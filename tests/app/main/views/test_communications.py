@@ -5,6 +5,8 @@ import mock
 import pytest
 from lxml import html
 
+from dmtestutils.fixtures import valid_pdf_bytes
+
 from ...helpers import LoggedInApplicationTest
 
 
@@ -17,7 +19,6 @@ class TestCommunicationsView(LoggedInApplicationTest):
         self.data_api_client = self.data_api_client_patch.start()
         self.data_api_client.get_framework.return_value = {"frameworks": []}
 
-        self.dummy_file = BytesIO(u'Lorem ipsum dolor sit amet'.encode('utf8'))
         self.framework_slug = self.load_example_listing('framework_response')['frameworks']['slug']
 
     def teardown_method(self, method):
@@ -90,8 +91,8 @@ class TestCommunicationsView(LoggedInApplicationTest):
         response = self.client.post(
             "/admin/communications/{}".format(self.framework_slug),
             data={
-                'communication': (self.dummy_file, 'test-comm.pdf'),
-                'clarification': (self.dummy_file, 'test-clar.pdf'),
+                'communication': (BytesIO(valid_pdf_bytes), 'test-comm.pdf'),
+                'clarification': (BytesIO(valid_pdf_bytes), 'test-clar.pdf'),
             }
         )
 
@@ -110,8 +111,8 @@ class TestCommunicationsView(LoggedInApplicationTest):
         response = self.client.post(
             "/admin/communications/{}".format(self.framework_slug),
             data={
-                'communication': (self.dummy_file, 'test-comm.pdf'),
-                'clarification': (self.dummy_file, 'test-clar.pdf'),
+                'communication': (BytesIO(valid_pdf_bytes), 'test-comm.pdf'),
+                'clarification': (BytesIO(valid_pdf_bytes), 'test-clar.pdf'),
             }
         )
         assert response.status_code == 403
@@ -121,8 +122,8 @@ class TestCommunicationsView(LoggedInApplicationTest):
         self.client.post(
             "/admin/communications/{}".format(self.framework_slug),
             data={
-                'communication': (self.dummy_file, 'test-comm.unknown'),
-                'clarification': (self.dummy_file, 'test-clar.unknown'),
+                'communication': (BytesIO(valid_pdf_bytes), 'test-comm.unknown'),
+                'clarification': (BytesIO(valid_pdf_bytes), 'test-clar.unknown'),
             }
         )
 
@@ -134,7 +135,7 @@ class TestCommunicationsView(LoggedInApplicationTest):
         response = self.client.post(
             "/admin/communications/{}".format(self.framework_slug),
             data={
-                'communication': (self.dummy_file, 'test-comm.pdf'),
+                'communication': (BytesIO(valid_pdf_bytes), 'test-comm.pdf'),
             }
         )
 
@@ -151,7 +152,7 @@ class TestCommunicationsView(LoggedInApplicationTest):
         response = self.client.post(
             "/admin/communications/{}".format(self.framework_slug),
             data={
-                'clarification': (self.dummy_file, 'test-comm.pdf'),
+                'clarification': (BytesIO(valid_pdf_bytes), 'test-comm.pdf'),
             }
         )
 

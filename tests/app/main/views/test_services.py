@@ -1,5 +1,5 @@
 from functools import partial
-from io import BytesIO as StringIO
+from io import BytesIO
 from itertools import chain
 from urllib.parse import urlsplit
 
@@ -10,6 +10,8 @@ from dmapiclient.audit import AuditTypes
 from dmutils import s3
 from flask import Markup
 from lxml import html
+
+from dmtestutils.fixtures import valid_pdf_bytes
 
 from ...helpers import LoggedInApplicationTest
 
@@ -983,10 +985,10 @@ class TestServiceUpdate(LoggedInApplicationTest):
         response = self.client.post(
             '/admin/services/1/edit/documents',
             data={
-                'serviceDefinitionDocumentURL': (StringIO(), ''),
-                'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
-                'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.pdf'),
-                'termsAndConditionsDocumentURL': (StringIO(b''), ''),
+                'serviceDefinitionDocumentURL': (BytesIO(), ''),
+                'pricingDocumentURL': (BytesIO(valid_pdf_bytes), 'test.pdf'),
+                'sfiaRateDocumentURL': (BytesIO(valid_pdf_bytes), 'test.pdf'),
+                'termsAndConditionsDocumentURL': (BytesIO(b''), ''),
             }
         )
 
@@ -1012,10 +1014,10 @@ class TestServiceUpdate(LoggedInApplicationTest):
         response = self.client.post(
             '/admin/services/7654/edit/documents',
             data={
-                'serviceDefinitionDocumentURL': (StringIO(), ''),
-                'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
-                'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.txt'),
-                'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
+                'serviceDefinitionDocumentURL': (BytesIO(), ''),
+                'pricingDocumentURL': (BytesIO(valid_pdf_bytes), 'test.pdf'),
+                'sfiaRateDocumentURL': (BytesIO(valid_pdf_bytes), 'test.txt'),
+                'termsAndConditionsDocumentURL': (BytesIO(), 'test.pdf'),
             }
         )
         document = html.fromstring(response.get_data(as_text=True))
@@ -1278,9 +1280,9 @@ class TestServiceUpdate(LoggedInApplicationTest):
         response = self.client.post(
             '/admin/services/1/edit/documents',
             data={
-                'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
-                'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.txt'),
-                'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
+                'pricingDocumentURL': (BytesIO(valid_pdf_bytes), 'test.pdf'),
+                'sfiaRateDocumentURL': (BytesIO(valid_pdf_bytes), 'test.txt'),
+                'termsAndConditionsDocumentURL': (BytesIO(), 'test.pdf'),
             }
         )
         assert 'There was a problem with the answer to this question' in response.get_data(as_text=True)
@@ -1291,9 +1293,9 @@ class TestServiceUpdate(LoggedInApplicationTest):
         response = self.client.post(
             '/admin/services/234/edit/documents',
             data={
-                'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
-                'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.txt'),
-                'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
+                'pricingDocumentURL': (BytesIO(valid_pdf_bytes), 'test.pdf'),
+                'sfiaRateDocumentURL': (BytesIO(valid_pdf_bytes), 'test.txt'),
+                'termsAndConditionsDocumentURL': (BytesIO(), 'test.pdf'),
             }
         )
 
@@ -1315,9 +1317,9 @@ class TestServiceUpdate(LoggedInApplicationTest):
         response = self.client.post(
             '/admin/services/234/edit/bad-section',
             data={
-                'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
-                'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.txt'),
-                'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
+                'pricingDocumentURL': (BytesIO(b"doc"), 'test.pdf'),
+                'sfiaRateDocumentURL': (BytesIO(b"doc"), 'test.txt'),
+                'termsAndConditionsDocumentURL': (BytesIO(), 'test.pdf'),
             }
         )
 
