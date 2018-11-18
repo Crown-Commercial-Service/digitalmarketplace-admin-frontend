@@ -28,7 +28,7 @@ requirements: virtualenv test-requirements upgrade-pip requirements.txt
 	${VIRTUALENV_ROOT}/bin/pip install -r requirements.txt
 
 .PHONY: requirements-dev
-requirements-dev: virtualenv test-requirements requirements-dev.txt
+requirements-dev: virtualenv requirements-dev.txt
 	${VIRTUALENV_ROOT}/bin/pip install -r requirements-dev.txt
 
 .PHONY: freeze-requirements
