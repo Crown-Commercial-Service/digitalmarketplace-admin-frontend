@@ -61,11 +61,11 @@ test-requirements:
 	    || { echo "requirements.txt is up to date"; exit 0; }
 
 .PHONY: test-flake8
-test-flake8: virtualenv
+test-flake8: virtualenv requirements-dev
 	${VIRTUALENV_ROOT}/bin/flake8 .
 
 .PHONY: test-python
-test-python: virtualenv
+test-python: virtualenv requirements-dev
 	${VIRTUALENV_ROOT}/bin/py.test ${PYTEST_ARGS}
 
 .PHONY: show-environment
