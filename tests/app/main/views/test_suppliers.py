@@ -11,6 +11,8 @@ from flask import current_app
 from freezegun import freeze_time
 from lxml import html
 
+from dmtestutils.fixtures import valid_pdf_bytes
+
 from ...helpers import LoggedInApplicationTest, Response
 
 
@@ -1450,7 +1452,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
         }
         response = self.client.post(
             '/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
-            data={'countersigned_agreement': (BytesIO(b"this is a test"), 'countersigned_agreement.pdf')}
+            data={'countersigned_agreement': (BytesIO(valid_pdf_bytes), 'countersigned_agreement.pdf')}
         )
 
         self.data_api_client.approve_agreement_for_countersignature.assert_called_once_with(
@@ -1502,7 +1504,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             }}
         response = self.client.post('/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
                                     data=dict(
-                                        countersigned_agreement=(BytesIO(b"this is a test"),
+                                        countersigned_agreement=(BytesIO(valid_pdf_bytes),
                                                                  'countersigned_agreement.pdf'),
                                     ))
 
@@ -1556,7 +1558,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             }}
         response = self.client.post('/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
                                     data=dict(
-                                        countersigned_agreement=(BytesIO(b"this is a test"),
+                                        countersigned_agreement=(BytesIO(valid_pdf_bytes),
                                                                  'countersigned_agreement.pdf'),
                                     ))
 
