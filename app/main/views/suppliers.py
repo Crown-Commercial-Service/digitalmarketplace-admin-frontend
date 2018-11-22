@@ -51,7 +51,8 @@ def find_suppliers():
     else:
         suppliers = data_api_client.find_suppliers(
             prefix=request.args.get("supplier_name_prefix"),
-            duns_number=request.args.get("supplier_duns_number")
+            duns_number=request.args.get("supplier_duns_number"),
+            company_registration_number=request.args.get("supplier_company_registration_number"),
         )['suppliers']
 
     frameworks = data_api_client.find_frameworks()['frameworks']

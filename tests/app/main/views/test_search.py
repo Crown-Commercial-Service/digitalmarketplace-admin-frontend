@@ -65,3 +65,40 @@ class TestSearchView(LoggedInApplicationTest):
         assert ("Find a service by service ID" in question_headings) is service_id_form_should_exist, (
             "Role {} {} see the Find-by-ID form".format(role, "can not" if service_id_form_should_exist else "can")
         )
+
+
+class TestSearchSuppliersAndServices(LoggedInApplicationTest):
+
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 403),
+        ("admin-manager", 403),
+        ("admin-framework-manager", 403),
+        ("admin-ccs-data-controller", 200),
+    ])
+    def test_search_suppliers_and_services_is_only_accessible_to_specific_user_roles(
+            self, role, expected_code
+    ):
+        self.user_role = role
+        response = self.client.get('/admin/search')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
+    def test_forms_visible_for_ccs_data_controller_role(self):
+        self.user_role = 'admin-ccs-data-controller'
+        response = self.client.get('/admin/search')
+        document = html.fromstring(response.get_data(as_text=True))
+        question_headings = [heading.strip() for heading in document.xpath('//span[@class="question-heading"]/text()')]
+
+        header = document.xpath(
+            '//header[@class="page-heading page-heading-without-breadcrumb"]//h1/text()')[0].strip()
+
+        assert response.status_code == 200
+        assert header == "Search for suppliers"
+
+        # We test that we can find the relevant question headings as a proxy for finding the forms themselves
+        assert len(question_headings) == 3
+        assert "Find a supplier by name" in question_headings
+        assert "Find a supplier by DUNS number" in question_headings
+        assert "Find a supplier by company registration number" in question_headings
