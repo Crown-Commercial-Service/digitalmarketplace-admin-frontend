@@ -12,6 +12,7 @@ var repoRoot = __dirname + '/';
 var npmRoot = repoRoot + 'node_modules';
 var govukToolkitRoot = npmRoot + '/govuk_frontend_toolkit';
 var govukElementsRoot = npmRoot + '/govuk-elements-sass';
+var govukFrontendRoot = npmRoot + '/govuk-frontend';
 var dmToolkitRoot = npmRoot + '/digitalmarketplace-frontend-toolkit/toolkit';
 var sspContentRoot = npmRoot + '/digitalmarketplace-frameworks';
 var assetsFolder = repoRoot + 'app/assets';
@@ -19,6 +20,7 @@ var staticFolder = repoRoot + 'app/static';
 var govukTemplateFolder = repoRoot + 'node_modules/govuk_template';
 var govukTemplateAssetsFolder = govukTemplateFolder + '/assets';
 var govukTemplateLayoutsFolder = govukTemplateFolder + '/views/layouts';
+var govukFrontendFontsFolder = govukFrontendRoot + '/assets/fonts';
 
 // JavaScript paths
 var jsSourceFile = assetsFolder + '/javascripts/application.js';
@@ -239,6 +241,25 @@ gulp.task(
   )
 );
 
+gulp.task(
+  'copy:govuk_frontend_assets:fonts',
+  copyFactory(
+    "fonts from the GOVUK frontend assets",
+    govukFrontendFontsFolder,
+    assetsFolder + '/fonts'
+  )
+);
+
+
+gulp.task(
+  'copy:images',
+  copyFactory(
+    "font assets from app to static folder",
+    assetsFolder + '/fonts',
+    staticFolder + '/fonts'
+  )
+);
+
 gulp.task('watch', ['build:development'], function () {
   var jsWatcher = gulp.watch([ assetsFolder + '/**/*.js' ], ['js']);
   var cssWatcher = gulp.watch([ assetsFolder + '/**/*.scss' ], ['sass']);
@@ -273,7 +294,8 @@ gulp.task(
     'copy:dm_toolkit_assets:images',
     'copy:dm_toolkit_assets:templates',
     'copy:images',
-    'copy:govuk_template'
+    'copy:govuk_template',
+    'copy:govuk_frontend_assets:fonts'
   ]
 );
 
