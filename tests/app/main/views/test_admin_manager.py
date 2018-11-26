@@ -378,7 +378,7 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
             ("Manage framework applications", False),
             ("Audit framework applications (CCS Sourcing)", False),
             ("Manage services (CCS Category)", True),
-            ("Manage data", False),
+            ("Manage data (CCS Data Controller)", False),
             ("Support user accounts", False)
         ]
         permission_descriptions = [

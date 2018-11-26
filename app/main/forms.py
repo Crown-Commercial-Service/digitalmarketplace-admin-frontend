@@ -23,7 +23,7 @@ ADMIN_ROLES = [
     },
     {
         "value": 'admin-ccs-data-controller',
-        "label": 'Manage data',
+        "label": 'Manage data (CCS Data Controller)',
         "description": 'Helps create consistent supplier data and updates company details.',
     },
     {
