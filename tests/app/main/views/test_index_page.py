@@ -13,7 +13,8 @@ class TestIndex(LoggedInApplicationTest):
         "admin-ccs-category",
         "admin-ccs-sourcing",
         "admin-framework-manager",
-        "admin-manager"
+        "admin-manager",
+        "admin-ccs-data-controller",
     ])
     def test_change_password_link_is_shown_to_all_admin_users(self, role):
         self.user_role = role
@@ -27,6 +28,7 @@ class TestIndex(LoggedInApplicationTest):
         ("admin-ccs-sourcing", False),
         ("admin-framework-manager", False),
         ("admin-manager", False),
+        ("admin-ccs-data-controller", False),
     ])
     def test_add_buyer_email_domain_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
@@ -44,6 +46,7 @@ class TestIndex(LoggedInApplicationTest):
         ("admin-ccs-sourcing", True),
         ("admin-framework-manager", True),
         ("admin-manager", False),
+        ("admin-ccs-data-controller", False),
     ])
     def test_user_support_header_is_shown_to_users_with_right_roles(self, role, header_should_be_visible):
         self.user_role = role
@@ -61,6 +64,7 @@ class TestIndex(LoggedInApplicationTest):
         ("admin-ccs-sourcing", False),
         ("admin-framework-manager", False),
         ("admin-manager", False),
+        ("admin-ccs-data-controller", False),
     ])
     def test_find_a_user_by_email_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
@@ -78,6 +82,7 @@ class TestIndex(LoggedInApplicationTest):
         ("admin-ccs-sourcing", False),
         ("admin-framework-manager", False),
         ("admin-manager", True),
+        ("admin-ccs-data-controller", False),
     ])
     def test_manage_admin_users_link_is_shown_to_users_with_the_right_role(self, role, link_should_be_visible):
         self.user_role = role
@@ -95,6 +100,7 @@ class TestIndex(LoggedInApplicationTest):
         ("admin-ccs-sourcing", False),
         ("admin-framework-manager", False),
         ("admin-manager", False),
+        ("admin-ccs-data-controller", False),
     ])
     def test_check_service_edits_link_is_shown_to_users_with_the_right_role(self, role, link_should_be_visible):
         self.user_role = role
@@ -112,6 +118,7 @@ class TestIndex(LoggedInApplicationTest):
         ("admin-ccs-sourcing", True),
         ("admin-framework-manager", True),
         ("admin-manager", False),
+        ("admin-ccs-data-controller", False),
     ])
     def test_manage_applications_header_is_shown_to_users_with_the_right_role(self, role, header_should_be_visible):
         self.user_role = role
@@ -129,6 +136,7 @@ class TestIndex(LoggedInApplicationTest):
         ("admin-ccs-sourcing", False),
         ("admin-framework-manager", False),
         ("admin-manager", False),
+        ("admin-ccs-data-controller", False),
     ])
     def test_find_buyer_by_opportunity_id_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
@@ -140,12 +148,14 @@ class TestIndex(LoggedInApplicationTest):
             "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
 
+    # TODO: merge old search page test with new combined search box
     @pytest.mark.parametrize("role, link_should_be_visible, expected_link_text", [
         ("admin", True, "Edit supplier accounts or view services"),
         ("admin-ccs-category", True, "Edit suppliers and services"),
         ("admin-ccs-sourcing", True, "Edit supplier declarations"),
         ("admin-framework-manager", True, "View suppliers and services"),
         ("admin-manager", False, None),
+        ("admin-ccs-data-controller", False, None),
     ])
     def test_link_to_find_suppliers_and_services_page_is_shown_with_role_dependent_text(
             self, role, link_should_be_visible, expected_link_text
@@ -162,12 +172,36 @@ class TestIndex(LoggedInApplicationTest):
             link_text = document.xpath('.//a[@href="/admin/find-suppliers-and-services"]//text()')[0]
             assert link_text == expected_link_text
 
+    @pytest.mark.parametrize("role, link_should_be_visible, expected_link_text", [
+        ("admin", False, None),
+        ("admin-ccs-category", False, None),
+        ("admin-ccs-sourcing", False, None),
+        ("admin-framework-manager", False, None),
+        ("admin-manager", False, None),
+        ("admin-ccs-data-controller", True, "View and edit suppliers"),
+    ])
+    def test_link_to_search_suppliers_and_services_page_is_shown_with_role_dependent_text(
+            self, role, link_should_be_visible, expected_link_text
+    ):
+        self.user_role = role
+        response = self.client.get('/admin')
+        document = html.fromstring(response.get_data(as_text=True))
+        link_is_visible = bool(document.xpath('.//a[@href="/admin/search"]'))
+
+        assert link_is_visible is link_should_be_visible, (
+            "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
+        )
+        if link_should_be_visible:
+            link_text = document.xpath('.//a[@href="/admin/search"]//text()')[0]
+            assert link_text == expected_link_text
+
     @pytest.mark.parametrize("role, link_should_be_visible", [
         ("admin", True),
         ("admin-ccs-category", False),
         ("admin-ccs-sourcing", False),
         ("admin-framework-manager", True),
         ("admin-manager", False),
+        ("admin-ccs-data-controller", False),
     ])
     def test_download_buyers_list_link_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
@@ -292,6 +326,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         ("admin-ccs-sourcing", True, "Countersign agreements"),
         ("admin-framework-manager", True, "View agreements"),
         ("admin-manager", False, None),
+        ("admin-ccs-data-controller", False, None),
     ])
     def test_framework_action_list_includes_agreements_link(self, role, link_should_be_visible, expected_link_text):
         self.user_role = role
@@ -313,6 +348,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         ("admin-ccs-sourcing", False),
         ("admin-framework-manager", True),
         ("admin-manager", False),
+        ("admin-ccs-data-controller", False),
     ])
     def test_framework_action_list_includes_contact_suppliers(self, role, link_should_be_visible):
         self.user_role = role
@@ -330,6 +366,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         ("admin-ccs-sourcing", False),
         ("admin-framework-manager", True),
         ("admin-manager", False),
+        ("admin-ccs-data-controller", False),
     ])
     def test_framework_action_list_includes_upload_communications(self, role, link_should_be_visible):
         self.user_role = role
@@ -347,6 +384,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         ("admin-ccs-sourcing", True),
         ("admin-framework-manager", True),
         ("admin-manager", False),
+        ("admin-ccs-data-controller", False),
     ])
     def test_framework_action_list_includes_statistics(self, role, link_should_be_visible):
         self.user_role = role
@@ -360,10 +398,40 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
         ("admin", False),
+        ("admin-ccs-category", False),
+        ("admin-ccs-sourcing", False),
+        ("admin-framework-manager", False),
+        ("admin-manager", False),
+        ("admin-ccs-data-controller", True),
+    ])
+    @pytest.mark.parametrize('framework_status', ('live', 'standstill'))
+    def test_data_controller_can_download_supplier_lists_for_live_standstill_framework_statuses_and_dos2(
+        self, framework_status, role, link_should_be_visible
+    ):
+        self.user_role = role
+        self.data_api_client.find_frameworks.return_value = self._get_mock_framework_response(framework_status)
+
+        response = self.client.get('/admin')
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert bool(document.xpath('.//h3[contains(text(),"Download supplier lists")]')) == link_should_be_visible
+
+        link_is_visible = bool(document.xpath('.//a[contains(text(),"Amazing Digital Framework")]'))
+        assert link_is_visible is link_should_be_visible, (
+            "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
+        )
+        link_is_visible = bool(document.xpath('.//a[contains(text(),"Digital Outcomes and Specialists 2")]'))
+        assert link_is_visible is link_should_be_visible, (
+            "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
+        )
+
+    @pytest.mark.parametrize("role, link_should_be_visible", [
+        ("admin", False),
         ("admin-ccs-category", True),
         ("admin-ccs-sourcing", True),
         ("admin-framework-manager", True),
         ("admin-manager", False),
+        ("admin-ccs-data-controller", False),
     ])
     def test_download_g_cloud_outcomes_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
