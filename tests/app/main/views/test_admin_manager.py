@@ -159,7 +159,7 @@ class TestAdminManagerListView(LoggedInApplicationTest):
         assert "Active" in rows[5].text_content()
         assert "Suspended" not in rows[5].text_content()
         assert "Youthful Admin Data Controller" in rows[5].text_content()
-        assert "Data Controller" in rows[5].text_content()
+        assert "Manage data" in rows[5].text_content()
 
         # Deactivated users in alphabetical order (status, name, role)
         assert "Active" not in rows[6].text_content()
@@ -180,7 +180,7 @@ class TestAdminManagerListView(LoggedInApplicationTest):
         assert "Active" not in rows[9].text_content()
         assert "Suspended" in rows[9].text_content()
         assert "Suspended Admin Data Controller" in rows[9].text_content()
-        assert "Data Controller" in rows[9].text_content()
+        assert "Manage data" in rows[9].text_content()
 
     def test_should_link_to_edit_admin_user_page(self):
         self.data_api_client.find_users_iter.side_effect = [
@@ -378,7 +378,7 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
             ("Manage framework applications", False),
             ("Audit framework applications (CCS Sourcing)", False),
             ("Manage services (CCS Category)", True),
-            ("Data Controller", False),
+            ("Manage data", False),
             ("Support user accounts", False)
         ]
         permission_descriptions = [
@@ -388,7 +388,7 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
             'Manages communications about the framework and publishes supplier clarification questions.',
             'Checks declarations and agreements.',
             'Helps with service problems and makes sure services are in scope.',
-            'Manages supplier details across frameworks.',
+            'Helps create consistent supplier data and updates company details.',
             'Helps buyers and suppliers solve problems with their accounts.'
         ]
 
