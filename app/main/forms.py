@@ -22,6 +22,11 @@ ADMIN_ROLES = [
         "description": 'Helps with service problems and makes sure services are in scope.',
     },
     {
+        "value": 'admin-ccs-data-controller',
+        "label": 'Data Controller',
+        "description": 'Manages supplier details across frameworks.',
+    },
+    {
         "value": 'admin',
         "label": 'Support user accounts',
         "description": 'Helps buyers and suppliers solve problems with their accounts.'
