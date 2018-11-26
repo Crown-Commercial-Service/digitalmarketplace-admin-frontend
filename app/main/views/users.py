@@ -36,7 +36,7 @@ def find_user_by_email_address():
 
 
 @main.route('/frameworks/<framework_slug>/users', methods=['GET'])
-@role_required('admin-framework-manager', 'admin-ccs-category')
+@role_required('admin-framework-manager', 'admin-ccs-category', 'admin-ccs-data-controller')
 def user_list_page_for_framework(framework_slug):
     bad_statuses = ['coming', 'expired']
     framework = data_api_client.get_framework(framework_slug).get("frameworks")
@@ -61,7 +61,7 @@ def user_list_page_for_framework(framework_slug):
 
 
 @main.route('/frameworks/<framework_slug>/users/<report_type>/download', methods=['GET'])
-@role_required('admin-framework-manager', 'admin-ccs-category')
+@role_required('admin-framework-manager', 'admin-ccs-category', 'admin-ccs-data-controller')
 def download_supplier_user_list_report(framework_slug, report_type):
     reports_bucket = s3.S3(current_app.config['DM_REPORTS_BUCKET'])
 
