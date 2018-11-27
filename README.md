@@ -2,6 +2,7 @@
 
 [![Coverage Status](https://coveralls.io/repos/alphagov/digitalmarketplace-admin-frontend/badge.svg?branch=master&service=github)](https://coveralls.io/github/alphagov/digitalmarketplace-admin-frontend?branch=master)
 [![Requirements Status](https://requires.io/github/alphagov/digitalmarketplace-admin-frontend/requirements.svg?branch=master)](https://requires.io/github/alphagov/digitalmarketplace-admin-frontend/requirements/?branch=master)
+![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)
 
 
 Frontend administration application for the digital marketplace.
