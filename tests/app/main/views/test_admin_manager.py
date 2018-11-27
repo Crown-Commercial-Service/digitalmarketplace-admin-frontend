@@ -66,6 +66,20 @@ class TestAdminManagerListView(LoggedInApplicationTest):
          "role": "admin-ccs-sourcing",
          },
     ]
+    DATA_CONTROLLER_USERS = [
+        {"active": False,
+         "emailAddress": "retired-admin-data-controller@example.com",
+         "id": 9095,
+         "name": "Suspended Admin Data Controller",
+         "role": "admin-ccs-data-controller",
+         },
+        {"active": True,
+         "emailAddress": "admin-data-controller@example.com",
+         "id": 9096,
+         "name": "Youthful Admin Data Controller",
+         "role": "admin-ccs-data-controller",
+         },
+    ]
 
     def setup_method(self, method):
         super().setup_method(method)
@@ -77,7 +91,8 @@ class TestAdminManagerListView(LoggedInApplicationTest):
         super().teardown_method(method)
 
     @pytest.mark.parametrize(
-        "role_not_allowed", ["admin", "admin-ccs-category", "admin-ccs-sourcing", "admin-framework-manager"]
+        "role_not_allowed",
+        ["admin", "admin-ccs-category", "admin-ccs-sourcing", "admin-framework-manager", "admin-ccs-data-controller"]
     )
     def test_should_403_forbidden_user_roles(self, role_not_allowed):
         self.user_role = role_not_allowed
@@ -95,12 +110,13 @@ class TestAdminManagerListView(LoggedInApplicationTest):
             iter(self.CATEGORY_USERS),
             iter(self.SOURCING_USERS),
             iter(self.FRAMEWORK_MANAGER_USERS),
+            iter(self.DATA_CONTROLLER_USERS),
         ]
         response = self.client.get("/admin/admin-users")
         document = html.fromstring(response.get_data(as_text=True))
 
         assert response.status_code == 200
-        assert len(document.cssselect(".summary-item-row")) == 8
+        assert len(document.cssselect(".summary-item-row")) == 10
 
     def test_should_list_alphabetically_with_all_suspended_users_below_active_users(self):
         self.data_api_client.find_users_iter.side_effect = [
@@ -108,6 +124,7 @@ class TestAdminManagerListView(LoggedInApplicationTest):
             iter(self.CATEGORY_USERS),
             iter(self.SOURCING_USERS),
             iter(self.FRAMEWORK_MANAGER_USERS),
+            iter(self.DATA_CONTROLLER_USERS),
         ]
         response = self.client.get("/admin/admin-users")
         document = html.fromstring(response.get_data(as_text=True))
@@ -139,21 +156,31 @@ class TestAdminManagerListView(LoggedInApplicationTest):
         assert "Wonderful Framework Manager" in rows[4].text_content()
         assert "Manage framework" in rows[4].text_content()
 
-        # Deactivated users in alphabetical order (status, name, role)
-        assert "Active" not in rows[5].text_content()
-        assert "Suspended" in rows[5].text_content()
-        assert "CCS Category Support - Retired" in rows[5].text_content()
-        assert "Manage services" in rows[5].text_content()
+        assert "Active" in rows[5].text_content()
+        assert "Suspended" not in rows[5].text_content()
+        assert "Youthful Admin Data Controller" in rows[5].text_content()
+        assert "Manage data" in rows[5].text_content()
 
+        # Deactivated users in alphabetical order (status, name, role)
         assert "Active" not in rows[6].text_content()
         assert "Suspended" in rows[6].text_content()
-        assert "Has-been Framework Manager" in rows[6].text_content()
-        assert "Manage framework" in rows[6].text_content()
+        assert "CCS Category Support - Retired" in rows[6].text_content()
+        assert "Manage services" in rows[6].text_content()
 
         assert "Active" not in rows[7].text_content()
         assert "Suspended" in rows[7].text_content()
-        assert "Has-been Sourcing Support" in rows[7].text_content()
-        assert "Audit framework" in rows[7].text_content()
+        assert "Has-been Framework Manager" in rows[7].text_content()
+        assert "Manage framework" in rows[7].text_content()
+
+        assert "Active" not in rows[8].text_content()
+        assert "Suspended" in rows[8].text_content()
+        assert "Has-been Sourcing Support" in rows[8].text_content()
+        assert "Audit framework" in rows[8].text_content()
+
+        assert "Active" not in rows[9].text_content()
+        assert "Suspended" in rows[9].text_content()
+        assert "Suspended Admin Data Controller" in rows[9].text_content()
+        assert "Manage data" in rows[9].text_content()
 
     def test_should_link_to_edit_admin_user_page(self):
         self.data_api_client.find_users_iter.side_effect = [
@@ -161,6 +188,7 @@ class TestAdminManagerListView(LoggedInApplicationTest):
             iter(self.CATEGORY_USERS),
             iter(self.SOURCING_USERS),
             iter(self.FRAMEWORK_MANAGER_USERS),
+            iter(self.DATA_CONTROLLER_USERS),
         ]
         response = self.client.get("/admin/admin-users")
         document = html.fromstring(response.get_data(as_text=True))
@@ -173,9 +201,11 @@ class TestAdminManagerListView(LoggedInApplicationTest):
             "/admin/admin-users/9087/edit",
             "/admin/admin-users/9092/edit",
             "/admin/admin-users/9093/edit",
+            "/admin/admin-users/9096/edit",
             "/admin/admin-users/9090/edit",
             "/admin/admin-users/9094/edit",
             "/admin/admin-users/9091/edit",
+            "/admin/admin-users/9095/edit",
         ]
 
     def test_should_have_invite_user_link(self):
@@ -254,7 +284,10 @@ class TestInviteAdminUserView(LoggedInApplicationTest):
         assert res.location == "http://localhost/admin/admin-users"
 
     @mock.patch('app.main.views.admin_manager.send_user_account_email')
-    @pytest.mark.parametrize('role', ('admin', 'admin-ccs-sourcing', 'admin-ccs-category', 'admin-framework-manager'))
+    @pytest.mark.parametrize(
+        'role',
+        ('admin', 'admin-ccs-sourcing', 'admin-ccs-category', 'admin-framework-manager', 'admin-ccs-data-controller')
+    )
     def test_post_is_successful_for_valid_roles(self, send_user_account_email, role):
         self.data_api_client.email_is_valid_for_admin_user.return_value = True
         res = self.client.post('/admin/admin-users/invite', data={'role': role, 'email_address': 'test@test.com'})
@@ -345,6 +378,7 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
             ("Manage framework applications", False),
             ("Audit framework applications (CCS Sourcing)", False),
             ("Manage services (CCS Category)", True),
+            ("Manage data (CCS Data Controller)", False),
             ("Support user accounts", False)
         ]
         permission_descriptions = [
@@ -354,6 +388,7 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
             'Manages communications about the framework and publishes supplier clarification questions.',
             'Checks declarations and agreements.',
             'Helps with service problems and makes sure services are in scope.',
+            'Helps create consistent supplier data and updates company details.',
             'Helps buyers and suppliers solve problems with their accounts.'
         ]
 
@@ -378,6 +413,7 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         ("admin", 403),
         ("admin-ccs-category", 403),
         ("admin-ccs-sourcing", 403),
+        ("admin-ccs-data-controller", 403),
         ("admin-framework-manager", 403),
     ])
     def test_get_page_should_only_be_accessible_to_admin_manager(self, role, expected_code):
@@ -393,6 +429,7 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         ("admin", 403),
         ("admin-ccs-category", 403),
         ("admin-ccs-sourcing", 403),
+        ("admin-ccs-data-controller", 403),
         ("admin-framework-manager", 403),
     ])
     def test_post_page_should_only_be_accessible_to_admin_manager(self, role, expected_code):
@@ -410,7 +447,10 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(response.status_code, role)
 
-    @pytest.mark.parametrize('role', ['admin', 'admin-ccs-sourcing', 'admin-ccs-category', 'admin-framework-manager'])
+    @pytest.mark.parametrize(
+        'role',
+        ['admin', 'admin-ccs-sourcing', 'admin-ccs-category', 'admin-framework-manager', "admin-ccs-data-controller"]
+    )
     def test_admin_manager_can_edit_admin_user_details(self, role):
         self.data_api_client.get_user.return_value = self.admin_user_to_edit
         response1 = self.client.post(

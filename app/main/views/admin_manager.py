@@ -30,11 +30,13 @@ def manage_admin_users():
     category_users = data_api_client.find_users_iter(role='admin-ccs-category')
     sourcing_users = data_api_client.find_users_iter(role='admin-ccs-sourcing')
     framework_manager_users = data_api_client.find_users_iter(role='admin-framework-manager')
+    data_controller_users = data_api_client.find_users_iter(role='admin-ccs-data-controller')
 
     # We want to sort so all Active users are above all Suspended users, and alphabetical by name within these groups.
     # In Python False < True (False is zero, True is one) so sorting on "active is False" puts Active users first.
     admin_users = sorted(
-        list(support_users) + list(category_users) + list(sourcing_users) + list(framework_manager_users),
+        list(support_users) + list(category_users) +
+        list(sourcing_users) + list(framework_manager_users) + list(data_controller_users),
         key=lambda k: (k['active'] is False, k['name'])
     )
 
