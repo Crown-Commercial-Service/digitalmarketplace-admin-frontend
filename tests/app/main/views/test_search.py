@@ -11,6 +11,7 @@ class TestSearchView(LoggedInApplicationTest):
         ("admin-ccs-sourcing", 200),
         ("admin-manager", 403),
         ("admin-framework-manager", 200),
+        ("admin-ccs-data-controller", 403),
     ])
     def test_find_suppliers_and_services_page_is_only_accessible_to_specific_user_roles(
         self, role, expected_code

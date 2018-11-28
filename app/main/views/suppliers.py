@@ -44,7 +44,9 @@ OLD_SIGNING_FLOW_SLUGS = ['g-cloud-7', 'digital-outcomes-and-specialists']
 
 
 @main.route('/suppliers', methods=['GET'])
-@role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager')
+@role_required(
+    'admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager', 'admin-ccs-data-controller'
+)
 def find_suppliers():
     if request.args.get("supplier_id"):
         suppliers = [data_api_client.get_supplier(request.args.get("supplier_id"))['suppliers']]
