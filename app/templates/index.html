@@ -122,6 +122,22 @@
       {% endif %}
     {% endfor %}
   {% endif %}
+
+  {% if current_user.has_any_role('admin-ccs-data-controller') %}
+        <h3 class="heading-xmedium">Search for suppliers</h3>
+        <p>
+            <a href="{{ url_for('.search_suppliers_and_services') }}">View and edit suppliers</a>
+        </p>
+        <h3 class="heading-xmedium">Download supplier lists</h3>
+        {% for framework in frameworks %}
+        {% if framework.status in ["standstill", "live"] or framework.slug == 'digital-outcomes-and-specialists-2' %}
+        <p>
+          <a href="{{ url_for('.user_list_page_for_framework', framework_slug=framework['slug']) }}">{{ framework.name }}</a>
+        </p>
+        {% endif %}
+        {% endfor %}
+  {% endif %}
+
     </div>
   </div>
   <div class="column-one-third dmspeak">

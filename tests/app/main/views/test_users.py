@@ -25,6 +25,7 @@ class TestUsersView(LoggedInApplicationTest):
         ("admin-ccs-sourcing", 403),
         ("admin-manager", 403),
         ("admin-framework-manager", 403),
+        ("admin-ccs-data-controller", 403),
     ])
     def test_find_users_page_is_only_accessible_to_specific_user_roles(self, role, expected_code):
         self.user_role = role
@@ -230,6 +231,7 @@ class TestUserListPage(LoggedInApplicationTest):
         ("admin-ccs-sourcing", 403),
         ("admin-framework-manager", 200),
         ("admin-manager", 403),
+        ("admin-ccs-data-controller", 200),
     ])
     def test_get_user_lists_is_only_accessible_to_specific_user_roles(self, s3, role, expected_code):
         self.user_role = role
@@ -339,7 +341,8 @@ class TestUserResearchParticipantsExport(LoggedInApplicationTest):
             ('admin-ccs-category', False),
             ('admin-ccs-sourcing', False),
             ('admin-manager', False),
-            ('admin-framework-manager', False)
+            ('admin-framework-manager', False),
+            ('admin-ccs-data-controller', False),
         )
     )
     def test_correct_role_can_view_download_buyer_user_research_participants_link(self, s3, role, exists):
@@ -363,7 +366,8 @@ class TestUserResearchParticipantsExport(LoggedInApplicationTest):
             ('admin-ccs-category', False),
             ('admin-ccs-sourcing', False),
             ('admin-manager', False),
-            ('admin-framework-manager', False)
+            ('admin-framework-manager', False),
+            ('admin-ccs-data-controller', False),
         )
     )
     def test_correct_role_can_view_supplier_user_research_participants_link(self, s3, role, exists):
@@ -387,7 +391,8 @@ class TestUserResearchParticipantsExport(LoggedInApplicationTest):
             ('admin-ccs-category', 403),
             ('admin-ccs-sourcing', 403),
             ('admin-manager', 403),
-            ('admin-framework-manager', 403)
+            ('admin-framework-manager', 403),
+            ('admin-ccs-data-controller', 403),
         )
     )
     def test_correct_role_can_view_supplier_user_research_participants_page(self, s3, role, status_code):
