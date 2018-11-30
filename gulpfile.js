@@ -246,16 +246,6 @@ gulp.task(
   copyFactory(
     "fonts from the GOVUK frontend assets",
     govukFrontendFontsFolder,
-    assetsFolder + '/fonts'
-  )
-);
-
-
-gulp.task(
-  'copy:images',
-  copyFactory(
-    "font assets from app to static folder",
-    assetsFolder + '/fonts',
     staticFolder + '/fonts'
   )
 );
