@@ -42,6 +42,15 @@ $path: "/admin/static/images/";
 @import "toolkit/forms/_keyword-search";
 @import "toolkit/_user-research-consent-banner.scss";
 
+// GOV.UK Design System (compatible with old toolkit/elements)
+$govuk-assets-path: '/admin/static/';
+$govuk-images-path: '/admin/static/images/';
+$govuk-fonts-path: '/admin/static/fonts/';
+$govuk-compatibility-govukfrontendtoolkit: true;
+$govuk-compatibility-govuktemplate: true;
+$govuk-compatibility-govukelements: true;
+@import "node_modules/govuk-frontend/all";
+
 // App specific styles
 @import "_layout";
 @import "_c3";  // Graphs

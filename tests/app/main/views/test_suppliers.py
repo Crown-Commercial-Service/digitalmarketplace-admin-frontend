@@ -249,13 +249,25 @@ class TestSuppliersListView(LoggedInApplicationTest):
         self.data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
         self.client.get("/admin/suppliers?supplier_name_prefix=foo")
 
-        self.data_api_client.find_suppliers.assert_called_once_with(prefix="foo", duns_number=None)
+        self.data_api_client.find_suppliers.assert_called_once_with(
+            prefix="foo", duns_number=None, company_registration_number=None
+        )
 
     def test_should_search_by_duns_number(self):
         self.data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
         self.client.get("/admin/suppliers?supplier_duns_number=987654321")
 
-        self.data_api_client.find_suppliers.assert_called_once_with(prefix=None, duns_number="987654321")
+        self.data_api_client.find_suppliers.assert_called_once_with(
+            prefix=None, duns_number="987654321", company_registration_number=None
+        )
+
+    def test_should_search_by_company_registration_number(self):
+        self.data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
+        self.client.get("/admin/suppliers?supplier_company_registration_number=11114444")
+
+        self.data_api_client.find_suppliers.assert_called_once_with(
+            prefix=None, duns_number=None, company_registration_number="11114444"
+        )
 
     def test_should_find_by_supplier_id(self):
         self.data_api_client.get_supplier.side_effect = HTTPError(Response(404))

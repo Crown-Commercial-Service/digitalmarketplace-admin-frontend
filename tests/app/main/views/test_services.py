@@ -24,6 +24,7 @@ class TestServiceFind(LoggedInApplicationTest):
         ("admin-ccs-sourcing", 403),
         ("admin-framework-manager", 302),
         ("admin-manager", 403),
+        ("admin-ccs-data-controller", 403),
     ])
     def test_service_find_is_only_accessible_to_specific_user_roles(self, role, expected_code):
         self.user_role = role
@@ -170,6 +171,7 @@ class TestServiceView(LoggedInApplicationTest):
         ("admin-ccs-sourcing", 403),
         ("admin-framework-manager", 200),
         ("admin-manager", 403),
+        ("admin-ccs-data-controller", 403),
     ])
     def test_view_service_is_only_accessible_to_specific_user_roles(self, role, expected_code):
         self.user_role = role
@@ -649,6 +651,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         ("admin-ccs-sourcing", 403),
         ("admin-framework-manager", 403),
         ("admin-manager", 403),
+        ("admin-ccs-data-controller", 403),
     ])
     def test_edit_service_is_only_accessible_to_specific_user_roles(self, role, expected_code):
         self.user_role = role
@@ -927,6 +930,7 @@ class TestServiceUpdate(LoggedInApplicationTest):
         ("admin-ccs-category", 302),
         ("admin-ccs-sourcing", 403),
         ("admin-manager", 403),
+        ("admin-ccs-data-controller", 403),
     ])
     def test_post_service_update_is_only_accessible_to_specific_user_roles(self, role, expected_code):
         self.user_role = role
@@ -1368,6 +1372,7 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         ("admin-ccs-category", 302),
         ("admin-ccs-sourcing", 403),
         ("admin-manager", 403),
+        ("admin-ccs-data-controller", 403),
     ])
     def test_post_status_update_is_only_accessible_to_specific_user_roles(self, role, expected_code):
         self.user_role = role
@@ -1502,6 +1507,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         ("admin-ccs-category", 200),
         ("admin-ccs-sourcing", 403),
         ("admin-manager", 403),
+        ("admin-ccs-data-controller", 403),
     ])
     def test_view_service_updates_is_only_accessible_to_specific_user_roles(
             self, html_diff_tables_from_sections_iter, role, expected_code

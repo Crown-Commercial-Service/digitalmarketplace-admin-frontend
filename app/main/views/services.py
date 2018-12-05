@@ -25,9 +25,18 @@ BAD_SERVICE_STATUS_MESSAGE = "Not a valid status: {service_status}"
 SERVICE_STATUS_UPDATED_MESSAGE = "Service status has been updated to: {service_status}"
 SERVICE_PUBLISHED_MESSAGE = "You published ‘{service_name}’."
 
+ALL_ADMIN_ROLES = [
+    'admin',
+    'admin-ccs-category',
+    'admin-ccs-sourcing',
+    'admin-framework-manager',
+    'admin-manager',
+    'admin-ccs-data-controller'
+]
+
 
 @main.route('', methods=['GET'])
-@role_required('admin', 'admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager', 'admin-manager')
+@role_required(*ALL_ADMIN_ROLES)
 def index():
     frameworks = data_api_client.find_frameworks()['frameworks']
     # TODO replace this temporary fix for DOS2 when a better solution has been created.

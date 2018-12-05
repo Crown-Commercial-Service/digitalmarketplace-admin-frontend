@@ -1,0 +1,138 @@
+{% if current_user.role == "admin" %}
+  {% set page_title = "Edit supplier accounts or view services" %}
+{% elif current_user.role == "admin-ccs-category" %}
+  {% set page_title = "Edit suppliers and services" %}
+{% elif current_user.role == "admin-ccs-sourcing" %}
+  {% set page_title = "Edit supplier declarations" %}
+{% elif current_user.role == "admin-framework-manager" %}
+  {% set page_title = "View suppliers and services" %}
+{% endif %}
+
+{% extends "_base_page.html" %}
+
+{% block page_title %}
+  {{ page_title }} - Digital Marketplace admin
+{% endblock %}
+
+{% block breadcrumb %}
+  {%
+      with items = [
+          {
+              "link": url_for('.index'),
+              "label": "Admin home"
+          },
+      ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+  {%
+    with heading = "Search for suppliers"
+  %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+
+  <div class="grid-row">
+    <div class="column-one-whole">
+
+      <div class="govuk-tabs" data-module="tabs">
+          <h2 class="govuk-tabs__title">
+            Search
+          </h2>
+
+          <ul class="govuk-tabs__list">
+            <li class="govuk-tabs__list-item">
+              <a class="govuk-tabs__tab govuk-tabs__tab--selected" href="#supplier-name">
+                Name
+              </a>
+            </li>
+            <li class="govuk-tabs__list-item">
+              <a class="govuk-tabs__tab" href="#duns-number">
+                DUNS Number
+              </a>
+            </li>
+            <li class="govuk-tabs__list-item">
+              <a class="govuk-tabs__tab" href="#company-registration-number">
+                Company registration number
+              </a>
+            </li>
+            {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager') %}
+            <li class="govuk-tabs__list-item">
+              <a class="govuk-tabs__tab" href="#service-id">
+                Service ID
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+
+          <section class="govuk-tabs__panel" id="supplier-name">
+
+            <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+                {%
+                  with
+                  question = "Find a supplier by name",
+                  name = "supplier_name_prefix",
+                  hint = "You don’t have to put in the full name to get a result."
+                %}
+                  {% include "toolkit/forms/textbox.html" %}
+                {% endwith %}
+                {%
+                  with
+                  type = "save",
+                  name = "find_supplier_by_name_search",
+                  label = "Search"
+                %}
+                  {% include "toolkit/button.html" %}
+                {% endwith %}
+              </form>
+
+          </section>
+          <section class="govuk-tabs__panel govuk-tabs__panel--hidden" id="duns-number">
+            <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+                {%
+                  with
+                  question = "Find a supplier by DUNS number",
+                  name = "supplier_duns_number",
+                  hint = "DUNS numbers are usually 9 digits long, for example, 234554321"
+                %}
+                  {% include "toolkit/forms/textbox.html" %}
+                {% endwith %}
+                {%
+                  with
+                  type = "save",
+                  name = "find_supplier_by_duns_number_search",
+                  label = "Search"
+                %}
+                  {% include "toolkit/button.html" %}
+                {% endwith %}
+              </form>
+
+          </section>
+          <section class="govuk-tabs__panel govuk-tabs__panel--hidden" id="company-registration-number">
+            <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+                {%
+                  with
+                  question = "Find a supplier by company registration number",
+                  name = "supplier_company_registration_number",
+                  hint = "Company registration numbers are usually 8 digits long, for example, 34881131"
+                %}
+                  {% include "toolkit/forms/textbox.html" %}
+                {% endwith %}
+                {%
+                  with
+                  type = "save",
+                  name = "find_supplier_by_company_registration_number_search",
+                  label = "Search"
+                %}
+                  {% include "toolkit/button.html" %}
+                {% endwith %}
+              </form>
+          </section>
+        </div>
+
+
+    </div>
+  </div>
+{% endblock %}
