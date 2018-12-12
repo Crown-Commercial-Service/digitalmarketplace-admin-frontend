@@ -15,7 +15,7 @@ git+https://github.com/alphagov/digitalmarketplace-apiclient.git@19.10.0#egg=dig
 ## The following requirements were added by pip freeze:
 asn1crypto==0.24.0
 boto3==1.9.63
-botocore==1.10.84
+botocore==1.12.63
 certifi==2018.11.29
 cffi==1.11.5
 chardet==3.0.4
