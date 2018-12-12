@@ -4,8 +4,10 @@
 # F401: 'identifier' imported but unused
 # E402: module level import not at top of file
 # W503: line break before binary operator
+# W504: line break after binary operator
+# W605: invalid escape sequence
 exclude = venv*,__pycache__,node_modules,app/content
-ignore = D203,W503
+ignore = D203,W503,W504
 max-complexity = 24
 max-line-length = 120
 per-file-ignores =
@@ -13,3 +15,4 @@ per-file-ignores =
     app/__init__.py : E402
     app/main/__init__.py : E402
     app/status/__init__.py : E402
+    app/main/helpers/service.py : W605

@@ -41,8 +41,8 @@ def index():
     frameworks = data_api_client.find_frameworks()['frameworks']
     # TODO replace this temporary fix for DOS2 when a better solution has been created.
     frameworks = [
-        fw for fw in frameworks if fw['status'] not in ('coming', 'expired')
-        or fw['slug'] == 'digital-outcomes-and-specialists-2'
+        fw for fw in frameworks if fw['status'] not in ('coming', 'expired') or
+        fw['slug'] == 'digital-outcomes-and-specialists-2'
     ]
     frameworks = sorted(frameworks, key=lambda x: x['id'], reverse=True)
     return render_template("index.html", frameworks=frameworks)
