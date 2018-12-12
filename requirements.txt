@@ -31,7 +31,7 @@ idna==2.8
 inflection==0.3.1
 Jinja2==2.10
 jmespath==0.9.3
-mailchimp3==2.0.18
+mailchimp3==3.0.6
 mandrill==1.0.57
 Markdown==2.6.7
 MarkupSafe==1.1.0
