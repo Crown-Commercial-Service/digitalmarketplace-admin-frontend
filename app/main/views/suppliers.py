@@ -67,10 +67,8 @@ def find_suppliers():
         abort(500)
 
     interesting_frameworks = sorted(
-        [
-            framework for framework in frameworks
-            if framework['id'] >= oldest_interesting_framework_id and framework['status'] != 'coming'
-        ],
+        [framework for framework in frameworks if framework['id'] >= oldest_interesting_framework_id
+            and framework['status'] != 'coming'],
         key=lambda fw: fw['id'],
         reverse=True,
     )
@@ -551,9 +549,10 @@ def find_supplier_services(supplier_id):
     # TODO replace this temporary fix for DOS2 when a better solution has been created.
     services = data_api_client.find_services(
         supplier_id=supplier_id,
-        framework=','.join([
-            f['slug'] for f in frameworks if f['status'] == 'live' or f['slug'] == 'digital-outcomes-and-specialists-2'
-        ])
+        framework=','.join(
+            [f['slug'] for f in frameworks if f['status'] == 'live'
+                or f['slug'] == 'digital-outcomes-and-specialists-2']
+        )
     )['services']
     frameworks_services = {
         framework_slug: list(framework_services)
