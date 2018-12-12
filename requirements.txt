@@ -27,7 +27,7 @@ docutils==0.14
 Flask-Script==2.0.6
 fleep==1.0.1
 future==0.17.1
-idna==2.7
+idna==2.8
 inflection==0.3.1
 Jinja2==2.10
 jmespath==0.9.3
