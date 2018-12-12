@@ -43,7 +43,7 @@ PyJWT==1.7.1
 python-dateutil==2.7.5
 python-json-logger==0.1.10
 pytz==2018.7
-PyYAML==3.11
+PyYAML==3.13
 requests==2.20.1
 s3transfer==0.1.13
 six==1.11.0
