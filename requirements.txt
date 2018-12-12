@@ -39,7 +39,7 @@ monotonic==1.5
 notifications-python-client==5.2.0
 odfpy==1.4.0
 pycparser==2.19
-PyJWT==1.6.4
+PyJWT==1.7.1
 python-dateutil==2.7.5
 python-json-logger==0.1.10
 pytz==2018.7
