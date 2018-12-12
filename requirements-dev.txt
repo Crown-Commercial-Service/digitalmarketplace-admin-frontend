@@ -1,7 +1,7 @@
 -r requirements.txt
 coverage==4.5.2
 cssselect==1.0.3
-freezegun==0.3.7
+freezegun==0.3.11
 flake8==3.5.0
 flake8-per-file-ignores==0.4.0
 mock==2.0.0
