@@ -1,7 +1,7 @@
 {
   "name": "digitalmarketplace-admin-frontend",
   "description": "Front end application for the Digital Marketplace admin",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "engine": "node >= 4.2",
   "dependencies": {
@@ -17,6 +17,9 @@
     "gulp-shell": "0.2.9",
     "gulp-uglifyjs": "0.6.0",
     "node-sass": "^4.5.3"
+  },
+  "devDependencies": {
+    "natives": "1.1.6"
   },
   "scripts": {
     "frontend-install": "./node_modules/bower/bin/bower install",
