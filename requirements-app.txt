@@ -8,6 +8,8 @@ lxml==4.2.5
 
 # Putting upgrade on hold due to v1.0.0 using sha512 instead of sha1 by default
 itsdangerous==0.24  # pyup: <1.0.0
+# Putting upgrade on hold as v3 uses different syntax that we'll need to update
+Markdown==2.6.7 # pyup: <3.0.0
 
 git+https://github.com/alphagov/digitalmarketplace-content-loader.git@5.0.0#egg=digitalmarketplace-content-loader==5.0.0
 git+https://github.com/alphagov/digitalmarketplace-utils.git@45.0.2#egg=digitalmarketplace-utils==45.0.2
