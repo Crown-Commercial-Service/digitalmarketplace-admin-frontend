@@ -2,7 +2,7 @@
 # https://pyup.io/docs/bot/config/
 # Check dependencies in _only_ requirements-app and requirements-dev, every week, and open PRs with PyUp prefix.
 
-schedule: "every week on monday"
+schedule: "every day"
 search: False
 
 requirements:
