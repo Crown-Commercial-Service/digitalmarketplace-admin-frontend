@@ -2,7 +2,7 @@
 import mock
 import pytest
 from lxml import html
-from dmutils import api_stubs
+from dmtestutils.api_model_stubs import FrameworkStub
 
 from ...helpers import LoggedInApplicationTest
 
@@ -260,11 +260,11 @@ class TestUserListPage(LoggedInApplicationTest):
         )
     )
     def test_dos2_framework_only_expired_framework_available(self, s3, slug_suffix, name_suffix, should_be_shown):
-        self.data_api_client.get_framework.return_value = api_stubs.framework(
+        self.data_api_client.get_framework.return_value = FrameworkStub(
             status='expired',
             slug=f'digital-outcomes-and-specialists{slug_suffix}',
             name=f'Digital Outcomes and Specialists{name_suffix}',
-        )
+        ).single_result_response()
 
         response = self.client.get(f"/admin/frameworks/{slug_suffix}/users")
         document = html.fromstring(response.get_data(as_text=True))
@@ -418,14 +418,14 @@ class TestUserResearchParticipantsExport(LoggedInApplicationTest):
         assert 'User research participants on {}'.format(self._valid_framework['name']) in text
 
     def test_dos2_framework_only_expired_framework_available(self, s3):
-        framework_suffixs = (('', ''), ('-2', ' 2'), ('-3', ' 3'))
+        framework_suffixes = (('', ''), ('-2', ' 2'), ('-3', ' 3'))
         self.data_api_client.find_frameworks.return_value = {
             'frameworks': [
-                api_stubs.framework(
+                FrameworkStub(
                     status='expired',
-                    slug=f'digital-outcomes-and-specialists{suffixs[0]}',
-                    name=f'Digital Outcomes and Specialists{suffixs[1]}',
-                )['frameworks'] for suffixs in framework_suffixs
+                    slug=f'digital-outcomes-and-specialists{suffixes[0]}',
+                    name=f'Digital Outcomes and Specialists{suffixes[1]}',
+                ).response() for suffixes in framework_suffixes
             ]
         }
         s3.S3.return_value.get_signed_url.return_value = 'http://asseturl/path/to/csv?querystring'

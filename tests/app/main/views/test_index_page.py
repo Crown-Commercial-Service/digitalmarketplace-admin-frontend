@@ -1,7 +1,7 @@
 import mock
 import pytest
 from lxml import html
-from dmutils import api_stubs
+from dmtestutils.api_model_stubs import FrameworkStub
 
 from ...helpers import LoggedInApplicationTest
 
@@ -266,11 +266,11 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         )
     )
     def test_dos2_only_expired_framework_action_lists_shown_for(self, slug_suffix, name_suffix, should_be_shown):
-        self.data_api_client.find_frameworks.return_value = {'frameworks': [api_stubs.framework(
+        self.data_api_client.find_frameworks.return_value = {'frameworks': [FrameworkStub(
             status='expired',
             slug=f'digital-outcomes-and-specialists{slug_suffix}',
             name=f'Digital Outcomes and Specialists{name_suffix}',
-        )['frameworks']]}
+        ).response()]}
 
         self.user_role = "admin-framework-manager"
         response = self.client.get('/admin')

@@ -5,12 +5,12 @@ import mock
 import pytest
 from dmapiclient import HTTPError, APIError
 from dmapiclient.audit import AuditTypes
-from dmutils import api_stubs
 from dmutils.email.exceptions import EmailError
 from flask import current_app
 from freezegun import freeze_time
 from lxml import html
 
+from dmtestutils.api_model_stubs import FrameworkStub
 from dmtestutils.fixtures import valid_pdf_bytes
 
 from ...helpers import LoggedInApplicationTest, Response
@@ -22,7 +22,12 @@ class TestSuppliersListView(LoggedInApplicationTest):
         super().setup_method(method)
         self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
         self.data_api_client = self.data_api_client_patch.start()
-        self.data_api_client.find_frameworks.return_value = {'frameworks': [api_stubs.framework()['frameworks']]}
+        self.data_api_client.find_frameworks.return_value = {
+            'frameworks': [
+                FrameworkStub(slug='g-cloud-7', name='G-Cloud 7', id=1).response(),
+                FrameworkStub(slug='g-cloud-10', id=2).response()
+            ]
+        }
 
     def teardown_method(self, method):
         self.data_api_client_patch.stop()
@@ -95,8 +100,8 @@ class TestSuppliersListView(LoggedInApplicationTest):
         }
         self.data_api_client.find_frameworks.return_value = {
             'frameworks': [
-                api_stubs.framework(slug='g-cloud-7', framework_id=1)['frameworks'],
-                api_stubs.framework(slug='g-cloud-10', framework_id=2)['frameworks'],
+                FrameworkStub(slug='g-cloud-7', name='G-Cloud 7', id=1).response(),
+                FrameworkStub(slug='g-cloud-10', id=2).response(),
             ]
         }
         response = self.client.get('/admin/suppliers?supplier_name_prefix=foo')
@@ -136,14 +141,14 @@ class TestSuppliersListView(LoggedInApplicationTest):
 
     def test_agreements_template_only_lists_frameworks_that_we_care_about_in_reverse_order(self):
         interesting_frameworks = [
-            {'slug': 'digital-mash-2', 'name': 'Digital Mash 2', 'framework_id': 4},
-            {'slug': 'digital-mash-1', 'name': 'Digital Mash 1', 'framework_id': 2},
-            {'slug': 'sausage-cloud-1', 'name': 'Sausage Cloud 1', 'framework_id': 1},
-            {'slug': 'sausage-cloud-3', 'name': 'Sausage Cloud 3', 'framework_id': 5},
-            {'slug': 'sausage-cloud-2', 'name': 'Sausage Cloud 2', 'framework_id': 3},
+            {'slug': 'digital-mash-2', 'name': 'Digital Mash 2', 'id': 4},
+            {'slug': 'digital-mash-1', 'name': 'Digital Mash 1', 'id': 2},
+            {'slug': 'sausage-cloud-1', 'name': 'Sausage Cloud 1', 'id': 1},
+            {'slug': 'sausage-cloud-3', 'name': 'Sausage Cloud 3', 'id': 5},
+            {'slug': 'sausage-cloud-2', 'name': 'Sausage Cloud 2', 'id': 3},
         ]
         self.data_api_client.find_frameworks.return_value = {
-            'frameworks': [api_stubs.framework(**framework)['frameworks'] for framework in interesting_frameworks]
+            'frameworks': [FrameworkStub(**framework).response() for framework in interesting_frameworks]
         }
         self.user_role = 'admin-ccs-sourcing'
         self.data_api_client.find_suppliers.return_value = {
@@ -161,11 +166,11 @@ class TestSuppliersListView(LoggedInApplicationTest):
 
     def test_agreements_template_shows_down_and_upload_links_for_old_signing_flow_frameworks_only(self):
         interesting_frameworks = [
-            {'slug': 'sausage-cloud-1', 'name': 'Sausage Cloud 1', 'framework_id': 1},
-            {'slug': 'digital-mash-1', 'name': 'Digital Mash 1', 'framework_id': 2},
+            {'slug': 'sausage-cloud-1', 'name': 'Sausage Cloud 1', 'id': 1},
+            {'slug': 'digital-mash-1', 'name': 'Digital Mash 1', 'id': 2},
         ]
         self.data_api_client.find_frameworks.return_value = {
-            'frameworks': [api_stubs.framework(**framework)['frameworks'] for framework in interesting_frameworks]
+            'frameworks': [FrameworkStub(**framework).response() for framework in interesting_frameworks]
         }
         self.user_role = 'admin-ccs-sourcing'
         self.data_api_client.find_suppliers.return_value = {
@@ -190,9 +195,9 @@ class TestSuppliersListView(LoggedInApplicationTest):
     def test_agreements_template_does_not_show_coming_frameworks(self, status):
         self.data_api_client.find_frameworks.return_value = {
             'frameworks': [
-                api_stubs.framework(
+                FrameworkStub(
                     slug='sausage-cloud-1', name='Sausage Cloud 1', status=status
-                )['frameworks']
+                ).response()
             ]
         }
         self.user_role = 'admin-ccs-sourcing'
