@@ -52,7 +52,7 @@ def find_suppliers():
         suppliers = [data_api_client.get_supplier(request.args.get("supplier_id"))['suppliers']]
     else:
         suppliers = data_api_client.find_suppliers(
-            prefix=request.args.get("supplier_name_prefix"),
+            name=request.args.get("supplier_name"),
             duns_number=request.args.get("supplier_duns_number"),
             company_registration_number=request.args.get("supplier_company_registration_number"),
         )['suppliers']
