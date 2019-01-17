@@ -10,7 +10,7 @@ from flask import current_app
 from freezegun import freeze_time
 from lxml import html
 
-from dmtestutils.api_model_stubs import FrameworkStub
+from dmtestutils.api_model_stubs import FrameworkStub, SupplierStub
 from dmtestutils.fixtures import valid_pdf_bytes
 
 from ...helpers import LoggedInApplicationTest, Response
@@ -28,6 +28,10 @@ class TestSuppliersListView(LoggedInApplicationTest):
                 FrameworkStub(slug='g-cloud-10', id=2).response()
             ]
         }
+        self.data_api_client.find_suppliers.return_value = {
+            "suppliers": [SupplierStub(id=12345).response()],
+            "links": {"self": "http://localhost/suppliers"}
+        }
 
     def teardown_method(self, method):
         self.data_api_client_patch.stop()
@@ -42,9 +46,6 @@ class TestSuppliersListView(LoggedInApplicationTest):
     ])
     def test_supplier_list_is_shown_to_users_with_right_roles(self, role, expected_code):
         self.user_role = role
-        self.data_api_client.find_suppliers.return_value = {
-            "suppliers": [{"id": "12345"}]
-        }
         response = self.client.get('/admin/suppliers?supplier_name=foo')
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
@@ -57,9 +58,6 @@ class TestSuppliersListView(LoggedInApplicationTest):
     ])
     def test_services_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
-        self.data_api_client.find_suppliers.return_value = {
-            "suppliers": [{"id": "12345"}]
-        }
         response = self.client.get('/admin/suppliers?supplier_name=foo')
         data = response.get_data(as_text=True)
         link_is_visible = "Services" in data and "/admin/suppliers/12345/services" in data
@@ -75,9 +73,6 @@ class TestSuppliersListView(LoggedInApplicationTest):
     ])
     def test_change_name_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
-        self.data_api_client.find_suppliers.return_value = {
-            "suppliers": [{"id": "12345"}]
-        }
         response = self.client.get('/admin/suppliers?supplier_name=foo')
         data = response.get_data(as_text=True)
         link_is_visible = "Change name" in data and "/admin/suppliers/12345/edit/name" in data
@@ -92,12 +87,8 @@ class TestSuppliersListView(LoggedInApplicationTest):
         ("admin-ccs-sourcing", True),
         ("admin-framework-manager", False),
     ])
-    def test_declaration_and_agreement_links_visible_for_ccs_sourcing(self, role,
-                                                                      links_should_be_visible):
+    def test_declaration_and_agreement_links_visible_for_ccs_sourcing(self, role, links_should_be_visible):
         self.user_role = role
-        self.data_api_client.find_suppliers.return_value = {
-            "suppliers": [{"id": "12345"}]
-        }
         self.data_api_client.find_frameworks.return_value = {
             'frameworks': [
                 FrameworkStub(slug='g-cloud-7', name='G-Cloud 7', id=1).response(),
@@ -151,9 +142,6 @@ class TestSuppliersListView(LoggedInApplicationTest):
             'frameworks': [FrameworkStub(**framework).response() for framework in interesting_frameworks]
         }
         self.user_role = 'admin-ccs-sourcing'
-        self.data_api_client.find_suppliers.return_value = {
-            "suppliers": [{"id": "12345"}]
-        }
         with mock.patch('app.main.views.suppliers.OLDEST_INTERESTING_FRAMEWORK_SLUG', new='sausage-cloud-2'):
             response = self.client.get('/admin/suppliers?supplier_name=foo')
 
@@ -173,9 +161,6 @@ class TestSuppliersListView(LoggedInApplicationTest):
             'frameworks': [FrameworkStub(**framework).response() for framework in interesting_frameworks]
         }
         self.user_role = 'admin-ccs-sourcing'
-        self.data_api_client.find_suppliers.return_value = {
-            "suppliers": [{"id": "12345"}]
-        }
 
         with mock.patch('app.main.views.suppliers.OLDEST_INTERESTING_FRAMEWORK_SLUG', new='sausage-cloud-1'):
             with mock.patch('app.main.views.suppliers.OLD_SIGNING_FLOW_SLUGS', new=['sausage-cloud-1']):
@@ -201,9 +186,6 @@ class TestSuppliersListView(LoggedInApplicationTest):
             ]
         }
         self.user_role = 'admin-ccs-sourcing'
-        self.data_api_client.find_suppliers.return_value = {
-            "suppliers": [{"id": "12345"}]
-        }
 
         with mock.patch('app.main.views.suppliers.OLDEST_INTERESTING_FRAMEWORK_SLUG', new='sausage-cloud-1'):
             response = self.client.get('/admin/suppliers?supplier_name=foo')
@@ -234,9 +216,10 @@ class TestSuppliersListView(LoggedInApplicationTest):
     def test_should_list_suppliers(self):
         self.data_api_client.find_suppliers.return_value = {
             "suppliers": [
-                {"id": 1234, "name": "Supplier 1"},
-                {"id": 1235, "name": "Supplier 2"},
-            ]
+                SupplierStub(id=1234, name="Supplier 1").response(),
+                SupplierStub(id=1235, name="Supplier 2").response()
+            ],
+            "links": {}
         }
         self.data_api_client.get_supplier_framework_info.side_effect = [
             {"frameworkInterest": {"agreementPath": "path/the/first/1234-g7-agreement.pdf"}},
@@ -255,7 +238,7 @@ class TestSuppliersListView(LoggedInApplicationTest):
         self.client.get("/admin/suppliers?supplier_name=foo")
 
         self.data_api_client.find_suppliers.assert_called_once_with(
-            name="foo", duns_number=None, company_registration_number=None
+            name="foo", duns_number=None, company_registration_number=None, page=1
         )
 
     def test_should_search_by_duns_number(self):
@@ -263,7 +246,7 @@ class TestSuppliersListView(LoggedInApplicationTest):
         self.client.get("/admin/suppliers?supplier_duns_number=987654321")
 
         self.data_api_client.find_suppliers.assert_called_once_with(
-            name=None, duns_number="987654321", company_registration_number=None
+            name=None, duns_number="987654321", company_registration_number=None, page=1
         )
 
     def test_should_search_by_company_registration_number(self):
@@ -271,7 +254,7 @@ class TestSuppliersListView(LoggedInApplicationTest):
         self.client.get("/admin/suppliers?supplier_company_registration_number=11114444")
 
         self.data_api_client.find_suppliers.assert_called_once_with(
-            name=None, duns_number=None, company_registration_number="11114444"
+            name=None, duns_number=None, company_registration_number="11114444", page=1
         )
 
     def test_should_find_by_supplier_id(self):
