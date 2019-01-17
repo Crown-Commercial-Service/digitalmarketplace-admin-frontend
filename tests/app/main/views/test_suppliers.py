@@ -213,13 +213,18 @@ class TestSuppliersListView(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers')
         assert response.status_code == 404
 
-    def test_should_list_suppliers(self):
+    def test_should_list_suppliers_with_pagination(self):
         self.data_api_client.find_suppliers.return_value = {
             "suppliers": [
                 SupplierStub(id=1234, name="Supplier 1").response(),
                 SupplierStub(id=1235, name="Supplier 2").response()
             ],
-            "links": {}
+            "links": {
+                'prev': 'http://localhost/suppliers?page=1&name=foo',
+                'self': 'http://localhost/suppliers?page=2&name=foo',
+                'next': 'http://localhost/suppliers?page=3&name=foo',
+                'last': 'http://localhost/suppliers?page=99&name=foo',
+            }
         }
         self.data_api_client.get_supplier_framework_info.side_effect = [
             {"frameworkInterest": {"agreementPath": "path/the/first/1234-g7-agreement.pdf"}},
@@ -227,11 +232,37 @@ class TestSuppliersListView(LoggedInApplicationTest):
             HTTPError(Response(404)),                        # Supplier 1235 is not on G-Cloud 7
             {"frameworkInterest": {"agreementPath": "path/the/third/1235-dos-agreement.jpg"}},
         ]
-        response = self.client.get("/admin/suppliers")
+        response = self.client.get("/admin/suppliers?supplier_name=foo&page=2")
         document = html.fromstring(response.get_data(as_text=True))
 
         assert response.status_code == 200
         assert len(document.cssselect('.summary-item-row')) == 2
+
+        page_content = response.get_data(as_text=True)
+        assert 'Previous page' in page_content
+        assert 'Next page' in page_content
+        assert '/admin/suppliers?page=1&amp;supplier_name=foo' in page_content
+        assert '/admin/suppliers?page=3&amp;supplier_name=foo' in page_content
+
+    def test_should_list_suppliers_with_no_pagination_for_single_page_of_results(self):
+        self.data_api_client.find_suppliers.return_value = {
+            "suppliers": [
+                SupplierStub(id=1234, name="Supplier 1").response(),
+                SupplierStub(id=1235, name="Supplier 2").response()
+            ],
+            "links": {
+                'self': 'http://localhost/suppliers?name=foo',
+            }
+        }
+        self.data_api_client.get_supplier_framework_info.side_effect = [
+            {"frameworkInterest": {"agreementPath": "path/the/first/1234-g7-agreement.pdf"}},
+        ]
+        response = self.client.get("/admin/suppliers?supplier_name=foo")
+
+        assert response.status_code == 200
+        page_content = response.get_data(as_text=True)
+        assert 'Previous page' not in page_content
+        assert 'Next page' not in page_content
 
     def test_should_search_by_prefix(self):
         self.data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
