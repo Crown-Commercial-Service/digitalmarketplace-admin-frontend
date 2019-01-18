@@ -21,6 +21,7 @@ from flask_login import current_user
 from .. import main
 from ..auth import role_required
 from ..forms import EmailAddressForm, MoveUserForm
+from ..helpers.pagination import get_nav_args_from_api_response_links
 from ... import data_api_client, content_loader
 
 
@@ -50,12 +51,16 @@ OLD_SIGNING_FLOW_SLUGS = ['g-cloud-7', 'digital-outcomes-and-specialists']
 def find_suppliers():
     if request.args.get("supplier_id"):
         suppliers = [data_api_client.get_supplier(request.args.get("supplier_id"))['suppliers']]
+        links = {}
     else:
-        suppliers = data_api_client.find_suppliers(
-            prefix=request.args.get("supplier_name_prefix"),
+        suppliers_response = data_api_client.find_suppliers(
+            name=request.args.get("supplier_name"),
             duns_number=request.args.get("supplier_duns_number"),
             company_registration_number=request.args.get("supplier_company_registration_number"),
-        )['suppliers']
+            page=request.args.get("page", 1)  # API will validate page number values
+        )
+        suppliers = suppliers_response['suppliers']
+        links = suppliers_response["links"]
 
     frameworks = data_api_client.find_frameworks()['frameworks']
     try:
@@ -79,6 +84,8 @@ def find_suppliers():
         agreement_filename=AGREEMENT_FILENAME,
         interesting_frameworks=interesting_frameworks,
         old_flow_slugs=OLD_SIGNING_FLOW_SLUGS,
+        prev_link=get_nav_args_from_api_response_links(links, 'prev', request.args, ['supplier_name']),
+        next_link=get_nav_args_from_api_response_links(links, 'next', request.args, ['supplier_name']),
     )
 
 

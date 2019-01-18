@@ -30,4 +30,19 @@
       {% include "_view_suppliers_edit_list.html" %}
     {% endif %}
   </div>
+
+{%
+  with
+      previous_page = {
+          "url": url_for('.find_suppliers', **prev_link),
+          "title": "Previous page"
+      } if prev_link else None,
+      next_page = {
+          "url": url_for('.find_suppliers', **next_link),
+          "title": "Next page"
+      } if next_link else None
+%}
+  {% include "toolkit/previous-next-navigation.html" %}
+{% endwith %}
+
 {% endblock %}
