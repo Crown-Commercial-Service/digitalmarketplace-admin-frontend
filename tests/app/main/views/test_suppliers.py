@@ -238,11 +238,13 @@ class TestSuppliersListView(LoggedInApplicationTest):
         assert response.status_code == 200
         assert len(document.cssselect('.summary-item-row')) == 2
 
-        page_content = response.get_data(as_text=True)
-        assert 'Previous page' in page_content
-        assert 'Next page' in page_content
-        assert '/admin/suppliers?page=1&amp;supplier_name=foo' in page_content
-        assert '/admin/suppliers?page=3&amp;supplier_name=foo' in page_content
+        assert len(document.xpath("//a[normalize-space(string())='Previous page']")) == 1
+        assert len(document.xpath("//a[normalize-space(string())='Next page']")) == 1
+
+        prev_href = '/admin/suppliers?page=1&supplier_name=foo'
+        assert len(document.xpath('.//a[contains(@href,"{}")]'.format(prev_href))) == 1
+        next_href = '/admin/suppliers?page=3&supplier_name=foo'
+        assert len(document.xpath('.//a[contains(@href,"{}")]'.format(next_href))) == 1
 
     def test_should_list_suppliers_with_no_pagination_for_single_page_of_results(self):
         self.data_api_client.find_suppliers.return_value = {
@@ -260,9 +262,9 @@ class TestSuppliersListView(LoggedInApplicationTest):
         response = self.client.get("/admin/suppliers?supplier_name=foo")
 
         assert response.status_code == 200
-        page_content = response.get_data(as_text=True)
-        assert 'Previous page' not in page_content
-        assert 'Next page' not in page_content
+        document = html.fromstring(response.get_data(as_text=True))
+        assert len(document.xpath("//a[normalize-space(string())='Previous page']")) == 0
+        assert len(document.xpath("//a[normalize-space(string())='Next page']")) == 0
 
     def test_should_search_by_prefix(self):
         self.data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
