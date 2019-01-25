@@ -35,12 +35,20 @@ ADMIN_ROLES = [
 
 
 class AdminEmailAddressValidator(object):
-
     def __init__(self, message=None):
         self.message = message
 
     def __call__(self, form, field):
         if not data_api_client.email_is_valid_for_admin_user(field.data):
+            raise validators.StopValidation(self.message)
+
+
+class UserAccountDoesntAlreadyExistValidator(object):
+    def __init__(self, message=None):
+        self.message = message
+
+    def __call__(self, form, field):
+        if data_api_client.get_user(email_address=field.data) is not None:
             raise validators.StopValidation(self.message)
 
 
@@ -80,7 +88,8 @@ class InviteAdminForm(FlaskForm):
         validators=[
             validators.DataRequired(message='You must provide an email address'),
             validators.Email(message='Please enter a valid email address'),
-            AdminEmailAddressValidator(message='The email address must belong to an approved domain')
+            AdminEmailAddressValidator(message='The email address must belong to an approved domain'),
+            UserAccountDoesntAlreadyExistValidator("This email address already has a user account associated with it"),
         ]
     )
     role = DMRadioField(
