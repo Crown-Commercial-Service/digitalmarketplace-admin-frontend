@@ -3,6 +3,7 @@ import mock
 import pytest
 
 from dmapiclient import HTTPError
+from dmtestutils.mocking import assert_args_and_return
 
 from ...helpers import LoggedInApplicationTest, Response
 
@@ -241,47 +242,73 @@ class TestInviteAdminUserView(LoggedInApplicationTest):
         res = self.client.get('/admin/admin-users/invite')
         assert res.status_code == 200
 
-    def test_post_requires_email(self):
+    @mock.patch('app.main.views.admin_manager.send_user_account_email')
+    def test_post_requires_email(self, send_user_account_email):
         res = self.client.post('/admin/admin-users/invite', data={'role': 'admin'})
 
         assert res.status_code == 400
         assert self.get_validation_message(res) == "You must provide an email address"
+        assert send_user_account_email.called is False
 
-    def test_post_requires_valid_email(self):
+    @mock.patch('app.main.views.admin_manager.send_user_account_email')
+    def test_post_requires_valid_email(self, send_user_account_email):
         res = self.client.post(
             '/admin/admin-users/invite',
             data={'role': 'admin', 'email_address': 'not_a_valid_email'}
         )
         assert res.status_code == 400
         assert self.get_validation_message(res) == "Please enter a valid email address"
+        assert send_user_account_email.called is False
 
-    def test_post_requires_valid_admin_email(self):
+    @mock.patch('app.main.views.admin_manager.send_user_account_email')
+    def test_post_requires_valid_admin_email(self, send_user_account_email):
         self.data_api_client.email_is_valid_for_admin_user.return_value = False
         res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
 
         assert res.status_code == 400
         assert self.get_validation_message(res) == "The email address must belong to an approved domain"
+        assert send_user_account_email.called is False
 
-    def test_post_requires_role(self):
+    @mock.patch('app.main.views.admin_manager.send_user_account_email')
+    def test_email_address_with_existing_account_fails(self, send_user_account_email):
+        self.data_api_client.get_user.return_value = {"users": {"emailAddress": "test@test.com"}}
+        self.data_api_client.email_is_valid_for_admin_user.return_value = True
+        res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
+
+        assert res.status_code == 400
+        assert self.get_validation_message(res) == "This email address already has a user account associated with it"
+        assert self.data_api_client.get_user.mock_calls == [mock.call(email_address="test@test.com")]
+        send_user_account_email.called is False
+
+    @mock.patch('app.main.views.admin_manager.send_user_account_email')
+    def test_post_requires_role(self, send_user_account_email):
+        self.data_api_client.get_user.side_effect = assert_args_and_return(None, email_address='test@test.com')
         res = self.client.post('/admin/admin-users/invite', data={'email_address': 'test@test.com'})
         assert res.status_code == 400
         assert self.get_validation_message(res) == "You must choose a permission"
+        assert send_user_account_email.called is False
 
-    def test_post_requires_valid_role(self):
+    @mock.patch('app.main.views.admin_manager.send_user_account_email')
+    def test_post_requires_valid_role(self, send_user_account_email):
         """This case won't happen unless they mess with the post."""
+        self.data_api_client.get_user.side_effect = assert_args_and_return(None, email_address='test@test.com')
         res = self.client.post(
             '/admin/admin-users/invite',
             data={'email_address': 'test@test.com', 'role': 'not_a_valid_role'}
         )
         assert res.status_code == 400
         assert self.get_validation_message(res) == "Not a valid choice"
+        assert send_user_account_email.called is False
 
     @mock.patch('app.main.views.admin_manager.send_user_account_email')
     def test_successful_post_redirects(self, send_user_account_email):
+        self.data_api_client.get_user.side_effect = assert_args_and_return(None, email_address='test@test.com')
         self.data_api_client.email_is_valid_for_admin_user.return_value = True
         res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
         assert res.status_code == 302
         assert res.location == "http://localhost/admin/admin-users"
+        assert send_user_account_email.called is True
+        assert self.data_api_client.get_user.called is True
 
     @mock.patch('app.main.views.admin_manager.send_user_account_email')
     @pytest.mark.parametrize(
@@ -289,12 +316,16 @@ class TestInviteAdminUserView(LoggedInApplicationTest):
         ('admin', 'admin-ccs-sourcing', 'admin-ccs-category', 'admin-framework-manager', 'admin-ccs-data-controller')
     )
     def test_post_is_successful_for_valid_roles(self, send_user_account_email, role):
+        self.data_api_client.get_user.side_effect = assert_args_and_return(None, email_address='test@test.com')
         self.data_api_client.email_is_valid_for_admin_user.return_value = True
         res = self.client.post('/admin/admin-users/invite', data={'role': role, 'email_address': 'test@test.com'})
         assert res.status_code == 302
+        assert send_user_account_email.called is True
+        assert self.data_api_client.get_user.called is True
 
     @mock.patch('app.main.views.admin_manager.send_user_account_email')
     def test_successful_post_sends_email(self, send_user_account_email):
+        self.data_api_client.get_user.side_effect = assert_args_and_return(None, email_address='test@test.com')
         self.data_api_client.email_is_valid_for_admin_user.return_value = True
         res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
 
@@ -305,13 +336,16 @@ class TestInviteAdminUserView(LoggedInApplicationTest):
             '08ab7791-6038-4ad2-9560-740bbcb675b7',
             personalisation={'name': 'tester'}
         )
+        assert self.data_api_client.get_user.called is True
 
     @mock.patch('app.main.views.admin_manager.send_user_account_email')
     def test_successful_post_flashes(self, send_user_account_email):
+        self.data_api_client.get_user.side_effect = assert_args_and_return(None, email_address='test@test.com')
         self.data_api_client.email_is_valid_for_admin_user.return_value = True
         res = self.client.post('/admin/admin-users/invite', data={'role': 'admin', 'email_address': 'test@test.com'})
         assert res.status_code == 302
         self.assert_flashes('An invitation has been sent to test@test.com.')
+        assert self.data_api_client.get_user.called is True
 
 
 class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
