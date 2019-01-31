@@ -148,35 +148,11 @@ class TestIndex(LoggedInApplicationTest):
             "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
 
-    # TODO: merge old search page test with new combined search box
     @pytest.mark.parametrize("role, link_should_be_visible, expected_link_text", [
-        ("admin", True, "Edit supplier accounts or view services"),
-        ("admin-ccs-category", True, "Edit suppliers and services"),
-        ("admin-ccs-sourcing", True, "Edit supplier declarations"),
-        ("admin-framework-manager", True, "View suppliers and services"),
-        ("admin-manager", False, None),
-        ("admin-ccs-data-controller", False, None),
-    ])
-    def test_link_to_find_suppliers_and_services_page_is_shown_with_role_dependent_text(
-            self, role, link_should_be_visible, expected_link_text
-    ):
-        self.user_role = role
-        response = self.client.get('/admin')
-        document = html.fromstring(response.get_data(as_text=True))
-        link_is_visible = bool(document.xpath('.//a[@href="/admin/find-suppliers-and-services"]'))
-
-        assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
-        )
-        if link_should_be_visible:
-            link_text = document.xpath('.//a[@href="/admin/find-suppliers-and-services"]//text()')[0]
-            assert link_text == expected_link_text
-
-    @pytest.mark.parametrize("role, link_should_be_visible, expected_link_text", [
-        ("admin", False, None),
-        ("admin-ccs-category", False, None),
-        ("admin-ccs-sourcing", False, None),
-        ("admin-framework-manager", False, None),
+        ("admin", True, 'Edit supplier accounts or view services'),
+        ("admin-ccs-category", True, 'Edit suppliers and services'),
+        ("admin-ccs-sourcing", True, 'Edit supplier declarations'),
+        ("admin-framework-manager", True, 'View suppliers and services'),
         ("admin-manager", False, None),
         ("admin-ccs-data-controller", True, "View and edit suppliers"),
     ])
