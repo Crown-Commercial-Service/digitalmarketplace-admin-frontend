@@ -6,6 +6,8 @@
   {% set page_title = "Edit supplier declarations" %}
 {% elif current_user.role == "admin-framework-manager" %}
   {% set page_title = "View suppliers and services" %}
+{% elif current_user.role == "admin-ccs-data-controller" %}
+  {% set page_title = "Search for suppliers" %}
 {% endif %}
 
 {% extends "_base_page.html" %}
@@ -29,7 +31,7 @@
 
 {% block main_content %}
   {%
-    with heading = "Search for suppliers"
+    with heading = page_title
   %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
