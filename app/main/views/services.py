@@ -64,11 +64,11 @@ def view_service(service_id):
         service = data_api_client.get_service(service_id)
         if service is None:
             flash(NO_SERVICE_MESSAGE.format(service_id=service_id), 'error')
-            return redirect(url_for('.find_suppliers_and_services'))
+            return redirect(url_for('.search_suppliers_and_services'))
         service_data = service['services']
     except HTTPError:
         flash(API_ERROR_MESSAGE.format(service_id=service_id), 'error')
-        return redirect(url_for('.find_suppliers_and_services'))
+        return redirect(url_for('.search_suppliers_and_services'))
 
     # TODO remove `expired` from below. It's a temporary fix to allow access to DOS2 as it's expired.
     # we don't actually need the framework here; using this to 404 if framework for the service is not live
