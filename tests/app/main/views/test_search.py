@@ -39,24 +39,6 @@ class TestSearchSuppliersAndServices(LoggedInApplicationTest):
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
-    def test_forms_visible_for_ccs_data_controller_role(self):
-        self.user_role = 'admin-ccs-data-controller'
-        response = self.client.get('/admin/search')
-        document = html.fromstring(response.get_data(as_text=True))
-        question_headings = [heading.strip() for heading in document.xpath('//span[@class="question-heading"]/text()')]
-
-        header = document.xpath(
-            '//header[@class="page-heading page-heading-without-breadcrumb"]//h1/text()')[0].strip()
-
-        assert response.status_code == 200
-        assert header == "Search for suppliers"
-
-        # We test that we can find the relevant question headings as a proxy for finding the forms themselves
-        assert len(question_headings) == 3
-        assert "Find a supplier by name" in question_headings
-        assert "Find a supplier by DUNS number" in question_headings
-        assert "Find a supplier by company registration number" in question_headings
-
     @pytest.mark.parametrize(
         "role, supplier_name_form_should_exist, supplier_duns_form_should_exist, service_id_form_should_exist, "
         "company_reg_number_should_exist", [
