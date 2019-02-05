@@ -76,22 +76,14 @@ class TestUsersView(LoggedInApplicationTest):
 
         last_login = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[3].strip()
-        self.assertEquals('19:33:53', last_login)
-
-        last_login_day = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/text()')[4].strip()
-        self.assertEquals('23 July', last_login_day)
+        self.assertEquals('19:33 23-07-2015', last_login)
 
         last_password_changed = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/text()')[5].strip()
-        self.assertEquals('22:46:01', last_password_changed)
-
-        last_password_changed_day = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/text()')[6].strip()
-        self.assertEquals('29 June', last_password_changed_day)
+            '//tr[@class="summary-item-row"]//td/span/text()')[4].strip()
+        self.assertEquals('22:46 29-06-2015', last_password_changed)
 
         locked = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/text()')[7].strip()
+            '//tr[@class="summary-item-row"]//td/span/text()')[5].strip()
         self.assertEquals('No', locked)
 
         button = document.xpath(
