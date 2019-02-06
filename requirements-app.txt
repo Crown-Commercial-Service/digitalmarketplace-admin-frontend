@@ -6,9 +6,9 @@ Flask-Login==0.4.1
 Flask-WTF==0.14.2
 lxml==4.3.0
 
-# Putting upgrade on hold due to v1.0.0 using sha512 instead of sha1 by default
-itsdangerous==0.24  # pyup: <1.0.0
+itsdangerous==1.1.0
 
 git+https://github.com/alphagov/digitalmarketplace-content-loader.git@5.1.3#egg=digitalmarketplace-content-loader==5.1.3
 git+https://github.com/alphagov/digitalmarketplace-utils.git@45.0.2#egg=digitalmarketplace-utils==45.0.2
 git+https://github.com/alphagov/digitalmarketplace-apiclient.git@19.13.0#egg=digitalmarketplace-apiclient==19.13.0
+jk
