@@ -40,7 +40,7 @@
         }
     %}
       <p>
-        <a href="{{ url_for('.find_suppliers_and_services') }}">{{ find_supplier_and_services_link_text[current_user.role] }}</a>
+        <a href="{{ url_for('.search_suppliers_and_services') }}">{{ find_supplier_and_services_link_text[current_user.role] }}</a>
       </p>
 
     {% if current_user.has_any_role('admin') %}

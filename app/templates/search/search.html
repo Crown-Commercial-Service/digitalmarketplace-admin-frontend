@@ -6,6 +6,8 @@
   {% set page_title = "Edit supplier declarations" %}
 {% elif current_user.role == "admin-framework-manager" %}
   {% set page_title = "View suppliers and services" %}
+{% elif current_user.role == "admin-ccs-data-controller" %}
+  {% set page_title = "Search for suppliers" %}
 {% endif %}
 
 {% extends "_base_page.html" %}
@@ -29,7 +31,7 @@
 
 {% block main_content %}
   {%
-    with heading = "Search for suppliers"
+    with heading = page_title
   %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
@@ -130,6 +132,28 @@
                 {% endwith %}
               </form>
           </section>
+          {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager') %}
+          <section class="govuk-tabs__panel govuk-tabs__panel--hidden" id="service-id">
+            <form action="{{ url_for('.find_service') }}" method="get" class="question">
+              {%
+                with
+                question = "Find a service by service ID",
+                name = "service_id",
+                hint = "For example 123456789012345"
+              %}
+                {% include "toolkit/forms/textbox.html" %}
+              {% endwith %}
+              {%
+                with
+                type = "save",
+                name = "find_service_by_id_search",
+                label = "Search"
+              %}
+                {% include "toolkit/button.html" %}
+              {% endwith %}
+            </form>
+          </section>
+          {% endif %}
         </div>
 
 
