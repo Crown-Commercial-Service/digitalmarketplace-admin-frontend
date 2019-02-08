@@ -89,6 +89,71 @@ def find_suppliers():
     )
 
 
+@main.route("/suppliers/<int:supplier_id>", methods=["GET"])
+@role_required("admin-ccs-category", "admin-ccs-data-controller")
+def supplier_details(supplier_id):
+    def company_details_from_supplier(supplier):
+        return {
+            "duns_number": supplier.get("dunsNumber"),
+            "registration_number": (
+                supplier.get("companiesHouseNumber")
+                or
+                supplier.get("otherCompanyRegistrationNumber")
+            ),
+            "registered_name": supplier.get("registeredName"),
+            "address": {
+                "country": supplier.get("registrationCountry"),
+            }
+        }
+
+    def company_details_from_supplier_framework_declaration(declaration):
+        return {
+            "duns_number": declaration.get("supplierDunsNumber"),
+            "registration_number": declaration.get("supplierCompanyRegistrationNumber"),
+            "trading_name": declaration.get("supplierTradingName"),
+            "registered_name": declaration.get("supplierRegisteredName"),
+            "address": {
+                "street_address_line_1": declaration.get("supplierRegisteredBuilding"),
+                "locality": declaration.get("supplierRegisteredTown"),
+                "postcode": declaration.get("supplierRegisteredPostcode"),
+                "country": declaration.get("supplierRegisteredCountry"),
+            },
+        }
+
+    supplier = data_api_client.get_supplier(supplier_id)["suppliers"]
+    supplier_frameworks = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
+
+    for framework_interest in supplier_frameworks:
+        framework_interest["framework"] = \
+            data_api_client.get_framework(framework_interest["frameworkSlug"])["frameworks"]
+
+    supplier_frameworks = (
+        supplier_framework for supplier_framework in supplier_frameworks
+        if supplier_framework["framework"]["status"] in ["live", "expired"]
+    )
+    supplier_frameworks = sorted(
+        supplier_frameworks,
+        key=lambda supplier_framework: supplier_framework["framework"]["frameworkLiveAtUTC"]
+    )
+
+    if supplier_frameworks:
+        most_recent_framework_interest = supplier_frameworks[-1]
+        company_details = \
+            company_details_from_supplier_framework_declaration(most_recent_framework_interest["declaration"])
+    else:
+        most_recent_framework_interest = {}
+        company_details = company_details_from_supplier(supplier)
+
+    return render_template(
+        "supplier_details.html",
+        company_details=company_details,
+        most_recent_framework_interest=most_recent_framework_interest,
+        supplier=supplier,
+        supplier_id=supplier_id,
+        supplier_frameworks=supplier_frameworks,
+    )
+
+
 @main.route('/suppliers/<string:supplier_id>/edit/name', methods=['GET'])
 @role_required('admin', 'admin-ccs-category')
 def edit_supplier_name(supplier_id):

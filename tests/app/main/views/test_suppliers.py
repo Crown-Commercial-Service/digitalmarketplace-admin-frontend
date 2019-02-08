@@ -10,10 +10,174 @@ from flask import current_app
 from freezegun import freeze_time
 from lxml import html
 
-from dmtestutils.api_model_stubs import FrameworkStub, SupplierStub
+from dmtestutils.api_model_stubs import (
+    FrameworkStub,
+    SupplierStub,
+    SupplierFrameworkStub,
+)
 from dmtestutils.fixtures import valid_pdf_bytes
 
 from ...helpers import LoggedInApplicationTest, Response
+
+
+class TestSupplierDetailsView(LoggedInApplicationTest):
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.user_role = "admin-ccs-data-controller"
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def test_get_returns_404_if_supplier_id_is_invalid(self):
+        assert self.client.get("/admin/suppliers/invalid").status_code == 404
+        assert self.client.get("/admin/suppliers/-1").status_code == 404
+        self.data_api_client.get_supplier_frameworks.side_effect = HTTPError(Response(404))
+        assert self.client.get("/admin/suppliers/0").status_code == 404
+        self.data_api_client.get_supplier_frameworks.assert_called_with(0)
+
+    def test_successful_for_supplier_with_no_frameworks(self):
+        self.data_api_client.get_supplier_frameworks.return_value = {"frameworkInterest": []}
+        assert self.client.get("/admin/suppliers/1234").status_code == 200
+
+    @pytest.mark.parametrize(
+        "role, expected_status_code", (
+            ("admin", 403),
+            ("admin-ccs-category", 200),
+            ("admin-ccs-data-controller", 200),
+            ("admin-ccs-sourcing", 403),
+            ("admin-framework-manager", 403),
+            ("admin-manager", 403),
+        )
+    )
+    def test_is_shown_to_users_with_right_roles(self, role, expected_status_code):
+        self.user_role = role
+        status_code = self.client.get("/admin/suppliers/1234").status_code
+        assert status_code == expected_status_code, "Unexpected response {} for role {}".format(status_code, role)
+
+    @mock.patch("app.main.views.suppliers.render_template", return_value="")
+    def test_view_shows_company_details_from_suppliers_last_framework_declaration(self, render_template):
+        framework_interest = SupplierFrameworkStub(framework_slug="g-cloud-11").response()
+        framework_interest["declaration"]["supplierRegisteredPostcode"] = mock.sentinel.postcode
+
+        self.data_api_client.get_framework.side_effect = \
+            lambda s: FrameworkStub(stub=s, status="live").single_result_response()
+        self.data_api_client.get_supplier_frameworks.return_value = {
+            "frameworkInterest": [
+                SupplierFrameworkStub(framework_slug="g-cloud-10").response(),
+                SupplierFrameworkStub(framework_slug="digital-outcomes-and-specialists-3").response(),
+                framework_interest,
+            ]
+        }
+
+        self.client.get("/admin/suppliers/1234")
+        company_details = render_template.call_args[1]["company_details"]
+        assert (
+            company_details["address"]["postcode"]
+            ==
+            mock.sentinel.postcode
+        )
+
+    @mock.patch("app.main.views.suppliers.render_template", return_value="")
+    def test_if_no_declarations_show_account_company_details(self, render_template):
+        self.data_api_client.get_supplier_frameworks.return_value = {
+            "frameworkInterest": []
+        }
+
+        self.data_api_client.get_supplier.return_value = SupplierStub(
+            companiesHouseNumber=mock.sentinel.registration_number,
+            dunsNumber=mock.sentinel.duns_number,
+            registeredName=mock.sentinel.registered_name,
+            registrationCountry=mock.sentinel.country,
+        ).single_result_response()
+
+        self.client.get("/admin/suppliers/1234")
+        company_details = render_template.call_args[1]["company_details"]
+        assert company_details["address"]["country"] == mock.sentinel.country
+        assert company_details["duns_number"] == mock.sentinel.duns_number
+        assert company_details["registered_name"] == mock.sentinel.registered_name
+        assert company_details["registration_number"] == mock.sentinel.registration_number
+
+
+class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.user_role = "admin-ccs-data-controller"
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+        self.data_api_client.get_supplier_frameworks.return_value = {
+            "frameworkInterest": [
+                SupplierFrameworkStub(framework_slug="g-cloud-10").response(),
+                SupplierFrameworkStub(framework_slug="digital-outcomes-and-specialists-3").response(),
+                SupplierFrameworkStub(framework_slug="g-cloud-11").response(),
+            ]
+        }
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    @mock.patch("app.main.views.suppliers.render_template", return_value="")
+    def test_supplier_frameworks_includes_live_and_expired_frameworks_only(self, render_template):
+        self.data_api_client.get_framework.side_effect = {
+            "g-cloud-10":
+                FrameworkStub(
+                    status="live",
+                ).single_result_response(),
+            "digital-outcomes-and-specialists-3":
+                FrameworkStub(
+                    status="expired",
+                ).single_result_response(),
+            "g-cloud-11":
+                FrameworkStub(
+                    status="coming",
+                ).single_result_response(),
+        }.__getitem__
+
+        self.client.get("/admin/suppliers/1234")
+        supplier_frameworks = render_template.call_args[1]["supplier_frameworks"]
+        supplier_framework_slugs = [d["frameworkSlug"] for d in supplier_frameworks]
+
+        assert "digital-outcomes-and-specialists-3" in supplier_framework_slugs
+        assert "g-cloud-10" in supplier_framework_slugs
+        assert "g-cloud-11" not in supplier_framework_slugs
+
+    @mock.patch("app.main.views.suppliers.render_template", return_value="")
+    def test_supplier_frameworks_are_ordered_by_live_date(self, render_template):
+        self.data_api_client.get_framework.side_effect = {
+            "g-cloud-10":
+                FrameworkStub(
+                    frameworkLiveAtUTC="c",
+                    status="live",
+                ).single_result_response(),
+            "digital-outcomes-and-specialists-3":
+                FrameworkStub(
+                    frameworkLiveAtUTC="a",
+                    status="live",
+                ).single_result_response(),
+            "g-cloud-11":
+                FrameworkStub(
+                    frameworkLiveAtUTC="b",
+                    status="live",
+                ).single_result_response(),
+        }.__getitem__
+
+        self.client.get("/admin/suppliers/1234")
+        supplier_frameworks = render_template.call_args[1]["supplier_frameworks"]
+
+        assert (
+            [d["frameworkSlug"] for d in supplier_frameworks]
+            ==
+            [
+                "digital-outcomes-and-specialists-3",
+                "g-cloud-11",
+                "g-cloud-10",
+            ]
+        )
 
 
 class TestSuppliersListView(LoggedInApplicationTest):
@@ -68,7 +232,8 @@ class TestSuppliersListView(LoggedInApplicationTest):
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
         ("admin", True),
-        ("admin-ccs-category", True),
+        ("admin-ccs-category", False),
+        ("admin-ccs-data-controller", False),
         ("admin-framework-manager", False),
     ])
     def test_change_name_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
@@ -76,6 +241,22 @@ class TestSuppliersListView(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers?supplier_name=foo')
         data = response.get_data(as_text=True)
         link_is_visible = "Change name" in data and "/admin/suppliers/12345/edit/name" in data
+
+        assert link_is_visible is link_should_be_visible, (
+            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+        )
+
+    @pytest.mark.parametrize("role, link_should_be_visible", [
+        ("admin", False),
+        ("admin-ccs-category", True),
+        ("admin-ccs-data-controller", True),
+        ("admin-framework-manager", False),
+    ])
+    def test_details_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
+        self.user_role = role
+        response = self.client.get('/admin/suppliers?supplier_name=foo')
+        data = response.get_data(as_text=True)
+        link_is_visible = "Details" in data and "/admin/suppliers/12345" in data
 
         assert link_is_visible is link_should_be_visible, (
             "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")

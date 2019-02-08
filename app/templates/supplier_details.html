@@ -1,0 +1,61 @@
+{% extends "_base_page.html" %}
+{% import "toolkit/summary-table.html" as summary %}
+
+{% block page_title %}
+  {{ supplier.name }} - Digital Marketplace admin
+{% endblock %}
+
+{% block breadcrumb %}
+  {%
+    with items = [
+      {
+        "link": url_for(".index"),
+        "label": "Admin home"
+      },
+      {
+        "label": supplier.name
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+
+  {%
+    with heading = supplier.name
+  %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+
+  {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-data-controller') %}
+  <p><a href="{{ url_for('.edit_supplier_name', supplier_id=supplier_id) }}">Edit supplier name</a></p>
+  {% endif %}
+
+  <div class="grid-row">
+    <div class="column-two-thirds">
+      {{ summary.heading("Company details") }}
+      {% with
+        caption = 'Company details for {}'.format(most_recent_framework_interest.framework.name) if most_recent_framework_interest else 'Company details'
+      %}
+        {% include "suppliers/_company_details_table.html" %}
+      {% endwith %}
+    </div>
+  </div>
+
+  <div class="grid-row">
+    <div class="column-one-whole">
+      {{ summary.heading("Frameworks") }}
+      {% include "suppliers/_frameworks_table.html" %}
+    </div>
+  </div>
+
+  <div class="grid-row">
+    <div class="column-one-whole">
+      {{ summary.heading("Users") }}
+      <a href="{{ url_for('.find_supplier_users', supplier_id=supplier_id) }}">Users</a>
+    </div>
+  </div>
+
+{% endblock %}
