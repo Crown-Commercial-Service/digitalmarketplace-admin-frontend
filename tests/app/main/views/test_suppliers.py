@@ -232,31 +232,23 @@ class TestSuppliersListView(LoggedInApplicationTest):
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
         ("admin", True),
-        ("admin-ccs-category", False),
-        ("admin-ccs-data-controller", False),
-        ("admin-framework-manager", False),
-    ])
-    def test_change_name_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
-        self.user_role = role
-        response = self.client.get('/admin/suppliers?supplier_name=foo')
-        data = response.get_data(as_text=True)
-        link_is_visible = "Change name" in data and "/admin/suppliers/12345/edit/name" in data
-
-        assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
-        )
-
-    @pytest.mark.parametrize("role, link_should_be_visible", [
-        ("admin", False),
         ("admin-ccs-category", True),
         ("admin-ccs-data-controller", True),
-        ("admin-framework-manager", False),
+        ("admin-framework-manager", True),
+        ("admin-ccs-sourcing", False),
+        ("admin-manager", False),
     ])
     def test_details_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
         response = self.client.get('/admin/suppliers?supplier_name=foo')
-        data = response.get_data(as_text=True)
-        link_is_visible = "Details" in data and "/admin/suppliers/12345" in data
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        expected_link_text = "My Little Company"
+        expected_href = '/admin/suppliers/12345'
+        expected_link = document.xpath('.//a[contains(@href,"{}")]'.format(expected_href))
+
+        link_is_visible = len(expected_link) > 0 and expected_link[0].text == expected_link_text
 
         assert link_is_visible is link_should_be_visible, (
             "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
