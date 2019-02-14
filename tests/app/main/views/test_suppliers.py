@@ -45,11 +45,11 @@ class TestSupplierDetailsView(LoggedInApplicationTest):
 
     @pytest.mark.parametrize(
         "role, expected_status_code", (
-            ("admin", 403),
+            ("admin", 200),
             ("admin-ccs-category", 200),
             ("admin-ccs-data-controller", 200),
             ("admin-ccs-sourcing", 403),
-            ("admin-framework-manager", 403),
+            ("admin-framework-manager", 200),
             ("admin-manager", 403),
         )
     )
@@ -57,6 +57,29 @@ class TestSupplierDetailsView(LoggedInApplicationTest):
         self.user_role = role
         status_code = self.client.get("/admin/suppliers/1234").status_code
         assert status_code == expected_status_code, "Unexpected response {} for role {}".format(status_code, role)
+
+    @pytest.mark.parametrize(
+        "role, link_should_be_visible", (
+            ("admin", True),
+            ("admin-ccs-category", True),
+            ("admin-ccs-data-controller", True),
+            ("admin-framework-manager", False),
+        )
+    )
+    def test_edit_supplier_name_link_shown_to_users_with_right_roles(self, role, link_should_be_visible):
+        self.user_role = role
+        response = self.client.get("/admin/suppliers/1234")
+        document = html.fromstring(response.get_data(as_text=True))
+
+        expected_link_text = "Edit supplier name"
+        expected_href = '/admin/suppliers/1234/edit/name'
+        expected_link = document.xpath('.//a[contains(@href,"{}")]'.format(expected_href))
+
+        link_is_visible = len(expected_link) > 0 and expected_link[0].text == expected_link_text
+
+        assert link_is_visible is link_should_be_visible, (
+            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+        )
 
     @mock.patch("app.main.views.suppliers.render_template", return_value="")
     def test_view_shows_company_details_from_suppliers_last_framework_declaration(self, render_template):
@@ -487,6 +510,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         ("admin", 200),
         ("admin-ccs-category", 200),
         ("admin-ccs-sourcing", 403),
+        ("admin-ccs-data-controller", 200),
         ("admin-framework-manager", 200),
         ("admin-manager", 403),
     ])
@@ -500,6 +524,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         ("admin", True),
         ("admin-ccs-category", False),
         ("admin-framework-manager", False),
+        ("admin-ccs-data-controller", False),
     ])
     def test_supplier_users_only_editable_for_users_with_right_roles(self, role, can_edit):
         self.user_role = role
@@ -732,6 +757,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         ("admin", 200),
         ("admin-ccs-category", 200),
         ("admin-ccs-sourcing", 403),
+        ("admin-ccs-data-controller", 200),
         ("admin-framework-manager", 200),
         ("admin-manager", 403),
     ])
@@ -745,6 +771,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
     @pytest.mark.parametrize("role, can_edit", [
         ("admin", False),
         ("admin-ccs-category", True),
+        ("admin-ccs-data-controller", False),
         ("admin-framework-manager", False),
     ])
     def test_supplier_services_only_category_users_can_edit(self, role, can_edit):
@@ -763,6 +790,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
     @pytest.mark.parametrize("role, can_edit", [
         ("admin", False),
         ("admin-ccs-category", True),
+        ("admin-ccs-data-controller", False),
         ("admin-framework-manager", False),
     ])
     def test_only_category_users_can_unsuspend_all_services(self, role, can_edit):
@@ -1243,7 +1271,7 @@ class TestUpdatingSupplierName(LoggedInApplicationTest):
         self.data_api_client_patch.stop()
         super().teardown_method(method)
 
-    @pytest.mark.parametrize("allowed_role", ["admin", "admin-ccs-category"])
+    @pytest.mark.parametrize("allowed_role", ["admin", "admin-ccs-category", "admin-ccs-data-controller"])
     def test_admin_and_ccs_category_roles_can_update_supplier_name(self, allowed_role):
         self.user_role = allowed_role
         self.data_api_client.get_supplier.return_value = {"suppliers": {"id": 1234, "name": "Something Old"}}
@@ -1464,6 +1492,7 @@ class TestDownloadAgreementFile(LoggedInApplicationTest):
         ("admin", 403),
         ("admin-ccs-category", 302),
         ("admin-ccs-sourcing", 302),
+        ("admin-ccs-data-controller", 302),
         ("admin-framework-manager", 302),
         ("admin-manager", 403),
     ])
@@ -1983,6 +2012,7 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
         ("admin", 403),
         ("admin-ccs-category", 200),
         ("admin-ccs-sourcing", 200),
+        ("admin-ccs-data-controller", 200),
         ("admin-framework-manager", 200),
         ("admin-manager", 403),
     ])

@@ -221,6 +221,7 @@ class TestListAgreements(LoggedInApplicationTest):
         ("admin", 403),
         ("admin-ccs-category", 200),
         ("admin-ccs-sourcing", 200),
+        ("admin-ccs-data-controller", 200),
         ("admin-framework-manager", 200),
         ("admin-manager", 403),
     ])
@@ -387,6 +388,7 @@ class TestNextAgreementRedirect(LoggedInApplicationTest):
         ("admin", 403),
         ("admin-ccs-category", 302),
         ("admin-ccs-sourcing", 302),
+        ("admin-ccs-data-controller", 302),
         ("admin-framework-manager", 302),
         ("admin-manager", 403),
     ])
