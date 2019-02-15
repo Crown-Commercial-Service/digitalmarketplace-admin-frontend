@@ -9,7 +9,7 @@
     "colors": "1.1.2",
     "del": "1.2.0",
     "digitalmarketplace-frameworks": "https://github.com/alphagov/digitalmarketplace-frameworks.git#v13.1.0",
-    "digitalmarketplace-frontend-toolkit": "https://github.com/alphagov/digitalmarketplace-frontend-toolkit.git#v31.9.0",
+    "digitalmarketplace-frontend-toolkit": "https://github.com/alphagov/digitalmarketplace-frontend-toolkit.git#v31.10.0",
     "govuk-elements-sass": "3.0.3",
     "govuk-frontend": "^2.4.0",
     "govuk_frontend_toolkit": "5.0.3",
