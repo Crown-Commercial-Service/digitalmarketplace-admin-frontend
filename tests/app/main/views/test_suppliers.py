@@ -1978,11 +1978,12 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
             assert len(document.xpath('//p[contains(text(), "Uploader Name")]')) == 1
             assert len(document.xpath('//span[contains(text(), "uploader@email.com")]')) == 1
 
-    def test_should_404_if_no_signed_url(self, s3):
+    def test_should_show_error_message_if_no_signed_url(self, s3):
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
             mock_get_url.return_value = None
             response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
-            assert response.status_code == 404
+            assert response.status_code == 200
+            assert 'Agreement file not available' in response.get_data(as_text=True)
 
     def test_should_embed_for_pdf_file(self, s3):
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:

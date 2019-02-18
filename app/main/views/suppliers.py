@@ -232,7 +232,7 @@ def view_signed_agreement(supplier_id, framework_slug):
     path = supplier_framework['agreementPath']
     url = get_signed_url(agreements_bucket, path, current_app.config['DM_ASSETS_URL'])
     if not url:
-        abort(404)
+        current_app.logger.info(f'No agreement file found for {path}')
     return render_template(
         "suppliers/view_signed_agreement.html",
         supplier=supplier,
