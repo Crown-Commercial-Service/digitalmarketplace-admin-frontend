@@ -1280,7 +1280,7 @@ class TestUpdatingSupplierName(LoggedInApplicationTest):
             data={'new_supplier_name': 'Something New'}
         )
         assert response.status_code == 302
-        assert response.location == 'http://localhost/admin/suppliers?supplier_id=1234'
+        assert response.location == 'http://localhost/admin/suppliers/1234'
         self.data_api_client.update_supplier.assert_called_once_with(
             1234, {'name': "Something New"}, "test@example.com"
         )
