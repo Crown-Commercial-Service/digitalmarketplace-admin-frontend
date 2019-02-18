@@ -14,7 +14,11 @@
               "label": "Admin home"
           },
           {
-              "label": supplier.name
+              "label": supplier.name,
+              "link": url_for('.supplier_details', supplier_id=supplier.id)
+          },
+          {
+              "label": "Users"
           }
       ]
   %}
