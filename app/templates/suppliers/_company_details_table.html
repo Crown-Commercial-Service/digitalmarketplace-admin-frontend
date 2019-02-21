@@ -1,0 +1,38 @@
+{% import "toolkit/summary-table.html" as summary %}
+
+{% with %}
+  {% set address_value %}
+    {% if company_details.address %}
+      {%
+        with
+        street_address_line_1 = company_details.address.street_address_line_1,
+        street_address_line_2 = company_details.address.street_address_line_2,
+        locality = company_details.address.locality,
+        postcode = company_details.address.postcode,
+        country = company_details.address.country|sub_country_codes
+      %}
+        {% include "toolkit/contact-details.html" %}
+      {% endwith %}
+    {% else %}
+      {{ company_details.address }}
+    {% endif %}
+  {% endset %}
+
+  {%
+    call(item)
+      summary.list_table(
+        [
+          {"name": "Company registered name", "value": company_details.registered_name},
+          {"name": "Company registration number", "value": company_details.registration_number},
+          {"name": "DUNS Number", "value": company_details.duns_number},
+          {"name": "Address", "value": address_value}
+        ],
+        caption=caption,
+      )
+  %}
+    {% call summary.row() %}
+      <td class="summary-item-field-heading-custom" scope="row"><strong><span>{{item.name}}</span></strong></td>
+      {{ summary.text(item.value or "None") }}
+    {% endcall %}
+  {% endcall %}
+{% endwith %}

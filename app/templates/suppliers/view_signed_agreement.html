@@ -135,10 +135,14 @@
   </div>
 
   <div class="column-two-thirds">
-      {% if agreement_ext == '.pdf' %}
-          <embed src="{{ agreement_url }}" class="border-image" height="930" type="application/pdf">
+      {% if agreement_url %}
+          {% if agreement_ext == '.pdf' %}
+              <embed src="{{ agreement_url }}" class="border-image" height="930" type="application/pdf">
+          {% else %}
+              <img src="{{ agreement_url }}" class="border-image" >
+          {% endif %}
       {% else %}
-          <img src="{{ agreement_url }}" class="border-image" >
+            <p>Agreement file not available.</p>
       {% endif %}
   </div>
 {% endblock %}
