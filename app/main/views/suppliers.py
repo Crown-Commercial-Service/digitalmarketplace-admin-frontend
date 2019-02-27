@@ -138,10 +138,13 @@ def supplier_details(supplier_id):
 
     if supplier_frameworks:
         most_recent_framework_interest = supplier_frameworks[-1]
+    else:
+        most_recent_framework_interest = {}
+
+    if most_recent_framework_interest.get("declaration"):
         company_details = \
             company_details_from_supplier_framework_declaration(most_recent_framework_interest["declaration"])
     else:
-        most_recent_framework_interest = {}
         company_details = company_details_from_supplier(supplier)
 
     return render_template(

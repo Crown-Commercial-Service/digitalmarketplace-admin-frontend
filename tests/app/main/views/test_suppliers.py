@@ -28,6 +28,10 @@ class TestSupplierDetailsView(LoggedInApplicationTest):
         self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
         self.data_api_client = self.data_api_client_patch.start()
 
+        # common mock responses
+        self.data_api_client.get_framework.side_effect = \
+            lambda s: FrameworkStub(stub=s, status="live").single_result_response()
+
     def teardown_method(self, method):
         self.data_api_client_patch.stop()
         super().teardown_method(method)
@@ -86,8 +90,6 @@ class TestSupplierDetailsView(LoggedInApplicationTest):
         framework_interest = SupplierFrameworkStub(framework_slug="g-cloud-11").response()
         framework_interest["declaration"]["supplierRegisteredPostcode"] = mock.sentinel.postcode
 
-        self.data_api_client.get_framework.side_effect = \
-            lambda s: FrameworkStub(stub=s, status="live").single_result_response()
         self.data_api_client.get_supplier_frameworks.return_value = {
             "frameworkInterest": [
                 SupplierFrameworkStub(framework_slug="g-cloud-10").response(),
@@ -123,6 +125,22 @@ class TestSupplierDetailsView(LoggedInApplicationTest):
         assert company_details["duns_number"] == mock.sentinel.duns_number
         assert company_details["registered_name"] == mock.sentinel.registered_name
         assert company_details["registration_number"] == mock.sentinel.registration_number
+
+    @mock.patch("app.main.views.suppliers.render_template", return_value="")
+    def test_if_most_recent_framework_has_no_declaration_show_account_company_details(self, render_template):
+        self.data_api_client.get_supplier_frameworks.return_value = {
+            "frameworkInterest": [
+                SupplierFrameworkStub(framework_slug="g-cloud-6", declaration=None).response(),
+            ]
+        }
+
+        self.data_api_client.get_supplier.return_value = SupplierStub(
+            dunsNumber=mock.sentinel.duns_number,
+        ).single_result_response()
+
+        self.client.get("/admin/suppliers/1234")
+        company_details = render_template.call_args[1]["company_details"]
+        assert company_details["duns_number"] == mock.sentinel.duns_number
 
 
 class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
