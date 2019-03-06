@@ -90,7 +90,8 @@ def find_suppliers():
 
 
 @main.route("/suppliers/<int:supplier_id>", methods=["GET"])
-@role_required("admin", "admin-ccs-category", "admin-ccs-data-controller", "admin-framework-manager")
+@role_required("admin", "admin-ccs-category", "admin-ccs-data-controller", "admin-framework-manager",
+               "admin-ccs-sourcing")
 def supplier_details(supplier_id):
     def company_details_from_supplier(supplier):
         return {

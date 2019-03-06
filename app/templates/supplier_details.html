@@ -51,11 +51,13 @@
     </div>
   </div>
 
+  {% if not current_user.has_role('admin-ccs-sourcing') %}
   <div class="grid-row">
     <div class="column-one-whole">
       {{ summary.heading("Users") }}
       <a href="{{ url_for('.find_supplier_users', supplier_id=supplier_id) }}">Users</a>
     </div>
   </div>
+  {% endif %}
 
 {% endblock %}
