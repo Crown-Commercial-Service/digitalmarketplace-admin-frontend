@@ -1239,7 +1239,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         assert self.data_api_client.get_framework.call_args_list == []
 
     def test_should_404_if_framework_does_not_exist(self):
@@ -1248,7 +1248,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_with('1234')
+        self.data_api_client.get_supplier.assert_called_with(1234)
         self.data_api_client.get_framework.assert_called_with('g-cloud-7')
 
     def test_should_not_404_if_declaration_does_not_exist(self):
@@ -1257,9 +1257,9 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
         assert response.status_code == 200
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         self.data_api_client.get_framework.assert_called_once_with('g-cloud-7')
-        self.data_api_client.get_supplier_declaration.assert_called_once_with('1234', 'g-cloud-7')
+        self.data_api_client.get_supplier_declaration.assert_called_once_with(1234, 'g-cloud-7')
 
     def test_should_show_declaration(self):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
@@ -1312,7 +1312,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         assert self.data_api_client.get_framework.call_args_list == []
 
     def test_should_404_if_framework_does_not_exist(self):
@@ -1321,7 +1321,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         self.data_api_client.get_framework.assert_called_once_with('g-cloud-7')
 
     def test_should_404_if_section_does_not_exist(self):
@@ -1337,9 +1337,9 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
 
         assert response.status_code == 200
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         self.data_api_client.get_framework.assert_called_once_with('g-cloud-7')
-        self.data_api_client.get_supplier_declaration.assert_called_once_with('1234', 'g-cloud-7')
+        self.data_api_client.get_supplier_declaration.assert_called_once_with(1234, 'g-cloud-7')
 
     def test_should_prefill_form_with_declaration(self):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
@@ -1360,7 +1360,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         declaration['SQC3'] = None
 
         self.data_api_client.set_supplier_declaration.assert_called_once_with(
-            '1234', 'g-cloud-7', declaration, 'test@example.com')
+            1234, 'g-cloud-7', declaration, 'test@example.com')
 
 
 @mock.patch('app.main.views.suppliers.download_agreement_file')
@@ -1383,7 +1383,7 @@ class TestDownloadSignedAgreementFile(LoggedInApplicationTest):
         # Mock out a response from download_agreement_file() - we don't care what it is
         download_agreement_file.side_effect = HTTPError(Response(404))
         self.client.get('/admin/suppliers/1234/agreement/g-cloud-7')
-        download_agreement_file.assert_called_once_with('1234', 'g-cloud-7', 'signed-agreement-file.pdf')
+        download_agreement_file.assert_called_once_with(1234, 'g-cloud-7', 'signed-agreement-file.pdf')
 
 
 @mock.patch('app.main.views.suppliers.s3')
@@ -1629,7 +1629,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             audit_type=AuditTypes.upload_countersigned_agreement,
             user='test@example.com',
             object_type='suppliers',
-            object_id=u'1234',
+            object_id=1234,
             data={'upload_countersigned_agreement': expected_countersign_path}
         )
 
@@ -1678,7 +1678,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             audit_type=AuditTypes.upload_countersigned_agreement,
             user='test@example.com',
             object_type='suppliers',
-            object_id=u'1234',
+            object_id=1234,
             data={
                 'upload_countersigned_agreement':
                     'g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf'}
@@ -1739,7 +1739,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             audit_type=AuditTypes.upload_countersigned_agreement,
             user='test@example.com',
             object_type='suppliers',
-            object_id=u'1234',
+            object_id=1234,
             data={
                 'upload_countersigned_agreement':
                     'g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf'
@@ -1837,7 +1837,7 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_with('1234')
+        self.data_api_client.get_supplier.assert_called_with(1234)
         assert self.data_api_client.get_framework.call_args_list == []
 
     def test_should_404_if_framework_does_not_exist(self, s3):
@@ -1846,7 +1846,7 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         self.data_api_client.get_framework.assert_called_once_with('g-cloud-8')
 
     def test_should_404_if_agreement_not_returned(self, s3):
@@ -1856,16 +1856,16 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         self.data_api_client.get_framework.assert_called_once_with('g-cloud-8')
-        self.data_api_client.get_supplier_framework_info.assert_called_once_with('1234', 'g-cloud-8')
+        self.data_api_client.get_supplier_framework_info.assert_called_once_with(1234, 'g-cloud-8')
 
     def test_should_404_if_agreement_has_no_version(self, s3):
         self.data_api_client.get_framework.return_value = {'frameworks': {}}
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         self.data_api_client.get_framework.assert_called_once_with('g-cloud-8')
 
     def test_should_show_agreement_details_on_page(self, s3):
