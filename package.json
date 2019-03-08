@@ -8,7 +8,7 @@
     "c3": "0.4.11",
     "colors": "1.1.2",
     "del": "1.2.0",
-    "digitalmarketplace-frameworks": "https://github.com/alphagov/digitalmarketplace-frameworks.git#v13.1.0",
+    "digitalmarketplace-frameworks": "https://github.com/alphagov/digitalmarketplace-frameworks.git#v15.0.3",
     "digitalmarketplace-frontend-toolkit": "https://github.com/alphagov/digitalmarketplace-frontend-toolkit.git#v31.10.0",
     "govuk-elements-sass": "3.0.3",
     "govuk-frontend": "^2.4.0",
