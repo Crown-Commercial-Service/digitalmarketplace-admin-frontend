@@ -5,7 +5,7 @@
 Flask==1.0.2
 Flask-Login==0.4.1
 Flask-WTF==0.14.2
-lxml==4.3.1
+lxml==4.3.2
 
 # Putting upgrade on hold due to v1.0.0 using sha512 instead of sha1 by default
 itsdangerous==0.24  # pyup: <1.0.0
@@ -18,8 +18,8 @@ git+https://github.com/alphagov/digitalmarketplace-apiclient.git@19.13.0#egg=dig
 asn1crypto==0.24.0
 boto3==1.7.83
 botocore==1.10.84
-certifi==2018.11.29
-cffi==1.11.5
+certifi==2019.3.9
+cffi==1.12.2
 chardet==3.0.4
 Click==7.0
 contextlib2==0.5.5
@@ -34,10 +34,10 @@ govuk-country-register==0.2.2
 idna==2.8
 inflection==0.3.1
 Jinja2==2.10
-jmespath==0.9.3
+jmespath==0.9.4
 mailchimp3==3.0.6
 Markdown==2.6.11
-MarkupSafe==1.1.0
+MarkupSafe==1.1.1
 monotonic==1.5
 notifications-python-client==5.3.0
 odfpy==1.4.0
