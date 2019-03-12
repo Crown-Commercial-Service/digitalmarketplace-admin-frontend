@@ -24,11 +24,7 @@
   {% endwith %}
 
   <div class="page-section">
-    {% if current_user.has_role("admin-ccs-sourcing") %}
-      {% include "_view_suppliers_agreements.html" %}
-    {% else %}
       {% include "_view_suppliers_edit_list.html" %}
-    {% endif %}
   </div>
 
 {%

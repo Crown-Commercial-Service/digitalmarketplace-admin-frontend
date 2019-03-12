@@ -1,9 +1,10 @@
 {% set field_headings = [
+  "Supplier Name"
+] if current_user.has_role('admin-ccs-sourcing') else [
   "Supplier Name",
   summary.hidden_field_heading("Users"),
   summary.hidden_field_heading("Services")
-]
-%}
+] %}
 
 {% call(item) summary.list_table(
   suppliers,
@@ -15,8 +16,10 @@
 
   {% call summary.row() %}
     {{ summary.service_link(item.name, url_for(".supplier_details", supplier_id=item.id)) }}
-    {{ summary.edit_link("Users", url_for(".find_supplier_users", supplier_id=item.id)) }}
-    {{ summary.edit_link("Services", url_for(".find_supplier_services", supplier_id=item.id)) }}
+    {% if not current_user.has_role('admin-ccs-sourcing') %}
+      {{ summary.edit_link("Users", url_for(".find_supplier_users", supplier_id=item.id)) }}
+      {{ summary.edit_link("Services", url_for(".find_supplier_services", supplier_id=item.id)) }}
+    {% endif %}
   {% endcall %}
 
 {% endcall %}

@@ -90,7 +90,8 @@ def find_suppliers():
 
 
 @main.route("/suppliers/<int:supplier_id>", methods=["GET"])
-@role_required("admin", "admin-ccs-category", "admin-ccs-data-controller", "admin-framework-manager")
+@role_required("admin", "admin-ccs-category", "admin-ccs-data-controller", "admin-framework-manager",
+               "admin-ccs-sourcing")
 def supplier_details(supplier_id):
     def company_details_from_supplier(supplier):
         return {
@@ -120,17 +121,29 @@ def supplier_details(supplier_id):
             },
         }
 
+    def interesting_frameworks(all_frameworks):
+        if current_user.has_role("admin-ccs-sourcing"):
+            frameworks = (
+                supplier_framework for supplier_framework in all_frameworks
+                if supplier_framework["framework"]["status"] != "coming"
+            )
+        else:
+            frameworks = (
+                supplier_framework for supplier_framework in supplier_frameworks
+                if supplier_framework["framework"]["status"] in ["live", "expired"]
+            )
+        oldest_interesting_id = data_api_client.get_framework(OLDEST_INTERESTING_FRAMEWORK_SLUG)['frameworks']['id']
+        return [supplier_framework for supplier_framework in frameworks
+                if supplier_framework['framework']['id'] >= oldest_interesting_id]
+
     supplier = data_api_client.get_supplier(supplier_id)["suppliers"]
     supplier_frameworks = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
 
-    for framework_interest in supplier_frameworks:
-        framework_interest["framework"] = \
-            data_api_client.get_framework(framework_interest["frameworkSlug"])["frameworks"]
+    for supplier_framework in supplier_frameworks:
+        supplier_framework["framework"] = \
+            data_api_client.get_framework(supplier_framework["frameworkSlug"])["frameworks"]
 
-    supplier_frameworks = (
-        supplier_framework for supplier_framework in supplier_frameworks
-        if supplier_framework["framework"]["status"] in ["live", "expired"]
-    )
+    supplier_frameworks = interesting_frameworks(supplier_frameworks)
     supplier_frameworks = sorted(
         supplier_frameworks,
         key=lambda supplier_framework: supplier_framework["framework"]["frameworkLiveAtUTC"]
@@ -154,10 +167,11 @@ def supplier_details(supplier_id):
         supplier=supplier,
         supplier_id=supplier_id,
         supplier_frameworks=supplier_frameworks,
+        old_interesting_framework_slugs=OLD_SIGNING_FLOW_SLUGS,
     )
 
 
-@main.route('/suppliers/<string:supplier_id>/edit/name', methods=['GET'])
+@main.route('/suppliers/<int:supplier_id>/edit/name', methods=['GET'])
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-data-controller')
 def edit_supplier_name(supplier_id):
     supplier = data_api_client.get_supplier(supplier_id)
@@ -168,7 +182,7 @@ def edit_supplier_name(supplier_id):
     )
 
 
-@main.route('/suppliers/<string:supplier_id>/edit/name', methods=['POST'])
+@main.route('/suppliers/<int:supplier_id>/edit/name', methods=['POST'])
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-data-controller')
 def update_supplier_name(supplier_id):
     supplier = data_api_client.get_supplier(supplier_id)
@@ -181,7 +195,7 @@ def update_supplier_name(supplier_id):
     return redirect(url_for('.supplier_details', supplier_id=supplier_id))
 
 
-@main.route('/suppliers/<string:supplier_id>/edit/declarations/<string:framework_slug>', methods=['GET'])
+@main.route('/suppliers/<int:supplier_id>/edit/declarations/<string:framework_slug>', methods=['GET'])
 @role_required('admin-ccs-sourcing')
 def view_supplier_declaration(supplier_id, framework_slug):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
@@ -206,7 +220,7 @@ def view_supplier_declaration(supplier_id, framework_slug):
     )
 
 
-@main.route('/suppliers/<supplier_id>/agreements/<framework_slug>', methods=['GET'])
+@main.route('/suppliers/<int:supplier_id>/agreements/<framework_slug>', methods=['GET'])
 @role_required('admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager', 'admin-ccs-data-controller')
 def view_signed_agreement(supplier_id, framework_slug):
     # not properly validating this - all we do is pass it through
@@ -310,7 +324,7 @@ def unapprove_agreement_for_countersignature(agreement_id):
     ))
 
 
-@main.route('/suppliers/<supplier_id>/agreement/<framework_slug>', methods=['GET'])
+@main.route('/suppliers/<int:supplier_id>/agreement/<framework_slug>', methods=['GET'])
 @role_required('admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager', 'admin-ccs-data-controller')
 def download_signed_agreement_file(supplier_id, framework_slug):
     # This route is used for pre-G-Cloud-8 agreement document downloads
@@ -319,7 +333,7 @@ def download_signed_agreement_file(supplier_id, framework_slug):
     return download_agreement_file(supplier_id, framework_slug, document_name)
 
 
-@main.route('/suppliers/<supplier_id>/agreements/<framework_slug>/<document_name>', methods=['GET'])
+@main.route('/suppliers/<int:supplier_id>/agreements/<framework_slug>/<document_name>', methods=['GET'])
 @role_required('admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager', 'admin-ccs-data-controller')
 def download_agreement_file(supplier_id, framework_slug, document_name):
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
@@ -335,7 +349,7 @@ def download_agreement_file(supplier_id, framework_slug, document_name):
     return redirect(url)
 
 
-@main.route('/suppliers/<supplier_id>/countersigned-agreements/<framework_slug>', methods=['GET'])
+@main.route('/suppliers/<int:supplier_id>/countersigned-agreements/<framework_slug>', methods=['GET'])
 @role_required('admin-ccs-sourcing')
 def list_countersigned_agreement_file(supplier_id, framework_slug):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
@@ -363,7 +377,7 @@ def list_countersigned_agreement_file(supplier_id, framework_slug):
     )
 
 
-@main.route('/suppliers/<supplier_id>/countersigned-agreements/<framework_slug>', methods=['POST'])
+@main.route('/suppliers/<int:supplier_id>/countersigned-agreements/<framework_slug>', methods=['POST'])
 @role_required('admin-ccs-sourcing')
 def upload_countersigned_agreement_file(supplier_id, framework_slug):
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
@@ -420,7 +434,7 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
     )
 
 
-@main.route('/suppliers/<supplier_id>/countersigned-agreements-remove/<framework_slug>',
+@main.route('/suppliers/<int:supplier_id>/countersigned-agreements-remove/<framework_slug>',
             methods=['GET', 'POST'])
 @role_required('admin-ccs-sourcing')
 def remove_countersigned_agreement_file(supplier_id, framework_slug):
@@ -460,7 +474,7 @@ def remove_countersigned_agreement_file(supplier_id, framework_slug):
 
 
 @main.route(
-    '/suppliers/<string:supplier_id>/edit/declarations/<string:framework_slug>/<string:section_id>',
+    '/suppliers/<int:supplier_id>/edit/declarations/<string:framework_slug>/<string:section_id>',
     methods=['GET'])
 @role_required('admin-ccs-sourcing')
 def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
@@ -490,7 +504,7 @@ def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
 
 
 @main.route(
-    '/suppliers/<string:supplier_id>/edit/declarations/<string:framework_slug>/<string:section_id>',
+    '/suppliers/<int:supplier_id>/edit/declarations/<string:framework_slug>/<string:section_id>',
     methods=['POST'])
 @role_required('admin-ccs-sourcing')
 def update_supplier_declaration_section(supplier_id, framework_slug, section_id):

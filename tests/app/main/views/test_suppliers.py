@@ -52,7 +52,7 @@ class TestSupplierDetailsView(LoggedInApplicationTest):
             ("admin", 200),
             ("admin-ccs-category", 200),
             ("admin-ccs-data-controller", 200),
-            ("admin-ccs-sourcing", 403),
+            ("admin-ccs-sourcing", 200),
             ("admin-framework-manager", 200),
             ("admin-manager", 403),
         )
@@ -68,6 +68,7 @@ class TestSupplierDetailsView(LoggedInApplicationTest):
             ("admin-ccs-category", True),
             ("admin-ccs-data-controller", True),
             ("admin-framework-manager", False),
+            ("admin-ccs-sourcing", False)
         )
     )
     def test_edit_supplier_name_link_shown_to_users_with_right_roles(self, role, link_should_be_visible):
@@ -163,7 +164,32 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
         super().teardown_method(method)
 
     @mock.patch("app.main.views.suppliers.render_template", return_value="")
-    def test_supplier_frameworks_includes_live_and_expired_frameworks_only(self, render_template):
+    @pytest.mark.parametrize(
+        "role, expected_visible_frameworks, expected_not_visible_frameworks", [
+            (
+                "admin-ccs-data-controller",
+                ["digital-outcomes-and-specialists-3", "g-cloud-10"],
+                ["g-cloud-11", "g-cloud-standstill", "g-cloud-pending", "g-cloud-open"]
+            ),
+            (
+                "admin-ccs-sourcing",
+                [
+                    "g-cloud-10", "digital-outcomes-and-specialists-3", "g-cloud-standstill", "g-cloud-pending",
+                    "g-cloud-open"
+                ],
+                ["g-cloud-coming"],
+            )
+        ]
+    )
+    def test_supplier_frameworks_includes_appropriate_frameworks_only(
+            self, render_template, role, expected_visible_frameworks, expected_not_visible_frameworks
+    ):
+        self.user_role = role
+        self.data_api_client.get_supplier_frameworks.return_value["frameworkInterest"].extend((
+            SupplierFrameworkStub(framework_slug="g-cloud-standstill").response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-pending").response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-open").response(),
+        ))
         self.data_api_client.get_framework.side_effect = {
             "g-cloud-10":
                 FrameworkStub(
@@ -177,15 +203,30 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
                 FrameworkStub(
                     status="coming",
                 ).single_result_response(),
+            "g-cloud-standstill":
+                FrameworkStub(
+                    status="standstill",
+                ).single_result_response(),
+            "g-cloud-pending":
+                FrameworkStub(
+                    status="pending",
+                ).single_result_response(),
+            "g-cloud-open":
+                FrameworkStub(
+                    status="open",
+                ).single_result_response(),
+            "g-cloud-7":
+                FrameworkStub(
+                    id=0
+                ).single_result_response(),
         }.__getitem__
 
         self.client.get("/admin/suppliers/1234")
         supplier_frameworks = render_template.call_args[1]["supplier_frameworks"]
         supplier_framework_slugs = [d["frameworkSlug"] for d in supplier_frameworks]
 
-        assert "digital-outcomes-and-specialists-3" in supplier_framework_slugs
-        assert "g-cloud-10" in supplier_framework_slugs
-        assert "g-cloud-11" not in supplier_framework_slugs
+        assert set(expected_visible_frameworks) == set(supplier_framework_slugs)
+        assert set(expected_not_visible_frameworks).isdisjoint(set(supplier_framework_slugs))
 
     @mock.patch("app.main.views.suppliers.render_template", return_value="")
     def test_supplier_frameworks_are_ordered_by_live_date(self, render_template):
@@ -204,6 +245,10 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
                 FrameworkStub(
                     frameworkLiveAtUTC="b",
                     status="live",
+                ).single_result_response(),
+            "g-cloud-7":
+                FrameworkStub(
+                    id=0
                 ).single_result_response(),
         }.__getitem__
 
@@ -258,25 +303,9 @@ class TestSuppliersListView(LoggedInApplicationTest):
     @pytest.mark.parametrize("role, link_should_be_visible", [
         ("admin", True),
         ("admin-ccs-category", True),
-        ("admin-ccs-sourcing", False),
-        ("admin-framework-manager", True),
-    ])
-    def test_services_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
-        self.user_role = role
-        response = self.client.get('/admin/suppliers?supplier_name=foo')
-        data = response.get_data(as_text=True)
-        link_is_visible = "Services" in data and "/admin/suppliers/12345/services" in data
-
-        assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
-        )
-
-    @pytest.mark.parametrize("role, link_should_be_visible", [
-        ("admin", True),
-        ("admin-ccs-category", True),
         ("admin-ccs-data-controller", True),
         ("admin-framework-manager", True),
-        ("admin-ccs-sourcing", False),
+        ("admin-ccs-sourcing", True),
         ("admin-manager", False),
     ])
     def test_details_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
@@ -295,122 +324,34 @@ class TestSuppliersListView(LoggedInApplicationTest):
             "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
         )
 
-    @pytest.mark.parametrize("role, links_should_be_visible", [
-        ("admin", False),
-        ("admin-ccs-category", False),
-        ("admin-ccs-sourcing", True),
-        ("admin-framework-manager", False),
-    ])
-    def test_declaration_and_agreement_links_visible_for_ccs_sourcing(self, role, links_should_be_visible):
+    @pytest.mark.parametrize(
+        "link_text, href", [
+            ("Users", "/admin/suppliers/users?supplier_id=1234"),
+            ("Services", "/admin/suppliers/12345/services"),
+        ]
+    )
+    @pytest.mark.parametrize(
+        "role, link_should_be_visible", [
+            ("admin", True),
+            ("admin-ccs-category", True),
+            ("admin-ccs-data-controller", True),
+            ("admin-framework-manager", True),
+            ("admin-ccs-sourcing", False)
+        ]
+    )
+    def test_services_and_user_link_shown_to_users_with_right_roles(self, link_text, href, role,
+                                                                    link_should_be_visible):
         self.user_role = role
-        self.data_api_client.find_frameworks.return_value = {
-            'frameworks': [
-                FrameworkStub(slug='g-cloud-7', name='G-Cloud 7', id=1).response(),
-                FrameworkStub(slug='g-cloud-10', id=2).response(),
-            ]
-        }
         response = self.client.get('/admin/suppliers?supplier_name=foo')
-        data = response.get_data(as_text=True)
-        document = html.fromstring(data)
 
-        framework_column_entries = [framework.strip() for framework in document.xpath('//tr/td/span/text()')]
-        assert links_should_be_visible is (framework_column_entries == ['G-Cloud 10', 'G-Cloud 7'])
+        document = html.fromstring(response.get_data(as_text=True))
 
-        if links_should_be_visible:
-            g_cloud_10_edit_declaration = ''.join(document.xpath('//tbody//tr[1]/td[2]//a//text()')).strip()
-            assert g_cloud_10_edit_declaration == 'Edit declaration for G-Cloud 10'
+        expected_link = document.xpath('.//a[contains(@href,"{}")]'.format(href))
 
-            g_cloud_10_view_agreement = ''.join(document.xpath('//tbody//tr[1]/td[3]//a//text()')).strip()
-            assert g_cloud_10_view_agreement == 'View agreement for G-Cloud 10'
+        link_is_visible = len(expected_link) > 0 and expected_link[0].text == link_text
 
-            g_cloud_7_edit_declaration = ''.join(document.xpath('//tbody//tr[2]/td[2]//a//text()')).strip()
-            assert g_cloud_7_edit_declaration == 'Edit declaration for G-Cloud 7'
-
-            g_cloud_7_download_agreement = ''.join(document.xpath('//tbody//tr[2]/td[3]//a//text()')).strip()
-            assert g_cloud_7_download_agreement == 'Download agreement for G-Cloud 7'
-
-            g_cloud_7_download_signed_agreement = ''.join(document.xpath('//tbody//tr[2]/td[4]//a//text()')).strip()
-            assert g_cloud_7_download_signed_agreement == 'Download signed agreement for G-Cloud 7'
-
-            g_cloud_7_upload_countrsigned_agreement = ''.join(document.xpath('//tbody//tr[2]/td[5]//a//text()')).strip()
-            assert g_cloud_7_upload_countrsigned_agreement == 'Upload countersigned agreement for G-Cloud 7'
-        else:
-            for text in [
-                'Edit declaration',
-                'View agreement',
-                'Download agreement',
-                'Download signed agreement',
-                'Upload countersigned agreement'
-            ]:
-                assert not document.xpath("//tbody//text()='$text'", text=text)
-
-    def test_agreements_template_only_lists_frameworks_that_we_care_about_in_reverse_order(self):
-        interesting_frameworks = [
-            {'slug': 'digital-mash-2', 'name': 'Digital Mash 2', 'id': 4},
-            {'slug': 'digital-mash-1', 'name': 'Digital Mash 1', 'id': 2},
-            {'slug': 'sausage-cloud-1', 'name': 'Sausage Cloud 1', 'id': 1},
-            {'slug': 'sausage-cloud-3', 'name': 'Sausage Cloud 3', 'id': 5},
-            {'slug': 'sausage-cloud-2', 'name': 'Sausage Cloud 2', 'id': 3},
-        ]
-        self.data_api_client.find_frameworks.return_value = {
-            'frameworks': [FrameworkStub(**framework).response() for framework in interesting_frameworks]
-        }
-        self.user_role = 'admin-ccs-sourcing'
-        with mock.patch('app.main.views.suppliers.OLDEST_INTERESTING_FRAMEWORK_SLUG', new='sausage-cloud-2'):
-            response = self.client.get('/admin/suppliers?supplier_name=foo')
-
-        data = response.get_data(as_text=True)
-        document = html.fromstring(data)
-
-        assert document.xpath('//tbody//tr/td[1]/span/text()') == [
-            'Sausage Cloud 3', 'Digital Mash 2', 'Sausage Cloud 2'
-        ]
-
-    def test_agreements_template_shows_down_and_upload_links_for_old_signing_flow_frameworks_only(self):
-        interesting_frameworks = [
-            {'slug': 'sausage-cloud-1', 'name': 'Sausage Cloud 1', 'id': 1},
-            {'slug': 'digital-mash-1', 'name': 'Digital Mash 1', 'id': 2},
-        ]
-        self.data_api_client.find_frameworks.return_value = {
-            'frameworks': [FrameworkStub(**framework).response() for framework in interesting_frameworks]
-        }
-        self.user_role = 'admin-ccs-sourcing'
-
-        with mock.patch('app.main.views.suppliers.OLDEST_INTERESTING_FRAMEWORK_SLUG', new='sausage-cloud-1'):
-            with mock.patch('app.main.views.suppliers.OLD_SIGNING_FLOW_SLUGS', new=['sausage-cloud-1']):
-                response = self.client.get('/admin/suppliers?supplier_name=foo')
-
-        data = response.get_data(as_text=True)
-        document = html.fromstring(data)
-
-        assert document.xpath("//tbody//tr[1]/td[1]/span[text()='Digital Mash 1']/../..//a/text()") == [
-            'Edit declaration', 'View agreement'
-        ]
-        assert document.xpath("//tbody//tr[2]/td[1]/span[text()='Sausage Cloud 1']/../..//a/text()") == [
-            'Edit declaration', 'Download agreement', 'Download signed agreement', 'Upload countersigned agreement'
-        ]
-
-    @pytest.mark.parametrize('status', ('coming', 'open', 'pending', 'standstill', 'live', 'expired'))
-    def test_agreements_template_does_not_show_coming_frameworks(self, status):
-        self.data_api_client.find_frameworks.return_value = {
-            'frameworks': [
-                FrameworkStub(
-                    slug='sausage-cloud-1', name='Sausage Cloud 1', status=status
-                ).response()
-            ]
-        }
-        self.user_role = 'admin-ccs-sourcing'
-
-        with mock.patch('app.main.views.suppliers.OLDEST_INTERESTING_FRAMEWORK_SLUG', new='sausage-cloud-1'):
-            response = self.client.get('/admin/suppliers?supplier_name=foo')
-
-        data = response.get_data(as_text=True)
-        document = html.fromstring(data)
-
-        if status == 'coming':
-            assert not document.xpath("//tbody//tr[1]/td[1]/span[text()='Sausage Cloud 1']")
-        else:
-            assert document.xpath("//tbody//tr[1]/td[1]/span[text()='Sausage Cloud 1']")
+        assert link_is_visible is link_should_be_visible, (
+            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can"))
 
     @mock.patch('app.main.views.suppliers.current_app')
     def test_should_500_if_no_framework_found_matching_the_oldest_interesting_defined(self, current_app):
@@ -1342,7 +1283,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         assert self.data_api_client.get_framework.call_args_list == []
 
     def test_should_404_if_framework_does_not_exist(self):
@@ -1351,7 +1292,7 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_with('1234')
+        self.data_api_client.get_supplier.assert_called_with(1234)
         self.data_api_client.get_framework.assert_called_with('g-cloud-7')
 
     def test_should_not_404_if_declaration_does_not_exist(self):
@@ -1360,9 +1301,9 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
         assert response.status_code == 200
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         self.data_api_client.get_framework.assert_called_once_with('g-cloud-7')
-        self.data_api_client.get_supplier_declaration.assert_called_once_with('1234', 'g-cloud-7')
+        self.data_api_client.get_supplier_declaration.assert_called_once_with(1234, 'g-cloud-7')
 
     def test_should_show_declaration(self):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
@@ -1415,7 +1356,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         assert self.data_api_client.get_framework.call_args_list == []
 
     def test_should_404_if_framework_does_not_exist(self):
@@ -1424,7 +1365,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         self.data_api_client.get_framework.assert_called_once_with('g-cloud-7')
 
     def test_should_404_if_section_does_not_exist(self):
@@ -1440,9 +1381,9 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
 
         assert response.status_code == 200
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         self.data_api_client.get_framework.assert_called_once_with('g-cloud-7')
-        self.data_api_client.get_supplier_declaration.assert_called_once_with('1234', 'g-cloud-7')
+        self.data_api_client.get_supplier_declaration.assert_called_once_with(1234, 'g-cloud-7')
 
     def test_should_prefill_form_with_declaration(self):
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials')
@@ -1463,7 +1404,7 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         declaration['SQC3'] = None
 
         self.data_api_client.set_supplier_declaration.assert_called_once_with(
-            '1234', 'g-cloud-7', declaration, 'test@example.com')
+            1234, 'g-cloud-7', declaration, 'test@example.com')
 
 
 @mock.patch('app.main.views.suppliers.download_agreement_file')
@@ -1486,7 +1427,7 @@ class TestDownloadSignedAgreementFile(LoggedInApplicationTest):
         # Mock out a response from download_agreement_file() - we don't care what it is
         download_agreement_file.side_effect = HTTPError(Response(404))
         self.client.get('/admin/suppliers/1234/agreement/g-cloud-7')
-        download_agreement_file.assert_called_once_with('1234', 'g-cloud-7', 'signed-agreement-file.pdf')
+        download_agreement_file.assert_called_once_with(1234, 'g-cloud-7', 'signed-agreement-file.pdf')
 
 
 @mock.patch('app.main.views.suppliers.s3')
@@ -1732,7 +1673,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             audit_type=AuditTypes.upload_countersigned_agreement,
             user='test@example.com',
             object_type='suppliers',
-            object_id=u'1234',
+            object_id=1234,
             data={'upload_countersigned_agreement': expected_countersign_path}
         )
 
@@ -1781,7 +1722,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             audit_type=AuditTypes.upload_countersigned_agreement,
             user='test@example.com',
             object_type='suppliers',
-            object_id=u'1234',
+            object_id=1234,
             data={
                 'upload_countersigned_agreement':
                     'g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf'}
@@ -1842,7 +1783,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             audit_type=AuditTypes.upload_countersigned_agreement,
             user='test@example.com',
             object_type='suppliers',
-            object_id=u'1234',
+            object_id=1234,
             data={
                 'upload_countersigned_agreement':
                     'g-cloud-7/agreements/1234/1234-agreement-countersignature-2016-12-25-063001.pdf'
@@ -1940,7 +1881,7 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_with('1234')
+        self.data_api_client.get_supplier.assert_called_with(1234)
         assert self.data_api_client.get_framework.call_args_list == []
 
     def test_should_404_if_framework_does_not_exist(self, s3):
@@ -1949,7 +1890,7 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         self.data_api_client.get_framework.assert_called_once_with('g-cloud-8')
 
     def test_should_404_if_agreement_not_returned(self, s3):
@@ -1959,16 +1900,16 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         self.data_api_client.get_framework.assert_called_once_with('g-cloud-8')
-        self.data_api_client.get_supplier_framework_info.assert_called_once_with('1234', 'g-cloud-8')
+        self.data_api_client.get_supplier_framework_info.assert_called_once_with(1234, 'g-cloud-8')
 
     def test_should_404_if_agreement_has_no_version(self, s3):
         self.data_api_client.get_framework.return_value = {'frameworks': {}}
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
 
         assert response.status_code == 404
-        self.data_api_client.get_supplier.assert_called_once_with('1234')
+        self.data_api_client.get_supplier.assert_called_once_with(1234)
         self.data_api_client.get_framework.assert_called_once_with('g-cloud-8')
 
     def test_should_show_agreement_details_on_page(self, s3):
