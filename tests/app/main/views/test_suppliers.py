@@ -164,7 +164,32 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
         super().teardown_method(method)
 
     @mock.patch("app.main.views.suppliers.render_template", return_value="")
-    def test_supplier_frameworks_includes_live_and_expired_frameworks_only(self, render_template):
+    @pytest.mark.parametrize(
+        "role, expected_visible_frameworks, expected_not_visible_frameworks", [
+            (
+                "admin-ccs-data-controller",
+                ["digital-outcomes-and-specialists-3", "g-cloud-10"],
+                ["g-cloud-11", "g-cloud-standstill", "g-cloud-pending", "g-cloud-open"]
+            ),
+            (
+                "admin-ccs-sourcing",
+                [
+                    "g-cloud-10", "digital-outcomes-and-specialists-3", "g-cloud-standstill", "g-cloud-pending",
+                    "g-cloud-open"
+                ],
+                ["g-cloud-coming"],
+            )
+        ]
+    )
+    def test_supplier_frameworks_includes_appropriate_frameworks_only(
+            self, render_template, role, expected_visible_frameworks, expected_not_visible_frameworks
+    ):
+        self.user_role = role
+        self.data_api_client.get_supplier_frameworks.return_value["frameworkInterest"].extend((
+            SupplierFrameworkStub(framework_slug="g-cloud-standstill").response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-pending").response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-open").response(),
+        ))
         self.data_api_client.get_framework.side_effect = {
             "g-cloud-10":
                 FrameworkStub(
@@ -178,15 +203,30 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
                 FrameworkStub(
                     status="coming",
                 ).single_result_response(),
+            "g-cloud-standstill":
+                FrameworkStub(
+                    status="standstill",
+                ).single_result_response(),
+            "g-cloud-pending":
+                FrameworkStub(
+                    status="pending",
+                ).single_result_response(),
+            "g-cloud-open":
+                FrameworkStub(
+                    status="open",
+                ).single_result_response(),
+            "g-cloud-7":
+                FrameworkStub(
+                    id=0
+                ).single_result_response(),
         }.__getitem__
 
         self.client.get("/admin/suppliers/1234")
         supplier_frameworks = render_template.call_args[1]["supplier_frameworks"]
         supplier_framework_slugs = [d["frameworkSlug"] for d in supplier_frameworks]
 
-        assert "digital-outcomes-and-specialists-3" in supplier_framework_slugs
-        assert "g-cloud-10" in supplier_framework_slugs
-        assert "g-cloud-11" not in supplier_framework_slugs
+        assert set(expected_visible_frameworks) == set(supplier_framework_slugs)
+        assert set(expected_not_visible_frameworks).isdisjoint(set(supplier_framework_slugs))
 
     @mock.patch("app.main.views.suppliers.render_template", return_value="")
     def test_supplier_frameworks_are_ordered_by_live_date(self, render_template):
@@ -205,6 +245,10 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
                 FrameworkStub(
                     frameworkLiveAtUTC="b",
                     status="live",
+                ).single_result_response(),
+            "g-cloud-7":
+                FrameworkStub(
+                    id=0
                 ).single_result_response(),
         }.__getitem__
 
