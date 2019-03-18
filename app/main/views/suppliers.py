@@ -329,6 +329,8 @@ def unapprove_agreement_for_countersignature(agreement_id):
 def download_signed_agreement_file(supplier_id, framework_slug):
     # This route is used for pre-G-Cloud-8 agreement document downloads
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
+    if supplier_framework is None or not supplier_framework.get("agreementPath"):
+        abort(404)
     document_name = degenerate_document_path_and_return_doc_name(supplier_framework['agreementPath'])
     return download_agreement_file(supplier_id, framework_slug, document_name)
 

@@ -1429,6 +1429,16 @@ class TestDownloadSignedAgreementFile(LoggedInApplicationTest):
         self.client.get('/admin/suppliers/1234/agreement/g-cloud-7')
         download_agreement_file.assert_called_once_with(1234, 'g-cloud-7', 'signed-agreement-file.pdf')
 
+    def test_should_404_if_supplier_agreement_has_no_agreement_path(self, download_agreement_file):
+        self.data_api_client.get_supplier_framework_info.return_value = {
+            'frameworkInterest': {'agreementPath': None}
+        }
+        response = self.client.get('/admin/suppliers/1234/agreement/g-cloud-8')
+
+        assert response.status_code == 404
+        self.data_api_client.get_supplier_framework_info.assert_called_once_with(1234, 'g-cloud-8')
+        assert download_agreement_file.called is False
+
 
 @mock.patch('app.main.views.suppliers.s3')
 class TestDownloadAgreementFile(LoggedInApplicationTest):
