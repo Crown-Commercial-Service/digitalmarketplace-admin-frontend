@@ -86,6 +86,35 @@ class TestSupplierDetailsView(LoggedInApplicationTest):
             "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
         )
 
+    @pytest.mark.parametrize(
+        "role, link_should_be_visible", (
+            ("admin", False),
+            ("admin-ccs-category", False),
+            ("admin-ccs-data-controller", True),
+            ("admin-framework-manager", False),
+            ("admin-ccs-sourcing", False)
+        )
+    )
+    def test_edit_registered_details_links_shown_to_users_with_right_roles(self, role, link_should_be_visible):
+        self.user_role = role
+        self.data_api_client.get_supplier.return_value = SupplierStub(id=1234).single_result_response()
+
+        response = self.client.get("/admin/suppliers/1234")
+        document = html.fromstring(response.get_data(as_text=True))
+
+        expected_hrefs = [
+            '/admin/suppliers/1234/edit/registered-name',
+            '/admin/suppliers/1234/edit/registered-company-number',
+            '/admin/suppliers/1234/edit/duns-number',
+            '/admin/suppliers/1234/edit/registered-address'
+
+        ]
+        for href in expected_hrefs:
+            link_is_visible = len(document.xpath('.//a[contains(@href,"{}")]'.format(href))) > 0
+            assert link_is_visible is link_should_be_visible, (
+                "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+            )
+
     @mock.patch("app.main.views.suppliers.render_template", return_value="")
     def test_view_shows_company_details_from_suppliers_last_framework_declaration(self, render_template):
         framework_interest = SupplierFrameworkStub(framework_slug="g-cloud-11").response()
