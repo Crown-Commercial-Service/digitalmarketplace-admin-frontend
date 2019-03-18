@@ -51,6 +51,7 @@ SUPPLIER_USER_MESSAGES = {
     'user_not_moved': 'User not moved to this supplier - please check you entered the address of an '
                       'existing supplier user'
 }
+SUPPLIER_DETAILS_UPDATED_MESSAGE = "The details for ‘{supplier_name}’ have been updated."
 OLDEST_INTERESTING_FRAMEWORK_SLUG = 'g-cloud-7'
 OLD_SIGNING_FLOW_SLUGS = ['g-cloud-7', 'digital-outcomes-and-specialists']
 
@@ -148,7 +149,7 @@ def update_supplier_name(supplier_id):
     data_api_client.update_supplier(
         supplier['suppliers']['id'], {'name': new_supplier_name}, current_user.email_address
     )
-
+    flash(SUPPLIER_DETAILS_UPDATED_MESSAGE.format(supplier_name=new_supplier_name))
     return redirect(url_for('.supplier_details', supplier_id=supplier_id))
 
 
@@ -184,6 +185,7 @@ def edit_supplier_registered_name(supplier_id):
                 {"supplierRegisteredName": form.registered_company_name.data},
                 current_user.email_address
             )
+        flash(SUPPLIER_DETAILS_UPDATED_MESSAGE.format(supplier_name=supplier['name']))
 
         return redirect(url_for('.supplier_details', supplier_id=supplier_id))
 
@@ -248,6 +250,7 @@ def edit_supplier_registered_company_number(supplier_id):
                 current_user.email_address
             )
 
+        flash(SUPPLIER_DETAILS_UPDATED_MESSAGE.format(supplier_name=supplier['name']))
         return redirect(url_for('.supplier_details', supplier_id=supplier_id))
 
     errors = get_errors_from_wtform(form)
@@ -315,6 +318,7 @@ def edit_supplier_registered_address(supplier_id):
                 },
                 current_user.email_address
             )
+        flash(SUPPLIER_DETAILS_UPDATED_MESSAGE.format(supplier_name=supplier['name']))
         return redirect(url_for('.supplier_details', supplier_id=supplier_id))
 
     errors = get_errors_from_wtform(form)

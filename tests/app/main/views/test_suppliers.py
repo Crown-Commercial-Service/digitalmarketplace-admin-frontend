@@ -1288,6 +1288,7 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
         self.data_api_client.update_supplier.assert_called_once_with(
             1234, {'name': "Something New"}, "test@example.com"
         )
+        self.assert_flashes("The details for ‘Something New’ have been updated.")
 
     def test_ccs_sourcing_role_can_not_update_supplier_name(self):
         self.user_role = 'admin-ccs-sourcing'
@@ -1311,6 +1312,22 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
     )
     def test_correct_roles_can_edit_supplier_registered_details(self, detail_type, role, expected_code):
         self.user_role = role
+        self.data_api_client.get_supplier.return_value = {
+            "suppliers": {
+                "id": 1234,
+                "name": "ABC",
+                "registeredCountry": "country:FR",
+                "contactInformation": [
+                    {
+                        'id': 999,
+                        'address1': '123 Rue Morgue',
+                        'city': 'Paris',
+                        'postcode': '76876',
+                        'country': "country:FR"
+                    }
+                ]
+            }
+        }
         response = self.client.get('/admin/suppliers/1000/edit/{}'.format(detail_type))
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
@@ -1342,12 +1359,13 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
                 {'supplierRegisteredName': "Something New"}, "test@example.com"
             )
         ] if from_declaration else [])
+        self.assert_flashes("The details for ‘ABC’ have been updated.")
 
     @pytest.mark.parametrize('update_declaration', [True, False])
     def test_data_controller_role_can_update_companies_house_number(self, update_declaration):
         self.user_role = 'admin-ccs-data-controller'
         self.data_api_client.get_supplier.return_value = {
-            "suppliers": {"id": 1234, "companiesHouseNumber": "87654321"}
+            "suppliers": {"id": 1234, "companiesHouseNumber": "87654321", "name": "ABC"}
         }
         if update_declaration:
             self.data_api_client.get_supplier_frameworks.return_value = {
@@ -1375,12 +1393,13 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
                 {'supplierCompanyRegistrationNumber': "12345678"}, "test@example.com"
             )
         ] if update_declaration else [])
+        self.assert_flashes("The details for ‘ABC’ have been updated.")
 
     @pytest.mark.parametrize('update_declaration', [True, False])
     def test_data_controller_role_can_update_other_registration_number(self, update_declaration):
         self.user_role = 'admin-ccs-data-controller'
         self.data_api_client.get_supplier.return_value = {
-            "suppliers": {"id": 1234, "otherCompanyRegistrationNumber": "abc123456"}
+            "suppliers": {"id": 1234, "otherCompanyRegistrationNumber": "abc123456", "name": "ABC"}
         }
         if update_declaration:
             self.data_api_client.get_supplier_frameworks.return_value = {
@@ -1408,12 +1427,13 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
                 {'supplierCompanyRegistrationNumber': "def98765"}, "test@example.com"
             )
         ] if update_declaration else [])
+        self.assert_flashes("The details for ‘ABC’ have been updated.")
 
     @pytest.mark.parametrize('update_declaration', [True, False])
     def test_data_controller_role_can_change_companies_house_to_other_registration_number(self, update_declaration):
         self.user_role = 'admin-ccs-data-controller'
         self.data_api_client.get_supplier.return_value = {
-            "suppliers": {"id": 1234, "companiesHouseNumber": "12345678"}
+            "suppliers": {"id": 1234, "companiesHouseNumber": "12345678", "name": "ABC"}
         }
         if update_declaration:
             self.data_api_client.get_supplier_frameworks.return_value = {
@@ -1444,6 +1464,7 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
                 {'supplierCompanyRegistrationNumber': "def98765"}, "test@example.com"
             )
         ] if update_declaration else [])
+        self.assert_flashes("The details for ‘ABC’ have been updated.")
 
     @pytest.mark.parametrize('from_declaration', [True, False])
     def test_data_controller_role_can_update_registered_company_address(self, from_declaration):
@@ -1457,6 +1478,7 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
         self.data_api_client.get_supplier.return_value = {
             "suppliers": {
                 "id": 1234,
+                "name": "ABC",
                 "registeredCountry": "country:FR",
                 "contactInformation": [
                     {
@@ -1505,6 +1527,7 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
                 }, "test@example.com"
             )
         ] if from_declaration else [])
+        self.assert_flashes("The details for ‘ABC’ have been updated.")
 
     def test_edit_duns_number_shows_contact_us_message(self):
         self.user_role = 'admin-ccs-data-controller'
