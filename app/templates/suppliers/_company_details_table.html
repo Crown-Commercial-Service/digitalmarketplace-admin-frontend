@@ -34,7 +34,7 @@
       <td class="summary-item-field-heading-custom" scope="row"><strong><span>{{item.name}}</span></strong></td>
       {{ summary.text(item.value or "None") }}
       {% if current_user.has_role('admin-ccs-data-controller') %}
-      <td class="summary-item-field"><a href="{{ item.edit_link }}">Edit</a></td>
+      <td class="summary-item-field"><a href="{{ item.edit_link }}">Change</a></td>
       {% endif %}
     {% endcall %}
   {% endcall %}

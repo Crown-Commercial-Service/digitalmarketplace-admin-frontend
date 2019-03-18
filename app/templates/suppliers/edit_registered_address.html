@@ -1,7 +1,7 @@
 {% extends "_base_page.html" %}
 
 {% block page_title %}
-  Change registered supplier address – {{ supplier.name }} – Digital Marketplace admin
+  Change registered company address – {{ supplier.name }} – Digital Marketplace admin
 {% endblock %}
 {% block head %}
   <link type="text/css" rel="stylesheet" media="screen" href="{{ asset_fingerprinter.get_url('stylesheets/location-autocomplete.min.css') }}"/>
@@ -29,7 +29,7 @@
 {% endblock %}
 
 {% block main_content %}
-  {% with heading = "Change registered supplier address" %}
+  {% with heading = "Update registered company address for ‘{}’".format(supplier.name) %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
   <form method="post">

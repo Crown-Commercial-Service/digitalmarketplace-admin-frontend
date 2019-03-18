@@ -1,7 +1,7 @@
 {% extends "_base_page.html" %}
 
 {% block page_title %}
-  Change registered supplier name – {{ supplier.name }} – Digital Marketplace admin
+  Change registered company number – {{ supplier.name }} – Digital Marketplace admin
 {% endblock %}
 
 {% block breadcrumb %}
@@ -25,7 +25,7 @@
 {% endblock %}
 
 {% block main_content %}
-  {% with heading = "Change registered company number" %}
+  {% with heading = "Update registered company number for ‘{}’".format(supplier.name) %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
   <form method="post">
