@@ -14,14 +14,25 @@ from dmutils.documents import (
     generate_download_filename)
 from dmutils.email import send_user_account_email
 from dmutils.flask import timed_render_template as render_template
+from dmutils.forms.helpers import get_errors_from_wtform
 from dmutils.formats import datetimeformat
 from flask import request, redirect, url_for, abort, current_app, flash
 from flask_login import current_user
 
 from .. import main
 from ..auth import role_required
-from ..forms import EmailAddressForm, MoveUserForm
+from ..forms import (
+    EmailAddressForm, MoveUserForm,
+    EditSupplierCompanyRegistrationNumberForm,
+    EditSupplierRegisteredAddressForm,
+    EditSupplierRegisteredNameForm
+)
+from ..helpers.countries import COUNTRY_TUPLE
 from ..helpers.pagination import get_nav_args_from_api_response_links
+from ..helpers.supplier_details import (
+    interesting_frameworks,
+    get_company_details_and_most_recent_interest
+)
 from ... import data_api_client, content_loader
 
 
@@ -90,75 +101,21 @@ def find_suppliers():
 
 
 @main.route("/suppliers/<int:supplier_id>", methods=["GET"])
-@role_required("admin", "admin-ccs-category", "admin-ccs-data-controller", "admin-framework-manager",
-               "admin-ccs-sourcing")
+@role_required(
+    "admin", "admin-ccs-category", "admin-ccs-data-controller", "admin-framework-manager", "admin-ccs-sourcing"
+)
 def supplier_details(supplier_id):
-    def company_details_from_supplier(supplier):
-        return {
-            "duns_number": supplier.get("dunsNumber"),
-            "registration_number": (
-                supplier.get("companiesHouseNumber")
-                or
-                supplier.get("otherCompanyRegistrationNumber")
-            ),
-            "registered_name": supplier.get("registeredName"),
-            "address": {
-                "country": supplier.get("registrationCountry"),
-            }
-        }
-
-    def company_details_from_supplier_framework_declaration(declaration):
-        return {
-            "duns_number": declaration.get("supplierDunsNumber"),
-            "registration_number": declaration.get("supplierCompanyRegistrationNumber"),
-            "trading_name": declaration.get("supplierTradingName"),
-            "registered_name": declaration.get("supplierRegisteredName"),
-            "address": {
-                "street_address_line_1": declaration.get("supplierRegisteredBuilding"),
-                "locality": declaration.get("supplierRegisteredTown"),
-                "postcode": declaration.get("supplierRegisteredPostcode"),
-                "country": declaration.get("supplierRegisteredCountry"),
-            },
-        }
-
-    def interesting_frameworks(all_frameworks):
-        if current_user.has_role("admin-ccs-sourcing"):
-            frameworks = (
-                supplier_framework for supplier_framework in all_frameworks
-                if supplier_framework["framework"]["status"] != "coming"
-            )
-        else:
-            frameworks = (
-                supplier_framework for supplier_framework in supplier_frameworks
-                if supplier_framework["framework"]["status"] in ["live", "expired"]
-            )
-        oldest_interesting_id = data_api_client.get_framework(OLDEST_INTERESTING_FRAMEWORK_SLUG)['frameworks']['id']
-        return [supplier_framework for supplier_framework in frameworks
-                if supplier_framework['framework']['id'] >= oldest_interesting_id]
-
+    frameworks = data_api_client.find_frameworks()["frameworks"]
     supplier = data_api_client.get_supplier(supplier_id)["suppliers"]
-    supplier_frameworks = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
+    supplier_framework_interests = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
 
-    for supplier_framework in supplier_frameworks:
-        supplier_framework["framework"] = \
-            data_api_client.get_framework(supplier_framework["frameworkSlug"])["frameworks"]
+    # Get SupplierFrameworks for frameworks the role is interested in, sorted by oldest frameworkLiveAtUTC first
+    supplier_frameworks = interesting_frameworks(supplier_framework_interests, current_user, frameworks)
 
-    supplier_frameworks = interesting_frameworks(supplier_frameworks)
-    supplier_frameworks = sorted(
-        supplier_frameworks,
-        key=lambda supplier_framework: supplier_framework["framework"]["frameworkLiveAtUTC"]
+    # Get the company details, and the declaration they came from (if any)
+    company_details, most_recent_framework_interest = get_company_details_and_most_recent_interest(
+        supplier_frameworks, supplier
     )
-
-    if supplier_frameworks:
-        most_recent_framework_interest = supplier_frameworks[-1]
-    else:
-        most_recent_framework_interest = {}
-
-    if most_recent_framework_interest.get("declaration"):
-        company_details = \
-            company_details_from_supplier_framework_declaration(most_recent_framework_interest["declaration"])
-    else:
-        company_details = company_details_from_supplier(supplier)
 
     return render_template(
         "supplier_details.html",
@@ -193,6 +150,193 @@ def update_supplier_name(supplier_id):
     )
 
     return redirect(url_for('.supplier_details', supplier_id=supplier_id))
+
+
+@main.route('/suppliers/<int:supplier_id>/edit/registered-name', methods=['GET', 'POST'])
+@role_required('admin-ccs-data-controller')
+def edit_supplier_registered_name(supplier_id):
+    supplier = data_api_client.get_supplier(supplier_id)['suppliers']
+    frameworks = data_api_client.find_frameworks()['frameworks']
+
+    # Get SupplierFrameworks for frameworks the role is interested in, sorted by oldest frameworkLiveAtUTC first
+    supplier_framework_interests = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
+    supplier_frameworks = interesting_frameworks(supplier_framework_interests, current_user, frameworks)
+
+    # Get the company details (either from supplier or recent declaration)
+    company_details, most_recent_declaration = get_company_details_and_most_recent_interest(
+        supplier_frameworks, supplier
+    )
+
+    form = EditSupplierRegisteredNameForm(
+        data={"registered_company_name": company_details.get('registered_name')}
+    )
+
+    if form.validate_on_submit():
+        data_api_client.update_supplier(
+            supplier_id,
+            {'registeredName': form.registered_company_name.data},
+            current_user.email_address
+        )
+        if most_recent_declaration.get('declaration'):
+            data_api_client.update_supplier_declaration(
+                supplier_id,
+                most_recent_declaration['frameworkSlug'],
+                {"supplierRegisteredName": form.registered_company_name.data},
+                current_user.email_address
+            )
+
+        return redirect(url_for('.supplier_details', supplier_id=supplier_id))
+
+    errors = get_errors_from_wtform(form)
+
+    return render_template(
+        "suppliers/edit_registered_name.html",
+        supplier=supplier,
+        form=form,
+        errors=errors,
+    ), 200 if not errors else 400
+
+
+@main.route('/suppliers/<int:supplier_id>/edit/registered-company-number', methods=['GET', 'POST'])
+@role_required('admin-ccs-data-controller')
+def edit_supplier_registered_company_number(supplier_id):
+    supplier = data_api_client.get_supplier(supplier_id)['suppliers']
+    frameworks = data_api_client.find_frameworks()['frameworks']
+
+    # Take the registered company numbers from the supplier, as we need to know which type it is (CH or other)
+    prefill_data = {
+        "companies_house_number": supplier.get("companiesHouseNumber"),
+        "other_company_registration_number": supplier.get('otherCompanyRegistrationNumber')
+    }
+    form = EditSupplierCompanyRegistrationNumberForm(data=prefill_data)
+
+    if form.validate_on_submit():
+        if form.companies_house_number.data:
+            update_supplier_payload = {
+                "companiesHouseNumber": form.companies_house_number.data.upper(),
+                "otherCompanyRegistrationNumber": None
+            }
+            update_declaration_payload = {
+                "supplierCompanyRegistrationNumber": form.companies_house_number.data.upper()
+            }
+        else:
+            update_supplier_payload = {
+                "companiesHouseNumber": None,
+                "otherCompanyRegistrationNumber": form.other_company_registration_number.data
+            }
+            update_declaration_payload = {
+                "supplierCompanyRegistrationNumber": form.other_company_registration_number.data
+            }
+
+        # Although we've fetched the reg number from the supplier, any recent declaration should be updated too
+        supplier_framework_interests = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
+        supplier_frameworks = interesting_frameworks(supplier_framework_interests, current_user, frameworks)
+        _, most_recent_declaration = get_company_details_and_most_recent_interest(supplier_frameworks, supplier)
+
+        # Update supplier
+        data_api_client.update_supplier(
+            supplier_id=supplier_id,
+            supplier=update_supplier_payload,
+            user=current_user.email_address
+        )
+
+        if most_recent_declaration.get('declaration'):
+            data_api_client.update_supplier_declaration(
+                supplier_id,
+                most_recent_declaration['frameworkSlug'],
+                update_declaration_payload,
+                current_user.email_address
+            )
+
+        return redirect(url_for('.supplier_details', supplier_id=supplier_id))
+
+    errors = get_errors_from_wtform(form)
+
+    return render_template(
+        "suppliers/edit_registered_company_number.html",
+        supplier=supplier,
+        form=form,
+        errors=errors,
+    ), 200 if not errors else 400
+
+
+@main.route('/suppliers/<int:supplier_id>/edit/registered-address', methods=['GET', 'POST'])
+@role_required('admin-ccs-data-controller')
+def edit_supplier_registered_address(supplier_id):
+    frameworks = data_api_client.find_frameworks()['frameworks']
+    supplier = data_api_client.get_supplier(supplier_id)['suppliers']
+    contact = supplier["contactInformation"][0]
+
+    # Get SupplierFrameworks for frameworks the role is interested in, sorted by oldest frameworkLiveAtUTC first
+    supplier_framework_interests = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
+    supplier_frameworks = interesting_frameworks(supplier_framework_interests, current_user, frameworks)
+
+    # Get the company details (either from supplier or recent declaration)
+    company_details, most_recent_declaration = get_company_details_and_most_recent_interest(
+        supplier_frameworks, supplier
+    )
+    prefill_data = {
+        "street": company_details['address'].get('street_address_line_1'),
+        "city": company_details['address'].get('locality'),
+        "postcode": company_details['address'].get('postcode'),
+        "country": company_details['address']['country']
+    }
+    form = EditSupplierRegisteredAddressForm(data=prefill_data)
+
+    if form.validate_on_submit():
+        # Will update declarations for open frameworks
+        data_api_client.update_supplier(
+            supplier_id,
+            {'registrationCountry': form.country.data},
+            current_user.email_address
+        )
+        # Will update declarations for open frameworks
+        data_api_client.update_contact_information(
+            supplier_id,
+            contact['id'],
+            {
+                'country': form.country.data,
+                'address1': form.street.data,
+                'city': form.city.data,
+                'postcode': form.postcode.data,
+            },
+            current_user.email_address
+        )
+
+        if most_recent_declaration.get('declaration'):
+            data_api_client.update_supplier_declaration(
+                supplier_id,
+                most_recent_declaration['frameworkSlug'],
+                {
+                    "supplierRegisteredBuilding": form.street.data,
+                    "supplierRegisteredCountry": form.country.data,
+                    "supplierRegisteredPostcode": form.postcode.data,
+                    "supplierRegisteredTown": form.city.data,
+                },
+                current_user.email_address
+            )
+        return redirect(url_for('.supplier_details', supplier_id=supplier_id))
+
+    errors = get_errors_from_wtform(form)
+
+    return render_template(
+        "suppliers/edit_registered_address.html",
+        supplier=supplier,
+        form=form,
+        countries=COUNTRY_TUPLE,
+        errors=errors,
+    ), 200 if not errors else 400
+
+
+@main.route('/suppliers/<int:supplier_id>/edit/duns-number', methods=['GET'])
+@role_required('admin-ccs-data-controller')
+def edit_supplier_duns_number(supplier_id):
+    # Show 'contact support' template
+    supplier = data_api_client.get_supplier(supplier_id)
+    return render_template(
+        "suppliers/edit_duns_number.html",
+        supplier=supplier["suppliers"]
+    )
 
 
 @main.route('/suppliers/<int:supplier_id>/edit/declarations/<string:framework_slug>', methods=['GET'])

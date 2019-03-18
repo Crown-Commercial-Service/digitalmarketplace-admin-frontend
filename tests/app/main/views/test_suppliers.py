@@ -91,6 +91,11 @@ class TestSupplierDetailsView(LoggedInApplicationTest):
         framework_interest = SupplierFrameworkStub(framework_slug="g-cloud-11").response()
         framework_interest["declaration"]["supplierRegisteredPostcode"] = mock.sentinel.postcode
 
+        self.data_api_client.find_frameworks.return_value = {'frameworks': [
+            FrameworkStub(frameworkLiveAtUTC="a", status="live", slug="g-cloud-10").response(),
+            FrameworkStub(frameworkLiveAtUTC="b", status="live", slug="g-cloud-11").response(),
+            FrameworkStub(frameworkLiveAtUTC="c", status="live", slug="digital-outcomes-and-specialists-3").response(),
+        ]}
         self.data_api_client.get_supplier_frameworks.return_value = {
             "frameworkInterest": [
                 SupplierFrameworkStub(framework_slug="g-cloud-10").response(),
@@ -169,57 +174,59 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
             (
                 "admin-ccs-data-controller",
                 ["digital-outcomes-and-specialists-3", "g-cloud-10"],
-                ["g-cloud-11", "g-cloud-standstill", "g-cloud-pending", "g-cloud-open"]
+                ["g-cloud-11", "g-cloud-standstill-1", "g-cloud-pending-1", "g-cloud-open-1"]
             ),
             (
                 "admin-ccs-sourcing",
                 [
-                    "g-cloud-10", "digital-outcomes-and-specialists-3", "g-cloud-standstill", "g-cloud-pending",
-                    "g-cloud-open"
+                    "g-cloud-10", "digital-outcomes-and-specialists-3", "g-cloud-standstill-1", "g-cloud-pending-1",
+                    "g-cloud-open-1"
                 ],
-                ["g-cloud-coming"],
+                ["g-cloud-coming-1"],
             )
         ]
     )
     def test_supplier_frameworks_includes_appropriate_frameworks_only(
-            self, render_template, role, expected_visible_frameworks, expected_not_visible_frameworks
+        self, render_template, role, expected_visible_frameworks, expected_not_visible_frameworks
     ):
         self.user_role = role
         self.data_api_client.get_supplier_frameworks.return_value["frameworkInterest"].extend((
-            SupplierFrameworkStub(framework_slug="g-cloud-standstill").response(),
-            SupplierFrameworkStub(framework_slug="g-cloud-pending").response(),
-            SupplierFrameworkStub(framework_slug="g-cloud-open").response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-standstill-1").response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-pending-1").response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-open-1").response(),
         ))
-        self.data_api_client.get_framework.side_effect = {
-            "g-cloud-10":
-                FrameworkStub(
-                    status="live",
-                ).single_result_response(),
-            "digital-outcomes-and-specialists-3":
-                FrameworkStub(
-                    status="expired",
-                ).single_result_response(),
-            "g-cloud-11":
-                FrameworkStub(
-                    status="coming",
-                ).single_result_response(),
-            "g-cloud-standstill":
-                FrameworkStub(
-                    status="standstill",
-                ).single_result_response(),
-            "g-cloud-pending":
-                FrameworkStub(
-                    status="pending",
-                ).single_result_response(),
-            "g-cloud-open":
-                FrameworkStub(
-                    status="open",
-                ).single_result_response(),
-            "g-cloud-7":
-                FrameworkStub(
-                    id=0
-                ).single_result_response(),
-        }.__getitem__
+
+        self.data_api_client.find_frameworks.return_value = {'frameworks': [
+            FrameworkStub(
+                status="live",
+                slug="g-cloud-10"
+            ).response(),
+            FrameworkStub(
+                status="expired",
+                slug="digital-outcomes-and-specialists-3"
+            ).response(),
+            FrameworkStub(
+                status="coming",
+                slug="g-cloud-11",
+            ).response(),
+            FrameworkStub(
+                status="standstill",
+                slug="g-cloud-standstill-1"
+            ).response(),
+            FrameworkStub(
+                status="pending",
+                slug="g-cloud-pending-1"
+            ).response(),
+            FrameworkStub(
+                status="open",
+                slug="g-cloud-open-1"
+            ).response(),
+            FrameworkStub(
+                id=0,
+                status="expired",
+                slug="g-cloud-7"
+            ).response(),
+        ]}
 
         self.client.get("/admin/suppliers/1234")
         supplier_frameworks = render_template.call_args[1]["supplier_frameworks"]
@@ -230,27 +237,28 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
 
     @mock.patch("app.main.views.suppliers.render_template", return_value="")
     def test_supplier_frameworks_are_ordered_by_live_date(self, render_template):
-        self.data_api_client.get_framework.side_effect = {
-            "g-cloud-10":
-                FrameworkStub(
-                    frameworkLiveAtUTC="c",
-                    status="live",
-                ).single_result_response(),
-            "digital-outcomes-and-specialists-3":
-                FrameworkStub(
-                    frameworkLiveAtUTC="a",
-                    status="live",
-                ).single_result_response(),
-            "g-cloud-11":
-                FrameworkStub(
-                    frameworkLiveAtUTC="b",
-                    status="live",
-                ).single_result_response(),
-            "g-cloud-7":
-                FrameworkStub(
-                    id=0
-                ).single_result_response(),
-        }.__getitem__
+        self.data_api_client.find_frameworks.return_value = {'frameworks': [
+            FrameworkStub(
+                frameworkLiveAtUTC="c",
+                slug="g-cloud-10",
+                status="live",
+            ).response(),
+            FrameworkStub(
+                frameworkLiveAtUTC="a",
+                slug="digital-outcomes-and-specialists-3",
+                status="live",
+            ).response(),
+            FrameworkStub(
+                frameworkLiveAtUTC="b",
+                slug="g-cloud-11",
+                status="live",
+            ).response(),
+            FrameworkStub(
+                id=0,
+                slug="g-cloud-7",
+                status="expired"
+            ).response(),
+        ]}
 
         self.client.get("/admin/suppliers/1234")
         supplier_frameworks = render_template.call_args[1]["supplier_frameworks"]
@@ -1219,12 +1227,20 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         assert res.status_code == 503
 
 
-class TestUpdatingSupplierName(LoggedInApplicationTest):
+class TestUpdatingSupplierDetails(LoggedInApplicationTest):
 
     def setup_method(self, method):
         super().setup_method(method)
         self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
         self.data_api_client = self.data_api_client_patch.start()
+        self.data_api_client.find_frameworks.return_value = {'frameworks': [
+            FrameworkStub(frameworkLiveAtUTC="b", status="live", slug="g-cloud-11").response(),
+        ]}
+        # TODO: fix test utils bug to reset declaration on init
+        supplier_framework = SupplierFrameworkStub(framework_slug="g-cloud-11", declaration={}).response()
+        self.data_api_client.get_supplier_frameworks.return_value = {
+            "frameworkInterest": [supplier_framework]
+        }
 
     def teardown_method(self, method):
         self.data_api_client_patch.stop()
@@ -1252,6 +1268,220 @@ class TestUpdatingSupplierName(LoggedInApplicationTest):
         )
         assert response.status_code == 403
         assert self.data_api_client.update_supplier.call_args_list == []
+
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 403),
+        ("admin-ccs-data-controller", 200),
+        ("admin-framework-manager", 403),
+        ("admin-manager", 403),
+    ])
+    @pytest.mark.parametrize(
+        "detail_type", ['registered-name', 'registered-company-number', 'registered-address', 'duns-number']
+    )
+    def test_correct_roles_can_edit_supplier_registered_details(self, detail_type, role, expected_code):
+        self.user_role = role
+        response = self.client.get('/admin/suppliers/1000/edit/{}'.format(detail_type))
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
+    @pytest.mark.parametrize('from_declaration', [True, False])
+    def test_data_controller_role_can_update_registered_company_name(self, from_declaration):
+        self.user_role = 'admin-ccs-data-controller'
+        if from_declaration:
+            self.data_api_client.get_supplier_frameworks.return_value = {
+                'frameworkInterest': [
+                    SupplierFrameworkStub(framework_slug="g-cloud-11", with_declaration=True).response()
+                ]
+            }
+        self.data_api_client.get_supplier.return_value = {
+            "suppliers": {"id": 1000, "registeredName": "Something Old", "name": "ABC"}
+        }
+        response = self.client.post(
+            '/admin/suppliers/1000/edit/registered-name',
+            data={'registered_company_name': "Something New"}
+        )
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/suppliers/1000'
+        self.data_api_client.update_supplier.assert_called_once_with(
+            1000, {'registeredName': "Something New"}, "test@example.com"
+        )
+        assert self.data_api_client.update_supplier_declaration.call_args_list == ([
+            mock.call(
+                1000, 'g-cloud-11',
+                {'supplierRegisteredName': "Something New"}, "test@example.com"
+            )
+        ] if from_declaration else [])
+
+    @pytest.mark.parametrize('update_declaration', [True, False])
+    def test_data_controller_role_can_update_companies_house_number(self, update_declaration):
+        self.user_role = 'admin-ccs-data-controller'
+        self.data_api_client.get_supplier.return_value = {
+            "suppliers": {"id": 1234, "companiesHouseNumber": "87654321"}
+        }
+        if update_declaration:
+            self.data_api_client.get_supplier_frameworks.return_value = {
+                'frameworkInterest': [
+                    SupplierFrameworkStub(framework_slug="g-cloud-11", with_declaration=True).response()
+                ]
+            }
+        response = self.client.post(
+            '/admin/suppliers/1234/edit/registered-company-number',
+            data={'companies_house_number': '12345678'}
+        )
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/suppliers/1234'
+        self.data_api_client.update_supplier.assert_called_once_with(
+            1234,
+            {
+                'companiesHouseNumber': "12345678",
+                'otherCompanyRegistrationNumber': None,
+            },
+            "test@example.com"
+        )
+        assert self.data_api_client.update_supplier_declaration.call_args_list == ([
+            mock.call(
+                1234, 'g-cloud-11',
+                {'supplierCompanyRegistrationNumber': "12345678"}, "test@example.com"
+            )
+        ] if update_declaration else [])
+
+    @pytest.mark.parametrize('update_declaration', [True, False])
+    def test_data_controller_role_can_update_other_registration_number(self, update_declaration):
+        self.user_role = 'admin-ccs-data-controller'
+        self.data_api_client.get_supplier.return_value = {
+            "suppliers": {"id": 1234, "otherCompanyRegistrationNumber": "abc123456"}
+        }
+        if update_declaration:
+            self.data_api_client.get_supplier_frameworks.return_value = {
+                'frameworkInterest': [
+                    SupplierFrameworkStub(framework_slug="g-cloud-11", with_declaration=True).response()
+                ]
+            }
+        response = self.client.post(
+            '/admin/suppliers/1234/edit/registered-company-number',
+            data={'other_company_registration_number': 'def98765'}
+        )
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/suppliers/1234'
+        self.data_api_client.update_supplier.assert_called_once_with(
+            1234,
+            {
+                'companiesHouseNumber': None,
+                'otherCompanyRegistrationNumber': "def98765",
+            },
+            "test@example.com"
+        )
+        assert self.data_api_client.update_supplier_declaration.call_args_list == ([
+            mock.call(
+                1234, 'g-cloud-11',
+                {'supplierCompanyRegistrationNumber': "def98765"}, "test@example.com"
+            )
+        ] if update_declaration else [])
+
+    @pytest.mark.parametrize('update_declaration', [True, False])
+    def test_data_controller_role_can_change_companies_house_to_other_registration_number(self, update_declaration):
+        self.user_role = 'admin-ccs-data-controller'
+        self.data_api_client.get_supplier.return_value = {
+            "suppliers": {"id": 1234, "companiesHouseNumber": "12345678"}
+        }
+        if update_declaration:
+            self.data_api_client.get_supplier_frameworks.return_value = {
+                'frameworkInterest': [
+                    SupplierFrameworkStub(framework_slug="g-cloud-11", with_declaration=True).response()
+                ]
+            }
+        response = self.client.post(
+            '/admin/suppliers/1234/edit/registered-company-number',
+            data={
+                'companies_house_number': '',
+                'other_company_registration_number': 'def98765'
+            }
+        )
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/suppliers/1234'
+        self.data_api_client.update_supplier.assert_called_once_with(
+            1234,
+            {
+                'companiesHouseNumber': None,
+                'otherCompanyRegistrationNumber': "def98765",
+            },
+            "test@example.com"
+        )
+        assert self.data_api_client.update_supplier_declaration.call_args_list == ([
+            mock.call(
+                1234, 'g-cloud-11',
+                {'supplierCompanyRegistrationNumber': "def98765"}, "test@example.com"
+            )
+        ] if update_declaration else [])
+
+    @pytest.mark.parametrize('from_declaration', [True, False])
+    def test_data_controller_role_can_update_registered_company_address(self, from_declaration):
+        self.user_role = 'admin-ccs-data-controller'
+        if from_declaration:
+            self.data_api_client.get_supplier_frameworks.return_value = {
+                'frameworkInterest': [
+                    SupplierFrameworkStub(framework_slug="g-cloud-11", with_declaration=True).response()
+                ]
+            }
+        self.data_api_client.get_supplier.return_value = {
+            "suppliers": {
+                "id": 1234,
+                "registeredCountry": "country:FR",
+                "contactInformation": [
+                    {
+                        'id': 999,
+                        'address1': '123 Rue Morgue',
+                        'city': 'Paris',
+                        'postcode': '76876',
+                        'country': "country:FR"
+                    }
+                ]
+            }
+        }
+        response = self.client.post(
+            '/admin/suppliers/1234/edit/registered-address',
+            data={
+                'street': '10 Downing St',
+                'city': 'London',
+                'postcode': 'AB1 2DE',
+                'country': 'country:GB'
+            }
+        )
+        assert response.status_code == 302
+        assert response.location == 'http://localhost/admin/suppliers/1234'
+        self.data_api_client.update_supplier.assert_called_once_with(
+            1234, {'registrationCountry': "country:GB"}, "test@example.com"
+        )
+        self.data_api_client.update_contact_information.assert_called_once_with(
+            1234,
+            999,
+            {
+                'address1': '10 Downing St',
+                'city': 'London',
+                'postcode': 'AB1 2DE',
+                'country': "country:GB"
+            },
+            "test@example.com"
+        )
+        assert self.data_api_client.update_supplier_declaration.call_args_list == ([
+            mock.call(
+                1234, 'g-cloud-11',
+                {
+                    "supplierRegisteredBuilding": '10 Downing St',
+                    "supplierRegisteredCountry": "country:GB",
+                    "supplierRegisteredPostcode": 'AB1 2DE',
+                    "supplierRegisteredTown": 'London',
+                }, "test@example.com"
+            )
+        ] if from_declaration else [])
+
+    def test_edit_duns_number_shows_contact_us_message(self):
+        self.user_role = 'admin-ccs-data-controller'
+        response = self.client.get('/admin/suppliers/1000/edit/duns-number')
+        assert response.status_code == 200
+        assert "You need to contact" in response.get_data(as_text=True)
 
 
 class TestViewingASupplierDeclaration(LoggedInApplicationTest):
