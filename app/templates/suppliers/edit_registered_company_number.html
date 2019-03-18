@@ -1,0 +1,48 @@
+{% extends "_base_page.html" %}
+
+{% block page_title %}
+  Change registered supplier name – {{ supplier.name }} – Digital Marketplace admin
+{% endblock %}
+
+{% block breadcrumb %}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      },
+      {
+        "label": supplier.name,
+        "link": url_for('.supplier_details', supplier_id=supplier.id)
+      },
+      {
+        "label": "Change registered company number"
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+  {% with heading = "Change registered company number" %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+  <form method="post">
+    <div class="grid-row">
+      <div class="column-two-thirds">
+        <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+        {{ form.companies_house_number }}
+        {{ form.other_company_registration_number }}
+
+        {%
+          with
+          type = "save",
+          label = "Save"
+        %}
+          {% include "toolkit/button.html" %}
+        {% endwith %}
+      </div>
+    </div>
+  </form>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "_base_page.html" %}
+
+{% block page_title %}
+  DUNS number – {{ supplier.name }} – Digital Marketplace admin
+{% endblock %}
+
+{% block breadcrumb %}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      },
+      {
+        "label": supplier.name,
+        "link": url_for('.supplier_details', supplier_id=supplier.id)
+      },
+      {
+        "label": "DUNS number"
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+<div class="grid-row">
+<div class="column-two-thirds">
+  {% with heading = "Change the DUNS number for ‘{}’".format(supplier.name) %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+
+  <p>You need to contact <a href="mailto:cloud_digital@crowncommercial.gov.uk ">cloud_digital@crowncommercial.gov.uk </a> to change a supplier DUNS number.</p>
+  <br /><a href="{{ url_for('.supplier_details', supplier_id=supplier.id) }}">Return to ‘{{ supplier.name }}’ company details</a></p>
+    </div>
+</div>
+{% endblock %}
