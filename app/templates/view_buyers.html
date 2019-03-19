@@ -48,9 +48,13 @@
   {% endwith %}
 
   {% with heading = brief_id|string + ' - ' + title if title %}
-  {% include "toolkit/page-heading.html" %}
+    {% include "toolkit/page-heading.html" %}
   {% endwith %}
 
+{% if brief %}
+<div>
+<hr>
+<h3>Users</h3>
   {% call(item) summary.list_table(
           users,
           caption="Buyers",
@@ -81,9 +85,6 @@
   {% endcall %}
 
   <br>
-{% if brief %}
-
-    <b> Edit brief data</b>
     <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
         {{ form.csrf_token }}
         <label class="question-heading" for="add_user">Add user to brief (email address or id)</label>
@@ -98,18 +99,68 @@
         <br/>
         <input type="submit" value="Save" class="button-save">
     </form>
-    <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
-        {{ form.csrf_token }}
-        <label class="question-heading" for="edit_seller_email_list">Edit seller email list (List of sellers). One on each line</label>
-        <textarea rows="5" name="edit_seller_email_list" id="edit_seller_email_list" class="text-area">{{seller_email_list}}</textarea>
+    
+</div>
+<div>
+    <hr>
+    <h3>Invited Sellers</h3>
+    {% if brief.lotSlug == 'rfx' and brief.sellers %}
+
+        {% call(item) summary.list_table(
+            brief.sellers.keys(),
+            caption="RFx Invited Sellers",
+            empty_message="No sellers to show",
+            field_headings=[
+                'Name',
+                'Seller Code',
+            ],
+            field_headings_visible=True)
+        %}
+            {% call summary.row() %}
+
+                {{ summary.field_name(brief.sellers[item].name.title()) }}
+
+                {% call summary.field() %}
+                    {{ item }}
+                {% endcall %}
+
+            {% endcall %}
+        {% endcall %}
+    {% endif %}
+    {%if brief.lotSlug == 'rfx' %}
+        <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
+            {{ form.csrf_token }}
+            <label class="question-heading" for="add_seller_to_rfx_brief">Add a seller to this RFx brief (seller code)</label>
+            <input type = "text" name="add_seller_to_rfx_brief" id="add_seller_to_rfx_brief" class="text-box"></input>
+            <br>
         <input type="submit" value="Save" class="button-save">
-    </form>
-    <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
-        {{ form.csrf_token }}
-        <label class="question-heading" for="edit_seller_email">Edit seller email (Individual seller)</label>
-        <input type="email" name="edit_seller_email" id="edit_seller_email" class="text-box" value="{{seller_email}}" />
-        <input type="submit" value="Save" class="button-save">
-    </form>
+        </form>
+        <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
+            {{ form.csrf_token }}
+            <label class="question-heading" for="remove_seller_from_rfx_brief">Remove a seller from this RFx brief (seller code)</label>
+            <input type = "text" name="remove_seller_from_rfx_brief" id="remove_seller_from_rfx_brief" class="text-box"></input>
+            <br>
+            <input type="submit" value="Save" class="button-save">
+            <hr>
+        </form>
+    {% endif %}
+    {% if brief.lotSlug != 'rfx' %}
+        <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
+            {{ form.csrf_token }}
+            <label class="question-heading" for="edit_seller_email_list">Edit seller email list (List of sellers). One on each line</label>
+            <textarea rows="5" name="edit_seller_email_list" id="edit_seller_email_list" class="text-area">{{"\n".join (brief.sellerEmailList)}}</textarea>
+            <input type="submit" value="Save" class="button-save">
+        </form>
+        <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
+            {{ form.csrf_token }}
+            <label class="question-heading" for="edit_seller_email">Edit seller email (Individual seller)</label>
+            <input type="email" name="edit_seller_email" id="edit_seller_email" class="text-box" value="{{seller_email}}" />
+            <input type="submit" value="Save" class="button-save">
+        </form>
+        <hr>
+    {% endif %}
+    </div>
+    <h3> Edit brief data</h3>
     <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
         {{ form.csrf_token }}
         <label class="question-heading" for="edit_area_of_expertise">Select area of expertise</label>
@@ -126,7 +177,7 @@
         {{ form.csrf_token }}
         <label class="question-heading" for="questions_closed_at">Set new question date (YYYY-MM-DD)</label>
         <input type="text" name="questions_closed_at" id="questions_closed_at" class="text-box"  value="{{brief.dates.questions_closing_date if brief.dates.questions_closing_date}}">
-
+        
         <label class="question-heading" for="closed_at">Set new closing date (YYYY-MM-DD)</label>
         <input type="text" name="closed_at" id="closed_at" class="text-box" value="{{brief.dates.closing_date if brief.dates.closing_date}}">
         <br/>
@@ -152,7 +203,6 @@
       <br/>
       <input type="submit" value="Search" class="button-save">
   </form>
-  </div>
   <br />
   {% if brief.status == 'live' %}
     <dialog id="withdraw-dialog">
