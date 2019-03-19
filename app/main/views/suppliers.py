@@ -274,7 +274,7 @@ def edit_supplier_registered_address(supplier_id):
     supplier_framework_interests = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
     supplier_frameworks = interesting_frameworks(supplier_framework_interests, current_user, frameworks)
 
-    # Get the company details (either from supplier or recent declaration)
+    # Get the company details (either from supplier contact information or recent declaration)
     company_details, most_recent_declaration = get_company_details_and_most_recent_interest(
         supplier_frameworks, supplier
     )

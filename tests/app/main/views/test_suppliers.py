@@ -1342,7 +1342,12 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
                 ]
             }
         self.data_api_client.get_supplier.return_value = {
-            "suppliers": {"id": 1000, "registeredName": "Something Old", "name": "ABC"}
+            "suppliers": {
+                "id": 1000,
+                "registeredName": "Something Old",
+                "name": "ABC",
+                "contactInformation": []
+            }
         }
         response = self.client.post(
             '/admin/suppliers/1000/edit/registered-name',
@@ -1365,7 +1370,12 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
     def test_data_controller_role_can_update_companies_house_number(self, update_declaration):
         self.user_role = 'admin-ccs-data-controller'
         self.data_api_client.get_supplier.return_value = {
-            "suppliers": {"id": 1234, "companiesHouseNumber": "87654321", "name": "ABC"}
+            "suppliers": {
+                "id": 1234,
+                "companiesHouseNumber": "87654321",
+                "name": "ABC",
+                "contactInformation": []
+            }
         }
         if update_declaration:
             self.data_api_client.get_supplier_frameworks.return_value = {
@@ -1399,7 +1409,12 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
     def test_data_controller_role_can_update_other_registration_number(self, update_declaration):
         self.user_role = 'admin-ccs-data-controller'
         self.data_api_client.get_supplier.return_value = {
-            "suppliers": {"id": 1234, "otherCompanyRegistrationNumber": "abc123456", "name": "ABC"}
+            "suppliers": {
+                "id": 1234,
+                "otherCompanyRegistrationNumber": "abc123456",
+                "name": "ABC",
+                "contactInformation": []
+            }
         }
         if update_declaration:
             self.data_api_client.get_supplier_frameworks.return_value = {
@@ -1433,7 +1448,12 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
     def test_data_controller_role_can_change_companies_house_to_other_registration_number(self, update_declaration):
         self.user_role = 'admin-ccs-data-controller'
         self.data_api_client.get_supplier.return_value = {
-            "suppliers": {"id": 1234, "companiesHouseNumber": "12345678", "name": "ABC"}
+            "suppliers": {
+                "id": 1234,
+                "companiesHouseNumber": "12345678",
+                "name": "ABC",
+                "contactInformation": []
+            }
         }
         if update_declaration:
             self.data_api_client.get_supplier_frameworks.return_value = {

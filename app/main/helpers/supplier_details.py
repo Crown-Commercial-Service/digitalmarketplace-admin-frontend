@@ -2,6 +2,13 @@ DEPRECATED_FRAMEWORK_SLUGS = ['g-cloud-4', 'g-cloud-5', 'g-cloud-6']
 
 
 def company_details_from_supplier(supplier):
+    address = {"country": supplier.get("registrationCountry")}
+    if len(supplier.get('contactInformation', [])) > 0:
+        address.update({
+            "street_address_line_1": supplier['contactInformation'][0].get('address1'),
+            "locality": supplier["contactInformation"][0].get("city"),
+            "postcode": supplier["contactInformation"][0].get("address1"),
+        })
     return {
         "duns_number": supplier.get("dunsNumber"),
         "registration_number": (
@@ -10,9 +17,7 @@ def company_details_from_supplier(supplier):
             supplier.get("otherCompanyRegistrationNumber")
         ),
         "registered_name": supplier.get("registeredName"),
-        "address": {
-            "country": supplier.get("registrationCountry"),
-        }
+        "address": address
     }
 
 
