@@ -31,7 +31,7 @@ from ..helpers.countries import COUNTRY_TUPLE
 from ..helpers.pagination import get_nav_args_from_api_response_links
 from ..helpers.supplier_details import (
     get_supplier_frameworks_visible_for_role,
-    get_company_details_and_most_recent_interest
+    get_company_details
 )
 from ... import data_api_client, content_loader
 
@@ -116,14 +116,13 @@ def supplier_details(supplier_id):
     )
 
     # Get the company details, and the declaration they came from (if any)
-    company_details, most_recent_framework_interest = get_company_details_and_most_recent_interest(
-        visible_supplier_frameworks, supplier
-    )
+    most_recent_supplier_framework = visible_supplier_frameworks[-1] if visible_supplier_frameworks else {}
+    company_details = get_company_details(most_recent_supplier_framework, supplier)
 
     return render_template(
         "supplier_details.html",
         company_details=company_details,
-        most_recent_framework_interest=most_recent_framework_interest,
+        most_recent_framework_interest=most_recent_supplier_framework,
         supplier=supplier,
         supplier_id=supplier_id,
         supplier_frameworks=visible_supplier_frameworks,
@@ -168,9 +167,8 @@ def edit_supplier_registered_name(supplier_id):
     )
 
     # Get the company details (either from supplier or recent declaration)
-    company_details, most_recent_declaration = get_company_details_and_most_recent_interest(
-        visible_supplier_frameworks, supplier
-    )
+    most_recent_supplier_framework = visible_supplier_frameworks[-1] if visible_supplier_frameworks else {}
+    company_details = get_company_details(most_recent_supplier_framework, supplier)
 
     form = EditSupplierRegisteredNameForm(
         data={"registered_company_name": company_details.get('registered_name')}
@@ -182,10 +180,10 @@ def edit_supplier_registered_name(supplier_id):
             {'registeredName': form.registered_company_name.data},
             current_user.email_address
         )
-        if most_recent_declaration.get('declaration'):
+        if most_recent_supplier_framework.get('declaration'):
             data_api_client.update_supplier_declaration(
                 supplier_id,
-                most_recent_declaration['frameworkSlug'],
+                most_recent_supplier_framework['frameworkSlug'],
                 {"supplierRegisteredName": form.registered_company_name.data},
                 current_user.email_address
             )
@@ -239,7 +237,7 @@ def edit_supplier_registered_company_number(supplier_id):
         visible_supplier_frameworks = get_supplier_frameworks_visible_for_role(
             supplier_frameworks, current_user, frameworks
         )
-        _, most_recent_declaration = get_company_details_and_most_recent_interest(visible_supplier_frameworks, supplier)
+        most_recent_supplier_framework = visible_supplier_frameworks[-1] if visible_supplier_frameworks else {}
 
         # Update supplier
         data_api_client.update_supplier(
@@ -248,10 +246,10 @@ def edit_supplier_registered_company_number(supplier_id):
             user=current_user.email_address
         )
 
-        if most_recent_declaration.get('declaration'):
+        if most_recent_supplier_framework.get('declaration'):
             data_api_client.update_supplier_declaration(
                 supplier_id,
-                most_recent_declaration['frameworkSlug'],
+                most_recent_supplier_framework['frameworkSlug'],
                 update_declaration_payload,
                 current_user.email_address
             )
@@ -283,9 +281,9 @@ def edit_supplier_registered_address(supplier_id):
     )
 
     # Get the company details (either from supplier contact information or recent declaration)
-    company_details, most_recent_declaration = get_company_details_and_most_recent_interest(
-        visible_supplier_frameworks, supplier
-    )
+    most_recent_supplier_framework = visible_supplier_frameworks[-1] if visible_supplier_frameworks else {}
+    company_details = get_company_details(most_recent_supplier_framework, supplier)
+
     prefill_data = {
         "street": company_details['address'].get('street_address_line_1'),
         "city": company_details['address'].get('locality'),
@@ -314,10 +312,10 @@ def edit_supplier_registered_address(supplier_id):
             current_user.email_address
         )
 
-        if most_recent_declaration.get('declaration'):
+        if most_recent_supplier_framework.get('declaration'):
             data_api_client.update_supplier_declaration(
                 supplier_id,
-                most_recent_declaration['frameworkSlug'],
+                most_recent_supplier_framework['frameworkSlug'],
                 {
                     "supplierRegisteredBuilding": form.street.data,
                     "supplierRegisteredCountry": form.country.data,

@@ -71,18 +71,7 @@ def get_supplier_frameworks_visible_for_role(supplier_frameworks, current_user, 
     )
 
 
-def get_company_details_and_most_recent_interest(supplier_frameworks, supplier):
-    # Get the company details and the declaration they were taken from (if any)
-    if supplier_frameworks:
-        most_recent_framework_interest = supplier_frameworks[-1]
-    else:
-        most_recent_framework_interest = {}
-
-    if most_recent_framework_interest.get("declaration"):
-        company_details = company_details_from_supplier_framework_declaration(
-            most_recent_framework_interest["declaration"]
-        )
-    else:
-        company_details = company_details_from_supplier(supplier)
-
-    return company_details, most_recent_framework_interest
+def get_company_details(supplier_framework, supplier):
+    if supplier_framework.get("declaration"):
+        return company_details_from_supplier_framework_declaration(supplier_framework["declaration"])
+    return company_details_from_supplier(supplier)
