@@ -36,12 +36,12 @@ def company_details_from_supplier_framework_declaration(declaration):
     }
 
 
-def interesting_frameworks(supplier_framework_interests, current_user, frameworks):
+def get_supplier_frameworks_visible_for_role(supplier_frameworks, current_user, frameworks):
     """
-    :param supplier_framework_interests: SupplierFramework objects for the supplier
+    :param supplier_frameworks: list of SupplierFramework objects for the supplier
     :param current_user: flask user (should be an admin)
     :param frameworks: list of all framework objects
-    :return: List of frameworks of interest to a particular admin role, sorted by oldest first
+    :return: List of frameworks visible to a particular admin role, sorted by oldest first
     """
     # Build dict of status and frameworkLiveAtUTC info for recent (G7 and up) frameworks
     framework_info = {
@@ -58,15 +58,15 @@ def interesting_frameworks(supplier_framework_interests, current_user, framework
     else:
         useful_statuses = ["live", "expired"]
 
-    interesting_supplier_frameworks = []
-    for supplier_framework in supplier_framework_interests:
+    visible_supplier_frameworks = []
+    for supplier_framework in supplier_frameworks:
         if framework_info.get(supplier_framework["frameworkSlug"], {}).get("status") in useful_statuses:
             # Save the framework name to the SupplierFramework for use in template
             supplier_framework['frameworkName'] = framework_info.get(supplier_framework["frameworkSlug"], {})['name']
-            interesting_supplier_frameworks.append(supplier_framework)
+            visible_supplier_frameworks.append(supplier_framework)
 
     return sorted(
-        interesting_supplier_frameworks,
+        visible_supplier_frameworks,
         key=lambda sf: framework_info[sf["frameworkSlug"]]['frameworkLiveAtUTC']
     )
 

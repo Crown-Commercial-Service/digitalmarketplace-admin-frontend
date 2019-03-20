@@ -30,7 +30,7 @@ from ..forms import (
 from ..helpers.countries import COUNTRY_TUPLE
 from ..helpers.pagination import get_nav_args_from_api_response_links
 from ..helpers.supplier_details import (
-    interesting_frameworks,
+    get_supplier_frameworks_visible_for_role,
     get_company_details_and_most_recent_interest
 )
 from ... import data_api_client, content_loader
@@ -108,14 +108,16 @@ def find_suppliers():
 def supplier_details(supplier_id):
     frameworks = data_api_client.find_frameworks()["frameworks"]
     supplier = data_api_client.get_supplier(supplier_id)["suppliers"]
-    supplier_framework_interests = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
+    supplier_frameworks = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
 
     # Get SupplierFrameworks for frameworks the role is interested in, sorted by oldest frameworkLiveAtUTC first
-    supplier_frameworks = interesting_frameworks(supplier_framework_interests, current_user, frameworks)
+    visible_supplier_frameworks = get_supplier_frameworks_visible_for_role(
+        supplier_frameworks, current_user, frameworks
+    )
 
     # Get the company details, and the declaration they came from (if any)
     company_details, most_recent_framework_interest = get_company_details_and_most_recent_interest(
-        supplier_frameworks, supplier
+        visible_supplier_frameworks, supplier
     )
 
     return render_template(
@@ -124,7 +126,7 @@ def supplier_details(supplier_id):
         most_recent_framework_interest=most_recent_framework_interest,
         supplier=supplier,
         supplier_id=supplier_id,
-        supplier_frameworks=supplier_frameworks,
+        supplier_frameworks=visible_supplier_frameworks,
         old_interesting_framework_slugs=OLD_SIGNING_FLOW_SLUGS,
     )
 
@@ -161,11 +163,13 @@ def edit_supplier_registered_name(supplier_id):
 
     # Get SupplierFrameworks for frameworks the role is interested in, sorted by oldest frameworkLiveAtUTC first
     supplier_framework_interests = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
-    supplier_frameworks = interesting_frameworks(supplier_framework_interests, current_user, frameworks)
+    visible_supplier_frameworks = get_supplier_frameworks_visible_for_role(
+        supplier_framework_interests, current_user, frameworks
+    )
 
     # Get the company details (either from supplier or recent declaration)
     company_details, most_recent_declaration = get_company_details_and_most_recent_interest(
-        supplier_frameworks, supplier
+        visible_supplier_frameworks, supplier
     )
 
     form = EditSupplierRegisteredNameForm(
@@ -231,9 +235,11 @@ def edit_supplier_registered_company_number(supplier_id):
             }
 
         # Although we've fetched the reg number from the supplier, any recent declaration should be updated too
-        supplier_framework_interests = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
-        supplier_frameworks = interesting_frameworks(supplier_framework_interests, current_user, frameworks)
-        _, most_recent_declaration = get_company_details_and_most_recent_interest(supplier_frameworks, supplier)
+        supplier_frameworks = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
+        visible_supplier_frameworks = get_supplier_frameworks_visible_for_role(
+            supplier_frameworks, current_user, frameworks
+        )
+        _, most_recent_declaration = get_company_details_and_most_recent_interest(visible_supplier_frameworks, supplier)
 
         # Update supplier
         data_api_client.update_supplier(
@@ -271,12 +277,14 @@ def edit_supplier_registered_address(supplier_id):
     contact = supplier["contactInformation"][0]
 
     # Get SupplierFrameworks for frameworks the role is interested in, sorted by oldest frameworkLiveAtUTC first
-    supplier_framework_interests = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
-    supplier_frameworks = interesting_frameworks(supplier_framework_interests, current_user, frameworks)
+    supplier_frameworks = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
+    visible_supplier_frameworks = get_supplier_frameworks_visible_for_role(
+        supplier_frameworks, current_user, frameworks
+    )
 
     # Get the company details (either from supplier contact information or recent declaration)
     company_details, most_recent_declaration = get_company_details_and_most_recent_interest(
-        supplier_frameworks, supplier
+        visible_supplier_frameworks, supplier
     )
     prefill_data = {
         "street": company_details['address'].get('street_address_line_1'),
