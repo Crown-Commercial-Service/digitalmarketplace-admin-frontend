@@ -1,0 +1,82 @@
+{% extends "_base_page.html" %}
+
+{% block page_title %}
+  Change registered company address – {{ supplier.name }} – Digital Marketplace admin
+{% endblock %}
+{% block head %}
+  <link type="text/css" rel="stylesheet" media="screen" href="{{ asset_fingerprinter.get_url('stylesheets/location-autocomplete.min.css') }}"/>
+  {{ super() }}
+{% endblock %}
+
+{% block breadcrumb %}
+  {%
+    with items = [
+      {
+        "link": url_for('.index'),
+        "label": "Admin home"
+      },
+      {
+        "label": supplier.name,
+        "link": url_for('.supplier_details', supplier_id=supplier.id)
+      },
+      {
+        "label": "Change registered company address"
+      }
+    ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+  {% with heading = "Update registered company address for ‘{}’".format(supplier.name) %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+  <form method="post">
+    <div class="grid-row">
+      <div class="column-two-thirds">
+        <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+        {{ form.street }}
+        {{ form.city }}
+        {{ form.postcode }}
+        {% if form.country.errors %}
+
+      <div class="validation-wrapper">
+        <style>
+          #location-autocomplete {border: 5px solid #B10E1E;}
+          .autocomplete__hint {border: 5px solid;}
+        </style>
+      {% endif %}
+
+      <div class="question" id="country">
+        <span class="question-heading" id="country-label">Country</span>
+
+        <select name="country" id="location-autocomplete" class="location-autocomplete-fallback">
+        {% if not form.country.data %}
+          <option value="" selected="selected"></option>
+        {% endif %}
+        {% for country in countries %}
+          <option value="{{country[1]}}"{% if form.country.data == country[1]%} selected="selected"{% endif %}>{{country[0]}}</option>
+        {% endfor %}
+        </select>
+      </div>
+      {% if form.country.errors %}
+      </div>
+      {% endif %}
+
+        {%
+          with
+          type = "save",
+          label = "Save"
+        %}
+          {% include "toolkit/button.html" %}
+        {% endwith %}
+      </div>
+    </div>
+  </form>
+{% endblock %}
+
+{% block page_scripts %}
+<script type="text/javascript" src="{{ asset_path }}javascripts/location-autocomplete.min.js"></script>
+<script type="text/javascript" src="{{ asset_path }}javascripts/app-location-autocomplete.js"></script>
+{% endblock %}

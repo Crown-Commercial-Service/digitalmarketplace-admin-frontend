@@ -1,7 +1,7 @@
 {% extends "_base_page.html" %}
 
 {% block page_title %}
-  Change name – {{ supplier.name }} – Digital Marketplace admin
+  Change registered company name – {{ supplier.name }} – Digital Marketplace admin
 {% endblock %}
 
 {% block breadcrumb %}
@@ -16,7 +16,7 @@
         "link": url_for('.supplier_details', supplier_id=supplier.id)
       },
       {
-        "label": "Change supplier name"
+        "label": "Change registered company name"
       }
     ]
   %}
@@ -25,21 +25,15 @@
 {% endblock %}
 
 {% block main_content %}
-  {% with heading = "Change supplier name" %}
+  {% with heading = "Update registered company name for ‘{}’".format(supplier.name) %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
   <form method="post">
     <div class="grid-row">
       <div class="column-two-thirds">
         <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
-        {%
-          with
-          question = "New name",
-          name = "new_supplier_name",
-          value = supplier.name
-        %}
-          {% include "toolkit/forms/textbox.html" %}
-        {% endwith %}
+        {{ form.registered_company_name }}
+
         {%
           with
           type = "save",

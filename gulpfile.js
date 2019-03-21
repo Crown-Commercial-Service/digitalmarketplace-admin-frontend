@@ -10,6 +10,7 @@ var colours = require('colors/safe');
 var environment;
 var repoRoot = __dirname + '/';
 var npmRoot = repoRoot + 'node_modules';
+var govukCountryPickerDist = npmRoot + '/govuk-country-and-territory-autocomplete/dist';
 var govukToolkitRoot = npmRoot + '/govuk_frontend_toolkit';
 var govukElementsRoot = npmRoot + '/govuk-elements-sass';
 var govukFrontendRoot = npmRoot + '/govuk-frontend';
@@ -24,6 +25,7 @@ var govukFrontendFontsFolder = govukFrontendRoot + '/assets/fonts';
 
 // JavaScript paths
 var jsSourceFile = assetsFolder + '/javascripts/application.js';
+var jsPageSpecific = assetsFolder + '/javascripts/page_specific';
 var jsDistributionFolder = staticFolder + '/javascripts';
 var jsDistributionFile = 'application.js';
 
@@ -152,6 +154,20 @@ function copyFactory(resourceName, sourceFolder, targetFolder) {
 
 }
 
+function copyFiletypeFactory(resourceName, sourceFolder, sourceFileExtension, targetFolder) {
+
+  return function() {
+    return gulp
+      .src(sourceFolder + "/**/*." + sourceFileExtension, { base: sourceFolder })
+      .pipe(gulp.dest(targetFolder))
+      .on('end', function () {
+        console.log('📂  Copied ' + resourceName );
+      });
+
+  };
+
+}
+
 gulp.task(
   'copy:template_assets:stylesheets',
   copyFactory(
@@ -242,6 +258,45 @@ gulp.task(
 );
 
 gulp.task(
+  'copy:country_picker:jsons',
+  copyFiletypeFactory(
+    "country picker jsons to static folder",
+    govukCountryPickerDist,
+    "json",
+    staticFolder
+  )
+);
+
+gulp.task(
+  'copy:country_picker:stylesheets',
+  copyFiletypeFactory(
+    "country picker stylesheets to static folder",
+    govukCountryPickerDist,
+    "css",
+    cssDistributionFolder
+  )
+);
+
+gulp.task(
+  'copy:country_picker_package:javascripts',
+  copyFiletypeFactory(
+    "country picker package javascripts to static folder",
+    govukCountryPickerDist,
+    "{js,js.map}",
+    jsDistributionFolder
+  )
+);
+
+gulp.task(
+  'copy:page_specific:javascripts',
+  copyFactory(
+    "page specific javascript to static folder",
+    jsPageSpecific,
+    jsDistributionFolder
+  )
+);
+
+gulp.task(
   'copy:govuk_frontend_assets:fonts',
   copyFactory(
     "fonts from the GOVUK frontend assets",
@@ -285,7 +340,11 @@ gulp.task(
     'copy:dm_toolkit_assets:templates',
     'copy:images',
     'copy:govuk_template',
-    'copy:govuk_frontend_assets:fonts'
+    'copy:govuk_frontend_assets:fonts',
+    'copy:country_picker:jsons',
+    'copy:country_picker:stylesheets',
+    'copy:country_picker_package:javascripts',
+    'copy:page_specific:javascripts',
   ]
 );
 

@@ -10,6 +10,7 @@
     "del": "1.2.0",
     "digitalmarketplace-frameworks": "https://github.com/alphagov/digitalmarketplace-frameworks.git#v15.0.3",
     "digitalmarketplace-frontend-toolkit": "https://github.com/alphagov/digitalmarketplace-frontend-toolkit.git#v31.10.0",
+    "govuk-country-and-territory-autocomplete": "0.5.1",
     "govuk-elements-sass": "3.0.3",
     "govuk-frontend": "^2.4.0",
     "govuk_frontend_toolkit": "5.0.3",
