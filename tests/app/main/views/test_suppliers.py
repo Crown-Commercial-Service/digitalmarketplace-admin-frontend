@@ -1549,6 +1549,34 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
         ] if from_declaration else [])
         self.assert_flashes("The details for ‘ABC’ have been updated.")
 
+    @pytest.mark.parametrize(
+        'url_suffix, payload, expected_error_msg', [
+            ('registered-company-number', {'companies_house_number': ''}, "You must provide an answer"),
+            ('registered-name', {'registered_company_name': ''}, "You must provide a registered company name"),
+        ]
+    )
+    def test_edit_company_name_or_number_shows_validation_header_on_400(self, url_suffix, payload, expected_error_msg):
+        self.user_role = 'admin-ccs-data-controller'
+        self.data_api_client.get_supplier.return_value = {
+            "suppliers": {
+                "id": 1234,
+                "companiesHouseNumber": "87654321",
+                "name": "ABC",
+                "contactInformation": []
+            }
+        }
+        response = self.client.post(
+            '/admin/suppliers/1234/edit/{}'.format(url_suffix),
+            data=payload
+        )
+        assert response.status_code == 400
+        assert self.data_api_client.update_supplier.called is False
+        assert self.data_api_client.update_supplier_declaration.called is False
+        assert expected_error_msg in response.get_data(as_text=True)
+        document = html.fromstring(response.get_data(as_text=True))
+        validation_banner_h2 = document.xpath("//h2[@class='validation-masthead-heading']//text()")[0].strip()
+        assert validation_banner_h2 == "There was a problem with your answer to:"
+
     def test_edit_duns_number_shows_contact_us_message(self):
         self.user_role = 'admin-ccs-data-controller'
         response = self.client.get('/admin/suppliers/1000/edit/duns-number')
