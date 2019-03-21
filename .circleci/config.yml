@@ -133,6 +133,15 @@ workflows:
           filters:
             tags:
               only: /release-.*/
+      - approval:
+          type: approval
+          requires:
+            - build
+          filters:
+            tags:
+              only: /release-.*/
+            branches:
+              ignore: /.*/
       - deploy_to_rc:
           requires:
             - build
@@ -151,7 +160,7 @@ workflows:
               only: master
       - deploy_to_production:
           requires:
-            - build
+            - approval
           filters:
             tags:
               only: /release-.*/
@@ -159,7 +168,7 @@ workflows:
               ignore: /.*/
       - deploy_to_production_clone:
           requires:
-            - build
+            - approval
           filters:
             tags:
               only: /release-.*/
