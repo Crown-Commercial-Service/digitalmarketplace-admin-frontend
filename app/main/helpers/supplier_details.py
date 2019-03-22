@@ -7,7 +7,7 @@ def company_details_from_supplier(supplier):
         address.update({
             "street_address_line_1": supplier['contactInformation'][0].get('address1'),
             "locality": supplier["contactInformation"][0].get("city"),
-            "postcode": supplier["contactInformation"][0].get("address1"),
+            "postcode": supplier["contactInformation"][0].get("postcode"),
         })
     return {
         "duns_number": supplier.get("dunsNumber"),
