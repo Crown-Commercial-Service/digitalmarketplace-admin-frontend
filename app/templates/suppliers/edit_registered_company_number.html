@@ -25,6 +25,7 @@
 {% endblock %}
 
 {% block main_content %}
+  {% include 'toolkit/forms/validation.html' %}
   {% with heading = "Update registered company number for ‘{}’".format(supplier.name) %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}

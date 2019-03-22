@@ -1,4 +1,5 @@
 {% extends "_base_page.html" %}
+{% import "toolkit/forms/macros/forms.html" as forms %}
 
 {% block page_title %}
   Change registered company address – {{ supplier.name }} – Digital Marketplace admin
@@ -29,6 +30,7 @@
 {% endblock %}
 
 {% block main_content %}
+  {% include 'toolkit/forms/validation.html' %}
   {% with heading = "Update registered company address for ‘{}’".format(supplier.name) %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
@@ -50,7 +52,7 @@
 
       <div class="question" id="country">
         <span class="question-heading" id="country-label">Country</span>
-
+        {{ forms.field_errors(form.country.name, errors=form.country.errors) }}
         <select name="country" id="location-autocomplete" class="location-autocomplete-fallback">
         {% if not form.country.data %}
           <option value="" selected="selected"></option>
