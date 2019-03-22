@@ -169,13 +169,38 @@ class TestSupplierDetailsView(LoggedInApplicationTest):
             ]
         }
 
-        self.data_api_client.get_supplier.return_value = SupplierStub(
-            dunsNumber=mock.sentinel.duns_number,
-        ).single_result_response()
+        self.data_api_client.get_supplier.return_value = {
+            "suppliers": {
+                "id": 1234,
+                "name": "ABC",
+                "dunsNumber": mock.sentinel.duns_number,
+                "registrationCountry": "country:FR",
+                "companiesHouseNumber": "12345678",
+                "contactInformation": [
+                    {
+                        'id': 999,
+                        'address1': '123 Rue Morgue',
+                        'city': 'Paris',
+                        'postcode': '76876',
+                        'country': "not used"
+                    }
+                ]
+            }
+        }
 
         self.client.get("/admin/suppliers/1234")
         company_details = render_template.call_args[1]["company_details"]
-        assert company_details["duns_number"] == mock.sentinel.duns_number
+        assert company_details == {
+            "duns_number": mock.sentinel.duns_number,
+            "registration_number": "12345678",
+            "registered_name": None,
+            "address": {
+                'street_address_line_1': '123 Rue Morgue',
+                'locality': 'Paris',
+                'postcode': '76876',
+                'country': "country:FR"
+            }
+        }
 
 
 class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
