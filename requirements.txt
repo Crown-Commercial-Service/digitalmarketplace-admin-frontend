@@ -5,19 +5,20 @@
 Flask==1.0.2
 Flask-Login==0.4.1
 Flask-WTF==0.14.2
-lxml==4.3.2
+lxml==4.3.3
 
 # Putting upgrade on hold due to v1.0.0 using sha512 instead of sha1 by default
 itsdangerous==0.24  # pyup: <1.0.0
 
 git+https://github.com/alphagov/digitalmarketplace-content-loader.git@5.2.0#egg=digitalmarketplace-content-loader==5.2.0
-git+https://github.com/alphagov/digitalmarketplace-utils.git@46.3.1#egg=digitalmarketplace-utils==46.3.1
+git+https://github.com/alphagov/digitalmarketplace-utils.git@48.0.3#egg=digitalmarketplace-utils==48.0.3
 git+https://github.com/alphagov/digitalmarketplace-apiclient.git@19.15.1#egg=digitalmarketplace-apiclient==19.15.1
 
 ## The following requirements were added by pip freeze:
 asn1crypto==0.24.0
-boto3==1.9.116
-botocore==1.12.116
+blinker==1.4
+boto3==1.9.130
+botocore==1.12.130
 certifi==2019.3.9
 cffi==1.12.2
 chardet==3.0.4
@@ -30,10 +31,11 @@ docutils==0.14
 Flask-Script==2.0.6
 fleep==1.0.1
 future==0.17.1
+gds-metrics==0.2.0
 govuk-country-register==0.3.0
 idna==2.8
 inflection==0.3.1
-Jinja2==2.10
+Jinja2==2.10.1
 jmespath==0.9.4
 mailchimp3==3.0.6
 Markdown==2.6.11
@@ -41,17 +43,18 @@ MarkupSafe==1.1.1
 monotonic==1.5
 notifications-python-client==5.3.0
 odfpy==1.4.0
+prometheus-client==0.2.0
 pycparser==2.19
 PyJWT==1.7.1
 python-dateutil==2.8.0
-python-json-logger==0.1.10
-pytz==2018.9
+python-json-logger==0.1.11
+pytz==2019.1
 PyYAML==3.13
 requests==2.21.0
 s3transfer==0.2.0
 six==1.12.0
 unicodecsv==0.14.1
 urllib3==1.24.1
-Werkzeug==0.14.1
+Werkzeug==0.15.2
 workdays==1.4
 WTForms==2.2.1
