@@ -1060,6 +1060,7 @@ class TestToggleSupplierServicesView(LoggedInApplicationTest):
 
         self.data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
         self.data_api_client.find_services.return_value = self.load_example_listing('services_response')
+        self.data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
 
     def teardown_method(self, method):
         self.data_api_client_patch.stop()
@@ -1077,6 +1078,15 @@ class TestToggleSupplierServicesView(LoggedInApplicationTest):
         self.data_api_client.find_services.return_value = {'services': []}
 
         response = self.client.post('/admin/suppliers/1000/services?remove={}'.format(framework))
+
+        assert response.status_code == 400
+
+    @pytest.mark.parametrize('framework_status', ['coming', 'open', 'pending', 'standstill', 'expired'])
+    def test_400_if_framework_is_not_live(self, framework_status):
+        self.data_api_client.get_framework.return_value = {
+            'frameworks': {'status': framework_status}
+        }
+        response = self.client.post('/admin/suppliers/1000/services?remove=g-cloud-8')
 
         assert response.status_code == 400
 

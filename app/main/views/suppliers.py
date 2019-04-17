@@ -850,6 +850,10 @@ def toggle_supplier_services(supplier_id):
     if not toggle_action['framework_slug']:
         abort(400, 'Invalid framework')
 
+    framework = data_api_client.get_framework(toggle_action['framework_slug'])['frameworks']
+    if framework['status'] != 'live':
+        abort(400, "Cannot toggle services for framework {}".format(toggle_action['framework_slug']))
+
     services = data_api_client.find_services(
         supplier_id=supplier_id,
         framework=toggle_action['framework_slug'],
