@@ -895,6 +895,18 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert "Private" in response.get_data(as_text=True)
         assert "Edit" in response.get_data(as_text=True)
 
+    def test_should_show_correct_fields_for_expired_framework(self):
+        framework = self.load_example_listing("framework_response")['frameworks']
+        framework['status'] = 'expired'
+        self.data_api_client.find_frameworks.return_value = {'frameworks': [framework]}
+
+        response = self.client.get('/admin/suppliers/1000/services')
+
+        assert response.status_code == 200
+        assert "Expired" in response.get_data(as_text=True)
+        assert "View" in response.get_data(as_text=True)
+        assert "Edit" not in response.get_data(as_text=True)
+
     def test_should_show_separate_tables_for_frameworks_if_supplier_has_service_on_framework(self):
 
         service_1 = self.load_example_listing("services_response")['services'][0]
@@ -944,6 +956,22 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         expected_href = '/admin/suppliers/1234/services?remove=g-cloud-8'
         expected_link = document.xpath('.//a[contains(@href,"{}")]'.format(expected_href))[0]
         assert expected_link.text == expected_link_text
+
+    @pytest.mark.parametrize(
+        'framework_status, links_shown',
+        [('coming', 0), ('open', 0), ('pending', 0), ('standstill', 0), ('live', 1), ('expired', 0)]
+    )
+    def test_remove_all_services_link_only_visible_for_live_framework(self, framework_status, links_shown):
+        framework = self.load_example_listing("framework_response")['frameworks']
+        framework['status'] = framework_status
+        self.data_api_client.find_frameworks.return_value = {'frameworks': [framework]}
+
+        response = self.client.get('/admin/suppliers/1000/services')
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        expected_href = '/admin/suppliers/1234/services?remove=g-cloud-8'
+        assert len(document.xpath('.//a[contains(@href,"{}")]'.format(expected_href))) == links_shown
 
     @pytest.mark.parametrize('service_status, disallowed_actions', [
         ('enabled', ['publish']), ('disabled', ['enabled']), ('a_new_status', ['publish', 'enabled'])
@@ -1044,6 +1072,7 @@ class TestToggleSupplierServicesView(LoggedInApplicationTest):
 
         self.data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
         self.data_api_client.find_services.return_value = self.load_example_listing('services_response')
+        self.data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
 
     def teardown_method(self, method):
         self.data_api_client_patch.stop()
@@ -1061,6 +1090,15 @@ class TestToggleSupplierServicesView(LoggedInApplicationTest):
         self.data_api_client.find_services.return_value = {'services': []}
 
         response = self.client.post('/admin/suppliers/1000/services?remove={}'.format(framework))
+
+        assert response.status_code == 400
+
+    @pytest.mark.parametrize('framework_status', ['coming', 'open', 'pending', 'standstill', 'expired'])
+    def test_400_if_framework_is_not_live(self, framework_status):
+        self.data_api_client.get_framework.return_value = {
+            'frameworks': {'status': framework_status}
+        }
+        response = self.client.post('/admin/suppliers/1000/services?remove=g-cloud-8')
 
         assert response.status_code == 400
 

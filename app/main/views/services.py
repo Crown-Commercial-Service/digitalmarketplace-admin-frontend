@@ -70,9 +70,9 @@ def view_service(service_id):
         flash(API_ERROR_MESSAGE.format(service_id=service_id), 'error')
         return redirect(url_for('.search_suppliers_and_services'))
 
-    # TODO remove `expired` from below. It's a temporary fix to allow access to DOS2 as it's expired.
-    # we don't actually need the framework here; using this to 404 if framework for the service is not live
-    get_framework_or_404(data_api_client, service_data['frameworkSlug'], allowed_statuses=['live', 'expired'])
+    framework = get_framework_or_404(
+        data_api_client, service_data['frameworkSlug'], allowed_statuses=['live', 'expired']
+    )
 
     removed_by = removed_at = None
     if service_data['status'] != 'published':
@@ -91,6 +91,7 @@ def view_service(service_id):
 
     return render_template(
         "view_service.html",
+        framework=framework,
         sections=content.summary(service_data),
         service_data=service_data,
         service_id=service_id,

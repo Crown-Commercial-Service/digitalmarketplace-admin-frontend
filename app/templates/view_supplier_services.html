@@ -68,11 +68,13 @@
 
         {{ summary.heading(framework['name'], id="{}_services".format(framework['slug'])) }}
 
-        {% if current_user.has_role('admin-ccs-category') %}
-          {% if 'published' in frameworks_services[framework['slug']]|map(attribute='status')|list  %}
-            {{ summary.top_link("Suspend services", url_for(".find_supplier_services", supplier_id=supplier.id, remove=framework.slug)) }}
-          {% elif 'disabled' in frameworks_services[framework['slug']]|map(attribute='status')|list %}
-            {{ summary.top_link("Unsuspend services", url_for(".find_supplier_services", supplier_id=supplier.id, publish=framework.slug)) }}
+        {% if framework['status'] == 'live' %}
+          {% if current_user.has_role('admin-ccs-category') %}
+            {% if 'published' in frameworks_services[framework['slug']]|map(attribute='status')|list  %}
+              {{ summary.top_link("Suspend services", url_for(".find_supplier_services", supplier_id=supplier.id, remove=framework.slug)) }}
+            {% elif 'disabled' in frameworks_services[framework['slug']]|map(attribute='status')|list %}
+              {{ summary.top_link("Unsuspend services", url_for(".find_supplier_services", supplier_id=supplier.id, publish=framework.slug)) }}
+            {% endif %}
           {% endif %}
         {% endif %}
 
@@ -95,7 +97,9 @@
             {{ summary.text(item.lotName) }}
             {% call summary.field() %}
               <span class="service-status-{{ item.status }}">
-                {% if item.status == "published" %}
+                {% if framework['status'] == "expired" %}
+                  Expired
+                {% elif item.status == "published" %}
                   Public
                 {% elif item.status == "enabled" %}
                   Private
@@ -107,7 +111,7 @@
               </span>
             {% endcall %}
             {{ summary.edit_link(
-                 'Edit' if current_user.has_role('admin-ccs-category') else 'View',
+                 'Edit' if (current_user.has_role('admin-ccs-category') and framework['status'] != 'expired') else 'View',
                  url_for('.view_service', service_id=item.id),
                  hidden_text=item.serviceName
                )

@@ -484,6 +484,33 @@ class TestServiceView(LoggedInApplicationTest):
 
         assert expected_link.text == expected_link_text
 
+    @pytest.mark.parametrize('action, service_status', [('publish', 'disabled'), ('remove', 'published')])
+    @pytest.mark.parametrize('framework_status, links_shown', [('expired', 0), ('live', 1)])
+    def test_remove_publish_service_links_only_appear_for_live_frameworks(
+            self, framework_status, links_shown, action, service_status
+    ):
+        self.data_api_client.get_service.return_value = {'services': {
+            'lot': 'paas',
+            'serviceName': 'test',
+            'supplierId': 1000,
+            'frameworkSlug': 'digital-outcomes-and-specialists-2',
+            'frameworkFramework': 'digital-outcomes-and-specialists',
+            'frameworkFamily': 'digital-outcomes-and-specialists',
+            'id': "1",
+            'status': service_status
+        }}
+        framework = self.get_framework_api_response
+        framework['frameworks']['status'] = framework_status
+        self.data_api_client.get_framework.return_value = framework
+        self.data_api_client.find_audit_events.return_value = self.find_audit_events_api_response
+
+        response = self.client.get('/admin/services/1')
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        expected_href = '/admin/services/1?{}=True'.format(action)
+        assert len(document.xpath('.//a[contains(@href,"{}")]'.format(expected_href))) == links_shown
+
     @pytest.mark.parametrize('user_role', ('admin-ccs-sourcing', 'admin-manager'))
     def test_no_access_for_certain_roles(self, user_role):
         self.user_role = user_role
