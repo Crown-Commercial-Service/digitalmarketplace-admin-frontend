@@ -895,6 +895,18 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert "Private" in response.get_data(as_text=True)
         assert "Edit" in response.get_data(as_text=True)
 
+    def test_should_show_correct_fields_for_expired_framework(self):
+        framework = self.load_example_listing("framework_response")['frameworks']
+        framework['status'] = 'expired'
+        self.data_api_client.find_frameworks.return_value = {'frameworks': [framework]}
+
+        response = self.client.get('/admin/suppliers/1000/services')
+
+        assert response.status_code == 200
+        assert "Expired" in response.get_data(as_text=True)
+        assert "View" in response.get_data(as_text=True)
+        assert "Edit" not in response.get_data(as_text=True)
+
     def test_should_show_separate_tables_for_frameworks_if_supplier_has_service_on_framework(self):
 
         service_1 = self.load_example_listing("services_response")['services'][0]
