@@ -28,7 +28,7 @@
   {% block before_heading %}
 
     {# banners #}
-    {% if publish and current_user.has_role('admin-ccs-category') and service_data['status'] != 'published' %}
+    {% if publish and current_user.has_role('admin-ccs-category') and service_data['status'] != 'published' and framework['status'] != 'expired' %}
         <form action="{{ url_for('.update_service_status', service_id=service_id ) }}" method="POST">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
           <input type="hidden" name="service_status" value="public" />
@@ -45,7 +45,7 @@
         </form>
     {% endif %}
 
-    {% if remove and current_user.has_role('admin-ccs-category') and service_data['status'] == 'published' %}
+    {% if remove and current_user.has_role('admin-ccs-category') and service_data['status'] == 'published' and framework['status'] != 'expired' %}
       <form action="{{ url_for('.update_service_status', service_id=service_id ) }}" method="POST">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
         <input type="hidden" name="service_status" value="removed" />
@@ -62,7 +62,7 @@
       </form>
     {% endif %}
 
-    {% if service_data['status'] != 'published' and removed_by %}
+    {% if service_data['status'] != 'published' and removed_by and framework['status'] != 'expired' %}
       {%
         with
         type = "temporary-message",
@@ -95,7 +95,7 @@
       {% if service_data['frameworkFamily'] == 'g-cloud' %}
         <li><a href="{{ url_for('external.direct_award_service_page', framework_family=service_data['frameworkFamily'], service_id=service_id) }}">View service</a></li>
       {% endif %}
-      {% if current_user.has_role('admin-ccs-category') and service_data['status'] == 'published' %}
+      {% if current_user.has_role('admin-ccs-category') and service_data['status'] == 'published' and framework['status'] != 'expired' %}
         <li><a href="{{ url_for('.view_service', service_id=service_id, remove=True) }}">Remove service</a></li>
       {% endif %}
     </ul>
