@@ -787,6 +787,26 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == "http://example.com"
 
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 302),
+        ("admin-ccs-category", 302),
+        ("admin-ccs-sourcing", 403),
+        ("admin-ccs-data-controller", 403),
+        ("admin-framework-manager", 403),
+        ("admin-manager", 403),
+    ])
+    def test_move_user_to_another_supplier_accessible_to_users_with_right_roles(self, role, expected_code):
+        self.user_role = role
+        self.data_api_client.get_user.return_value = self.load_example_listing("user_response")
+        self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
+
+        response = self.client.post(
+            '/admin/suppliers/1000/move-existing-user',
+            data={'user_to_move_email_address': 'test.user@sme.com'}
+        )
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
     def test_should_call_api_to_move_user_to_another_supplier(self):
         self.data_api_client.get_user.return_value = self.load_example_listing("user_response")
         self.data_api_client.update_user.return_value = self.load_example_listing("user_response")

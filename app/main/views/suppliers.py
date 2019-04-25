@@ -740,7 +740,7 @@ def deactivate_user(user_id):
 
 
 @main.route('/suppliers/<int:supplier_id>/move-existing-user', methods=['POST'])
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def move_user_to_new_supplier(supplier_id):
     move_user_form = MoveUserForm()
 
