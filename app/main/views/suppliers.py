@@ -873,7 +873,7 @@ def toggle_supplier_services(supplier_id):
 
 
 @main.route('/suppliers/<int:supplier_id>/invite-user', methods=['POST'])
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def invite_user(supplier_id):
     invite_form = EmailAddressForm()
 

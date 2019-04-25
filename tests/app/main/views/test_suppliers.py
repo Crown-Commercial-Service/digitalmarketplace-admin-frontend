@@ -1163,6 +1163,27 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         self.data_api_client_patch.stop()
         super().teardown_method(method)
 
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 302),
+        ("admin-ccs-category", 302),
+        ("admin-ccs-sourcing", 403),
+        ("admin-ccs-data-controller", 403),
+        ("admin-framework-manager", 403),
+        ("admin-manager", 403),
+    ])
+    @mock.patch('app.main.views.suppliers.send_user_account_email')
+    def test_correct_roles_can_invite_user(self, send_user_account_email, role, expected_code):
+        self.user_role = role
+
+        response = self.client.post(
+            '/admin/suppliers/1234/invite-user',
+            data={
+                'email_address': 'email@example.com'
+            }
+        )
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
     def test_should_not_accept_bad_email_on_invite_user(self):
         response = self.client.post(
             "/admin/suppliers/1234/invite-user",
