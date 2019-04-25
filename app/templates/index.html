@@ -67,12 +67,11 @@
       <p>
         <a href="{{ url_for('.find_buyer_by_brief_id') }}">Find a buyer by opportunity ID</a>
       </p>
-  {% endif %}
-
-  {% if current_user.has_role('admin') %}
       <p>
         <a href="{{ url_for('.add_buyer_domains') }}">Add a buyer email domain</a>
       </p>
+  {% endif %}
+  {% if current_user.has_role('admin') %}
       <p>
         <a href="{{ url_for('.download_buyers') }}">Download list of potential user research participants</a>
       </p>
