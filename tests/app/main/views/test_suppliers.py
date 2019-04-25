@@ -710,6 +710,22 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
 
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 302),
+        ("admin-ccs-category", 302),
+        ("admin-ccs-sourcing", 403),
+        ("admin-ccs-data-controller", 403),
+        ("admin-framework-manager", 403),
+        ("admin-manager", 403),
+    ])
+    def test_activate_users_accessible_to_users_with_right_roles(self, role, expected_code):
+        self.user_role = role
+        self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
+
+        response = self.client.post('/admin/suppliers/users/999/activate')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
     def test_should_call_api_to_activate_user(self):
         self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
 
