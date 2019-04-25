@@ -71,7 +71,7 @@
       {% endcall %}
 
       {% call summary.field() %}
-      {% if item.locked and current_user.has_role('admin') and not item.personalDataRemoved %}
+      {% if item.locked and current_user.has_any_role('admin', 'admin-ccs-category') and not item.personalDataRemoved %}
       <form action="{{ url_for('.unlock_user', user_id=item.id) }}" method="post">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           {%

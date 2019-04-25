@@ -713,7 +713,7 @@ def find_supplier_users():
 
 
 @main.route('/suppliers/users/<int:user_id>/unlock', methods=['POST'])
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def unlock_user(user_id):
     user = data_api_client.update_user(user_id, locked=False, updater=current_user.email_address)
     if "source" in request.form:
