@@ -731,7 +731,7 @@ def activate_user(user_id):
 
 
 @main.route('/suppliers/users/<int:user_id>/deactivate', methods=['POST'])
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def deactivate_user(user_id):
     user = data_api_client.update_user(user_id, active=False, updater=current_user.email_address)
     if "source" in request.form:

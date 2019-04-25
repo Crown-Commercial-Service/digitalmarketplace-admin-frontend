@@ -91,7 +91,7 @@
 
       {% call summary.field() %}
       {% if item.active %}
-        {% if current_user.has_role('admin') %}
+        {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
           <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               {%
