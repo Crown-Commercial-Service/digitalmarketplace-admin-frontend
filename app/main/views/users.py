@@ -123,14 +123,29 @@ def download_supplier_user_research_report(framework_slug):
 @main.route('/users/download/buyers', methods=['GET'])
 @role_required('admin-framework-manager', 'admin')
 def download_buyers():
-    """Either download a list of all buyers (for framework manager) or user research buyers (for admin users)."""
+    """Download a list of all buyers"""
     download_filename = "all-buyers-on-{}.csv".format(datetime.utcnow().strftime('%Y-%m-%d-at-%H-%M-%S'))
     users = data_api_client.find_users_iter(role="buyer")
 
-    if current_user.role == 'admin':
-        # Overwrite the above values for admin specific user research csv
-        download_filename = "user-research-buyers-on-{}.csv".format(datetime.utcnow().strftime('%Y-%m-%d-at-%H-%M-%S'))
-        users = filter(lambda i: i['userResearchOptedIn'], users)
+    return Response(
+        generate_user_csv(users),
+        mimetype='text/csv',
+        headers={
+            "Content-Disposition": "attachment;filename={}".format(download_filename),
+            "Content-Type": "text/csv; header=present"
+        }
+    )
+
+
+@main.route('/users/download/buyers/user-research', methods=['GET'])
+@role_required('admin-framework-manager')
+def download_buyers_for_user_research():
+    """Download a list of buyers who have opted in to user research."""
+    users = data_api_client.find_users_iter(role="buyer")
+    # TODO: add param to API endpoint to filter by userResearchOptedIn
+    users = filter(lambda i: i['userResearchOptedIn'], users)
+
+    download_filename = "user-research-buyers-on-{}.csv".format(datetime.utcnow().strftime('%Y-%m-%d-at-%H-%M-%S'))
 
     return Response(
         generate_user_csv(users),
