@@ -43,9 +43,9 @@
         <a href="{{ url_for('.search_suppliers_and_services') }}">{{ find_supplier_and_services_link_text[current_user.role] }}</a>
       </p>
 
-    {% if current_user.has_any_role('admin') %}
+    {% if current_user.has_any_role('admin-framework-manager') %}
       <p>
-        <a href="{{ url_for('.supplier_user_research_participants_by_framework') }}">Download lists of potential user research participants</a>
+        <a href="{{ url_for('.supplier_user_research_participants_by_framework') }}">Download potential user research participants (suppliers)</a>
       </p>
     {% endif %}
   {% endif %}
@@ -60,7 +60,10 @@
   {% endif %}
   {% if current_user.has_any_role('admin-framework-manager') %}
       <p>
-        <a href="{{ url_for('.download_buyers') }}">Download buyers list</a>
+        <a href="{{ url_for('.download_buyers') }}">Download list of all buyers</a>
+      </p>
+      <p>
+        <a href="{{ url_for('.download_buyers_for_user_research') }}">Download potential user research participants (buyers)</a>
       </p>
   {% endif %}
   {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
@@ -69,11 +72,6 @@
       </p>
       <p>
         <a href="{{ url_for('.add_buyer_domains') }}">Add a buyer email domain</a>
-      </p>
-  {% endif %}
-  {% if current_user.has_role('admin') %}
-      <p>
-        <a href="{{ url_for('.download_buyers') }}">Download list of potential user research participants</a>
       </p>
   {% endif %}
 
