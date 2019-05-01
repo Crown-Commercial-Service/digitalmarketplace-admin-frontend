@@ -1,11 +1,12 @@
 from datetime import datetime
 
-from dmutils import csv_generator, s3
+from dmutils import s3
 from dmutils.documents import get_signed_url
 from dmutils.flask import timed_render_template as render_template
 from flask import abort, current_app, flash, redirect, request, Response, url_for
 from flask_login import current_user
 
+from ..helpers.user_downloads import generate_user_csv
 from .. import main
 from ..auth import role_required
 from ... import data_api_client
@@ -131,17 +132,8 @@ def download_buyers():
         download_filename = "user-research-buyers-on-{}.csv".format(datetime.utcnow().strftime('%Y-%m-%d-at-%H-%M-%S'))
         users = filter(lambda i: i['userResearchOptedIn'], users)
 
-    header_row = ("email address", "name")
-    user_attributes = ("emailAddress", "name")
-
-    def rows_iter():
-        """Iterator yielding header then rows."""
-        yield header_row
-        for user in sorted(users, key=lambda user: user["name"]):
-            yield (user.get(field_name, "") for field_name in user_attributes)
-
     return Response(
-        csv_generator.iter_csv(rows_iter()),
+        generate_user_csv(users),
         mimetype='text/csv',
         headers={
             "Content-Disposition": "attachment;filename={}".format(download_filename),
