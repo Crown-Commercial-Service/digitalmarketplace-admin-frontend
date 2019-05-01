@@ -407,11 +407,11 @@ class TestUserResearchParticipantsExport(LoggedInApplicationTest):
     @pytest.mark.parametrize(
         ('role', 'status_code'),
         (
-            ('admin', 200),
+            ('admin', 403),
             ('admin-ccs-category', 403),
             ('admin-ccs-sourcing', 403),
             ('admin-manager', 403),
-            ('admin-framework-manager', 403),
+            ('admin-framework-manager', 200),
             ('admin-ccs-data-controller', 403),
         )
     )

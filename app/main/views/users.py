@@ -4,7 +4,6 @@ from dmutils import s3
 from dmutils.documents import get_signed_url
 from dmutils.flask import timed_render_template as render_template
 from flask import abort, current_app, flash, redirect, request, Response, url_for
-from flask_login import current_user
 
 from ..helpers.user_downloads import generate_user_csv
 from .. import main
@@ -81,7 +80,7 @@ def download_supplier_user_list_report(framework_slug, report_type):
 
 
 @main.route('/users/download/suppliers', methods=['GET'])
-@role_required('admin')
+@role_required('admin-framework-manager')
 def supplier_user_research_participants_by_framework():
     bad_statuses = ['coming', 'expired']
     frameworks = data_api_client.find_frameworks().get("frameworks")
@@ -106,7 +105,7 @@ def supplier_user_research_participants_by_framework():
 
 
 @main.route('/frameworks/<framework_slug>/user-research/download', methods=['GET'])
-@role_required('admin')
+@role_required('admin-framework-manager')
 def download_supplier_user_research_report(framework_slug):
 
     reports_bucket = s3.S3(current_app.config['DM_REPORTS_BUCKET'])
@@ -121,7 +120,7 @@ def download_supplier_user_research_report(framework_slug):
 
 
 @main.route('/users/download/buyers', methods=['GET'])
-@role_required('admin-framework-manager', 'admin')
+@role_required('admin-framework-manager')
 def download_buyers():
     """Download a list of all buyers"""
     download_filename = "all-buyers-on-{}.csv".format(datetime.utcnow().strftime('%Y-%m-%d-at-%H-%M-%S'))
