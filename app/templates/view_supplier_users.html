@@ -42,7 +42,7 @@
               'Last login',
               'Pwd changed',
               'Locked',
-              summary.hidden_field_heading("") if current_user.has_any_role('admin', 'admin-ccs-category') else summary.hidden_field_heading("Change status")
+              summary.hidden_field_heading("Change status") if current_user.has_any_role('admin', 'admin-ccs-category') else summary.hidden_field_heading("")
           ],
           field_headings_visible=True)
       %}
