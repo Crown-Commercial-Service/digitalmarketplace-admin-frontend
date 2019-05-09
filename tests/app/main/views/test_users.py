@@ -3,6 +3,7 @@ import mock
 import pytest
 from lxml import html
 from dmtestutils.api_model_stubs import FrameworkStub
+from freezegun import freeze_time
 
 from ...helpers import LoggedInApplicationTest
 
@@ -311,7 +312,7 @@ class TestUserListPage(LoggedInApplicationTest):
 
 @mock.patch('app.main.views.users.s3')
 class TestUserResearchParticipantsExport(LoggedInApplicationTest):
-    user_role = 'admin'
+    user_role = 'admin-framework-manager'
 
     _valid_framework = {
         'name': 'G-Cloud 7',
@@ -330,68 +331,87 @@ class TestUserResearchParticipantsExport(LoggedInApplicationTest):
         self.data_api_client_patch = mock.patch('app.main.views.users.data_api_client', autospec=True)
         self.data_api_client = self.data_api_client_patch.start()
 
+        self.data_api_client.find_users_iter.return_value = [
+            {'id': 1, 'userResearchOptedIn': True, 'emailAddress': 'shania@example.com', 'name': "Shania Twain"},
+            {'id': 2, 'userResearchOptedIn': False, 'emailAddress': 'mariah@example.com', 'name': "Mariah Carey"},
+        ]
+
     def teardown_method(self, method):
         self.data_api_client_patch.stop()
         super().teardown_method(method)
 
     @pytest.mark.parametrize(
-        ('role', 'exists'),
+        ('role', 'status_code'),
         (
-            ('admin', True),
-            ('admin-ccs-category', False),
-            ('admin-ccs-sourcing', False),
-            ('admin-manager', False),
-            ('admin-framework-manager', False),
-            ('admin-ccs-data-controller', False),
+            ('admin', 403),
+            ('admin-ccs-category', 403),
+            ('admin-ccs-sourcing', 403),
+            ('admin-manager', 403),
+            ('admin-framework-manager', 200),
+            ('admin-ccs-data-controller', 403),
         )
     )
-    def test_correct_role_can_view_download_buyer_user_research_participants_link(self, s3, role, exists):
+    def test_correct_role_can_download_list_of_all_buyers(self, s3, role, status_code):
         self.user_role = role
 
-        xpath = "//a[@href='{href}'][normalize-space(text()) = '{selector_text}']".format(
-            href='/admin/users/download/buyers',
-            selector_text='Download list of potential user research participants'
-        )
+        with freeze_time('2019-01-01'):
+            response = self.client.get('/admin/users/download/buyers')
 
-        response = self.client.get('/admin')
-        assert response.status_code == 200
+        assert response.status_code == status_code
 
-        document = html.fromstring(response.get_data(as_text=True))
-        assert bool(document.xpath(xpath)) is exists
+    def test_download_list_of_all_buyers_includes_all_buyers(self, s3):
+        with freeze_time('2019-01-01'):
+            response = self.client.get('/admin/users/download/buyers')
 
-    @pytest.mark.parametrize(
-        ('role', 'exists'),
-        (
-            ('admin', True),
-            ('admin-ccs-category', False),
-            ('admin-ccs-sourcing', False),
-            ('admin-manager', False),
-            ('admin-framework-manager', False),
-            ('admin-ccs-data-controller', False),
-        )
-    )
-    def test_correct_role_can_view_supplier_user_research_participants_link(self, s3, role, exists):
-        self.user_role = role
-
-        xpath = "//a[@href='{href}'][normalize-space(text()) = '{selector_text}']".format(
-            href='/admin/users/download/suppliers',
-            selector_text='Download lists of potential user research participants'
-        )
-
-        response = self.client.get('/admin')
-        assert response.status_code == 200
-
-        document = html.fromstring(response.get_data(as_text=True))
-        assert bool(document.xpath(xpath)) is exists
+        assert response.mimetype == 'text/csv'
+        assert response.headers['Content-Disposition'] == "attachment;filename=all-buyers-on-2019-01-01-at-00-00-00.csv"
+        assert response.headers['Content-Type'] == "text/csv; charset=utf-8"
+        # Assert each line separately to avoid weird line break stuff
+        assert 'email address,name' in response.get_data(as_text=True)
+        assert 'shania@example.com,Shania Twain' in response.get_data(as_text=True)
+        assert 'mariah@example.com,Mariah Carey' in response.get_data(as_text=True)
+        self.data_api_client.find_users_iter.assert_called_once_with(role='buyer')
 
     @pytest.mark.parametrize(
         ('role', 'status_code'),
         (
-            ('admin', 200),
+            ('admin', 403),
             ('admin-ccs-category', 403),
             ('admin-ccs-sourcing', 403),
             ('admin-manager', 403),
-            ('admin-framework-manager', 403),
+            ('admin-framework-manager', 200),
+            ('admin-ccs-data-controller', 403),
+        )
+    )
+    def test_correct_role_can_download_list_of_buyer_user_research_participants(self, s3, role, status_code):
+        self.user_role = role
+
+        with freeze_time('2019-01-01'):
+            response = self.client.get('/admin/users/download/buyers/user-research')
+        assert response.status_code == status_code
+
+    def test_download_list_of_all_buyer_user_research_partipants_filters_out_opted_out(self, s3):
+        with freeze_time('2019-01-01'):
+            response = self.client.get('/admin/users/download/buyers/user-research')
+
+        assert response.mimetype == 'text/csv'
+        assert response.headers['Content-Disposition'] == \
+            "attachment;filename=user-research-buyers-on-2019-01-01-at-00-00-00.csv"
+        assert response.headers['Content-Type'] == "text/csv; charset=utf-8"
+        # Assert each line separately to avoid weird line break stuff
+        assert 'email address,name' in response.get_data(as_text=True)
+        assert 'shania@example.com,Shania Twain' in response.get_data(as_text=True)
+        assert 'mariah@example.com,Mariah Carey' not in response.get_data(as_text=True)
+        self.data_api_client.find_users_iter.assert_called_once_with(role='buyer')
+
+    @pytest.mark.parametrize(
+        ('role', 'status_code'),
+        (
+            ('admin', 403),
+            ('admin-ccs-category', 403),
+            ('admin-ccs-sourcing', 403),
+            ('admin-manager', 403),
+            ('admin-framework-manager', 200),
             ('admin-ccs-data-controller', 403),
         )
     )

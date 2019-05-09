@@ -24,7 +24,7 @@ class TestIndex(LoggedInApplicationTest):
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
         ("admin", True),
-        ("admin-ccs-category", False),
+        ("admin-ccs-category", True),
         ("admin-ccs-sourcing", False),
         ("admin-framework-manager", False),
         ("admin-manager", False),
@@ -171,23 +171,33 @@ class TestIndex(LoggedInApplicationTest):
             link_text = document.xpath('.//a[@href="/admin/search"]//text()')[0]
             assert link_text == expected_link_text
 
+    @pytest.mark.parametrize("link_url, expected_link_text", [
+        ("/admin/users/download/buyers", "Download list of all buyers"),
+        ("/admin/users/download/buyers/user-research", "Download potential user research participants (buyers)"),
+        ("/admin/users/download/suppliers", "Download potential user research participants (suppliers)"),
+    ])
     @pytest.mark.parametrize("role, link_should_be_visible", [
-        ("admin", True),
+        ("admin", False),
         ("admin-ccs-category", False),
         ("admin-ccs-sourcing", False),
         ("admin-framework-manager", True),
         ("admin-manager", False),
         ("admin-ccs-data-controller", False),
     ])
-    def test_download_buyers_list_link_shown_to_users_with_right_roles(self, role, link_should_be_visible):
+    def test_links_to_download_buyer_and_user_research_lists_are_shown_with_role_dependent_text(
+        self, role, link_should_be_visible, link_url, expected_link_text
+    ):
         self.user_role = role
         response = self.client.get('/admin')
         document = html.fromstring(response.get_data(as_text=True))
-        link_is_visible = bool(document.xpath('.//a[@href="/admin/users/download/buyers"]'))
+        link_is_visible = bool(document.xpath('.//a[@href="{}"]'.format(link_url)))
 
         assert link_is_visible is link_should_be_visible, (
             "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
+        if link_should_be_visible:
+            link_text = document.xpath('.//a[@href="{}"]//text()'.format(link_url))[0]
+            assert link_text == expected_link_text
 
 
 class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):

@@ -713,7 +713,7 @@ def find_supplier_users():
 
 
 @main.route('/suppliers/users/<int:user_id>/unlock', methods=['POST'])
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def unlock_user(user_id):
     user = data_api_client.update_user(user_id, locked=False, updater=current_user.email_address)
     if "source" in request.form:
@@ -722,7 +722,7 @@ def unlock_user(user_id):
 
 
 @main.route('/suppliers/users/<int:user_id>/activate', methods=['POST'])
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def activate_user(user_id):
     user = data_api_client.update_user(user_id, active=True, updater=current_user.email_address)
     if "source" in request.form:
@@ -731,7 +731,7 @@ def activate_user(user_id):
 
 
 @main.route('/suppliers/users/<int:user_id>/deactivate', methods=['POST'])
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def deactivate_user(user_id):
     user = data_api_client.update_user(user_id, active=False, updater=current_user.email_address)
     if "source" in request.form:
@@ -740,7 +740,7 @@ def deactivate_user(user_id):
 
 
 @main.route('/suppliers/<int:supplier_id>/move-existing-user', methods=['POST'])
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def move_user_to_new_supplier(supplier_id):
     move_user_form = MoveUserForm()
 
@@ -873,7 +873,7 @@ def toggle_supplier_services(supplier_id):
 
 
 @main.route('/suppliers/<int:supplier_id>/invite-user', methods=['POST'])
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def invite_user(supplier_id):
     invite_form = EmailAddressForm()
 

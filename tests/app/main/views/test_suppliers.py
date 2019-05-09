@@ -543,7 +543,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
     @pytest.mark.parametrize("role, can_edit", [
         ("admin", True),
-        ("admin-ccs-category", False),
+        ("admin-ccs-category", True),
         ("admin-framework-manager", False),
         ("admin-ccs-data-controller", False),
     ])
@@ -684,6 +684,22 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert not document.xpath('//form[@action="/admin/suppliers/users/999/activate"][@method="post"]')
         assert not document.xpath('//input[@value="Activate"][@type="submit"][@class="button-secondary"]')
 
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 302),
+        ("admin-ccs-category", 302),
+        ("admin-ccs-sourcing", 403),
+        ("admin-ccs-data-controller", 403),
+        ("admin-framework-manager", 403),
+        ("admin-manager", 403),
+    ])
+    def test_unlock_users_accessible_to_users_with_right_roles(self, role, expected_code):
+        self.user_role = role
+        self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
+
+        response = self.client.post('/admin/suppliers/users/999/unlock')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
     def test_should_call_api_to_unlock_user(self):
         self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
 
@@ -693,6 +709,22 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         assert response.status_code == 302
         assert response.location == "http://localhost/admin/suppliers/users?supplier_id=1000"
+
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 302),
+        ("admin-ccs-category", 302),
+        ("admin-ccs-sourcing", 403),
+        ("admin-ccs-data-controller", 403),
+        ("admin-framework-manager", 403),
+        ("admin-manager", 403),
+    ])
+    def test_activate_users_accessible_to_users_with_right_roles(self, role, expected_code):
+        self.user_role = role
+        self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
+
+        response = self.client.post('/admin/suppliers/users/999/activate')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     def test_should_call_api_to_activate_user(self):
         self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
@@ -716,6 +748,22 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert response.status_code == 302
         assert response.location == "http://example.com"
 
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 302),
+        ("admin-ccs-category", 302),
+        ("admin-ccs-sourcing", 403),
+        ("admin-ccs-data-controller", 403),
+        ("admin-framework-manager", 403),
+        ("admin-manager", 403),
+    ])
+    def test_deactivate_users_accessible_to_users_with_right_roles(self, role, expected_code):
+        self.user_role = role
+        self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
+
+        response = self.client.post('/admin/suppliers/users/999/deactivate')
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
     def test_should_call_api_to_deactivate_user(self):
         self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
         response = self.client.post(
@@ -738,6 +786,26 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         assert response.status_code == 302
         assert response.location == "http://example.com"
+
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 302),
+        ("admin-ccs-category", 302),
+        ("admin-ccs-sourcing", 403),
+        ("admin-ccs-data-controller", 403),
+        ("admin-framework-manager", 403),
+        ("admin-manager", 403),
+    ])
+    def test_move_user_to_another_supplier_accessible_to_users_with_right_roles(self, role, expected_code):
+        self.user_role = role
+        self.data_api_client.get_user.return_value = self.load_example_listing("user_response")
+        self.data_api_client.update_user.return_value = self.load_example_listing("user_response")
+
+        response = self.client.post(
+            '/admin/suppliers/1000/move-existing-user',
+            data={'user_to_move_email_address': 'test.user@sme.com'}
+        )
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     def test_should_call_api_to_move_user_to_another_supplier(self):
         self.data_api_client.get_user.return_value = self.load_example_listing("user_response")
@@ -1162,6 +1230,27 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
     def teardown_method(self, method):
         self.data_api_client_patch.stop()
         super().teardown_method(method)
+
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 302),
+        ("admin-ccs-category", 302),
+        ("admin-ccs-sourcing", 403),
+        ("admin-ccs-data-controller", 403),
+        ("admin-framework-manager", 403),
+        ("admin-manager", 403),
+    ])
+    @mock.patch('app.main.views.suppliers.send_user_account_email')
+    def test_correct_roles_can_invite_user(self, send_user_account_email, role, expected_code):
+        self.user_role = role
+
+        response = self.client.post(
+            '/admin/suppliers/1234/invite-user',
+            data={
+                'email_address': 'email@example.com'
+            }
+        )
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
     def test_should_not_accept_bad_email_on_invite_user(self):
         response = self.client.post(

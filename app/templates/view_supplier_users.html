@@ -42,7 +42,7 @@
               'Last login',
               'Pwd changed',
               'Locked',
-              summary.hidden_field_heading("") if current_user.has_role('admin') else "Status"
+              summary.hidden_field_heading("Change status") if current_user.has_any_role('admin', 'admin-ccs-category') else summary.hidden_field_heading("")
           ],
           field_headings_visible=True)
       %}
@@ -71,7 +71,7 @@
       {% endcall %}
 
       {% call summary.field() %}
-      {% if item.locked and current_user.has_role('admin') and not item.personalDataRemoved %}
+      {% if item.locked and current_user.has_any_role('admin', 'admin-ccs-category') and not item.personalDataRemoved %}
       <form action="{{ url_for('.unlock_user', user_id=item.id) }}" method="post">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           {%
@@ -91,7 +91,7 @@
 
       {% call summary.field() %}
       {% if item.active %}
-        {% if current_user.has_role('admin') %}
+        {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
           <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               {%
@@ -106,7 +106,7 @@
           Active
         {% endif %}
       {% else %}
-        {% if current_user.has_role('admin') and not item.personalDataRemoved %}
+        {% if current_user.has_any_role('admin', 'admin-ccs-category') and not item.personalDataRemoved %}
           <form action="{{ url_for('.activate_user', user_id=item.id) }}" method="post">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               {%
@@ -127,7 +127,7 @@
   </div>
 
 
-  {% if current_user.has_role('admin') %}
+  {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
   <div class='page-section'>
       <form action="{{ url_for('.invite_user', supplier_id=supplier.id) }}" method="post">
           <div class="grid-row">

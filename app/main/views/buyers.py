@@ -35,7 +35,7 @@ def find_buyer_by_brief_id():
 
 
 @main.route('/buyers/add-buyer-domains', methods=['GET', 'POST'])
-@role_required('admin')
+@role_required('admin', 'admin-ccs-category')
 def add_buyer_domains():
     email_domain_form = EmailDomainForm()
     status_code = 200

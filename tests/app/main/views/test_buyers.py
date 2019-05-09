@@ -122,8 +122,11 @@ class TestAddBuyerDomainsView(LoggedInApplicationTest):
 
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 200),
-        ("admin-ccs-category", 403),
+        ("admin-ccs-category", 200),
         ("admin-ccs-sourcing", 403),
+        ("admin-ccs-data-controller", 403),
+        ("admin-framework-manager", 403),
+        ("admin-manager", 403),
     ])
     def test_get_page_should_only_be_accessible_to_specific_user_roles(self, role, expected_code):
         self.user_role = role
@@ -133,8 +136,11 @@ class TestAddBuyerDomainsView(LoggedInApplicationTest):
 
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 302),
-        ("admin-ccs-category", 403),
-        ("admin-ccs-sourcing", 403)
+        ("admin-ccs-category", 302),
+        ("admin-ccs-sourcing", 403),
+        ("admin-ccs-data-controller", 403),
+        ("admin-framework-manager", 403),
+        ("admin-manager", 403),
     ])
     def test_post_page_should_only_be_accessible_to_specific_user_roles(self, role, expected_code):
         self.user_role = role

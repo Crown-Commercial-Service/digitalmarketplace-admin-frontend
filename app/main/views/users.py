@@ -1,11 +1,11 @@
 from datetime import datetime
 
-from dmutils import csv_generator, s3
+from dmutils import s3
 from dmutils.documents import get_signed_url
 from dmutils.flask import timed_render_template as render_template
 from flask import abort, current_app, flash, redirect, request, Response, url_for
-from flask_login import current_user
 
+from ..helpers.user_downloads import generate_user_csv
 from .. import main
 from ..auth import role_required
 from ... import data_api_client
@@ -80,7 +80,7 @@ def download_supplier_user_list_report(framework_slug, report_type):
 
 
 @main.route('/users/download/suppliers', methods=['GET'])
-@role_required('admin')
+@role_required('admin-framework-manager')
 def supplier_user_research_participants_by_framework():
     bad_statuses = ['coming', 'expired']
     frameworks = data_api_client.find_frameworks().get("frameworks")
@@ -105,7 +105,7 @@ def supplier_user_research_participants_by_framework():
 
 
 @main.route('/frameworks/<framework_slug>/user-research/download', methods=['GET'])
-@role_required('admin')
+@role_required('admin-framework-manager')
 def download_supplier_user_research_report(framework_slug):
 
     reports_bucket = s3.S3(current_app.config['DM_REPORTS_BUCKET'])
@@ -120,28 +120,34 @@ def download_supplier_user_research_report(framework_slug):
 
 
 @main.route('/users/download/buyers', methods=['GET'])
-@role_required('admin-framework-manager', 'admin')
+@role_required('admin-framework-manager')
 def download_buyers():
-    """Either download a list of all buyers (for framework manager) or user research buyers (for admin users)."""
+    """Download a list of all buyers"""
     download_filename = "all-buyers-on-{}.csv".format(datetime.utcnow().strftime('%Y-%m-%d-at-%H-%M-%S'))
     users = data_api_client.find_users_iter(role="buyer")
 
-    if current_user.role == 'admin':
-        # Overwrite the above values for admin specific user research csv
-        download_filename = "user-research-buyers-on-{}.csv".format(datetime.utcnow().strftime('%Y-%m-%d-at-%H-%M-%S'))
-        users = filter(lambda i: i['userResearchOptedIn'], users)
+    return Response(
+        generate_user_csv(users),
+        mimetype='text/csv',
+        headers={
+            "Content-Disposition": "attachment;filename={}".format(download_filename),
+            "Content-Type": "text/csv; header=present"
+        }
+    )
 
-    header_row = ("email address", "name")
-    user_attributes = ("emailAddress", "name")
 
-    def rows_iter():
-        """Iterator yielding header then rows."""
-        yield header_row
-        for user in sorted(users, key=lambda user: user["name"]):
-            yield (user.get(field_name, "") for field_name in user_attributes)
+@main.route('/users/download/buyers/user-research', methods=['GET'])
+@role_required('admin-framework-manager')
+def download_buyers_for_user_research():
+    """Download a list of buyers who have opted in to user research."""
+    users = data_api_client.find_users_iter(role="buyer")
+    # TODO: add param to API endpoint to filter by userResearchOptedIn
+    users = filter(lambda i: i['userResearchOptedIn'], users)
+
+    download_filename = "user-research-buyers-on-{}.csv".format(datetime.utcnow().strftime('%Y-%m-%d-at-%H-%M-%S'))
 
     return Response(
-        csv_generator.iter_csv(rows_iter()),
+        generate_user_csv(users),
         mimetype='text/csv',
         headers={
             "Content-Disposition": "attachment;filename={}".format(download_filename),
