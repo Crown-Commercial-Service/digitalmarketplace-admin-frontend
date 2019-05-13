@@ -6,7 +6,7 @@ cssselect==1.0.3
 flake8==3.7.7
 freezegun==0.3.11
 mock==3.0.5
-pytest==4.4.1
+pytest==4.5.0
 pytest-cov==2.7.1
 requests-mock==1.6.0
 watchdog==0.9.0
