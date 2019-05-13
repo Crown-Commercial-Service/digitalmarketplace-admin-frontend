@@ -10,13 +10,18 @@
 %}
   {% call summary.row() %}
     <td class="summary-item-field-heading-custom" scope="row"><strong><span>{{item.frameworkName}}</span></strong></td>
-  {% if not current_user.has_role('admin-ccs-sourcing') %}
+
+  {% if current_user.has_role('admin-ccs-sourcing') %}
+   {{ summary.edit_link("Edit declaration", url_for('.view_supplier_declaration', supplier_id=supplier_id, framework_slug=item.frameworkSlug)) }}
+  {% else %}
    {{ summary.edit_link("View services", url_for(".find_supplier_services", supplier_id=supplier_id,) + "#{}_services".format(item.frameworkSlug)) }}
   {% endif %}
+
   {% if item.frameworkSlug in old_interesting_framework_slugs %}
     {{ summary.edit_link("Download agreements", url_for(".download_signed_agreement_file", supplier_id=supplier_id, framework_slug=item.frameworkSlug)) }}
   {% else %}
    {{ summary.edit_link("View agreements", url_for(".view_signed_agreement", supplier_id=supplier_id, framework_slug=item.frameworkSlug)) }}
   {% endif %}
+
   {% endcall %}
 {% endcall %}

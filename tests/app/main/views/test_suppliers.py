@@ -327,6 +327,37 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
             ]
         )
 
+    @pytest.mark.parametrize(
+        "role, link_should_be_visible", (
+            ("admin", False),
+            ("admin-ccs-category", False),
+            ("admin-ccs-data-controller", False),
+            ("admin-framework-manager", False),
+            ("admin-ccs-sourcing", True)
+        )
+    )
+    def test_sourcing_admins_see_edit_declaration_link(self, role, link_should_be_visible):
+        self.user_role = role
+        self.data_api_client.find_frameworks.return_value = {'frameworks': [
+            FrameworkStub(
+                status="pending",
+                slug="g-cloud-10"
+            ).response()
+        ]}
+
+        response = self.client.get("/admin/suppliers/1234")
+        document = html.fromstring(response.get_data(as_text=True))
+
+        expected_link_text = "Edit declaration"
+        expected_href = '/admin/suppliers/1234/edit/declarations/g-cloud-10'
+        expected_link = document.xpath('.//a[contains(@href,"{}")]'.format(expected_href))
+
+        link_is_visible = len(expected_link) > 0 and expected_link[0].text == expected_link_text
+
+        assert link_is_visible is link_should_be_visible, (
+            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
+        )
+
 
 class TestSuppliersListView(LoggedInApplicationTest):
 

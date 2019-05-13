@@ -12,6 +12,13 @@
           {
               "link": url_for('.index'),
               "label": "Admin home"
+          },
+          {
+              "link": url_for('.supplier_details', supplier_id=supplier.id),
+              "label": supplier.name
+          },
+          {
+              "label": "{} declaration".format(framework.name)
           }
       ]
   %}
