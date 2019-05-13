@@ -202,6 +202,57 @@ class TestSupplierDetailsView(LoggedInApplicationTest):
             }
         }
 
+    @mock.patch("app.main.views.suppliers.render_template", return_value="")
+    def test_if_most_recent_framework_has_old_declaration_show_account_company_details(self, render_template):
+        self.data_api_client.get_supplier_frameworks.return_value = {
+            "frameworkInterest": [
+                SupplierFrameworkStub(
+                    framework_slug="g-cloud-8",
+                    declaration={
+                        "dunsNumber": mock.sentinel.duns_number,
+                        "currentRegisteredCountry": "country:FR",
+                        "registeredVATNumber": "12345678",
+                        "registeredAddressBuilding": "123 Rue Morgue",
+                        "registeredAddressTown": "Paris",
+                        "registeredAddressPostcode": "76876",
+                    },
+                ).response(),
+            ]
+        }
+
+        self.data_api_client.get_supplier.return_value = {
+            "suppliers": {
+                "id": 1234,
+                "name": "ABC",
+                "dunsNumber": mock.sentinel.duns_number,
+                "registrationCountry": "country:FR",
+                "companiesHouseNumber": "12345678",
+                "contactInformation": [
+                    {
+                        "id": 999,
+                        "address1": "123 Rue Morgue",
+                        "city": "Paris",
+                        "postcode": "76876",
+                        "country": "not used"
+                    }
+                ]
+            }
+        }
+
+        self.client.get("/admin/suppliers/1234")
+        company_details = render_template.call_args[1]["company_details"]
+        assert company_details == {
+            "duns_number": mock.sentinel.duns_number,
+            "registration_number": "12345678",
+            "registered_name": None,
+            "address": {
+                'street_address_line_1': '123 Rue Morgue',
+                'locality': 'Paris',
+                'postcode': '76876',
+                'country': "country:FR"
+            }
+        }
+
 
 class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
 

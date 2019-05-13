@@ -22,18 +22,32 @@ def company_details_from_supplier(supplier):
 
 
 def company_details_from_supplier_framework_declaration(declaration):
-    return {
-        "duns_number": declaration.get("supplierDunsNumber"),
-        "registration_number": declaration.get("supplierCompanyRegistrationNumber"),
-        "trading_name": declaration.get("supplierTradingName"),
-        "registered_name": declaration.get("supplierRegisteredName"),
+    company_details_query = {
+        "duns_number": "supplierDunsNumber",
+        "registration_number": "supplierCompanyRegistrationNumber",
+        "trading_name": "supplierTradingName",
+        "registered_name": "supplierRegisteredName",
         "address": {
-            "street_address_line_1": declaration.get("supplierRegisteredBuilding"),
-            "locality": declaration.get("supplierRegisteredTown"),
-            "postcode": declaration.get("supplierRegisteredPostcode"),
-            "country": declaration.get("supplierRegisteredCountry"),
+            "street_address_line_1": "supplierRegisteredBuilding",
+            "locality": "supplierRegisteredTown",
+            "postcode": "supplierRegisteredPostcode",
+            "country": "supplierRegisteredCountry",
         },
     }
+
+    # only copy keys that are present in declaration
+    def dictq(d, q):
+        if isinstance(q, dict):
+            dd = {}
+            for k, qq in q.items():
+                v = dictq(d, qq)
+                if v:
+                    dd[k] = v
+            return dd
+        else:
+            return d.get(q)
+
+    return dictq(declaration, company_details_query)
 
 
 def get_supplier_frameworks_visible_for_role(supplier_frameworks, current_user, frameworks):
@@ -72,6 +86,7 @@ def get_supplier_frameworks_visible_for_role(supplier_frameworks, current_user, 
 
 
 def get_company_details(supplier_framework, supplier):
-    if supplier_framework.get("declaration"):
-        return company_details_from_supplier_framework_declaration(supplier_framework["declaration"])
-    return company_details_from_supplier(supplier)
+    return (
+        company_details_from_supplier_framework_declaration(supplier_framework.get("declaration", {}))
+        or company_details_from_supplier(supplier)
+    )
