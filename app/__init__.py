@@ -52,14 +52,13 @@ def create_app(config_name):
                 "Could not load declaration manifest for {}".format(framework_data['slug'])
             )
 
-    # Should be incorporated into digitalmarketplace-utils as well
-    csrf.init_app(application)
-
+    from .metrics import metrics as metrics_blueprint, gds_metrics
     from .main import main as main_blueprint
     from .main import public as public_blueprint
     from .status import status as status_blueprint
     from dmutils.external import external as external_blueprint
 
+    application.register_blueprint(metrics_blueprint, url_prefix='/admin')
     application.register_blueprint(status_blueprint, url_prefix='/admin')
     application.register_blueprint(main_blueprint, url_prefix='/admin')
     application.register_blueprint(public_blueprint, url_prefix='/admin')
@@ -70,6 +69,10 @@ def create_app(config_name):
 
     login_manager.login_view = '/user/login'
     main_blueprint.config = application.config.copy()
+
+    # Should be incorporated into digitalmarketplace-utils as well
+    gds_metrics.init_app(application)
+    csrf.init_app(application)
 
     @application.before_request
     def remove_trailing_slash():

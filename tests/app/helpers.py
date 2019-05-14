@@ -40,6 +40,9 @@ class BaseApplicationTest(object):
         data_api_client.find_frameworks = mock.Mock()
         data_api_client.find_frameworks.return_value = self._get_frameworks_list_fixture_data()
 
+        self.app_env_var_mock = mock.patch.dict('gds_metrics.os.environ', {'PROMETHEUS_METRICS_PATH': '/_metrics'})
+        self.app_env_var_mock.start()
+
         self.app = create_app('test')
         self.client = self.app.test_client()
 
@@ -57,6 +60,7 @@ class BaseApplicationTest(object):
     def teardown_method(self, method):
         self._s3_patch.stop()
         self._default_suffix_patch.stop()
+        self.app_env_var_mock.stop()
 
     def load_example_listing(self, name):
         file_path = os.path.join("example_responses", "{}.json".format(name))
