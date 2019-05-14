@@ -390,8 +390,8 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         ("admin-manager", False),
         ("admin-ccs-data-controller", True),
     ])
-    @pytest.mark.parametrize('framework_status', ('live', 'standstill'))
-    def test_data_controller_can_download_supplier_lists_for_live_standstill_framework_statuses_and_dos2(
+    @pytest.mark.parametrize('framework_status', ('live', 'standstill', 'pending'))
+    def test_data_controller_can_download_supplier_lists_for_certain_framework_statuses_and_dos2(
         self, framework_status, role, link_should_be_visible
     ):
         self.user_role = role

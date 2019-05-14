@@ -24,7 +24,7 @@
         </p>
         <h3 class="heading-xmedium">Download supplier lists</h3>
         {% for framework in frameworks %}
-            {% if framework.status in ["standstill", "live"] or framework.slug == 'digital-outcomes-and-specialists-2' %}
+            {% if framework.status in ["pending", "standstill", "live"] or framework.slug == 'digital-outcomes-and-specialists-2' %}
                 <p>
                   <a href="{{ url_for('.user_list_page_for_framework', framework_slug=framework['slug']) }}">{{ framework.name }}</a>
                 </p>
