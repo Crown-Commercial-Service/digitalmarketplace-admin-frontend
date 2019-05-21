@@ -31,7 +31,7 @@ from ..helpers.countries import COUNTRY_TUPLE
 from ..helpers.pagination import get_nav_args_from_api_response_links
 from ..helpers.supplier_details import (
     get_supplier_frameworks_visible_for_role,
-    get_company_details
+    get_company_details_from_supplier
 )
 from ... import data_api_client, content_loader
 
@@ -115,14 +115,12 @@ def supplier_details(supplier_id):
         supplier_frameworks, current_user, frameworks
     )
 
-    # Get the company details, and the declaration they came from (if any)
-    most_recent_supplier_framework = visible_supplier_frameworks[-1] if visible_supplier_frameworks else {}
-    company_details = get_company_details(most_recent_supplier_framework, supplier)
+    # Get the company details
+    company_details = get_company_details_from_supplier(supplier)
 
     return render_template(
         "supplier_details.html",
         company_details=company_details,
-        most_recent_framework_interest=most_recent_supplier_framework,
         supplier=supplier,
         supplier_id=supplier_id,
         supplier_frameworks=visible_supplier_frameworks,
@@ -158,17 +156,8 @@ def update_supplier_name(supplier_id):
 @role_required('admin-ccs-data-controller')
 def edit_supplier_registered_name(supplier_id):
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
-    frameworks = data_api_client.find_frameworks()['frameworks']
 
-    # Get SupplierFrameworks for frameworks the role is interested in, sorted by oldest frameworkLiveAtUTC first
-    supplier_framework_interests = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
-    visible_supplier_frameworks = get_supplier_frameworks_visible_for_role(
-        supplier_framework_interests, current_user, frameworks
-    )
-
-    # Get the company details (either from supplier or recent declaration)
-    most_recent_supplier_framework = visible_supplier_frameworks[-1] if visible_supplier_frameworks else {}
-    company_details = get_company_details(most_recent_supplier_framework, supplier)
+    company_details = get_company_details_from_supplier(supplier)
 
     form = EditSupplierRegisteredNameForm(
         data={"registered_company_name": company_details.get('registered_name')}
@@ -180,13 +169,6 @@ def edit_supplier_registered_name(supplier_id):
             {'registeredName': form.registered_company_name.data},
             current_user.email_address
         )
-        if most_recent_supplier_framework.get('declaration'):
-            data_api_client.update_supplier_declaration(
-                supplier_id,
-                most_recent_supplier_framework['frameworkSlug'],
-                {"supplierRegisteredName": form.registered_company_name.data},
-                current_user.email_address
-            )
         flash(SUPPLIER_DETAILS_UPDATED_MESSAGE.format(supplier_name=supplier['name']))
 
         return redirect(url_for('.supplier_details', supplier_id=supplier_id))
@@ -270,19 +252,10 @@ def edit_supplier_registered_company_number(supplier_id):
 @main.route('/suppliers/<int:supplier_id>/edit/registered-address', methods=['GET', 'POST'])
 @role_required('admin-ccs-data-controller')
 def edit_supplier_registered_address(supplier_id):
-    frameworks = data_api_client.find_frameworks()['frameworks']
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     contact = supplier["contactInformation"][0]
 
-    # Get SupplierFrameworks for frameworks the role is interested in, sorted by oldest frameworkLiveAtUTC first
-    supplier_frameworks = data_api_client.get_supplier_frameworks(supplier_id)["frameworkInterest"]
-    visible_supplier_frameworks = get_supplier_frameworks_visible_for_role(
-        supplier_frameworks, current_user, frameworks
-    )
-
-    # Get the company details (either from supplier contact information or recent declaration)
-    most_recent_supplier_framework = visible_supplier_frameworks[-1] if visible_supplier_frameworks else {}
-    company_details = get_company_details(most_recent_supplier_framework, supplier)
+    company_details = get_company_details_from_supplier(supplier)
 
     prefill_data = {
         "street": company_details['address'].get('street_address_line_1'),
@@ -312,18 +285,6 @@ def edit_supplier_registered_address(supplier_id):
             current_user.email_address
         )
 
-        if most_recent_supplier_framework.get('declaration'):
-            data_api_client.update_supplier_declaration(
-                supplier_id,
-                most_recent_supplier_framework['frameworkSlug'],
-                {
-                    "supplierRegisteredBuilding": form.street.data,
-                    "supplierRegisteredCountry": form.country.data,
-                    "supplierRegisteredPostcode": form.postcode.data,
-                    "supplierRegisteredTown": form.city.data,
-                },
-                current_user.email_address
-            )
         flash(SUPPLIER_DETAILS_UPDATED_MESSAGE.format(supplier_name=supplier['name']))
         return redirect(url_for('.supplier_details', supplier_id=supplier_id))
 

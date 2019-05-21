@@ -1,7 +1,7 @@
 DEPRECATED_FRAMEWORK_SLUGS = ['g-cloud-4', 'g-cloud-5', 'g-cloud-6']
 
 
-def company_details_from_supplier(supplier):
+def get_company_details_from_supplier(supplier):
     address = {"country": supplier.get("registrationCountry")}
     if len(supplier.get('contactInformation', [])) > 0:
         address.update({
@@ -18,21 +18,6 @@ def company_details_from_supplier(supplier):
         ),
         "registered_name": supplier.get("registeredName"),
         "address": address
-    }
-
-
-def company_details_from_supplier_framework_declaration(declaration):
-    return {
-        "duns_number": declaration.get("supplierDunsNumber"),
-        "registration_number": declaration.get("supplierCompanyRegistrationNumber"),
-        "trading_name": declaration.get("supplierTradingName"),
-        "registered_name": declaration.get("supplierRegisteredName"),
-        "address": {
-            "street_address_line_1": declaration.get("supplierRegisteredBuilding"),
-            "locality": declaration.get("supplierRegisteredTown"),
-            "postcode": declaration.get("supplierRegisteredPostcode"),
-            "country": declaration.get("supplierRegisteredCountry"),
-        },
     }
 
 
@@ -69,9 +54,3 @@ def get_supplier_frameworks_visible_for_role(supplier_frameworks, current_user, 
         visible_supplier_frameworks,
         key=lambda sf: framework_info[sf["frameworkSlug"]]['frameworkLiveAtUTC']
     )
-
-
-def get_company_details(supplier_framework, supplier):
-    if supplier_framework.get("declaration"):
-        return company_details_from_supplier_framework_declaration(supplier_framework["declaration"])
-    return company_details_from_supplier(supplier)
