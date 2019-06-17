@@ -104,7 +104,7 @@ class TestUsersView(LoggedInApplicationTest):
 
         last_login_day = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[4].strip()
-        assert last_login_day == '23 July'
+        assert last_login_day == 'Thursday 23 July 2015'
 
         last_password_changed = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[5].strip()
@@ -112,7 +112,7 @@ class TestUsersView(LoggedInApplicationTest):
 
         last_password_changed_day = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[6].strip()
-        assert last_password_changed_day == '29 June'
+        assert last_password_changed_day == 'Monday 29 June 2015'
 
         locked = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[7].strip()

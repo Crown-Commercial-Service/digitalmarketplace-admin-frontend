@@ -71,7 +71,7 @@
       {% call summary.field() %}
           {% if item.loggedInAt %}
               {{ item.loggedInAt|timeformat }}<br/>
-              {{ item.loggedInAt|shortdateformat }}
+              {{ item.loggedInAt|dateformat }}
           {% else %}
               Never
           {% endif %}
@@ -80,7 +80,7 @@
       {% call summary.field() %}
           {% if item.passwordChangedAt %}
               {{ item.passwordChangedAt|timeformat }}<br/>
-              {{ item.passwordChangedAt|shortdateformat }}
+              {{ item.passwordChangedAt|dateformat }}
           {% else %}
               Never
           {% endif %}
