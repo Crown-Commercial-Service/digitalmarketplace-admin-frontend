@@ -50,7 +50,7 @@
                   {{ item.data.serviceId }}
                 {% endcall %}
                 {% call summary.field() %}
-                  {{ item.createdAt|shortdateformat }}<br />
+                  {{ item.createdAt|dateformat }}<br />
                   at {{ item.createdAt|timeformat }}
 
                 {% endcall %}
