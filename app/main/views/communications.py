@@ -1,7 +1,7 @@
 from pathlib import PurePath
 
 from dmutils import s3  # this style of import so we only have to mock once
-from dmutils.documents import file_is_pdf, file_is_csv, file_is_open_document_format
+from dmutils.documents import file_is_pdf, file_is_csv, file_is_open_document_format, get_signed_url
 from dmutils.flask import timed_render_template as render_template
 from flask import redirect, url_for, current_app, request, flash, abort
 
@@ -42,6 +42,24 @@ def manage_communications(framework_slug):
         communication=communications[-1],
         framework=framework
     )
+
+
+@main.route('/communications/<framework_slug>/files/<string:comm_type>/<path:filepath>', methods=['GET'])
+@role_required('admin-framework-manager')
+def download_communication(framework_slug, comm_type, filepath):
+    if comm_type not in _comm_types:
+        abort(404)
+
+    # ensure this is a real framework
+    get_framework_or_404(data_api_client, framework_slug)
+
+    bucket = s3.S3(current_app.config['DM_COMMUNICATIONS_BUCKET'])
+    full_path = _get_comm_type_root(framework_slug, comm_type) / filepath
+    url = get_signed_url(bucket, str(full_path), current_app.config["DM_ASSETS_URL"])
+    if not url:
+        abort(404)
+
+    return redirect(url)
 
 
 @main.route('/communications/<framework_slug>', methods=['POST'])
