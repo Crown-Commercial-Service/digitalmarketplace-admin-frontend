@@ -119,7 +119,7 @@
                     {% endif %}
                     {% if current_user.has_any_role('admin-framework-manager') %}
                         <p>
-                          <a href="{{ url_for('.manage_communications', framework_slug=framework['slug']) }}">Upload communications</a>
+                          <a href="{{ url_for('.manage_communications', framework_slug=framework['slug']) }}">Manage communications</a>
                         </p>
                     {% endif %}
                     {% if current_user.has_any_role('admin-ccs-category', 'admin-framework-manager') %}

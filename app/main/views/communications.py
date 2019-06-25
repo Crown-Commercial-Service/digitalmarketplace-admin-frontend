@@ -24,23 +24,26 @@ _comm_types = ("communication", "clarification",)
 @role_required('admin-framework-manager')
 def manage_communications(framework_slug):
     communications_bucket = s3.S3(current_app.config['DM_COMMUNICATIONS_BUCKET'])
-    framework = data_api_client.get_framework(framework_slug)['frameworks']
+    framework = get_framework_or_404(data_api_client, framework_slug)
 
-    # Get the last items from the timestamp-ordered buckets, in order to show the most recently updated timestamps
-    # The "or [None]" ensures we have a list with at least one item (None) when no files exist in the bucket
-    communications = communications_bucket.list(
-        '{}/communications/updates/communications'.format(framework_slug), load_timestamps=True
-    ) or [None]
-    clarifications = communications_bucket.list(
-        '{}/communications/updates/clarifications'.format(framework_slug), load_timestamps=True
-    ) or [None]
+    # generate a dict of comm_type: seq of s3 object dicts
+    comm_type_objs = {
+        comm_type: tuple(
+            {
+                **bucket_item,
+                # annotate on to object dicts their paths relative to comm_type_root
+                "rel_path": PurePath(bucket_item["path"]).relative_to(_get_comm_type_root(framework_slug, comm_type)),
+            } for bucket_item in communications_bucket.list(
+                str(_get_comm_type_root(framework_slug, comm_type)),
+                load_timestamps=True,
+            )
+        ) for comm_type in _comm_types
+    }
 
     return render_template(
         'manage_communications.html',
-        # Pass in the last (most recent) clarification and communication from the lists; used to show "last modified"
-        clarification=clarifications[-1],
-        communication=communications[-1],
-        framework=framework
+        comm_type_objs=comm_type_objs,
+        framework=framework,
     )
 
 
