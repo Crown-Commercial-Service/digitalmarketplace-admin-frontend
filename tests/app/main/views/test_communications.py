@@ -342,18 +342,8 @@ class TestDownloadCommunicationsView(_BaseTestCommunicationsView):
 
         assert response.status_code == 404
 
-        assert self.s3.mock_calls == [
-            mock.call('flop-slop-slap'),
-            mock.call().get_signed_url(
-                # double-dots should be passed through to s3 which will similarly disregard them - no attempt to
-                # resolve them should be made
-                f'{self.framework_slug}/communications/updates/{comm_type}s/../floating/foampool.pdf'
-            ),
-        ]
-        # should have checked framework exists
-        assert self.data_api_client.mock_calls == [
-            mock.call.get_framework(self.framework_slug)
-        ]
+        assert self.s3.mock_calls == []
+        assert self.data_api_client.mock_calls == []
 
 
 class TestDeleteCommunicationsConfirmationPage(_BaseTestCommunicationsView):
@@ -374,6 +364,16 @@ class TestDeleteCommunicationsConfirmationPage(_BaseTestCommunicationsView):
     def test_invalid_comm_type(self):
         response = self.client.get(
             f"/admin/communications/{self.framework_slug}/delete/seasnakes/floating/foampool.pdf",
+        )
+
+        assert response.status_code == 404
+        assert self.data_api_client.mock_calls == []
+        assert self.s3.mock_calls == []
+        self.assert_no_flashes()
+
+    def test_spurious_double_dot(self):
+        response = self.client.get(
+            f"/admin/communications/{self.framework_slug}/delete/floating/../../../foampool.pdf",
         )
 
         assert response.status_code == 404
@@ -444,10 +444,21 @@ class TestDeleteCommunicationsPost(_BaseTestCommunicationsView):
         assert self.s3.mock_calls == []
         self.assert_no_flashes()
 
+    def test_spurious_double_dot(self):
+        response = self.client.post(
+            f"/admin/communications/{self.framework_slug}/delete/floating/../../../foampool.pdf",
+            data={"confirm": "Delete file"},
+        )
+
+        assert response.status_code == 404
+        assert self.data_api_client.mock_calls == []
+        assert self.s3.mock_calls == []
+        self.assert_no_flashes()
+
     @pytest.mark.parametrize("comm_type", ("communication", "clarification",))
     @pytest.mark.parametrize("file_path", (
         "floating/foampool.pdf",
-        "floating/../../../foampool.pdf",  # spurious double-dots shouldn't be resolved
+        "floatingfoampool",
     ))
     def test_happy_path(self, comm_type, file_path):
         self.s3.return_value.path_exists.return_value = True

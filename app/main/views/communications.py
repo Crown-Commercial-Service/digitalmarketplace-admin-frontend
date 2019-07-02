@@ -47,7 +47,7 @@ def manage_communications(framework_slug):
     )
 
 
-@main.route('/communications/<framework_slug>/files/<string:comm_type>/<path:filepath>', methods=['GET'])
+@main.route('/communications/<framework_slug>/files/<string:comm_type>/<safepurepath:filepath>', methods=['GET'])
 @role_required('admin-framework-manager')
 def download_communication(framework_slug, comm_type, filepath):
     if comm_type not in _comm_types:
@@ -100,7 +100,10 @@ def upload_communication(framework_slug):
     return redirect(url_for('.manage_communications', framework_slug=framework_slug))
 
 
-@main.route('/communications/<framework_slug>/delete/<string:comm_type>/<path:filepath>', methods=("GET", "POST",))
+@main.route(
+    '/communications/<framework_slug>/delete/<string:comm_type>/<safepurepath:filepath>',
+    methods=("GET", "POST",),
+)
 @role_required('admin-framework-manager')
 def delete_communication(framework_slug, comm_type, filepath):
     if comm_type not in _comm_types:
