@@ -1,7 +1,8 @@
 {% extends "_base_page.html" %}
+{% import "toolkit/summary-table.html" as summary %}
 
 {% block page_title %}
-  Upload {{ framework.name }} communications - Digital Marketplace admin
+  Manage {{ framework.name }} communications - Digital Marketplace admin
 {% endblock %}
 
 {% block breadcrumb %}
@@ -16,43 +17,88 @@
     {% include "toolkit/breadcrumb.html" %}
   {% endwith %}
 {% endblock %}
-
 {% block main_content %}
-  {% with heading = "Upload {} communications".format(framework.name) %}
+  {% with heading = "Manage {} communications".format(framework.name) %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
 
   <form method="post" enctype="multipart/form-data">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-    {% with
-       question="Communication",
-       hint="This must be an open document format (pdf, pda, odt, ods, odp) or CSV",
-       name="communication",
-       value="Last modified {}".format(communication.last_modified|datetimeformat) if communication else "No communications have been uploaded yet",
-       error=communication_error
-    %}
-      {% include "toolkit/forms/upload.html" %}
-    {% endwith %}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <div class="grid-row">
+      <div class="column-two-thirds">
+        <div class="dmspeak"><h2 class="heading-large">Communication</h2></div>
+        {% call(item) summary.list_table(
+          comm_type_objs.communication,
+          caption="Communications present",
+          empty_message="No communications files",
+          field_headings=[
+            "Last modified",
+            "File"
+          ],
+          field_headings_visible=False
+        ) %}
+          {% call summary.row() %}
+          {{ summary.field_name(item.last_modified|dateformat) }}
+          {% call summary.field() %}
+            <a href="{{ url_for('.download_communication', comm_type="communication", filepath=item.rel_path, framework_slug=framework.slug) }}" class="document-link-with-icon">
+              <span class='document-icon'>{{ item.ext }}<span> document:</span></span>
+              {{ item.filename }}
+            </a>
+          {% endcall %}
+          {{ summary.remove_link(label="Delete", link=url_for('.delete_communication', framework_slug=framework.slug, comm_type="communication", filepath=item.rel_path)) }}
+          {% endcall %}
+        {% endcall %}
+        {% with
+          question="Upload communication",
+          hint="This must be an open document format (pdf, pda, odt, ods, odp) or CSV",
+          name="communication",
+          error=communication_error
+        %}
+          {% include "toolkit/forms/upload.html" %}
+        {% endwith %}
 
     {% if framework.status in ['open'] %}
-    {% with
-       question="Clarification answers",
-       hint="This must be PDF",
-       name="clarification",
-       value="Last modified {}".format(clarification.last_modified|datetimeformat) if clarification else "No clarification answers have been uploaded yet",
-       error=clarification_error
-    %}
-      {% include "toolkit/forms/upload.html" %}
-    {% endwith %}
+        <div class="dmspeak"><h2 class="heading-large">Clarification answers</h2></div>
+        {% call(item) summary.list_table(
+          comm_type_objs.clarification,
+          caption="Communications present",
+          empty_message="No clarification answers",
+          field_headings=[
+            "Last modified",
+            "File"
+          ],
+          field_headings_visible=False
+        ) %}
+          {% call summary.row() %}
+          {{ summary.field_name(item.last_modified|dateformat) }}
+          {% call summary.field() %}
+            <a href="{{ url_for('.download_communication', comm_type="clarification", filepath=item.rel_path, framework_slug=framework.slug) }}" class="document-link-with-icon">
+              <span class='document-icon'>{{ item.ext }}<span> document:</span></span>
+              {{ item.filename }}
+            </a>
+          {% endcall %}
+          {{ summary.remove_link(label="Delete", link=url_for('.delete_communication', framework_slug=framework.slug, comm_type="clarification", filepath=item.rel_path)) }}
+          {% endcall %}
+        {% endcall %}
+        {% with
+          question="Upload clarification answers",
+          hint="This must be a PDF",
+          name="clarification",
+          error=clarification_error
+        %}
+          {% include "toolkit/forms/upload.html" %}
+        {% endwith %}
     {% endif %}
 
-    {%
-      with
-      type = "save",
-      label = "Upload files"
-    %}
-      {% include "toolkit/button.html" %}
-    {% endwith %}
+        {%
+          with
+          type = "save",
+          label = "Upload files"
+        %}
+          {% include "toolkit/button.html" %}
+        {% endwith %}
+        </div>
+      </div>
   </form>
 
 {% endblock %}

@@ -303,7 +303,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
 
         assert bool(document.xpath('.//a[contains(text(),"agreements")]')) == agreements_shown
         assert bool(document.xpath('.//a[contains(text(),"View application statistics")]')) == stats_shown
-        assert bool(document.xpath('.//a[contains(text(),"Upload communications")]')) == comms_shown
+        assert bool(document.xpath('.//a[contains(text(),"Manage communications")]')) == comms_shown
         assert bool(document.xpath('.//a[contains(text(),"Contact suppliers")]')) == contact_shown
 
     @pytest.mark.parametrize("role, link_should_be_visible, expected_link_text", [
@@ -354,11 +354,11 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         ("admin-manager", False),
         ("admin-ccs-data-controller", False),
     ])
-    def test_framework_action_list_includes_upload_communications(self, role, link_should_be_visible):
+    def test_framework_action_list_includes_manage_communications(self, role, link_should_be_visible):
         self.user_role = role
         response = self.client.get('/admin')
         document = html.fromstring(response.get_data(as_text=True))
-        link_is_visible = bool(document.xpath('.//a[contains(text(),"Upload communications")]'))
+        link_is_visible = bool(document.xpath('.//a[contains(text(),"Manage communications")]'))
 
         assert link_is_visible is link_should_be_visible, (
             "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")

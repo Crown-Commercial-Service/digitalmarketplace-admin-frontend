@@ -1,0 +1,48 @@
+{% extends "_base_page.html" %}
+
+{% block page_title %}
+  Confirm communications deletion - Digital Marketplace admin
+{% endblock %}
+
+{% block breadcrumb %}
+  {%
+      with items = [
+          {
+              "link": url_for('.index'),
+              "label": "Admin home"
+          },
+          {
+              "link": url_for('.manage_communications', framework_slug=framework.slug),
+              "label": "Manage {} communications".format(framework.name)
+          }
+      ]
+  %}
+    {% include "toolkit/breadcrumb.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block main_content %}
+  {% with heading = "Confirm communications deletion" %}
+    {% include "toolkit/page-heading.html" %}
+  {% endwith %}
+
+  <form method="POST" action="">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <div class="grid-row">
+      <div class="column-two-thirds">
+        <div class="question">
+          Are you sure you want to delete the {{ framework.name }} {{ comm_type }} file ‘{{ filepath }}’?
+        </div>
+        {%
+          with
+          label="Delete file",
+          type="destructive",
+          name="confirm"
+        %}
+          {% include "toolkit/button.html" %}
+        {% endwith %}
+      </div>
+    </div>
+  </form>
+
+{% endblock %}

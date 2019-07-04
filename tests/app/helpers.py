@@ -80,6 +80,10 @@ class BaseApplicationTest(object):
             assert expected_message in messages.getlist(expected_category), \
                 "Didn't find '{}' in '{}'".format(expected_message, messages.getlist(expected_category))
 
+    def assert_no_flashes(self):
+        with self.client.session_transaction() as session:
+            assert '_flashes' not in session
+
     @staticmethod
     def _get_fixture_data(fixture_filename):
         test_root = os.path.abspath(
