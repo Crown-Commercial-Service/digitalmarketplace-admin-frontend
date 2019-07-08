@@ -44,6 +44,7 @@
 
       <h2>Company number</h2>
       <div class="padding-bottom-small">
+        {% if company_details.registered_with == "companies_house" %}
           {%
           with
               text = company_details.registration_number,
@@ -52,6 +53,9 @@
           %}
           {% include "toolkit/external-link.html" %}
           {% endwith %}
+        {% else %}
+          {{ company_details.registration_number }}
+        {% endif %}
       </div>
 
       <h2>Appointment is to</h2>
