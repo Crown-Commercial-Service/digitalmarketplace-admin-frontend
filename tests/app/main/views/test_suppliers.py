@@ -2302,15 +2302,15 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
             mock_get_url.return_value = "http://example.com/document/1234.pdf"
 
-            response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+            response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-11')
             document = html.fromstring(response.get_data(as_text=True))
             assert response.status_code == 200
             # Registered Address
-            assert len(document.xpath('//li[contains(text(), "Corsewall Lighthouse")]')) == 1
-            assert len(document.xpath('//li[contains(text(), "Stranraer")]')) == 1
-            assert len(document.xpath('//li[contains(text(), "DG9 0QG")]')) == 1
+            assert len(document.xpath('//li[contains(text(), "1 Street")]')) == 1
+            assert len(document.xpath('//li[contains(text(), "Supplierville")]')) == 1
+            assert len(document.xpath('//li[contains(text(), "11 AB")]')) == 1
             # Company number - linked
-            assert len(document.xpath('//a[@href="https://beta.companieshouse.gov.uk/company/1234456"][contains(text(), "1234456")]')) == 1  # noqa
+            assert len(document.xpath('//a[@href="https://beta.companieshouse.gov.uk/company/1234578"][contains(text(), "1234578")]')) == 1  # noqa
             # Lots
             assert len(document.xpath('//li[contains(text(), "Lettuce & cucumber")]')) == 1
             assert len(document.xpath('//li[contains(text(), "Raisins & dates")]')) == 1

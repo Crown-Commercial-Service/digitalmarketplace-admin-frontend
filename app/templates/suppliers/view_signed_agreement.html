@@ -26,7 +26,7 @@
   <div class="column-one-whole">
     {%
         with
-        heading = supplier_framework.declaration.nameOfOrganisation or supplier_framework.declaration.supplierRegisteredName,
+        heading = company_details.registered_name,
         smaller = True
     %}
     {% include "toolkit/page-heading.html" %}
@@ -37,17 +37,17 @@
   <div class="column-one-third">
       <h2>Registered address</h2>
       <ul class="padding-bottom-small">
-          <li>{{ supplier_framework.declaration.registeredAddressBuilding or supplier_framework.declaration.supplierRegisteredBuilding }}</li>
-          <li>{{ supplier_framework.declaration.registeredAddressTown or supplier_framework.declaration.supplierRegisteredTown }}</li>
-          <li>{{ supplier_framework.declaration.registeredAddressPostcode or supplier_framework.declaration.supplierRegisteredPostcode }}</li>
+          <li>{{ company_details.address.street_address_line_1 }}</li>
+          <li>{{ company_details.address.locality }}</li>
+          <li>{{ company_details.address.postcode }}</li>
       </ul>
 
       <h2>Company number</h2>
       <div class="padding-bottom-small">
           {%
           with
-              text = supplier_framework.declaration.companyRegistrationNumber or supplier_framework.declaration.supplierCompanyRegistrationNumber,
-              link = "https://beta.companieshouse.gov.uk/company/%s" | format(supplier_framework.declaration.companyRegistrationNumber or supplier_framework.declaration.supplierCompanyRegistrationNumber),
+              text = company_details.registration_number,
+              link = "https://beta.companieshouse.gov.uk/company/%s" | format(company_details.registration_number),
               target = "_blank"
           %}
           {% include "toolkit/external-link.html" %}
