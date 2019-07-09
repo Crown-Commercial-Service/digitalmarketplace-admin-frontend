@@ -45,7 +45,7 @@
               field_headings_visible=True
             ) %}
               {% call summary.row() %}
-                {{ summary.field_name(item.data.supplierName, wide=True) }}
+                {{ summary.field_name(item.data.get('supplierName', item.data.supplierId), wide=True) }}
                 {% call summary.field() %}
                   {{ item.data.serviceId }}
                 {% endcall %}
@@ -57,7 +57,7 @@
                 {{ summary.edit_link(
                   "View changes",
                   url_for('.service_updates', service_id=item.data.serviceId),
-                  hidden_text="for " + item.data.supplierName
+                  hidden_text="for " + item.data.get('supplierName', item.data.supplierId)
                 ) }}
               {% endcall %}
             {% endcall %}

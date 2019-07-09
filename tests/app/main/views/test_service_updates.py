@@ -108,6 +108,34 @@ class TestServiceUpdates(LoggedInApplicationTest):
                 for tr in document.xpath('//table[@class="summary-item-body"]/thead/tr')
             ) == (('Supplier', 'Service ID', 'Edited', 'Changes'),)
 
+    def test_should_show_supplier_id_if_supplier_name_not_present(self):
+        self.data_api_client.find_audit_events.return_value = {
+            "auditEvents": [
+                {
+                    "data": {
+                        "serviceId": "597637931590002",
+                        "supplierId": "70002",
+                    },
+                    "createdAt": "2019-07-09T09:23:28.517022Z",
+                }
+            ],
+            "links": {},
+        }
+
+        response = self.client.get('/admin/services/updates/unapproved')
+
+        assert response.status_code == 200
+        document = html.fromstring(response.get_data(as_text=True))
+
+        expected_table_contents = (("70002", "597637931590002", "Tuesday 9 July 2019 at 09:23:28", "/admin/services/597637931590002/updates"),)  # noqa
+
+        assert tuple(
+            tuple(
+                td.xpath('normalize-space(string())') for td in tr.xpath('./td')[:-1]
+            ) + (tr.xpath('./td[last()]//a/@href')[0],)
+            for tr in document.xpath('//table[@class="summary-item-body"]/tbody/tr')
+        ) == expected_table_contents
+
     def test_acknowledge_audit_event_happy_path(self):
         audit_event = {
             'auditEvents': {
