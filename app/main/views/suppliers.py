@@ -367,6 +367,7 @@ def view_signed_agreement(supplier_id, framework_slug):
         current_app.logger.info(f'No agreement file found for {path}')
     return render_template(
         "suppliers/view_signed_agreement.html",
+        company_details=get_company_details_from_supplier(supplier),
         supplier=supplier,
         framework=framework,
         supplier_framework=supplier_framework,

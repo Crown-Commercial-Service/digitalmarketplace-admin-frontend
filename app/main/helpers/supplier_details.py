@@ -16,6 +16,7 @@ def get_company_details_from_supplier(supplier):
             or
             supplier.get("otherCompanyRegistrationNumber")
         ),
+        "registered_with": "companies_house" if "companiesHouseNumber" in supplier else "unknown",
         "registered_name": supplier.get("registeredName"),
         "address": address
     }

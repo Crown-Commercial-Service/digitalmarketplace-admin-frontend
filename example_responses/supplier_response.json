@@ -11,7 +11,6 @@
         "address1": "1 Street",
         "address2": "2 Building",
         "city": "Supplierville",
-        "country": "Supplierland",
         "postcode": "11 AB",
         "links": {
           "self": "http://localhost:5000/suppliers/1234/contact-information/1234"
@@ -21,6 +20,10 @@
     "description": "Supplier Description",
     "dunsNumber": "1234",
     "eSourcingId": "1234",
+    "companiesHouseNumber": "1234578",
+    "registrationCompany": "country:GB",
+    "tradingStatus": "limited company (LTD)",
+    "organisationSize": "medium",
     "id": 1234,
     "links": {
       "self": "http://localhost:5000/suppliers/1234"
@@ -28,7 +31,12 @@
     "name": "Supplier Name",
     "service_counts": {
       "G-Cloud 5": 4,
-      "G-Cloud 6": 5
+      "G-Cloud 6": 5,
+      "G-Cloud 7": 6,
+      "G-Cloud 8": 7,
+      "G-Cloud 9": 8,
+      "G-Cloud 10": 9,
+      "G-Cloud 11": 10
     }
   }
 }

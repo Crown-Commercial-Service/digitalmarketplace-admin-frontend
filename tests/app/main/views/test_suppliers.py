@@ -2302,15 +2302,15 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
             mock_get_url.return_value = "http://example.com/document/1234.pdf"
 
-            response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-8')
+            response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-11')
             document = html.fromstring(response.get_data(as_text=True))
             assert response.status_code == 200
             # Registered Address
-            assert len(document.xpath('//li[contains(text(), "Corsewall Lighthouse")]')) == 1
-            assert len(document.xpath('//li[contains(text(), "Stranraer")]')) == 1
-            assert len(document.xpath('//li[contains(text(), "DG9 0QG")]')) == 1
+            assert len(document.xpath('//li[contains(text(), "1 Street")]')) == 1
+            assert len(document.xpath('//li[contains(text(), "Supplierville")]')) == 1
+            assert len(document.xpath('//li[contains(text(), "11 AB")]')) == 1
             # Company number - linked
-            assert len(document.xpath('//a[@href="https://beta.companieshouse.gov.uk/company/1234456"][contains(text(), "1234456")]')) == 1  # noqa
+            assert len(document.xpath('//a[@href="https://beta.companieshouse.gov.uk/company/1234578"][contains(text(), "1234578")]')) == 1  # noqa
             # Lots
             assert len(document.xpath('//li[contains(text(), "Lettuce & cucumber")]')) == 1
             assert len(document.xpath('//li[contains(text(), "Raisins & dates")]')) == 1
@@ -2320,6 +2320,23 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
             # Uploader details
             assert len(document.xpath('//p[contains(text(), "Uploader Name")]')) == 1
             assert len(document.xpath('//span[contains(text(), "uploader@email.com")]')) == 1
+
+    def test_companies_house_link_is_not_shown_for_other_registration_number(self, s3):
+        self.data_api_client.find_services_iter.return_value = iter(self.services_response)
+        self.data_api_client.get_supplier.return_value["suppliers"].pop("companiesHouseNumber")
+        self.data_api_client.get_supplier.return_value["suppliers"]["otherCompanyRegistrationNumber"] = "987654321"
+
+        with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
+            mock_get_url.return_value = "http://example.com/document/1234.pdf"
+
+            response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-11')
+            document = html.fromstring(response.get_data(as_text=True))
+            assert response.status_code == 200
+            # Companies House link does not exist
+            assert len(document.xpath('//a[@href="https://beta.companieshouse.gov.uk/company/"]')) == 0  # noqa
+            # Other registration number is visible
+            assert len(document.xpath(
+                '//h2[contains(text(), "Company number")]/following-sibling::div[contains(text(), "987654321")]')) == 1
 
     def test_should_show_error_message_if_no_signed_url(self, s3):
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
