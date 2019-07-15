@@ -65,7 +65,7 @@ def evidence_assessments_review_previous(evidence_id=None):
 def evidence_assessments_approve():
     id = request.get_json(force=True)['id']
     if not id:
-        about(400, 'Evidence id is missing')
+        abort(400, 'Evidence id is missing')
     result = (
         data_api_client.req.evidence(id)
         .approve()
@@ -80,7 +80,7 @@ def evidence_assessments_approve():
 def evidence_assessments_reject():
     request_data = request.get_json(force=True)
     if 'id' not in request_data:
-        about(400, 'Evidence id is missing')
+        abort(400, 'Evidence id is missing')
     id = request_data['id']
     failed_criteria = request_data['failed_criteria']
     data = {
