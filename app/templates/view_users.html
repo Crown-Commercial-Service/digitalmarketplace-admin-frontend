@@ -108,7 +108,16 @@
         {% call summary.field() %}
             {% if item.active %}
                 {% if current_user.has_role('admin') %}
-            <a href="{{ url_for('.reset_password', user_id=item.id) }}">Reset Password</a>
+                <form action="{{ url_for('.reset_password', user_id=item.id) }}" method="post">
+                    {{ form.csrf_token }}
+                    {%
+                        with
+                        type = "destructive",
+                        label = "Reset password"
+                    %}
+                    {% include "toolkit/button.html" %}
+                    {% endwith %}
+                </form>
                 <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
                     {{ form.csrf_token }}
                     <input type="hidden" name="source" value="{{ url_for('.find_user_by_email_address', email_address=email_address) }}"/>

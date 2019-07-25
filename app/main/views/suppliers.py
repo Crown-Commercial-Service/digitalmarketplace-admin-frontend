@@ -22,6 +22,8 @@ from dmutils.forms import DmForm, render_template_with_csrf
 
 from itertools import chain
 
+from urllib import quote_plus
+
 
 @main.route('/suppliers', methods=['GET'])
 @login_required
@@ -317,24 +319,22 @@ def deactivate_user(user_id):
     return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierCode']))
 
 
-@main.route('/suppliers/users/<int:user_id>/reset_password', methods=['GET'])
+@main.route('/suppliers/users/<int:user_id>/reset_password', methods=['POST'])
 @login_required
 @role_required('admin')
 def reset_password(user_id):
     user = data_api_client.get_user(user_id)
+    result = data_api_client.req.users().resetpassword().post({
+        'email_address': user['users']['emailAddress']
+    })
 
-    token = generate_token(
-        {
-            "user_id": user_id,
-            "email_address": user['users']['emailAddress']
-        },
-        current_app.config['SECRET_KEY'],
-        current_app.config['RESET_PASSWORD_SALT']
-    )
+    token = result['token']
 
-    return redirect('{}://{}/2/reset-password/{}'.format(current_app.config['DM_HTTP_PROTO'],
-                                                         current_app.config['DM_MAIN_SERVER_NAME'],
-                                                         token))
+    return redirect('{}://{}/2/reset-password/{}?e={}'.format(
+        current_app.config['DM_HTTP_PROTO'],
+        current_app.config['DM_MAIN_SERVER_NAME'],
+        token,
+        quote_plus(user['users']['emailAddress'])))
 
 
 @main.route('/suppliers/<int:supplier_code>/move-existing-user', methods=['POST'])

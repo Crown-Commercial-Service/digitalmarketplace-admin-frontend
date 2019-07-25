@@ -87,7 +87,7 @@ class TestUsersView(LoggedInApplicationTest):
         self.assertEquals('No', locked)
 
         button = document.xpath(
-            '//input[@class="button-destructive"]')[0].value
+            '//input[@class="button-destructive"]')[1].value
         self.assertEquals('Deactivate', button)
 
     def test_should_show_supplier_user(self, data_api_client, _user_info):
@@ -162,11 +162,11 @@ class TestUsersView(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
 
         deactivate_button = document.xpath(
-            '//input[@class="button-destructive"]')[0].attrib['value']
+            '//input[@class="button-destructive"]')[1].attrib['value']
         deactivate_link = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/form')[0]
+            '//tr[@class="summary-item-row"]//td/span/form')[1]
         return_link = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/form/input')[1]
+            '//tr[@class="summary-item-row"]//td/span/form/input')[3]
         self.assertEquals('/admin/suppliers/users/999/deactivate', deactivate_link.attrib['action'])
         self.assertEquals('Deactivate', deactivate_button)
         self.assertEquals('/admin/users?email_address=test.user%40sme.com', return_link.attrib['value'])
