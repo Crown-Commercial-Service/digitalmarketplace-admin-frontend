@@ -2,10 +2,10 @@
 # Run `make freeze-requirements` to update requirements.txt
 # with package version changes made in requirements-app.txt
 
-Flask==1.0.3
+Flask==1.1.1
 Flask-Login==0.4.1
 Flask-WTF==0.14.2
-lxml==4.3.4
+lxml==4.4.0
 
 # Putting upgrade on hold due to v1.0.0 using sha512 instead of sha1 by default
 itsdangerous==0.24  # pyup: <1.0.0
