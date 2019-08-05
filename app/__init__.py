@@ -1,14 +1,17 @@
+from copy import deepcopy
 from datetime import timedelta
 
 from dmcontent.errors import ContentNotFoundError
 from flask import Flask, request, redirect, session
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
+from werkzeug.local import Local, LocalProxy
 
 import dmapiclient
-from dmutils import init_app, formats
-from dmutils.user import User
 from dmcontent.content_loader import ContentLoader
+from dmutils import init_app, formats
+from dmutils.timing import logged_duration
+from dmutils.user import User
 
 from config import configs
 
@@ -17,9 +20,50 @@ csrf = CSRFProtect()
 data_api_client = dmapiclient.DataAPIClient()
 login_manager = LoginManager()
 
-content_loader = ContentLoader('app/content')
+# we use our own Local for objects we explicitly want to be able to retain between requests but shouldn't
+# share a common object between concurrent threads/contexts
+_local = Local()
 
 
+def _make_content_loader_factory(application, frameworks, initial_instance=None):
+    # for testing purposes we allow an initial_instance to be provided
+    master_cl = initial_instance if initial_instance is not None else ContentLoader('app/content')
+    for framework_data in frameworks:
+        try:
+            master_cl.load_manifest(framework_data['slug'], 'services', 'edit_service_as_admin')
+        except ContentNotFoundError:
+            # Not all frameworks have this, so no need to panic (e.g. G-Cloud 4, G-Cloud 5)
+            application.logger.info(
+                "Could not load edit_service_as_admin manifest for {}".format(framework_data['slug'])
+            )
+        try:
+            master_cl.load_manifest(framework_data['slug'], 'declaration', 'declaration')
+        except ContentNotFoundError:
+            # Not all frameworks have this, so no need to panic (e.g. G-Cloud 4, G-Cloud 5, G-Cloud-6)
+            application.logger.info(
+                "Could not load declaration manifest for {}".format(framework_data['slug'])
+            )
+
+    # seal master_cl in a closure by returning a function which will only ever return an independent copy of it.
+    # this is of course only guaranteed when the initial_instance argument wasn't used.
+    return lambda: deepcopy(master_cl)
+
+
+def _content_loader_factory():
+    # this is a placeholder _content_loader_factory implementation that should never get called, instead being
+    # replaced by one created using _make_content_loader_factory once an `application` is available to
+    # initialize it with
+    raise LookupError("content loader not ready yet: must be initialized & populated by create_app")
+
+
+@logged_duration(message="Spent {duration_real}s in get_content_loader")
+def get_content_loader():
+    if not hasattr(_local, "content_loader"):
+        _local.content_loader = _content_loader_factory()
+    return _local.content_loader
+
+
+content_loader = LocalProxy(get_content_loader)
 from app.main.helpers.service import parse_document_upload_time
 
 
@@ -36,21 +80,12 @@ def create_app(config_name):
         login_manager=login_manager,
     )
 
-    for framework_data in data_api_client.find_frameworks().get('frameworks'):
-        try:
-            content_loader.load_manifest(framework_data['slug'], 'services', 'edit_service_as_admin')
-        except ContentNotFoundError:
-            # Not all frameworks have this, so no need to panic (e.g. G-Cloud 4, G-Cloud 5)
-            application.logger.info(
-                "Could not load edit_service_as_admin manifest for {}".format(framework_data['slug'])
-            )
-        try:
-            content_loader.load_manifest(framework_data['slug'], 'declaration', 'declaration')
-        except ContentNotFoundError:
-            # Not all frameworks have this, so no need to panic (e.g. G-Cloud 4, G-Cloud 5, G-Cloud-6)
-            application.logger.info(
-                "Could not load declaration manifest for {}".format(framework_data['slug'])
-            )
+    # replace placeholder _content_loader_factory with properly initialized one
+    global _content_loader_factory
+    _content_loader_factory = _make_content_loader_factory(
+        application,
+        data_api_client.find_frameworks().get('frameworks'),
+    )
 
     from .metrics import metrics as metrics_blueprint, gds_metrics
     from .main import main as main_blueprint
