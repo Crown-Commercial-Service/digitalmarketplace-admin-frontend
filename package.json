@@ -15,18 +15,22 @@
     "govuk-frontend": "^2.4.0",
     "govuk_frontend_toolkit": "5.0.3",
     "govuk_template": "https://github.com/alphagov/govuk_template/releases/download/v0.19.2/jinja_govuk_template-0.19.2.tgz",
-    "gulp": "3.8.11",
+    "gulp": "4.0.0",
     "gulp-filelog": "0.4.1",
     "gulp-include": "2.3.1",
     "gulp-sass": "3.1.0",
-    "gulp-shell": "0.2.9",
+    "gulp-shell": "0.5.2",
     "gulp-uglify": "1.5.1",
     "hogan.js": "3.0.2",
-    "jquery": "3.0.0"
+    "jquery": "3.4.0",
+    "snyk": "^1.211.0"
   },
   "scripts": {
     "frontend-build:development": "./node_modules/gulp/bin/gulp.js build:development",
     "frontend-build:production": "./node_modules/gulp/bin/gulp.js build:production",
-    "frontend-build:watch": "./node_modules/gulp/bin/gulp.js watch"
-  }
+    "frontend-build:watch": "./node_modules/gulp/bin/gulp.js watch",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
+  },
+  "snyk": true
 }
