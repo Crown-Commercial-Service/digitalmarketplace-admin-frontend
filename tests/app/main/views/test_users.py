@@ -26,7 +26,7 @@ class TestUsersView(LoggedInApplicationTest):
         ("admin-ccs-sourcing", 403),
         ("admin-manager", 403),
         ("admin-framework-manager", 403),
-        ("admin-ccs-data-controller", 403),
+        ("admin-ccs-data-controller", 200),
     ])
     def test_find_users_page_is_only_accessible_to_specific_user_roles(self, role, expected_code):
         self.user_role = role

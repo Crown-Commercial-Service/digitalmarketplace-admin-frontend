@@ -14,7 +14,7 @@ CLOSED_BRIEF_STATUSES = ['closed', 'awarded', 'cancelled', 'unsuccessful']
 
 
 @main.route('/users', methods=['GET'])
-@role_required('admin', 'admin-ccs-category')
+@role_required('admin', 'admin-ccs-category', 'admin-ccs-data-controller')
 def find_user_by_email_address():
     users = None
     email_address = None

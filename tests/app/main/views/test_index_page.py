@@ -64,7 +64,7 @@ class TestIndex(LoggedInApplicationTest):
         ("admin-ccs-sourcing", False),
         ("admin-framework-manager", False),
         ("admin-manager", False),
-        ("admin-ccs-data-controller", False),
+        ("admin-ccs-data-controller", True),
     ])
     def test_find_a_user_by_email_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
