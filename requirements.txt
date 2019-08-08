@@ -5,7 +5,7 @@
 Flask==1.0.3
 Flask-Login==0.4.1
 Flask-WTF==0.14.2
-lxml==4.3.4
+lxml==4.4.0
 
 # Putting upgrade on hold due to v1.0.0 using sha512 instead of sha1 by default
 itsdangerous==0.24  # pyup: <1.0.0
@@ -17,8 +17,8 @@ git+https://github.com/alphagov/digitalmarketplace-apiclient.git@21.0.0#egg=digi
 ## The following requirements were added by pip freeze:
 asn1crypto==0.24.0
 blinker==1.4
-boto3==1.9.200
-botocore==1.12.200
+boto3==1.9.202
+botocore==1.12.202
 certifi==2019.6.16
 cffi==1.12.3
 chardet==3.0.4
