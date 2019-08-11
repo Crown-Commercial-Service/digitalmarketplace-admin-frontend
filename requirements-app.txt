@@ -4,7 +4,7 @@
 Flask==1.1.1
 Flask-Login==0.4.1
 Flask-WTF==0.14.2
-lxml==4.4.0
+lxml==4.4.1
 
 # Putting upgrade on hold due to v1.0.0 using sha512 instead of sha1 by default
 itsdangerous==0.24  # pyup: <1.0.0
