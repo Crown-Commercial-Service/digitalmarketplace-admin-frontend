@@ -39,6 +39,15 @@
       {% endwith %}
     </div>
   </div>
+  {% call summary.mapping_table(
+    caption="Application status",
+    field_headings_visible=False
+  ) %}
+    {% call summary.row() %}
+      {{ summary.field_name("Application status") }}
+      {{ summary.text("Pass" if supplier_framework.onFramework else ("Fail" if supplier_framework.onFramework is sameas false else "Pending")) }}
+    {% endcall %}
+  {% endcall %}
 
   {% for section in content.summary(declaration) %}
     {{ summary.heading(section.name) }}
