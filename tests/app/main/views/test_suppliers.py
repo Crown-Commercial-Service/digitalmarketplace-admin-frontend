@@ -451,9 +451,10 @@ class TestSuppliersListView(LoggedInApplicationTest):
             name="foo", duns_number=None, company_registration_number=None, page=1
         )
 
-    def test_should_search_by_duns_number(self):
+    @pytest.mark.parametrize("duns_number", ["987654321", " 987654321", "987654321 ", " 987654321 "])
+    def test_should_search_by_duns_number(self, duns_number):
         self.data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
-        self.client.get("/admin/suppliers?supplier_duns_number=987654321")
+        self.client.get(f"/admin/suppliers?supplier_duns_number={duns_number}")
 
         self.data_api_client.find_suppliers.assert_called_once_with(
             name=None, duns_number="987654321", company_registration_number=None, page=1

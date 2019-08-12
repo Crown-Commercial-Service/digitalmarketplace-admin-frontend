@@ -65,9 +65,11 @@ def find_suppliers():
         suppliers = [data_api_client.get_supplier(request.args.get("supplier_id"))['suppliers']]
         links = {}
     else:
+        duns_number = request.args.get("supplier_duns_number").strip() \
+            if request.args.get("supplier_duns_number") else None
         suppliers_response = data_api_client.find_suppliers(
             name=request.args.get("supplier_name"),
-            duns_number=request.args.get("supplier_duns_number"),
+            duns_number=duns_number,
             company_registration_number=request.args.get("supplier_company_registration_number"),
             page=request.args.get("page", 1)  # API will validate page number values
         )
