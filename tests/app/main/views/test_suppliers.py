@@ -1637,9 +1637,19 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
         self.data_api_client = self.data_api_client_patch.start()
 
-        self.data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        self.data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
-        self.data_api_client.get_supplier_declaration.return_value = self.load_example_listing('declaration_response')
+        supplier_response = self.load_example_listing('supplier_response')
+        self.data_api_client.get_supplier.return_value = supplier_response
+
+        framework_response = self.load_example_listing('framework_response')
+        self.data_api_client.get_framework.return_value = framework_response
+
+        sf_stub = SupplierFrameworkStub(
+            framework_slug=framework_response["frameworks"]["slug"],
+            supplier_id=supplier_response["suppliers"]["id"],
+            on_framework=True,
+            declaration=self.load_example_listing('declaration_response')["declaration"]
+        )
+        self.data_api_client.get_supplier_framework_info.return_value = sf_stub.single_result_response()
 
     def teardown_method(self, method):
         self.data_api_client_patch.stop()
@@ -1671,30 +1681,62 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         self.data_api_client.get_framework.assert_called_with('g-cloud-7')
 
     def test_should_not_404_if_declaration_does_not_exist(self):
-        self.data_api_client.get_supplier_declaration.side_effect = APIError(Response(404))
+        self.data_api_client.get_supplier_framework_info.side_effect = APIError(Response(404))
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
 
         assert response.status_code == 200
         self.data_api_client.get_supplier.assert_called_once_with(1234)
         self.data_api_client.get_framework.assert_called_once_with('g-cloud-7')
-        self.data_api_client.get_supplier_declaration.assert_called_once_with(1234, 'g-cloud-7')
+        self.data_api_client.get_supplier_framework_info.assert_called_once_with(1234, 'g-cloud-7')
 
-    def test_should_show_declaration(self):
+    @pytest.mark.parametrize("on_framework,expected_application_status", (
+        (True, "Pass"),
+        (False, "Fail"),
+        (None, "Pending"),
+    ))
+    def test_should_show_declaration(self, on_framework, expected_application_status):
+        self.data_api_client.get_supplier_framework_info.return_value["frameworkInterest"]["onFramework"] = \
+            on_framework
+
         response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
         document = html.fromstring(response.get_data(as_text=True))
 
         assert response.status_code == 200
-        data = document.cssselect('.summary-item-row td.summary-item-field')
-        assert data[0].text_content().strip() == "Yes"
+        assert document.cssselect('h2 + * + .summary-item-body')[0].cssselect(
+            '.summary-item-row td.summary-item-field'
+        )[0].text_content().strip() == "Yes"
+        assert document.xpath(
+            "//*[contains(@class, 'summary-item-row')]"
+            "[./*[1][contains(@class, 'summary-item-field')][normalize-space(string())=$t1]]"
+            "[./*[2][contains(@class, 'summary-item-field')][normalize-space(string())=$t2]]",
+            t1="Application status",
+            t2=expected_application_status,
+        )
 
-    def test_should_show_dos_declaration(self):
+    @pytest.mark.parametrize("on_framework,expected_application_status", (
+        (True, "Pass"),
+        (False, "Fail"),
+        (None, "Pending"),
+    ))
+    def test_should_show_dos_declaration(self, on_framework, expected_application_status):
+        self.data_api_client.get_supplier_framework_info.return_value["frameworkInterest"]["onFramework"] = \
+            on_framework
+
         response = self.client.get('/admin/suppliers/1234/edit/declarations/digital-outcomes-and-specialists')
         document = html.fromstring(response.get_data(as_text=True))
 
         assert response.status_code == 200
-        data = document.cssselect('.summary-item-row td.summary-item-field')
-        assert data[0].text_content().strip() == "Yes"
+        assert document.cssselect('h2 + * + .summary-item-body')[0].cssselect(
+            '.summary-item-row td.summary-item-field'
+        )[0].text_content().strip() == "Yes"
+        assert document.xpath(
+            "//*[contains(@class, 'summary-item-row')]"
+            "[./*[1][contains(@class, 'summary-item-field')][normalize-space(string())=$t1]]"
+            "[./*[2][contains(@class, 'summary-item-field')][normalize-space(string())=$t2]]",
+            t1="Application status",
+            t2=expected_application_status,
+        )
 
     def test_should_403_if_framework_is_open(self):
         self.data_api_client.get_framework.return_value['frameworks']['status'] = 'open'

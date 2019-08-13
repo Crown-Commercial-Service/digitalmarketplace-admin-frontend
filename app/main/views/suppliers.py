@@ -320,20 +320,21 @@ def view_supplier_declaration(supplier_id, framework_slug):
     if framework['status'] not in ['pending', 'standstill', 'live']:
         abort(403)
     try:
-        declaration = data_api_client.get_supplier_declaration(supplier_id, framework_slug)['declaration']
+        sf = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)["frameworkInterest"]
     except APIError as e:
         if e.status_code != 404:
             raise
-        declaration = {}
+        sf = {}
 
-    content = content_loader.get_manifest(framework_slug, 'declaration').filter(declaration)
+    content = content_loader.get_manifest(framework_slug, 'declaration').filter(sf.get("declaration", {}))
 
     return render_template(
         "suppliers/view_declaration.html",
         supplier=supplier,
         framework=framework,
-        declaration=declaration,
-        content=content
+        supplier_framework=sf,
+        declaration=sf.get("declaration", {}),
+        content=content,
     )
 
 
