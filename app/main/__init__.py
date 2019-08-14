@@ -16,5 +16,6 @@ from .views import (  # noqa
     applications,
     assessments,
     evidence_assessments,
+    evidence,
     zendesk)
 from app.main import errors  # noqa

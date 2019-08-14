@@ -29,7 +29,7 @@
     {% endwith %}
 
     <h3>Assessed</h3>
-
+    <h4>Pricing</h4>
     <div class='page-section'>
         {% call(sd) summary.list_table(
             assessed,
@@ -70,10 +70,86 @@
         {% endcall %}
         {% endcall %}
     </div>
+    <p>
+        <h4>Assessments that were rejected</h4>
+        {% if assessments_rejected|length > 0 %}
+        <ul>
+            {% for assessment in assessments_rejected %}
+            <li>
+                <a href="/admin/evidence-assessments/{{ assessment.id }}/previous" target="_blank">
+                    {{ assessment.domain_name }} rejected on {{ assessment.rejected_at }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>None.</p>
+        {% endif %}
+    </p>
+    <p>
+        <h4>Assessments that were approved</h4>
+        {% if assessments_approved|length > 0 %}
+        <ul>
+            {% for assessment in assessments_approved %}
+            <li>
+                <a href="/admin/evidence-assessments/{{ assessment.id }}/previous" target="_blank">
+                    {{ assessment.domain_name }} approved on {{ assessment.approved_at }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>None.</p>
+        {% endif %}
+    </p>
 
     <h3>Unassessed</h3>
 
     <div class='page-section'>
+        <p>
+            <h4>Assessments in draft</h4>
+            {% if assessments_draft|length > 0 %}
+            <ul>
+                {% for assessment in assessments_draft %}
+                <li>
+                    {{ assessment.domain_name }} started on {{ assessment.created_at }}
+                    <form id="delete_evidence_{{ form_suffix }}" action="{{ url_for('.evidence_delete_draft', evidence_id=assessment.id, supplier_code=assessment.supplier_code )}}" method="post">
+                        {{ form.csrf_token }}
+                        {%
+                            with
+                            label = "Delete draft"
+                        %}
+                        {% include "toolkit/button.html" %}
+                        {% endwith %}
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>None.</p>
+            {% endif %}
+        </p>
+        <p>
+            <h4>Assessments submitted and waiting review</h4>
+            {% if assessments_submitted|length > 0 %}
+            <ul>
+                {% for assessment in assessments_submitted %}
+                <li>
+                    <a href="/admin/evidence-assessments/{{ assessment.id }}" target="_blank">
+                        {{ assessment.domain_name }} submitted on {{ assessment.submitted_at }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>None.</p>
+            {% endif %}
+        </p>
+        {% if supplier.domains.unassessed|length > 0 %}
+        <p>
+            <h4>Trigger legacy assessments</h4>
+        </p>
+        {% endif %}
         {% call(domain) summary.list_table(
             supplier.domains.unassessed,
             caption="Services to assess",

@@ -24,6 +24,8 @@ from itertools import chain
 
 from urllib import quote_plus
 
+import pendulum
+
 
 @main.route('/suppliers', methods=['GET'])
 @login_required
@@ -393,6 +395,7 @@ def find_supplier_services():
     supplier_code = int(request.args['supplier_code'])
     supplier = data_api_client.get_supplier(supplier_code)
     services = data_api_client.find_services(supplier_code)
+    evidence = data_api_client.req.evidence().all().get(params={'supplier_code': supplier_code})['evidence']
 
     if 'domains' not in supplier['supplier']:
         domains = {}
@@ -410,11 +413,29 @@ def find_supplier_services():
         else:
             a['price'] = 'Not specified'
 
+    for e in evidence:
+        if 'submitted_at' in e and e['submitted_at']:
+            e['submitted_at'] = pendulum.parse(e['submitted_at']).format('%d-%m-%Y')
+        if 'rejected_at' in e and e['rejected_at']:
+            e['rejected_at'] = pendulum.parse(e['rejected_at']).format('%d-%m-%Y')
+        if 'approved_at' in e and e['approved_at']:
+            e['approved_at'] = pendulum.parse(e['approved_at']).format('%d-%m-%Y')
+        if 'created_at' in e and e['created_at']:
+            e['created_at'] = pendulum.parse(e['created_at']).format('%d-%m-%Y')
+    assessments_draft = [e for e in evidence if e['status'] == 'draft']
+    assessments_rejected = [e for e in evidence if e['status'] == 'rejected']
+    assessments_approved = [e for e in evidence if e['status'] == 'assessed']
+    assessments_submitted = [e for e in evidence if e['status'] == 'submitted']
+
     return render_template_with_csrf(
         "view_supplier_services.html",
         services=services["services"],
-        supplier=supplier['supplier'],
-        assessed=assessed
+        supplier=supplier["supplier"],
+        assessed=assessed,
+        assessments_draft=assessments_draft,
+        assessments_rejected=assessments_rejected,
+        assessments_approved=assessments_approved,
+        assessments_submitted=assessments_submitted
     )
 
 
