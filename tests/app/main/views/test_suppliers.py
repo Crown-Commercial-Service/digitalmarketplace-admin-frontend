@@ -141,9 +141,12 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
         self.data_api_client = self.data_api_client_patch.start()
         self.data_api_client.get_supplier_frameworks.return_value = {
             "frameworkInterest": [
-                SupplierFrameworkStub(framework_slug="g-cloud-10").response(),
-                SupplierFrameworkStub(framework_slug="digital-outcomes-and-specialists-3").response(),
-                SupplierFrameworkStub(framework_slug="g-cloud-11").response(),
+                SupplierFrameworkStub(framework_slug="g-cloud-10", declaration={"foo": "bar"}).response(),
+                SupplierFrameworkStub(
+                    framework_slug="digital-outcomes-and-specialists-3",
+                    declaration={"foo": "bar"},
+                ).response(),
+                SupplierFrameworkStub(framework_slug="g-cloud-11", declaration={"foo": "bar"}).response(),
             ]
         }
 
@@ -174,9 +177,10 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
     ):
         self.user_role = role
         self.data_api_client.get_supplier_frameworks.return_value["frameworkInterest"].extend((
-            SupplierFrameworkStub(framework_slug="g-cloud-standstill-1").response(),
-            SupplierFrameworkStub(framework_slug="g-cloud-pending-1").response(),
-            SupplierFrameworkStub(framework_slug="g-cloud-open-1").response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-standstill-1", declaration={"foo": "bar"}).response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-pending-1", declaration={"foo": "bar"}).response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-open-1", declaration={"foo": "bar"}).response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-expired-1").response(),
         ))
 
         self.data_api_client.find_frameworks.return_value = {'frameworks': [
@@ -203,6 +207,10 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
             FrameworkStub(
                 status="open",
                 slug="g-cloud-open-1"
+            ).response(),
+            FrameworkStub(
+                status="expired",
+                slug="g-cloud-expired-1"
             ).response(),
             FrameworkStub(
                 id=0,

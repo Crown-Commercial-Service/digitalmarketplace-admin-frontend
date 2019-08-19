@@ -46,7 +46,10 @@ def get_supplier_frameworks_visible_for_role(supplier_frameworks, current_user, 
 
     visible_supplier_frameworks = []
     for supplier_framework in supplier_frameworks:
-        if framework_info.get(supplier_framework["frameworkSlug"], {}).get("status") in useful_statuses:
+        if (
+            framework_info.get(supplier_framework["frameworkSlug"], {}).get("status") in useful_statuses
+            and supplier_framework.get("declaration")
+        ):
             # Save the framework name to the SupplierFramework for use in template
             supplier_framework['frameworkName'] = framework_info.get(supplier_framework["frameworkSlug"], {})['name']
             visible_supplier_frameworks.append(supplier_framework)
