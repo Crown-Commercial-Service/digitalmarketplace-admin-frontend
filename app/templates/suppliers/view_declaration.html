@@ -57,11 +57,13 @@
       caption="Declaration",
       empty_message="This supplier not made a declaration",
       field_headings=[
+        'Question number',
         'Declaration question',
         'Declaration answer'
       ]
     ) %}
       {% call summary.row() %}
+        {{ summary.text(question_number_dict[item.id]) }}
         {{ summary.field_name(item.question) }}
         {{ summary[item.type](item.value) }}
       {% endcall %}
