@@ -31,7 +31,8 @@ from ..helpers.countries import COUNTRY_TUPLE
 from ..helpers.pagination import get_nav_args_from_api_response_links
 from ..helpers.supplier_details import (
     get_supplier_frameworks_visible_for_role,
-    get_company_details_from_supplier
+    get_company_details_from_supplier,
+    DEPRECATED_FRAMEWORK_SLUGS,
 )
 from ... import data_api_client, content_loader
 
@@ -315,9 +316,12 @@ def edit_supplier_duns_number(supplier_id):
 @main.route('/suppliers/<int:supplier_id>/edit/declarations/<string:framework_slug>', methods=['GET'])
 @role_required('admin-ccs-sourcing')
 def view_supplier_declaration(supplier_id, framework_slug):
+    if framework_slug in DEPRECATED_FRAMEWORK_SLUGS:
+        abort(404)
+
     supplier = data_api_client.get_supplier(supplier_id)['suppliers']
     framework = data_api_client.get_framework(framework_slug)['frameworks']
-    if framework['status'] not in ['pending', 'standstill', 'live']:
+    if framework['status'] not in ('pending', 'standstill', 'live', 'expired',):
         abort(403)
     try:
         sf = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)["frameworkInterest"]
