@@ -1703,9 +1703,17 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
 
         assert response.status_code == 200
-        assert document.cssselect('h2 + * + .summary-item-body')[0].cssselect(
-            '.summary-item-row td.summary-item-field'
-        )[0].text_content().strip() == "Yes"
+
+        first_answer_row = document.cssselect('h2 + * + .summary-item-body')[0]
+        # This row should have a number, a question, and an answer
+        assert first_answer_row.cssselect('.summary-item-row td.summary-item-field')[0].text_content().strip() == "1"
+        assert first_answer_row.cssselect(
+            '.summary-item-row td.summary-item-field-first'
+        )[0].text_content().strip() == \
+            "Do you accept the terms of participation as described in Attachment 4 of the supplier pack (ZIP, 4.3MB)?"
+        assert first_answer_row.cssselect('.summary-item-row td.summary-item-field')[1].text_content().strip() == "Yes"
+
+        # Application status at the top of the page
         assert document.xpath(
             "//*[contains(@class, 'summary-item-row')]"
             "[./*[1][contains(@class, 'summary-item-field')][normalize-space(string())=$t1]]"
@@ -1727,9 +1735,17 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
 
         assert response.status_code == 200
-        assert document.cssselect('h2 + * + .summary-item-body')[0].cssselect(
-            '.summary-item-row td.summary-item-field'
-        )[0].text_content().strip() == "Yes"
+
+        first_answer_row = document.cssselect('h2 + * + .summary-item-body')[0]
+        # This row should have a number, a question, and an answer
+        assert first_answer_row.cssselect('.summary-item-row td.summary-item-field')[0].text_content().strip() == "1"
+        assert first_answer_row.cssselect(
+            '.summary-item-row td.summary-item-field-first'
+        )[0].text_content().strip() == \
+            "Do you agree to comply with the terms of the Digital Outcomes and Specialists " \
+            "Invitation to Tender (ZIP, 3.2MB)?"
+        assert first_answer_row.cssselect('.summary-item-row td.summary-item-field')[1].text_content().strip() == "Yes"
+
         assert document.xpath(
             "//*[contains(@class, 'summary-item-row')]"
             "[./*[1][contains(@class, 'summary-item-field')][normalize-space(string())=$t1]]"

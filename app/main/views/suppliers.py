@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from itertools import groupby
+from itertools import groupby, chain
 from operator import itemgetter
 
 from dateutil.parser import parse as parse_date
@@ -327,6 +327,14 @@ def view_supplier_declaration(supplier_id, framework_slug):
         sf = {}
 
     content = content_loader.get_manifest(framework_slug, 'declaration').filter(sf.get("declaration", {}))
+    declaration_sections = content.sections
+    question_numbers = OrderedDict(
+        (question.id, question.number,)
+        for question in sorted(
+            chain.from_iterable(section.questions for section in declaration_sections),
+            key=lambda question: question.number
+        )
+    )
 
     return render_template(
         "suppliers/view_declaration.html",
@@ -335,6 +343,7 @@ def view_supplier_declaration(supplier_id, framework_slug):
         supplier_framework=sf,
         declaration=sf.get("declaration", {}),
         content=content,
+        question_number_dict=question_numbers
     )
 
 
