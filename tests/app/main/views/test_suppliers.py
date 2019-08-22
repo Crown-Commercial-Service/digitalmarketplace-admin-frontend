@@ -141,9 +141,12 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
         self.data_api_client = self.data_api_client_patch.start()
         self.data_api_client.get_supplier_frameworks.return_value = {
             "frameworkInterest": [
-                SupplierFrameworkStub(framework_slug="g-cloud-10").response(),
-                SupplierFrameworkStub(framework_slug="digital-outcomes-and-specialists-3").response(),
-                SupplierFrameworkStub(framework_slug="g-cloud-11").response(),
+                SupplierFrameworkStub(framework_slug="g-cloud-10", declaration={"foo": "bar"}).response(),
+                SupplierFrameworkStub(
+                    framework_slug="digital-outcomes-and-specialists-3",
+                    declaration={"foo": "bar"},
+                ).response(),
+                SupplierFrameworkStub(framework_slug="g-cloud-11", declaration={"foo": "bar"}).response(),
             ]
         }
 
@@ -174,9 +177,10 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
     ):
         self.user_role = role
         self.data_api_client.get_supplier_frameworks.return_value["frameworkInterest"].extend((
-            SupplierFrameworkStub(framework_slug="g-cloud-standstill-1").response(),
-            SupplierFrameworkStub(framework_slug="g-cloud-pending-1").response(),
-            SupplierFrameworkStub(framework_slug="g-cloud-open-1").response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-standstill-1", declaration={"foo": "bar"}).response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-pending-1", declaration={"foo": "bar"}).response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-open-1", declaration={"foo": "bar"}).response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-expired-1").response(),
         ))
 
         self.data_api_client.find_frameworks.return_value = {'frameworks': [
@@ -203,6 +207,10 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
             FrameworkStub(
                 status="open",
                 slug="g-cloud-open-1"
+            ).response(),
+            FrameworkStub(
+                status="expired",
+                slug="g-cloud-expired-1"
             ).response(),
             FrameworkStub(
                 id=0,
@@ -1690,12 +1698,14 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         self.data_api_client.get_framework.assert_called_once_with('g-cloud-7')
         self.data_api_client.get_supplier_framework_info.assert_called_once_with(1234, 'g-cloud-7')
 
+    @pytest.mark.parametrize("framework_status", ("live", "pending", "standstill", "expired",))
     @pytest.mark.parametrize("on_framework,expected_application_status", (
         (True, "Pass"),
         (False, "Fail"),
         (None, "Pending"),
     ))
-    def test_should_show_declaration(self, on_framework, expected_application_status):
+    def test_should_show_declaration(self, on_framework, expected_application_status, framework_status):
+        self.data_api_client.get_framework.return_value["frameworks"]["status"] = framework_status
         self.data_api_client.get_supplier_framework_info.return_value["frameworkInterest"]["onFramework"] = \
             on_framework
 
@@ -1722,12 +1732,14 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
             t2=expected_application_status,
         )
 
+    @pytest.mark.parametrize("framework_status", ("live", "pending", "standstill", "expired",))
     @pytest.mark.parametrize("on_framework,expected_application_status", (
         (True, "Pass"),
         (False, "Fail"),
         (None, "Pending"),
     ))
-    def test_should_show_dos_declaration(self, on_framework, expected_application_status):
+    def test_should_show_dos_declaration(self, on_framework, expected_application_status, framework_status):
+        self.data_api_client.get_framework.return_value["frameworks"]["status"] = framework_status
         self.data_api_client.get_supplier_framework_info.return_value["frameworkInterest"]["onFramework"] = \
             on_framework
 
@@ -1759,6 +1771,15 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/1234/edit/declarations/digital-outcomes-and-specialists')
         assert response.status_code == 403
+
+    def test_should_404_if_framework_is_deprecated(self):
+        self.data_api_client.get_framework.return_value['frameworks']['status'] = FrameworkStub(
+            slug="g-cloud-4",
+            status="expired",
+        )
+
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-4')
+        assert response.status_code == 404
 
 
 class TestEditingASupplierDeclaration(LoggedInApplicationTest):
