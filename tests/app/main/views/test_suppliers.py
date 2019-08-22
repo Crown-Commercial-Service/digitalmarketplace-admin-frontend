@@ -1716,13 +1716,17 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         assert response.status_code == 200
 
         first_answer_row = document.cssselect('h2 + * + .summary-item-body')[0]
-        # This row should have a number, a question, and an answer
-        assert first_answer_row.cssselect('.summary-item-row td.summary-item-field')[0].text_content().strip() == "1"
-        assert first_answer_row.cssselect(
-            '.summary-item-row td.summary-item-field-first'
-        )[0].text_content().strip() == \
+        # The first row should have a number, a question, an answer and a pass/fail
+        question_number_column = first_answer_row.cssselect('.summary-item-row td.summary-item-field')[0]
+        question_text_column = first_answer_row.cssselect('.summary-item-row td.summary-item-field-first')[0]
+        supplier_answer_column = first_answer_row.cssselect('.summary-item-row td.summary-item-field')[1]
+        pass_fail_column = first_answer_row.cssselect('.summary-item-row td.summary-item-field')[2]
+
+        assert question_number_column.text_content().strip() == "1"
+        assert question_text_column.text_content().strip() == \
             "Do you accept the terms of participation as described in Attachment 4 of the supplier pack (ZIP, 4.3MB)?"
-        assert first_answer_row.cssselect('.summary-item-row td.summary-item-field')[1].text_content().strip() == "Yes"
+        assert supplier_answer_column.text_content().strip() == "Yes"
+        assert pass_fail_column.text_content().strip() == "Not applicable"
 
         # Application status at the top of the page
         assert document.xpath(
@@ -1750,14 +1754,18 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         assert response.status_code == 200
 
         first_answer_row = document.cssselect('h2 + * + .summary-item-body')[0]
-        # This row should have a number, a question, and an answer
-        assert first_answer_row.cssselect('.summary-item-row td.summary-item-field')[0].text_content().strip() == "1"
-        assert first_answer_row.cssselect(
-            '.summary-item-row td.summary-item-field-first'
-        )[0].text_content().strip() == \
+        # The first row should have a number, a question, an answer and a pass/fail
+        question_number_column = first_answer_row.cssselect('.summary-item-row td.summary-item-field')[0]
+        question_text_column = first_answer_row.cssselect('.summary-item-row td.summary-item-field-first')[0]
+        supplier_answer_column = first_answer_row.cssselect('.summary-item-row td.summary-item-field')[1]
+        pass_fail_column = first_answer_row.cssselect('.summary-item-row td.summary-item-field')[2]
+
+        assert question_number_column.text_content().strip() == "1"
+        assert question_text_column.text_content().strip() == \
             "Do you agree to comply with the terms of the Digital Outcomes and Specialists " \
             "Invitation to Tender (ZIP, 3.2MB)?"
-        assert first_answer_row.cssselect('.summary-item-row td.summary-item-field')[1].text_content().strip() == "Yes"
+        assert supplier_answer_column.text_content().strip() == "Yes"
+        assert pass_fail_column.text_content().strip() == "Not applicable"
 
         assert document.xpath(
             "//*[contains(@class, 'summary-item-row')]"

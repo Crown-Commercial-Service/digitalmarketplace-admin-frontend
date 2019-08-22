@@ -59,13 +59,30 @@
       field_headings=[
         'Question number',
         'Declaration question',
-        'Declaration answer'
+        'Declaration answer',
+        'Pass/Fail'
       ]
     ) %}
       {% call summary.row() %}
-        {{ summary.text(question_number_dict[item.id]) }}
+        {{ summary.text(question_content[item.id].number) }}
         {{ summary.field_name(item.question) }}
         {{ summary[item.type](item.value) }}
+
+        {% if item.type == 'multiquestion' %}
+            {% call summary.field() %}
+            <div class="multiquestion">
+            {% for question in item.questions %}
+                {% with q=question, q_content=question_content[question.id], multiquestion=True %}
+                    <p>{% include "suppliers/_declaration_pass_fail.html" %}</p>
+                {% endwith %}
+            {% endfor %}
+            </div>
+            {% endcall %}
+        {% else %}
+            {% with q=item, q_content=question_content[item.id], multiquestion=False %}
+                {% include "suppliers/_declaration_pass_fail.html" %}
+            {% endwith %}
+        {% endif %}
       {% endcall %}
     {% endcall %}
   {% endfor %}
