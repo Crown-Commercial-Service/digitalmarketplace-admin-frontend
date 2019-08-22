@@ -146,7 +146,7 @@ def edit_supplier_name(supplier_id):
 @role_required('admin', 'admin-ccs-category', 'admin-ccs-data-controller')
 def update_supplier_name(supplier_id):
     supplier = data_api_client.get_supplier(supplier_id)
-    new_supplier_name = request.form.get('new_supplier_name', '')
+    new_supplier_name = request.form.get('new_supplier_name', '').strip()
 
     data_api_client.update_supplier(
         supplier['suppliers']['id'], {'name': new_supplier_name}, current_user.email_address
