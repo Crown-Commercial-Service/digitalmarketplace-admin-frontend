@@ -29,7 +29,7 @@ class TestApplication(LoggedInApplicationTest):
     def test_headers(self):
         res = self.client.get('/admin')
         assert res.status_code == 200
-        assert 'Secure;' in res.headers['Set-Cookie']
+        assert any('Secure;' in c for c in res.headers.getlist('Set-Cookie'))
         assert 'DENY' in res.headers['X-Frame-Options']
         assert self.data_api_client.find_frameworks.call_args_list == [mock.call()]
 
