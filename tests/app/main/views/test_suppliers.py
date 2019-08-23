@@ -20,6 +20,66 @@ from dmtestutils.fixtures import valid_pdf_bytes
 from ...helpers import LoggedInApplicationTest, Response
 
 
+G11_DECLARATION = {
+    "servicesHaveOrSupportCloudHostingCloudSoftware": "Yes",
+    "servicesHaveOrSupportCloudSupport": "No",
+    "servicesDoNotInclude": True,
+    "subcontracting": [
+        "as a prime contractor, using third parties (subcontractors) to provide some services"
+    ],
+    "10WorkingDays": True,
+    "GAAR": False,
+    "MI": True,
+    "accurateInformation": True,
+    "accuratelyDescribed": True,
+    "bankrupt": False,
+    "canProvideFromDayOne": True,
+    "confidentialInformation": False,
+    "conflictOfInterest": False,
+    "conspiracy": False,
+    "contactEmailContractNotice": "anne@example.com",
+    "contactNameContractNotice": "Anne Ltd",
+    "corruptionBribery": False,
+    "distortedCompetition": False,
+    "distortingCompetition": False,
+    "employersInsurance": "Yes – your organisation has, or will have in place, employer’s liability insurance "
+                          "of at least £5 million and you will provide certification before the framework is "
+                          "awarded.",
+    "environmentalSocialLabourLaw": False,
+    "environmentallyFriendly": True,
+    "equalityAndDiversity": True,
+    "fraudAndTheft": False,
+    "fullAccountability": True,
+    "graveProfessionalMisconduct": False,
+    "helpBuyersComplyTechnologyCodesOfPractice": True,
+    "influencedContractingAuthority": False,
+    "informationChanges": True,
+    "misleadingInformation": False,
+    "offerServicesYourselves": True,
+    "organisedCrime": False,
+    "primaryContact": "Anne Example",
+    "primaryContactEmail": "anne@example.com",
+    "proofOfClaims": True,
+    "publishContracts": True,
+    "readUnderstoodGuidance": True,
+    "seriousMisrepresentation": False,
+    "termsAndConditions": True,
+    "termsOfParticipation": True,
+    "terrorism": False,
+    "understandHowToAskQuestions": True,
+    "understandTool": True,
+    "unfairCompetition": True,
+    "unspentTaxConvictions": False,
+    "witheldSupportingDocuments": False,
+    "modernSlaveryReportingRequirements": True,
+    "modernSlaveryStatement": "/path/to.pdf",
+    "modernSlaveryTurnover": True,
+    # Discretionary fail
+    "taxEvasion": True,
+    "mitigatingFactors": "Forgot to file tax return, oops",
+}
+
+
 class TestSupplierDetailsView(LoggedInApplicationTest):
 
     def setup_method(self, method):
@@ -1649,14 +1709,14 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         supplier_response = self.load_example_listing('supplier_response')
         self.data_api_client.get_supplier.return_value = supplier_response
 
-        framework_response = self.load_example_listing('framework_response')
+        framework_response = FrameworkStub(slug="g-cloud-11", status="pending").single_result_response()
         self.data_api_client.get_framework.return_value = framework_response
 
         sf_stub = SupplierFrameworkStub(
             framework_slug=framework_response["frameworks"]["slug"],
             supplier_id=supplier_response["suppliers"]["id"],
             on_framework=True,
-            declaration=self.load_example_listing('declaration_response')["declaration"]
+            declaration=G11_DECLARATION.copy()
         )
         self.data_api_client.get_supplier_framework_info.return_value = sf_stub.single_result_response()
 
@@ -1667,14 +1727,14 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
     def test_should_not_be_visible_to_admin_users(self):
         self.user_role = 'admin'
 
-        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-11')
 
         assert response.status_code == 403
 
     def test_should_404_if_supplier_does_not_exist(self):
         self.data_api_client.get_supplier.side_effect = APIError(Response(404))
 
-        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-11')
 
         assert response.status_code == 404
         self.data_api_client.get_supplier.assert_called_once_with(1234)
@@ -1683,46 +1743,61 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
     def test_should_404_if_framework_does_not_exist(self):
         self.data_api_client.get_framework.side_effect = APIError(Response(404))
 
-        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-11')
 
         assert response.status_code == 404
         self.data_api_client.get_supplier.assert_called_with(1234)
-        self.data_api_client.get_framework.assert_called_with('g-cloud-7')
+        self.data_api_client.get_framework.assert_called_with('g-cloud-11')
 
     def test_should_not_404_if_declaration_does_not_exist(self):
         self.data_api_client.get_supplier_framework_info.side_effect = APIError(Response(404))
 
-        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-11')
 
         assert response.status_code == 200
         self.data_api_client.get_supplier.assert_called_once_with(1234)
-        self.data_api_client.get_framework.assert_called_once_with('g-cloud-7')
-        self.data_api_client.get_supplier_framework_info.assert_called_once_with(1234, 'g-cloud-7')
+        self.data_api_client.get_framework.assert_called_once_with('g-cloud-11')
+        self.data_api_client.get_supplier_framework_info.assert_called_once_with(1234, 'g-cloud-11')
 
+    @pytest.mark.parametrize("row_number, expected_text", [
+        (0, ('1', "If you're submitting cloud hosting (lot 1) or cloud software (lot 2) services", "Yes", "Pass")),
+        (1, ('2', "If you're submitting a cloud support (lot 3) service", "No", "Fail")),
+        (16, ('17', "in breach of tax payments or social security contributions", "Yes", "Discretionary")),
+        (46, (
+            '47',
+            "Please confirm whether you will provide G-Cloud",
+            "as a prime contractor, using third parties (subcontractors) to provide some services",
+            "Not applicable"
+        )),
+    ])
     @pytest.mark.parametrize("framework_status", ("live", "pending", "standstill", "expired",))
     @pytest.mark.parametrize("on_framework,expected_application_status", (
         (True, "Pass"),
         (False, "Fail"),
         (None, "Pending"),
     ))
-    def test_should_show_declaration(self, on_framework, expected_application_status, framework_status):
+    def test_should_show_declaration(
+            self, on_framework, expected_application_status, framework_status, row_number, expected_text):
         self.data_api_client.get_framework.return_value["frameworks"]["status"] = framework_status
         self.data_api_client.get_supplier_framework_info.return_value["frameworkInterest"]["onFramework"] = \
             on_framework
 
-        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-7')
+        response = self.client.get('/admin/suppliers/1234/edit/declarations/g-cloud-11')
         document = html.fromstring(response.get_data(as_text=True))
 
         assert response.status_code == 200
+        answer_row = document.cssselect('h2 + * + .summary-item-body tr.summary-item-row')[row_number]
 
-        first_answer_row = document.cssselect('h2 + * + .summary-item-body')[0]
-        # This row should have a number, a question, and an answer
-        assert first_answer_row.cssselect('.summary-item-row td.summary-item-field')[0].text_content().strip() == "1"
-        assert first_answer_row.cssselect(
-            '.summary-item-row td.summary-item-field-first'
-        )[0].text_content().strip() == \
-            "Do you accept the terms of participation as described in Attachment 4 of the supplier pack (ZIP, 4.3MB)?"
-        assert first_answer_row.cssselect('.summary-item-row td.summary-item-field')[1].text_content().strip() == "Yes"
+        # The row should have a number, a question, an answer and a pass/fail
+        question_number_column = answer_row.cssselect('td.summary-item-field')[0]
+        question_text_column = answer_row.cssselect('td.summary-item-field-first')[0]
+        supplier_answer_column = answer_row.cssselect('td.summary-item-field')[1]
+        pass_fail_column = answer_row.cssselect('td.summary-item-field')[2]
+
+        assert question_number_column.text_content().strip() == expected_text[0]
+        assert expected_text[1] in question_text_column.text_content().strip()
+        assert supplier_answer_column.text_content().strip() == expected_text[2]
+        assert pass_fail_column.text_content().strip() == expected_text[3]
 
         # Application status at the top of the page
         assert document.xpath(
@@ -1750,14 +1825,18 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         assert response.status_code == 200
 
         first_answer_row = document.cssselect('h2 + * + .summary-item-body')[0]
-        # This row should have a number, a question, and an answer
-        assert first_answer_row.cssselect('.summary-item-row td.summary-item-field')[0].text_content().strip() == "1"
-        assert first_answer_row.cssselect(
-            '.summary-item-row td.summary-item-field-first'
-        )[0].text_content().strip() == \
+        # The first row should have a number, a question, an answer and a pass/fail
+        question_number_column = first_answer_row.cssselect('.summary-item-row td.summary-item-field')[0]
+        question_text_column = first_answer_row.cssselect('.summary-item-row td.summary-item-field-first')[0]
+        supplier_answer_column = first_answer_row.cssselect('.summary-item-row td.summary-item-field')[1]
+        pass_fail_column = first_answer_row.cssselect('.summary-item-row td.summary-item-field')[2]
+
+        assert question_number_column.text_content().strip() == "1"
+        assert question_text_column.text_content().strip() == \
             "Do you agree to comply with the terms of the Digital Outcomes and Specialists " \
             "Invitation to Tender (ZIP, 3.2MB)?"
-        assert first_answer_row.cssselect('.summary-item-row td.summary-item-field')[1].text_content().strip() == "Yes"
+        assert supplier_answer_column.text_content().strip() == "Yes"
+        assert pass_fail_column.text_content().strip() == "Not applicable"
 
         assert document.xpath(
             "//*[contains(@class, 'summary-item-row')]"

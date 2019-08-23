@@ -332,13 +332,18 @@ def view_supplier_declaration(supplier_id, framework_slug):
 
     content = content_loader.get_manifest(framework_slug, 'declaration').filter(sf.get("declaration", {}))
     declaration_sections = content.sections
-    question_numbers = OrderedDict(
-        (question.id, question.number,)
+    question_content = OrderedDict(
+        (question.id, question)
         for question in sorted(
             chain.from_iterable(section.questions for section in declaration_sections),
             key=lambda question: question.number
         )
     )
+    # Enhance question_content with any nested questions
+    for question in chain.from_iterable(section.questions for section in declaration_sections):
+        if question.type == 'multiquestion':
+            for q in question.questions:
+                question_content[q.id] = q
 
     return render_template(
         "suppliers/view_declaration.html",
@@ -347,7 +352,7 @@ def view_supplier_declaration(supplier_id, framework_slug):
         supplier_framework=sf,
         declaration=sf.get("declaration", {}),
         content=content,
-        question_number_dict=question_numbers
+        question_content=question_content
     )
 
 
