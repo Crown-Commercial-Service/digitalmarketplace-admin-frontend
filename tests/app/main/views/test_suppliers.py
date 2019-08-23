@@ -1397,12 +1397,13 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
         super().teardown_method(method)
 
     @pytest.mark.parametrize("allowed_role", ["admin", "admin-ccs-category", "admin-ccs-data-controller"])
-    def test_admin_and_ccs_category_roles_can_update_supplier_name(self, allowed_role):
+    @pytest.mark.parametrize('company_name', [' Something New', ' Something New ', 'Something New'])
+    def test_admin_and_ccs_category_roles_can_update_supplier_name(self, allowed_role, company_name):
         self.user_role = allowed_role
         self.data_api_client.get_supplier.return_value = {"suppliers": {"id": 1234, "name": "Something Old"}}
         response = self.client.post(
             '/admin/suppliers/1234/edit/name',
-            data={'new_supplier_name': 'Something New'}
+            data={'new_supplier_name': company_name}
         )
         assert response.status_code == 302
         assert response.location == 'http://localhost/admin/suppliers/1234'
