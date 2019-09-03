@@ -22,12 +22,14 @@ in (with args; {
   digitalMarketplaceAdminFrontendEnv = (pkgs.stdenv.mkDerivation rec {
     name = "digitalmarketplace-admin-frontend-env";
     shortName = "dm-adm-fe";
-    buildInputs = [
+    buildInputs = let
+      nodejs = pkgs.nodejs-10_x;
+    in [
       pythonPackages.python
       sitePrioNonNix
       pkgs.glibcLocales
-      pkgs.nodejs-10_x
-      pkgs.yarn
+      nodejs
+      (pkgs.yarn.override { inherit nodejs; })
       pkgs.libffi
       pkgs.libyaml
       # pip requires git to fetch some of its dependencies
