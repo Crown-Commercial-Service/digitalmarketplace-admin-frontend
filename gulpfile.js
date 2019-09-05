@@ -1,41 +1,41 @@
-var gulp = require('gulp')
-var uglify = require('gulp-uglify')
-var deleteFiles = require('del')
-var sass = require('gulp-sass')
-var filelog = require('gulp-filelog')
-var include = require('gulp-include')
-var colours = require('colors/safe')
-var path = require('path')
+const gulp = require('gulp')
+const uglify = require('gulp-uglify')
+const deleteFiles = require('del')
+const sass = require('gulp-sass')
+const filelog = require('gulp-filelog')
+const include = require('gulp-include')
+const colours = require('colors/safe')
+const path = require('path')
 
 // Paths
-var environment
-var repoRoot = path.join(__dirname)
-var npmRoot = path.join(repoRoot, 'node_modules')
-var govukCountryPickerDist = path.join(npmRoot, 'govuk-country-and-territory-autocomplete', 'dist')
-var govukToolkitRoot = path.join(npmRoot, 'govuk_frontend_toolkit')
-var govukElementsRoot = path.join(npmRoot, 'govuk-elements-sass')
-var govukFrontendRoot = path.join(npmRoot, 'govuk-frontend')
-var dmToolkitRoot = path.join(npmRoot, 'digitalmarketplace-frontend-toolkit', 'toolkit')
-var sspContentRoot = path.join(npmRoot, 'digitalmarketplace-frameworks')
-var assetsFolder = path.join(repoRoot, 'app', 'assets')
-var staticFolder = path.join(repoRoot, 'app', 'static')
-var govukTemplateFolder = path.join(repoRoot, 'node_modules', 'govuk_template')
-var govukTemplateAssetsFolder = path.join(govukTemplateFolder, 'assets')
-var govukTemplateLayoutsFolder = path.join(govukTemplateFolder, 'views', 'layouts')
-var govukFrontendFontsFolder = path.join(govukFrontendRoot, 'assets', 'fonts')
+let environment
+const repoRoot = path.join(__dirname)
+const npmRoot = path.join(repoRoot, 'node_modules')
+const govukCountryPickerDist = path.join(npmRoot, 'govuk-country-and-territory-autocomplete', 'dist')
+const govukToolkitRoot = path.join(npmRoot, 'govuk_frontend_toolkit')
+const govukElementsRoot = path.join(npmRoot, 'govuk-elements-sass')
+const govukFrontendRoot = path.join(npmRoot, 'govuk-frontend')
+const dmToolkitRoot = path.join(npmRoot, 'digitalmarketplace-frontend-toolkit', 'toolkit')
+const sspContentRoot = path.join(npmRoot, 'digitalmarketplace-frameworks')
+const assetsFolder = path.join(repoRoot, 'app', 'assets')
+const staticFolder = path.join(repoRoot, 'app', 'static')
+const govukTemplateFolder = path.join(repoRoot, 'node_modules', 'govuk_template')
+const govukTemplateAssetsFolder = path.join(govukTemplateFolder, 'assets')
+const govukTemplateLayoutsFolder = path.join(govukTemplateFolder, 'views', 'layouts')
+const govukFrontendFontsFolder = path.join(govukFrontendRoot, 'assets', 'fonts')
 
 // JavaScript paths
-var jsSourceFile = path.join(assetsFolder, 'javascripts', 'application.js')
-var jsPageSpecific = path.join(assetsFolder, 'javascripts', 'page_specific')
-var jsDistributionFolder = path.join(staticFolder, 'javascripts')
-var jsDistributionFile = 'application.js'
+const jsSourceFile = path.join(assetsFolder, 'javascripts', 'application.js')
+const jsPageSpecific = path.join(assetsFolder, 'javascripts', 'page_specific')
+const jsDistributionFolder = path.join(staticFolder, 'javascripts')
+const jsDistributionFile = 'application.js'
 
 // CSS paths
-var cssSourceGlob = path.join(assetsFolder, 'scss', 'application*.scss')
-var cssDistributionFolder = path.join(staticFolder, 'stylesheets')
+const cssSourceGlob = path.join(assetsFolder, 'scss', 'application*.scss')
+const cssDistributionFolder = path.join(staticFolder, 'stylesheets')
 
 // Configuration
-var sassOptions = {
+const sassOptions = {
   development: {
     outputStyle: 'expanded',
     lineNumbers: true,
@@ -60,7 +60,7 @@ var sassOptions = {
   }
 }
 
-var uglifyOptions = {
+const uglifyOptions = {
   development: {
     mangle: false,
     output: {
@@ -76,8 +76,8 @@ var uglifyOptions = {
   }
 }
 
-var logErrorAndExit = function logErrorAndExit (err) {
-  var printError = function (type, message) {
+const logErrorAndExit = function logErrorAndExit (err) {
+  const printError = function (type, message) {
     console.log('gulp ' + colours.red('ERR! ') + type + ': ' + message)
   }
 
@@ -89,13 +89,13 @@ var logErrorAndExit = function logErrorAndExit (err) {
 
 gulp.task('clean', function (cb) {
   var fileTypes = []
-  var complete = function (fileType) {
+  const complete = function (fileType) {
     fileTypes.push(fileType)
     if (fileTypes.length === 2) {
       cb()
     }
   }
-  var logOutputFor = function (fileType) {
+  const logOutputFor = function (fileType) {
     return function (_, paths) {
       if (paths !== undefined) {
         console.log('💥  Deleted the following ' + fileType + ' files:\n', paths.join('\n'))
@@ -109,7 +109,7 @@ gulp.task('clean', function (cb) {
 })
 
 gulp.task('sass', function () {
-  var stream = gulp.src(cssSourceGlob)
+  const stream = gulp.src(cssSourceGlob)
     .pipe(filelog('Compressing SCSS files'))
     .pipe(
       sass(sassOptions[environment]))
@@ -124,7 +124,7 @@ gulp.task('sass', function () {
 })
 
 gulp.task('js', function () {
-  var stream = gulp.src(jsSourceFile)
+  const stream = gulp.src(jsSourceFile)
     .pipe(filelog('Compressing JavaScript files'))
     .pipe(include({ hardFail: true }))
     .pipe(uglify(
@@ -336,10 +336,10 @@ gulp.task('build:development', gulp.series(gulp.parallel('set_environment_to_dev
 gulp.task('build:production', gulp.series(gulp.parallel('set_environment_to_production', 'clean'), 'compile'))
 
 gulp.task('watch', gulp.series('build:development', function () {
-  var jsWatcher = gulp.watch([assetsFolder + '/**/*.js'], ['js'])
-  var cssWatcher = gulp.watch([assetsFolder + '/**/*.scss'], ['sass'])
-  var dmWatcher = gulp.watch([npmRoot + '/digitalmarketplace-frameworks/**'], ['copy:frameworks'])
-  var notice = function (event) {
+  const jsWatcher = gulp.watch([assetsFolder + '/**/*.js'], ['js'])
+  const cssWatcher = gulp.watch([assetsFolder + '/**/*.scss'], ['sass'])
+  const dmWatcher = gulp.watch([npmRoot + '/digitalmarketplace-frameworks/**'], ['copy:frameworks'])
+  const notice = function (event) {
     console.log('File ' + event.path + ' was ' + event.type + ' running tasks...')
   }
 
