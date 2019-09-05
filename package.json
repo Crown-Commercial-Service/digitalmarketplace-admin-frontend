@@ -29,6 +29,10 @@
   "scripts": {
     "frontend-build:development": "gulp build:development",
     "frontend-build:production": "gulp build:production",
-    "frontend-build:watch": "gulp watch"
+    "frontend-build:watch": "gulp watch",
+    "lint": "standard gulpfile.js"
+  },
+  "devDependencies": {
+    "standard": "^14.1.0"
   }
 }
