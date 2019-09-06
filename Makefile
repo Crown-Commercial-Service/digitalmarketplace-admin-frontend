@@ -53,10 +53,6 @@ test-requirements:
 	         echo "Run 'make freeze-requirements' to update."; exit 1; } \
 	    || { echo "requirements.txt is up to date"; exit 0; }
 
-.PHONY: test-standardjs
-test-standardjs:
-	npm run lint
-
 .PHONY: test-flake8
 test-flake8: virtualenv requirements-dev
 	${VIRTUALENV_ROOT}/bin/flake8 .
@@ -64,6 +60,10 @@ test-flake8: virtualenv requirements-dev
 .PHONY: test-python
 test-python: virtualenv requirements-dev
 	${VIRTUALENV_ROOT}/bin/py.test ${PYTEST_ARGS}
+
+.PHONY: test-javascript
+test-javascript: frontend-build
+	npm test
 
 .PHONY: show-environment
 show-environment:
