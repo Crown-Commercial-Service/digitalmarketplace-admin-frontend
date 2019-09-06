@@ -20,6 +20,8 @@ class Config(object):
 
     PERMANENT_SESSION_LIFETIME = 3600  # 1 hour
 
+    DM_COOKIE_PROBE_EXPECT_PRESENT = True
+
     DM_S3_DOCUMENT_BUCKET = None
     DM_DATA_API_URL = None
     DM_DATA_API_AUTH_TOKEN = None
