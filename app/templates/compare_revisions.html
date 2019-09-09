@@ -67,50 +67,50 @@
     </div>
 
     {% if latest_update_events %}
-    <div class="diff">
-    {% if diffs %}
-      <div class="grid-row page-column-headings">
-        <div class="column-one-half">
-          <h3>
-            Previously approved version
-          </h3>
-          <p>
-            Changed on {{ oldest_update_events[-1].createdAt|datetimeformat }}
-          </p>
-        </div>
-        <div class="column-one-half">
-          <h3>
-            Current version
-          </h3>
-        </div>
-      </div>
-    {% endif %}
-    {% for diff_table in diffs.values() %}
-      {{ diff_table }}
-    {% else %}
-      <p>All changes were reversed.</p>
-    {% endfor %}
-    </div><!-- end of .diff -->
+      <div class="diff">
+        {% if diffs %}
+          <div class="grid-row page-column-headings">
+            <div class="column-one-half">
+              <h3>
+                Previously approved version
+              </h3>
+              <p>
+                Changed on {{ oldest_update_events[-1].createdAt|datetimeformat }}
+              </p>
+            </div>
+            <div class="column-one-half">
+              <h3>
+                Current version
+              </h3>
+            </div>
+          </div>
+        {% endif %}
+        {% for diff_table in diffs.values() %}
+          {{ diff_table }}
+        {% else %}
+          <p>All changes were reversed.</p>
+        {% endfor %}
+      </div><!-- end of .diff -->
     {% endif %}
 
     <div class="grid-row">
       <div class="column-one-whole">
         <h4>Contact supplier:</h4>
         <p><a href="mailto:{{ supplier["contactInformation"][0]["email"] }}">
-            {{ supplier["contactInformation"][0]["email"] }}
-         </a></p>
+          {{ supplier["contactInformation"][0]["email"] }}
+          </a></p>
       </div>
     </div>
 
     {% if current_user.has_any_role('admin-ccs-category') and latest_update_events%}
-        <form action="{{ url_for('.submit_service_update_approval', service_id=service.id, audit_id=latest_update_events[0].id)}}" method="post">
-            <div style="display:none;">
-              <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
-            </div>
-
-            <input type="submit" class="button-save"  value="Approve {{ pluralize((all_update_events or (oldest_update_events+latest_update_events))|length, "edit", "edits") }}" />
-        </form>
+      <form action="{{ url_for('.submit_service_update_approval', service_id=service.id, audit_id=latest_update_events[0].id)}}" method="post">
+        <div style="display:none;">
+          <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+        </div>
+        {{ govukButton({
+          "text": "Approve " + pluralize((all_update_events or (oldest_update_events+latest_update_events))|length, "edit", "edits")
+        }) }}
+      </form>
     {% endif %}
-
   </div>
 {% endblock %}

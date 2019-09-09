@@ -46,14 +46,11 @@
         %}
           {% include "toolkit/forms/textbox.html" %}
         {% endwith %}
-        {%
-          with
-          type = "save",
-          name = "find_supplier_by_name_search",
-          label = "Search"
-        %}
-          {% include "toolkit/button.html" %}
-        {% endwith %}
+
+        {{ govukButton({
+          "name": "find_supplier_by_name_search",
+          "text": "Search"
+        }) }}
       </form>
 
       <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
@@ -65,14 +62,11 @@
         %}
           {% include "toolkit/forms/textbox.html" %}
         {% endwith %}
-        {%
-          with
-          type = "save",
-          name = "find_supplier_by_duns_number_search",
-          label = "Search"
-        %}
-          {% include "toolkit/button.html" %}
-        {% endwith %}
+
+        {{ govukButton({
+          "name": "find_supplier_by_duns_number_search",
+          "text": "Search"
+        }) }}
       </form>
 
       {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager') %}
@@ -85,15 +79,12 @@
           %}
             {% include "toolkit/forms/textbox.html" %}
           {% endwith %}
-          {%
-            with
-            type = "save",
-            name = "find_service_by_id_search",
-            label = "Search"
-          %}
-            {% include "toolkit/button.html" %}
-          {% endwith %}
-      </form>
+
+          {{ govukButton({
+            "name": "find_service_by_id_search",
+            "text": "Search"
+          }) }}
+        </form>
       {% endif %}
     </div>
   </div>

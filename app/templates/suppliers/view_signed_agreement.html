@@ -92,38 +92,28 @@
         <form action="{{ url_for('.unapprove_agreement_for_countersignature', agreement_id=supplier_framework.agreementId, next_status=next_status) }}" method="post">
           <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
           <input name="nameOfOrganisation" value="{{ supplier_framework.declaration.nameOfOrganisation }}" type="hidden">
-          {%
-            with
-            type = "destructive",
-            label = "Cancel acceptance"
-          %}
-            {% include "toolkit/button.html" %}
-          {% endwith %}
+          {{ govukButton({
+            "classes": "govuk-button--warning",
+            "text": "Cancel acceptance"
+          }) }}
         </form>
         {% endif %}
       {% elif current_user.has_role('admin-ccs-sourcing') %}
         <form action="{{ url_for('.approve_agreement_for_countersignature', agreement_id=supplier_framework.agreementId, next_status=next_status) }}" method="post">
           <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
           <input name="nameOfOrganisation" value="{{ supplier_framework.declaration.nameOfOrganisation }}" type="hidden">
-          {%
-            with
-            type = "save",
-            label = "Accept and continue"
-          %}
-            {% include "toolkit/button.html" %}
-          {% endwith %}
+          {{ govukButton({
+            "text": "Accept and continue"
+          }) }}
         </form>
         {% if supplier_framework.agreementStatus != 'on-hold' %}
           <form action="{{ url_for('.put_signed_agreement_on_hold', agreement_id=supplier_framework.agreementId, next_status=next_status) }}" method="post">
             <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
             <input name="nameOfOrganisation" value="{{ supplier_framework.declaration.nameOfOrganisation }}" type="hidden">
-            {%
-              with
-              type = "secondary",
-              label = "Put on hold and continue"
-            %}
-              {% include "toolkit/button.html" %}
-            {% endwith %}
+            {{ govukButton({
+              "classes": "govuk-button--secondary",
+              "text": "Put on hold and continue"
+            }) }}
           </form>
         {% endif %}
       {% endif %}

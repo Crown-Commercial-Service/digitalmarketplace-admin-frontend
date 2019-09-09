@@ -35,13 +35,9 @@
         <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
         {{ form.registered_company_name }}
 
-        {%
-          with
-          type = "save",
-          label = "Save"
-        %}
-          {% include "toolkit/button.html" %}
-        {% endwith %}
+        {{ govukButton({
+          "text": "Save"
+        }) }}
       </div>
     </div>
   </form>

@@ -32,13 +32,10 @@
     %}
       {% include "toolkit/forms/textbox.html" %}
     {% endwith %}
-    {%
-      with
-      type = "save",
-      label = "Search"
-    %}
-      {% include "toolkit/button.html" %}
-    {% endwith %}
+
+    {{ govukButton({
+      "text": "Search"
+    }) }}
   </form>
 
   {{ summary.heading(brief.title) }}

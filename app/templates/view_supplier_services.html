@@ -33,12 +33,20 @@
         {% if remove_services_for_framework %}
           {% set url = url_for('main.toggle_supplier_services', supplier_id=supplier.id, remove=remove_services_for_framework.slug) %}
           {% set message = "Are you sure you want to suspend {} services for ‘{}’?".format(remove_services_for_framework.name, supplier.name) %}
-          {% set action = '<button type="submit" class="button-destructive banner-action">Suspend all services</button>'|safe %}
+          {% set action = govukButton({
+              "classes": "govuk-button--warning app-banner-action",
+              "text": "Suspend all services"
+            }) | safe
+          %}
         {% elif publish_services_for_framework %}
           {% set url = url_for('main.toggle_supplier_services', supplier_id=supplier.id, publish=publish_services_for_framework.slug) %}
           {% set message = "Are you sure you want to unsuspend {} services for ‘{}’?".format(publish_services_for_framework.name, supplier.name) %}
           {% set banner_content = "This won’t change the status for services that ‘{}’ suspended themselves.".format(supplier.name) %}
-          {% set action = '<button type="submit" class="button-destructive banner-action">Unsuspend all services</button>'|safe %}
+          {% set action = govukButton({
+              "classes": "govuk-button--warning app-banner-action",
+              "text": "Unsuspend all services"
+            }) | safe
+          %}
         {% endif %}
         <form action="{{ url }}" method="POST">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />

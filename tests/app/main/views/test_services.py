@@ -1926,7 +1926,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
             # in this case we want a strict assertion that *all* of the following are true about the ack_form
             ack_forms = doc.xpath(
-                "//form[.//input[@type='submit' and @value=$ack_text]]",
+                "//form[.//button[contains(text(), $ack_text)]]",
                 ack_text="Approve edit{}".format("" if len(find_audit_events_api_response) == 1 else "s"),
             )
             assert len(ack_forms) == 1

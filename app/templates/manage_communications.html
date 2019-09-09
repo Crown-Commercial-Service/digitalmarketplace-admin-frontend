@@ -27,78 +27,74 @@
     <div class="grid-row">
       <div class="column-two-thirds">
         <div class="dmspeak"><h2 class="heading-large">Communication</h2></div>
-        {% call(item) summary.list_table(
-          comm_type_objs.communication,
-          caption="Communications present",
-          empty_message="No communications files",
-          field_headings=[
-            "Last modified",
-            "File"
-          ],
-          field_headings_visible=False
-        ) %}
-          {% call summary.row() %}
-          {{ summary.field_name(item.last_modified|dateformat) }}
-          {% call summary.field() %}
-            <a href="{{ url_for('.download_communication', comm_type="communication", filepath=item.rel_path, framework_slug=framework.slug) }}" class="document-link-with-icon">
-              <span class='document-icon'>{{ item.ext }}<span> document:</span></span>
-              {{ item.filename }}
-            </a>
+          {% call(item) summary.list_table(
+            comm_type_objs.communication,
+            caption="Communications present",
+            empty_message="No communications files",
+            field_headings=[
+              "Last modified",
+              "File"
+            ],
+            field_headings_visible=False
+          ) %}
+            {% call summary.row() %}
+            {{ summary.field_name(item.last_modified|dateformat) }}
+            {% call summary.field() %}
+              <a href="{{ url_for('.download_communication', comm_type="communication", filepath=item.rel_path, framework_slug=framework.slug) }}" class="document-link-with-icon">
+                <span class='document-icon'>{{ item.ext }}<span> document:</span></span>
+                {{ item.filename }}
+              </a>
+            {% endcall %}
+            {{ summary.remove_link(label="Delete", link=url_for('.delete_communication', framework_slug=framework.slug, comm_type="communication", filepath=item.rel_path)) }}
+            {% endcall %}
           {% endcall %}
-          {{ summary.remove_link(label="Delete", link=url_for('.delete_communication', framework_slug=framework.slug, comm_type="communication", filepath=item.rel_path)) }}
-          {% endcall %}
-        {% endcall %}
-        {% with
-          question="Upload communication",
-          hint="This must be an open document format (pdf, pda, odt, ods, odp) or CSV",
-          name="communication",
-          error=communication_error
-        %}
-          {% include "toolkit/forms/upload.html" %}
-        {% endwith %}
+          {% with
+            question="Upload communication",
+            hint="This must be an open document format (pdf, pda, odt, ods, odp) or CSV",
+            name="communication",
+            error=communication_error
+          %}
+            {% include "toolkit/forms/upload.html" %}
+          {% endwith %}
 
-    {% if framework.status in ['open'] %}
-        <div class="dmspeak"><h2 class="heading-large">Clarification answers</h2></div>
-        {% call(item) summary.list_table(
-          comm_type_objs.clarification,
-          caption="Communications present",
-          empty_message="No clarification answers",
-          field_headings=[
-            "Last modified",
-            "File"
-          ],
-          field_headings_visible=False
-        ) %}
-          {% call summary.row() %}
-          {{ summary.field_name(item.last_modified|dateformat) }}
-          {% call summary.field() %}
-            <a href="{{ url_for('.download_communication', comm_type="clarification", filepath=item.rel_path, framework_slug=framework.slug) }}" class="document-link-with-icon">
-              <span class='document-icon'>{{ item.ext }}<span> document:</span></span>
-              {{ item.filename }}
-            </a>
-          {% endcall %}
-          {{ summary.remove_link(label="Delete", link=url_for('.delete_communication', framework_slug=framework.slug, comm_type="clarification", filepath=item.rel_path)) }}
-          {% endcall %}
-        {% endcall %}
-        {% with
-          question="Upload clarification answers",
-          hint="This must be a PDF",
-          name="clarification",
-          error=clarification_error
-        %}
-          {% include "toolkit/forms/upload.html" %}
-        {% endwith %}
-    {% endif %}
-
-        {%
-          with
-          type = "save",
-          label = "Upload files"
-        %}
-          {% include "toolkit/button.html" %}
-        {% endwith %}
+          {% if framework.status in ['open'] %}
+            <div class="dmspeak"><h2 class="heading-large">Clarification answers</h2></div>
+            {% call(item) summary.list_table(
+              comm_type_objs.clarification,
+              caption="Communications present",
+              empty_message="No clarification answers",
+              field_headings=[
+                "Last modified",
+                "File"
+              ],
+              field_headings_visible=False
+            ) %}
+              {% call summary.row() %}
+              {{ summary.field_name(item.last_modified|dateformat) }}
+              {% call summary.field() %}
+                <a href="{{ url_for('.download_communication', comm_type="clarification", filepath=item.rel_path, framework_slug=framework.slug) }}" class="document-link-with-icon">
+                  <span class='document-icon'>{{ item.ext }}<span> document:</span></span>
+                  {{ item.filename }}
+                </a>
+              {% endcall %}
+              {{ summary.remove_link(label="Delete", link=url_for('.delete_communication', framework_slug=framework.slug, comm_type="clarification", filepath=item.rel_path)) }}
+              {% endcall %}
+            {% endcall %}
+            {% with
+              question="Upload clarification answers",
+              hint="This must be a PDF",
+              name="clarification",
+              error=clarification_error
+            %}
+              {% include "toolkit/forms/upload.html" %}
+            {% endwith %}
+          {% endif %}
+          {{ govukButton({
+            "text": "Upload files"
+          }) }}
         </div>
       </div>
+    </div>
   </form>
 
 {% endblock %}
