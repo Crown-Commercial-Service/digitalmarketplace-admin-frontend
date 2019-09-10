@@ -17,7 +17,6 @@ $path: "/admin/static/images/";
 // Digital Marketplace Front-end toolkit styles
 @import "toolkit/_breadcrumb";
 @import "toolkit/_browse-list";
-@import "toolkit/_buttons";
 @import "toolkit/_contact-details.scss";
 @import "toolkit/_document.scss";
 @import "toolkit/_footer";
@@ -58,6 +57,9 @@ $govuk-compatibility-govukelements: true;
 @import "_diff.scss";
 @import "views/statistics";
 @import "views/list_agreements";
+
+// Overrides
+@import "overrides/_notifications_banner";
 
 // Misc styles
 // TODO: Move misc styling into their own partial files or the Digital Marketplace FE Toolkit
