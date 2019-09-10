@@ -52,7 +52,7 @@ class TestUsersView(LoggedInApplicationTest):
         buyer.pop('supplier', None)
         buyer['users']['role'] = 'buyer'
         data_api_client.get_user.return_value = buyer
-        _user_info.return_value = (None, None, None, None, None)
+        _user_info.return_value = (None, None)
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         self.assertEquals(response.status_code, 200)
 
@@ -92,7 +92,7 @@ class TestUsersView(LoggedInApplicationTest):
 
     def test_should_show_supplier_user(self, data_api_client, _user_info):
         buyer = self.load_example_listing("user_response")
-        _user_info.return_value = (None, None, None, None, None)
+        _user_info.return_value = (None, None)
         data_api_client.get_user.return_value = buyer
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         self.assertEquals(response.status_code, 200)
@@ -120,7 +120,7 @@ class TestUsersView(LoggedInApplicationTest):
         buyer['users']['locked'] = True
 
         data_api_client.get_user.return_value = buyer
-        _user_info.return_value = (None, None, None, None, None)
+        _user_info.return_value = (None, None)
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         self.assertEquals(response.status_code, 200)
 
@@ -141,7 +141,7 @@ class TestUsersView(LoggedInApplicationTest):
         buyer = self.load_example_listing("user_response")
 
         data_api_client.get_user.return_value = buyer
-        _user_info.return_value = (None, None, None, None, None)
+        _user_info.return_value = (None, None)
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         self.assertEquals(response.status_code, 200)
 
@@ -155,7 +155,7 @@ class TestUsersView(LoggedInApplicationTest):
         buyer = self.load_example_listing("user_response")
 
         data_api_client.get_user.return_value = buyer
-        _user_info.return_value = (None, None, None, None, None)
+        _user_info.return_value = (None, None)
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         self.assertEquals(response.status_code, 200)
 
@@ -189,8 +189,8 @@ class TestUsersExport(LoggedInApplicationTest):
     }
 
     def _return_get_user_export_response(self, data_api_client, frameworks):
-            data_api_client.find_frameworks.return_value = {"frameworks": frameworks}
-            return self.client.get('/admin/users/download')
+        data_api_client.find_frameworks.return_value = {"frameworks": frameworks}
+        return self.client.get('/admin/users/download')
 
     def _assert_things_about_frameworks(self, response, frameworks):
 

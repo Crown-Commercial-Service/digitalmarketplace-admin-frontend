@@ -103,5 +103,5 @@ class LoggedInApplicationTest(BaseApplicationTest):
         login_manager.user_loader(self._user_callback)
 
     def _replace_whitespace(self, string, replacement_substring=""):
-            # Replace all runs of whitespace with replacement_substring
-            return re.sub(r"\s+", replacement_substring, string)
+        # Replace all runs of whitespace with replacement_substring
+        return re.sub(r"\s+", replacement_substring, string)
