@@ -4,24 +4,20 @@
   Countersign {{ framework.name }} agreement for {{ supplier_framework.declaration.nameOfOrganisation }} – Digital Marketplace admin
 {% endblock %}
 
-{% block breadcrumb %}
-    {%
-    with items = [
-        {
-            "link": url_for('.index'),
-            "label": "Admin home"
-        },
-        {
-            "link": url_for('.list_agreements', framework_slug=framework.slug),
-            "label": "%s agreements" | format(framework.name)
-        },
-        ]
-    %}
-        {% include "toolkit/breadcrumb.html" %}
-    {% endwith %}
-{% endblock %}
-
 {% block main_content %}
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Admin home",
+        "href": url_for('.index')
+      },
+      {
+        "text": "{} agreements".format(framework.name),
+        "href": url_for('.list_agreements', framework_slug=framework.slug)
+      }
+    ]
+  }) }}
+
 <div class='grid-row'>
   <div class="column-one-whole">
     {%

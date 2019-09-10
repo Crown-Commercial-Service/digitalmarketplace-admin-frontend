@@ -6,24 +6,19 @@
   {{ service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName'] }} – Digital Marketplace admin
 {% endblock %}
 
-{% block breadcrumb %}
-  {%
-    with items = [
+{% block main_content %}
+  {{ govukBreadcrumbs({
+    "items": [
       {
-        "link": url_for('.index'),
-        "label": "Admin home"
+        "text": "Admin home",
+        "href": url_for('.index')
       },
       {
-        "link": url_for(".find_supplier_services", supplier_id=service_data['supplierId']),
-        "label": service_data['supplierName']
+        "text": service_data['supplierName'],
+        "href": url_for(".find_supplier_services", supplier_id=service_data['supplierId'])
       }
     ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
-{% endblock %}
-
-{% block main_content %}
+  }) }}
 
   {% block before_heading %}
 

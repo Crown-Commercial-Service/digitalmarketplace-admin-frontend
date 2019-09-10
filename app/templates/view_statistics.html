@@ -6,20 +6,16 @@
   {{ framework.name }} Statistics – Digital Marketplace admin
 {% endblock %}
 
-{% block breadcrumb %}
-  {%
-    with items = [
+{% block main_content %}
+  {{ govukBreadcrumbs({
+    "items": [
       {
-        "link": url_for('main.index'),
-        "label": "Admin home"
+        "text": "Admin home",
+        "href": url_for('.index')
       }
     ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
-{% endblock %}
+  }) }}
 
-{% block main_content %}
   <div class="framework-statistics" {% if big_screen_mode %}id="framework-statistics-big-screen"{% endif %}>
     <div class="grid-row">
       <div class="column-two-thirds">
@@ -30,7 +26,7 @@
         %}
           {% include "toolkit/page-heading.html" %}
         {% endwith %}
-        
+
         {% if not big_screen_mode %}
           <a href="?big_screen_mode=yes">Big screen view</a>
         {% endif %}

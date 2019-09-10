@@ -6,20 +6,16 @@
   Upload {{ framework.name }} countersigned agreement - Digital Marketplace admin
 {% endblock %}
 
-{% block breadcrumb %}
-  {%
-      with items = [
-          {
-              "link": url_for('.index'),
-              "label": "Admin home"
-          }
-      ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
-{% endblock %}
-
 {% block main_content %}
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Admin home",
+        "href": url_for('.index')
+      }
+    ]
+  }) }}
+
   {% if remove_countersigned_agreement_confirm %}
       <form method="post" action='{{ url_for(".remove_countersigned_agreement_file", supplier_id=supplier.id, framework_slug=framework.slug) }}'>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />

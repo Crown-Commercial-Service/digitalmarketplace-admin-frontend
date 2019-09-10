@@ -6,20 +6,16 @@
     Find a user – Digital Marketplace admin
 {% endblock %}
 
-{% block breadcrumb %}
-  {%
-      with items = [
-          {
-              "link": url_for('.index'),
-              "label": "Admin home"
-          },
-      ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
-{% endblock %}
-
 {% block main_content %}
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Admin home",
+        "href": url_for('.index')
+      }
+    ]
+  }) }}
+
   {% with heading = "Find a user" %}
   {% include "toolkit/page-heading.html" %}
   {% endwith %}

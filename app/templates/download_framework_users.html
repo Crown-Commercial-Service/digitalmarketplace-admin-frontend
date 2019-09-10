@@ -4,20 +4,15 @@
   Download supplier lists for {{ framework.name }} - Digital Marketplace admin
 {% endblock %}
 
-{% block breadcrumb %}
-  {%
-    with items = [
+{% block main_content %}
+  {{ govukBreadcrumbs({
+    "items": [
       {
-        "link": url_for('.index'),
-        "label": "Admin home"
+        "text": "Admin home",
+        "href": url_for('.index')
       }
     ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
-{% endblock %}
-
-{% block main_content %}
+  }) }}
   <div class="grid-row">
     <div class="column-two-thirds">
       {%

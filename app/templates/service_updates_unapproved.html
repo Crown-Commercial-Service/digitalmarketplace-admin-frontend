@@ -8,19 +8,16 @@
 
 {% set csrf = csrf_token() %}
 
-{% block breadcrumb %}
-  {%
-    with items = [
+{% block main_content %}
+  {{ govukBreadcrumbs({
+    "items": [
       {
-        "link": url_for('.index'),
-        "label": "Admin home"
+        "text": "Admin home",
+        "href": url_for('.index')
       }
     ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
-{% endblock %}
-{% block main_content %}
+  }) }}
+
     {%
       with
       heading = "Check edits to services"

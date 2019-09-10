@@ -4,24 +4,20 @@
   {{ service['serviceName'] }} – Digital Marketplace admin
 {% endblock %}
 
-{% block breadcrumb %}
-  {%
-      with items = [
-          {
-              "link": url_for('.index'),
-              "label": "Admin home"
-          },
-          {
-            "link": url_for('.service_update_audits'),
-            "label": "Check edits to services"
-          }
-      ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
-{% endblock %}
-
 {% block main_content %}
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Admin home",
+        "href": url_for('.index')
+      },
+      {
+        "text": "Check edits to services",
+        "href": url_for('.service_update_audits')
+      }
+    ]
+  }) }}
+
   {%
     with
     smaller = true,

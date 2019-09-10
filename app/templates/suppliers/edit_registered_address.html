@@ -9,27 +9,23 @@
   {{ super() }}
 {% endblock %}
 
-{% block breadcrumb %}
-  {%
-    with items = [
+{% block main_content %}
+  {{ govukBreadcrumbs({
+    "items": [
       {
-        "link": url_for('.index'),
-        "label": "Admin home"
+        "text": "Admin home",
+        "href": url_for('.index')
       },
       {
-        "label": supplier.name,
-        "link": url_for('.supplier_details', supplier_id=supplier.id)
+        "text": supplier.name,
+        "href": url_for('.supplier_details', supplier_id=supplier.id)
       },
       {
-        "label": "Change registered company address"
+        "text": "Change registered company address"
       }
     ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
-{% endblock %}
+  }) }}
 
-{% block main_content %}
   {% include 'toolkit/forms/validation.html' %}
   {% with heading = "Update registered company address for ‘{}’".format(supplier.name) %}
     {% include "toolkit/page-heading.html" %}

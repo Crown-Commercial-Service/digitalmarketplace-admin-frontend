@@ -1,22 +1,25 @@
 {% extends "_base_page.html" %}
 
 {% import "toolkit/forms/macros/forms.html" as forms %}
-{% set page_name = 'Invite a new admin user' %}
-{% block page_title %}{{ page_name }} – Digital Marketplace admin{% endblock %}
-{% block breadcrumb %}
-  {%
-    with items = [
-      {"link": url_for('.index'), "label": "Admin home"},
-      {"link": url_for('main.manage_admin_users'), "label": "Manage users"},
-      {"label": "Invite a new admin user"}
-    ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
-{% endblock %}
-
+{% set page_title = 'Invite a new admin user' %}
+{% block page_title %}{{ page_title }} – Digital Marketplace admin{% endblock %}
 
 {% block main_content %}
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Admin home",
+        "href": url_for('.index')
+      },
+      {
+        "text": "Manage users",
+        "href": url_for('main.manage_admin_users')
+      },
+      {
+        "text": page_title
+      }
+    ]
+  }) }}
 
   {% include 'toolkit/forms/validation.html' %}
 

@@ -6,26 +6,22 @@
   {{ supplier.name }} - Services – Digital Marketplace admin
 {% endblock %}
 
-{% block breadcrumb %}
-  {%
-    with items = [
+{% block main_content %}
+  {{ govukBreadcrumbs({
+    "items": [
       {
-        "link": url_for('.index'),
-        "label": "Admin home"
+        "text": "Admin home",
+        "href": url_for('.index')
       },
       {
-        "label": supplier.name,
-        "link": url_for('.supplier_details', supplier_id=supplier.id)
+        "text": supplier.name,
+        "href": url_for('.supplier_details', supplier_id=supplier.id)
       },
       {
-        "label": "Services"
+        "text": "Services"
       }
     ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
-{% endblock %}
-{% block main_content %}
+  }) }}
 
   {% block before_heading %}
     {% if remove_services_for_framework or publish_services_for_framework %}

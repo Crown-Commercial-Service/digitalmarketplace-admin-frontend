@@ -6,27 +6,23 @@
   {{ supplier.name }} users – Digital Marketplace admin
 {% endblock %}
 
-{% block breadcrumb %}
-  {%
-      with items = [
-          {
-              "link": url_for('.index'),
-              "label": "Admin home"
-          },
-          {
-              "label": supplier.name,
-              "link": url_for('.supplier_details', supplier_id=supplier.id)
-          },
-          {
-              "label": "Users"
-          }
-      ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
-{% endblock %}
-
 {% block main_content %}
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Admin home",
+        "href": url_for('.index')
+      },
+      {
+        "text": supplier.name,
+        "href": url_for('.supplier_details', supplier_id=supplier.id)
+      },
+      {
+        "text": "Users"
+      }
+    ]
+  }) }}
+
   {% with heading = supplier.name %}
   {% include "toolkit/page-heading.html" %}
   {% endwith %}
