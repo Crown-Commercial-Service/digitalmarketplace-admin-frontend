@@ -2,8 +2,10 @@
 
 {% extends "_base_page.html" %}
 
+{% set page_title = "{} statistics".format(framework['name']) %}
+
 {% block page_title %}
-  {{ framework.name }} Statistics – Digital Marketplace admin
+  {{ page_title }} – Digital Marketplace admin
 {% endblock %}
 
 {% block beforeContent %}
@@ -12,6 +14,9 @@
       {
         "text": "Admin home",
         "href": url_for('main.index')
+      },
+      {
+        "text": page_title
       }
     ]
   }) }}

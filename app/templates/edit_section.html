@@ -3,8 +3,10 @@
 
 {% extends "_base_page.html" %}
 
+{% set page_title = "Edit {}".format(section.name) %}
+
 {% block page_title %}
-  Edit {{ section.name }} – Digital Marketplace admin
+  {{ page_title }} – Digital Marketplace admin
 {% endblock %}
 
 {% block beforeContent %}
@@ -17,6 +19,9 @@
       {
         "text": service_data['serviceName'],
         "href": url_for(".view_service", service_id=service_data.id)
+      },
+      {
+        "text": page_title
       }
     ]
   }) }}
