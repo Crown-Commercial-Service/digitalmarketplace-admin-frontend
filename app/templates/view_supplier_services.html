@@ -6,7 +6,7 @@
   {{ supplier.name }} - Services – Digital Marketplace admin
 {% endblock %}
 
-{% block main_content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     "items": [
       {
@@ -22,7 +22,9 @@
       }
     ]
   }) }}
+{% endblock %}
 
+{% block main_content %}
   {% block before_heading %}
     {% if remove_services_for_framework or publish_services_for_framework %}
 

@@ -6,7 +6,7 @@
   View {{ framework.name }} declaration - Digital Marketplace admin
 {% endblock %}
 
-{% block main_content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     "items": [
       {
@@ -22,7 +22,9 @@
       }
     ]
   }) }}
+{% endblock %}
 
+{% block main_content %}
   <div class="grid-row">
     <div class="service-title">
       {%

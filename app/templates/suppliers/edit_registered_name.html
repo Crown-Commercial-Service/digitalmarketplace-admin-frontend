@@ -4,7 +4,7 @@
   Change registered company name – {{ supplier.name }} – Digital Marketplace admin
 {% endblock %}
 
-{% block main_content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     "items": [
       {
@@ -20,7 +20,9 @@
       }
     ]
   }) }}
+{% endblock %}
 
+{% block main_content %}
   {% include 'toolkit/forms/validation.html' %}
   {% with heading = "Update registered company name for ‘{}’".format(supplier.name) %}
     {% include "toolkit/page-heading.html" %}

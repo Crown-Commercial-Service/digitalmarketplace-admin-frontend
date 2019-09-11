@@ -6,7 +6,7 @@
   Uploaded {{ framework.name }} framework agreements – Digital Marketplace admin
 {% endblock %}
 
-{% block main_content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     "items": [
       {
@@ -15,6 +15,9 @@
       }
     ]
   }) }}
+{% endblock %}
+
+{% block main_content %}
 
   {% with heading = "Uploaded {} framework agreements".format(framework.name) %}
     {% include "toolkit/page-heading.html" %}

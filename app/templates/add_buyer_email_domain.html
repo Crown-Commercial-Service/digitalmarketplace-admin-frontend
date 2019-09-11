@@ -2,7 +2,7 @@
 
 {% block page_title %}Add buyer email domains – Digital Marketplace admin{% endblock %}
 
-{% block main_content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     "items": [
       {
@@ -14,6 +14,9 @@
       }
     ]
   }) }}
+{% endblock %}
+
+{% block main_content %}
   {% for error in email_domain_form.new_buyer_domain.errors %}
     {%
       with

@@ -4,7 +4,7 @@
   Confirm communications deletion - Digital Marketplace admin
 {% endblock %}
 
-{% block main_content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     "items": [
       {
@@ -17,7 +17,9 @@
       }
     ]
   }) }}
+{% endblock %}
 
+{% block main_content %}
   {% with heading = "Confirm communications deletion" %}
     {% include "toolkit/page-heading.html" %}
   {% endwith %}

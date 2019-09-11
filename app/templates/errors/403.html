@@ -2,7 +2,7 @@
 
 {% block page_title %}Access denied - 403 – Digital Marketplace{% endblock %}
 
-{% block main_content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     "items": [
       {
@@ -11,7 +11,9 @@
       }
     ]
   }) }}
+{% endblock %}
 
+{% block main_content %}
   {% with heading = "You don’t have permission to perform this action" %}
     {% include 'toolkit/page-heading.html' %}
   {% endwith %}

@@ -7,7 +7,7 @@
   Edit {{ section.name }} – Digital Marketplace admin
 {% endblock %}
 
-{% block main_content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     "items": [
       {
@@ -20,7 +20,9 @@
       }
     ]
   }) }}
+{% endblock %}
 
+{% block main_content %}
   {%
     with
     heading = section.name,

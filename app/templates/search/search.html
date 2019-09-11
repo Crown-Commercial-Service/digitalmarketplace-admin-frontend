@@ -16,7 +16,7 @@
   {{ page_title }} - Digital Marketplace admin
 {% endblock %}
 
-{% block main_content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     "items": [
       {
@@ -25,6 +25,9 @@
       }
     ]
   }) }}
+{% endblock %}
+
+{% block main_content %}
   {%
     with heading = page_title
   %}

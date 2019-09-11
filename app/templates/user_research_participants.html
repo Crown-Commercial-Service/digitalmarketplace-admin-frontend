@@ -4,7 +4,7 @@
   Download lists of potential user research participants - Digital Marketplace admin
 {% endblock %}
 
-{% block main_content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     "items": [
       {
@@ -13,6 +13,9 @@
       }
     ]
   }) }}
+{% endblock %}
+
+{% block main_content %}
 
   {%
     with heading = "Download lists of potential user research participants"

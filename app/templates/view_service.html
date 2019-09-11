@@ -6,7 +6,7 @@
   {{ service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName'] }} – Digital Marketplace admin
 {% endblock %}
 
-{% block main_content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     "items": [
       {
@@ -19,6 +19,9 @@
       }
     ]
   }) }}
+{% endblock %}
+
+{% block main_content %}
 
   {% block before_heading %}
 

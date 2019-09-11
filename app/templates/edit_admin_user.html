@@ -3,7 +3,7 @@
   Edit details of admin user: {{ admin_user.emailAddress }} – Digital Marketplace admin
 {% endblock %}
 
-{% block main_content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     "items": [
       {
@@ -15,7 +15,9 @@
       }
     ]
   }) }}
+{% endblock %}
 
+{% block main_content %}
   {% for error in edit_admin_user_form.edit_admin_name.errors %}
     {%
       with

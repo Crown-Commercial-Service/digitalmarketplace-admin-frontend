@@ -4,7 +4,7 @@
 {% set page_title = 'Invite a new admin user' %}
 {% block page_title %}{{ page_title }} – Digital Marketplace admin{% endblock %}
 
-{% block main_content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     "items": [
       {
@@ -20,6 +20,9 @@
       }
     ]
   }) }}
+{% endblock %}
+
+{% block main_content %}
 
   {% include 'toolkit/forms/validation.html' %}
 
