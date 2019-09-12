@@ -52,7 +52,7 @@
         "text": "Search"
       }) }}
     </form>
-  {% endset -%}
+  {% endset %}
 
   {% set dunsNumberHTtml %}
     <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
@@ -88,63 +88,67 @@
         "text": "Search"
       }) }}
     </form>
-  {% endset -%}
+  {% endset %}
 
-  {% set serviceIdHtml %}
-    <form action="{{ url_for('.find_service') }}" method="get" class="question">
-      {%
-        with
-        question = "Find a service by service ID",
-        name = "service_id",
-        hint = "For example 123456789012345"
-      %}
-        {% include "toolkit/forms/textbox.html" %}
-      {% endwith %}
+  {% set pageTabs = [
+    {
+      "label": "Name",
+      "id": "supplier-name",
+      "panel": {
+        "html": serviceNameHtml
+      }
+    },
+    {
+      "label": "DUNS Number",
+      "id": "duns-number",
+      "panel": {
+        "html": dunsNumberHTtml
+      }
+    },
+    {
+      "label": "Company registration number",
+      "id": "company-registration-number",
+      "panel": {
+        "html": companyRegHtml
+      }
+    }
+  ]%}
 
-      {{ govukButton({
-        "name": "find_service_by_id_search",
-        "text": "Search"
-      }) }}
-    </form>
-  {% endset -%}
+  {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager')  %}
+    {# Add Service tab if user is meant to have access #}
+    {% set serviceIdHtml %}
+      <form action="{{ url_for('.find_service') }}" method="get" class="question">
+        {%
+          with
+          question = "Find a service by service ID",
+          name = "service_id",
+          hint = "For example 123456789012345"
+        %}
+          {% include "toolkit/forms/textbox.html" %}
+        {% endwith %}
+
+        {{ govukButton({
+          "name": "find_service_by_id_search",
+          "text": "Search"
+        }) }}
+      </form>
+    {% endset %}
+
+    {% set pageTabs = pageTabs + [{
+      "label": "Service ID",
+      "id": "service-id",
+      "panel": {
+        "html": serviceIdHtml
+      }
+    }]%}
+  {% endif %}
 
   <div class="grid-row">
     <div class="column-one-whole">
       {{ govukTabs({
         "title": "Search",
-        "items": [
-          {
-            "label": "Name",
-            "id": "supplier-name",
-            "panel": {
-              "html": serviceNameHtml
-            }
-          },
-          {
-            "label": "DUNS Number",
-            "id": "duns-number",
-            "panel": {
-              "html": dunsNumberHTtml
-            }
-          },
-          {
-            "label": "Company registration number",
-            "id": "company-registration-number",
-            "panel": {
-              "html": companyRegHtml
-            }
-          },
-          {
-            "label": "Service ID",
-            "id": "service-id",
-            "panel": {
-              "html": serviceIdHtml
-            }
-          }
-        ]
+        "items": pageTabs
       }) }}
-      {# TODO Need to add this condition to restrict the last tab of the govuk tab item #}
-      {# if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager')  #}
     </div>
   </div>
 {% endblock %}
