@@ -36,111 +36,119 @@
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
 
+  {% set supplierNameHtml %}
+    <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+      {%
+        with
+        question = "Find a supplier by name",
+        name = "supplier_name",
+        hint = "Enter any part of the supplier’s registered name or trading name."
+      %}
+        {% include "toolkit/forms/textbox.html" %}
+      {% endwith %}
+
+      {{ govukButton({
+        "name": "find_supplier_by_name_search",
+        "text": "Search"
+      }) }}
+    </form>
+  {% endset %}
+
+  {% set dunsNumberHTtml %}
+    <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+      {%
+        with
+        question = "Find a supplier by DUNS number",
+        name = "supplier_duns_number",
+        hint = "DUNS numbers are usually 9 digits long, for example, 234554321"
+      %}
+        {% include "toolkit/forms/textbox.html" %}
+      {% endwith %}
+
+      {{ govukButton({
+        "name": "find_supplier_by_duns_number_search",
+        "text": "Search"
+      }) }}
+    </form>
+  {% endset %}
+
+  {% set companyRegHtml %}
+    <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
+      {%
+        with
+        question = "Find a supplier by company registration number",
+        name = "supplier_company_registration_number",
+        hint = "Company registration numbers are usually 8 digits long, for example, 34881131"
+      %}
+        {% include "toolkit/forms/textbox.html" %}
+      {% endwith %}
+
+      {{ govukButton({
+        "name": "find_supplier_by_company_registration_number_search",
+        "text": "Search"
+      }) }}
+    </form>
+  {% endset %}
+
+  {% set pageTabs = [
+    {
+      "label": "Name",
+      "id": "supplier-name",
+      "panel": {
+        "html": supplierNameHtml
+      }
+    },
+    {
+      "label": "DUNS Number",
+      "id": "duns-number",
+      "panel": {
+        "html": dunsNumberHTtml
+      }
+    },
+    {
+      "label": "Company registration number",
+      "id": "company-registration-number",
+      "panel": {
+        "html": companyRegHtml
+      }
+    }
+  ]%}
+
+  {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager')  %}
+    {# Add Service tab if user is meant to have access #}
+    {% set serviceIdHtml %}
+      <form action="{{ url_for('.find_service') }}" method="get" class="question">
+        {%
+          with
+          question = "Find a service by service ID",
+          name = "service_id",
+          hint = "For example 123456789012345"
+        %}
+          {% include "toolkit/forms/textbox.html" %}
+        {% endwith %}
+
+        {{ govukButton({
+          "name": "find_service_by_id_search",
+          "text": "Search"
+        }) }}
+      </form>
+    {% endset %}
+
+    {% set pageTabs = pageTabs + [{
+      "label": "Service ID",
+      "id": "service-id",
+      "panel": {
+        "html": serviceIdHtml
+      }
+    }]%}
+  {% endif %}
+
   <div class="grid-row">
     <div class="column-one-whole">
-
-      <div class="govuk-tabs" data-module="tabs">
-          <h2 class="govuk-tabs__title">
-            Search
-          </h2>
-
-          <ul class="govuk-tabs__list">
-            <li class="govuk-tabs__list-item">
-              <a class="govuk-tabs__tab govuk-tabs__tab--selected" href="#supplier-name">
-                Name
-              </a>
-            </li>
-            <li class="govuk-tabs__list-item">
-              <a class="govuk-tabs__tab" href="#duns-number">
-                DUNS Number
-              </a>
-            </li>
-            <li class="govuk-tabs__list-item">
-              <a class="govuk-tabs__tab" href="#company-registration-number">
-                Company registration number
-              </a>
-            </li>
-            {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager') %}
-            <li class="govuk-tabs__list-item">
-              <a class="govuk-tabs__tab" href="#service-id">
-                Service ID
-              </a>
-            </li>
-            {% endif %}
-          </ul>
-
-          <section class="govuk-tabs__panel" id="supplier-name">
-            <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
-              {%
-                with
-                question = "Find a supplier by name",
-                name = "supplier_name",
-                hint = "Enter any part of the supplier’s registered name or trading name."
-              %}
-                {% include "toolkit/forms/textbox.html" %}
-              {% endwith %}
-
-              {{ govukButton({
-                "name": "find_supplier_by_name_search",
-                "text": "Search"
-              }) }}
-            </form>
-          </section>
-          <section class="govuk-tabs__panel govuk-tabs__panel--hidden" id="duns-number">
-            <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
-              {%
-                with
-                question = "Find a supplier by DUNS number",
-                name = "supplier_duns_number",
-                hint = "DUNS numbers are usually 9 digits long, for example, 234554321"
-              %}
-                {% include "toolkit/forms/textbox.html" %}
-              {% endwith %}
-
-              {{ govukButton({
-                "name": "find_supplier_by_duns_number_search",
-                "text": "Search"
-              }) }}
-            </form>
-          </section>
-          <section class="govuk-tabs__panel govuk-tabs__panel--hidden" id="company-registration-number">
-            <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
-                {%
-                  with
-                  question = "Find a supplier by company registration number",
-                  name = "supplier_company_registration_number",
-                  hint = "Company registration numbers are usually 8 digits long, for example, 34881131"
-                %}
-                  {% include "toolkit/forms/textbox.html" %}
-                {% endwith %}
-
-                {{ govukButton({
-                  "name": "find_supplier_by_company_registration_number_search",
-                  "text": "Search"
-                }) }}
-            </form>
-          </section>
-          {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager') %}
-          <section class="govuk-tabs__panel govuk-tabs__panel--hidden" id="service-id">
-            <form action="{{ url_for('.find_service') }}" method="get" class="question">
-              {%
-                with
-                question = "Find a service by service ID",
-                name = "service_id",
-                hint = "For example 123456789012345"
-              %}
-                {% include "toolkit/forms/textbox.html" %}
-              {% endwith %}
-              {{ govukButton({
-                "name": "find_service_by_id_search",
-                "text": "Search"
-              }) }}
-            </form>
-          </section>
-          {% endif %}
-        </div>
-
-
+      {{ govukTabs({
+        "title": "Search",
+        "items": pageTabs
+      }) }}
     </div>
   </div>
 {% endblock %}
