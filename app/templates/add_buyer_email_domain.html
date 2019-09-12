@@ -54,13 +54,9 @@
           {% include "toolkit/forms/textbox.html" %}
         {% endwith %}
 
-        {%
-          with
-          type = "save",
-          label = "Add"
-        %}
-          {% include "toolkit/button.html" %}
-        {% endwith %}
+        {{ govukButton({
+          "text": "Add"
+        }) }}
       </div>
     </div>
   </form>

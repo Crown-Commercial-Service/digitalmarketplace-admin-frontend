@@ -27,7 +27,10 @@
         <p class="banner-message">
           Do you want to remove the countersigned agreement?
         </p>
-        <button class="button-destructive banner-action" type="submit">Yes</button>
+        {{ govukButton({
+          "classes": "govuk-button--warning",
+          "text": "Yes"
+        }) }}
       </div>
   {% endif %}
 
@@ -68,8 +71,8 @@
   {% endcall %}
 
   <form method="post" enctype="multipart/form-data">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-  {%
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    {%
       with
       question = "Please upload a countersigned agreement",
       name = "countersigned_agreement",
@@ -77,13 +80,10 @@
     %}
       {% include "toolkit/forms/upload.html" %}
     {% endwith %}
-    {%
-      with
-      type = "save",
-      label = "Upload file"
-    %}
-      {% include "toolkit/button.html" %}
-    {% endwith %}
+
+    {{ govukButton({
+      "text": "Upload file"
+    }) }}
   </form>
 
 {% endblock %}

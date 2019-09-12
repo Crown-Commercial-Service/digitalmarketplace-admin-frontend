@@ -119,7 +119,7 @@ class TestUsersView(LoggedInApplicationTest):
         assert locked == 'No'
 
         button = document.xpath(
-            '//input[@class="button-destructive"]')[0].value
+            '//button[contains(@class, "govuk-button--warning")]')[0].text.strip()
         assert button == 'Deactivate'
 
     def test_should_show_supplier_user(self):
@@ -151,7 +151,7 @@ class TestUsersView(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
 
         unlock_button = document.xpath(
-            '//input[@class="button-secondary"]')[0].attrib['value']
+            '//button[contains(@class, "govuk-button--secondary")]')[0].text.strip()
         unlock_link = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/form')[0]
         return_link = document.xpath(
@@ -177,7 +177,7 @@ class TestUsersView(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
 
         deactivate_button = document.xpath(
-            '//input[@class="button-destructive"]')[0].attrib['value']
+            '//button[contains(@class, "govuk-button--warning")]')[0].text.strip()
         deactivate_link = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/form')[0]
         return_link = document.xpath(
@@ -204,7 +204,7 @@ class TestUsersView(LoggedInApplicationTest):
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
         document = html.fromstring(response.get_data(as_text=True))
 
-        assert document.xpath('//input[@value="Activate"][@type="submit"]')
+        assert document.xpath('//button[contains(text(), "Activate")]')
 
 
 @mock.patch('app.main.views.users.s3')

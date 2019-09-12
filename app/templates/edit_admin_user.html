@@ -43,13 +43,9 @@
         {{ edit_admin_user_form.edit_admin_permissions }}
         {{ edit_admin_user_form.edit_admin_status }}
 
-        {%
-          with
-          type = "save",
-          label = "Update user"
-        %}
-          {% include "toolkit/button.html" %}
-        {% endwith %}
+        {{ govukButton({
+          "text": "Update user"
+        }) }}
       </div>
     </div>
   </form>

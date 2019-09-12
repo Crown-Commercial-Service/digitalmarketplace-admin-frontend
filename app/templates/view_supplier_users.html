@@ -32,124 +32,119 @@
   {% endwith %}
 
   <div class='page-section'>
-      {% call(item) summary.list_table(
-          users,
-          caption="Users",
-          empty_message="This supplier has no users on the Digital Marketplace",
-          field_headings=[
-              'Name',
-              'Email address',
-              'Last login',
-              'Pwd changed',
-              'Locked',
-              summary.hidden_field_heading("Change status") if current_user.has_any_role('admin', 'admin-ccs-category') else summary.hidden_field_heading("")
-          ],
-          field_headings_visible=True)
-      %}
+    {% call(item) summary.list_table(
+      users,
+      caption="Users",
+      empty_message="This supplier has no users on the Digital Marketplace",
+      field_headings=[
+          'Name',
+          'Email address',
+          'Last login',
+          'Pwd changed',
+          'Locked',
+          summary.hidden_field_heading("Change status") if current_user.has_any_role('admin', 'admin-ccs-category') else summary.hidden_field_heading("")
+      ],
+      field_headings_visible=True)
+    %}
       {% call summary.row() %}
 
-      {{ summary.field_name(item.name) }}
+        {{ summary.field_name(item.name) }}
 
-      {{ summary.text(item.emailAddress) }}
+        {{ summary.text(item.emailAddress) }}
 
-      {% call summary.field() %}
+        {% call summary.field() %}
           {% if item.loggedInAt %}
-              {{ item.loggedInAt|timeformat }}<br/>
-              {{ item.loggedInAt|dateformat }}
+            {{ item.loggedInAt|timeformat }}<br/>
+            {{ item.loggedInAt|dateformat }}
           {% else %}
-              Never
+            Never
           {% endif %}
-      {% endcall %}
+        {% endcall %}
 
-      {% call summary.field() %}
+        {% call summary.field() %}
           {% if item.passwordChangedAt %}
-              {{ item.passwordChangedAt|timeformat }}<br/>
-              {{ item.passwordChangedAt|dateformat }}
+            {{ item.passwordChangedAt|timeformat }}<br/>
+            {{ item.passwordChangedAt|dateformat }}
           {% else %}
-              Never
+            Never
           {% endif %}
-      {% endcall %}
+        {% endcall %}
 
-      {% call summary.field() %}
-      {% if item.locked and current_user.has_any_role('admin', 'admin-ccs-category') and not item.personalDataRemoved %}
-      <form action="{{ url_for('.unlock_user', user_id=item.id) }}" method="post">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-          {%
-              with
-              type = "secondary",
-              label = "Unlock"
-          %}
-          {% include "toolkit/button.html" %}
-          {% endwith %}
-      </form>
-      {% elif item.locked %}
-          Yes
-      {% else %}
-          No
-      {% endif %}
-      {% endcall %}
+        {% call summary.field() %}
+          {% if item.locked and current_user.has_any_role('admin', 'admin-ccs-category') and not item.personalDataRemoved %}
+          <form action="{{ url_for('.unlock_user', user_id=item.id) }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            {{ govukButton({
+              "classes": "govuk-button--secondary",
+              "text": "Unlock"
+            }) }}
+          </form>
+          {% elif item.locked %}
+              Yes
+          {% else %}
+              No
+          {% endif %}
+        {% endcall %}
 
-      {% call summary.field() %}
-      {% if item.active %}
-        {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
-          <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-              {%
-                  with
-                  type = "destructive",
-                  label = "Deactivate"
-              %}
-              {% include "toolkit/button.html" %}
-              {% endwith %}
-          </form>
-        {% else %}
-          Active
-        {% endif %}
-      {% else %}
-        {% if current_user.has_any_role('admin', 'admin-ccs-category') and not item.personalDataRemoved %}
-          <form action="{{ url_for('.activate_user', user_id=item.id) }}" method="post">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-              {%
-                  with
-                  type = "secondary",
-                  label = "Activate"
-              %}
-              {% include "toolkit/button.html" %}
-              {% endwith %}
-          </form>
-        {% else %}
-          Deactivated
-        {% endif %}
-      {% endif %}
+        {% call summary.field() %}
+          {% if item.active %}
+            {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
+              <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                {{ govukButton({
+                  "classes": "govuk-button--warning",
+                  "text": "Deactivate"
+                }) }}
+              </form>
+            {% else %}
+              Active
+            {% endif %}
+          {% else %}
+            {% if current_user.has_any_role('admin', 'admin-ccs-category') and not item.personalDataRemoved %}
+              <form action="{{ url_for('.activate_user', user_id=item.id) }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                {{ govukButton({
+                  "classes": "govuk-button--secondary",
+                  "text": "Activate"
+                }) }}
+              </form>
+            {% else %}
+              Deactivated
+            {% endif %}
+          {% endif %}
+        {% endcall %}
       {% endcall %}
-      {% endcall %}
-      {% endcall %}
+    {% endcall %}
   </div>
 
 
   {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
   <div class='page-section'>
-      <form action="{{ url_for('.invite_user', supplier_id=supplier.id) }}" method="post">
-          <div class="grid-row">
-              <div class="column-two-thirds">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                  {{ invite_form.email_address }}
-                 <button class="button-save">Send invitation</button>
-              </div>
-          </div>
-      </form>
+    <form action="{{ url_for('.invite_user', supplier_id=supplier.id) }}" method="post">
+      <div class="grid-row">
+        <div class="column-two-thirds">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          {{ invite_form.email_address }}
+          {{ govukButton({
+            "text": "Send invitation"
+          }) }}
+        </div>
+      </div>
+    </form>
   </div>
 
-    <div class='page-section'>
-        <form action="{{ url_for('.move_user_to_new_supplier', supplier_id=supplier.id) }}" method="post">
-            <div class="grid-row">
-                <div class="column-two-thirds">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    {{ move_user_form.user_to_move_email_address }}
-                    <button class="button-save">Move user to this supplier</button>
-                </div>
-            </div>
-        </form>
-    </div>
+  <div class='page-section'>
+    <form action="{{ url_for('.move_user_to_new_supplier', supplier_id=supplier.id) }}" method="post">
+      <div class="grid-row">
+        <div class="column-two-thirds">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          {{ move_user_form.user_to_move_email_address }}
+          {{ govukButton({
+            "text": "Move user to this supplier"
+          }) }}
+        </div>
+      </div>
+    </form>
+  </div>
   {% endif %}
 {% endblock %}

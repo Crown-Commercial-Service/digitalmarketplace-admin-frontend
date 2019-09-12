@@ -582,7 +582,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         response = self.client.get('/admin/suppliers/users?supplier_id=1000')
         assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
-        deactivate_buttons = document.xpath('.//input[contains(@value, "Deactivate")]')
+        deactivate_buttons = document.xpath('.//button[contains(text(), "Deactivate")]')
         assert len(deactivate_buttons) == (1 if can_edit else 0)
 
     def test_should_404_if_no_supplier_does_not_exist(self):
@@ -630,9 +630,9 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         assert "No" in response.get_data(as_text=True)
 
         document = html.fromstring(response.get_data(as_text=True))
-        assert document.xpath('//input[@value="Deactivate"][@type="submit"][@class="button-destructive"]')
+        assert document.xpath('//button[contains(text(), "Deactivate")][contains(@class, "govuk-button--warning")]')
         assert document.xpath('//form[@action="/admin/suppliers/users/999/deactivate"][@method="post"]')
-        assert document.xpath('//button[@class="button-save"][contains(text(), "Move user to this supplier")]')
+        assert document.xpath('//button[contains(text(), "Move user to this supplier")]')
         assert document.xpath('//form[@action="/admin/suppliers/1234/move-existing-user"][@method="post"]')
 
     def test_should_show_unlock_button_if_user_locked_and_not_personal_data_removed(self):
@@ -646,7 +646,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         document = html.fromstring(response.get_data(as_text=True))
         assert document.xpath('//form[@action="/admin/suppliers/users/999/unlock"][@method="post"]')
-        assert document.xpath('//input[@value="Unlock"][@type="submit"][@class="button-secondary"]')
+        assert document.xpath('//button[contains(text(), "Unlock")][contains(@class, "govuk-button--secondary")]')
 
     def test_should_not_show_unlock_button_if_user_not_locked(self):
         users = self.load_example_listing("users_response")
@@ -684,7 +684,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         document = html.fromstring(response.get_data(as_text=True))
         assert document.xpath('//form[@action="/admin/suppliers/users/999/activate"][@method="post"]')
-        assert document.xpath('//input[@value="Activate"][@type="submit"][@class="button-secondary"]')
+        assert document.xpath('//button[contains(text(), "Activate")][contains(@class, "govuk-button--secondary")]')
 
     def test_should_not_show_activate_button_if_user_personal_data_removed(self):
         users = self.load_example_listing("users_response")
@@ -2830,7 +2830,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
 
         assert "Cancel acceptance" not in data
 
-        accept_input_elems = document.xpath("//form//input[@type='submit'][@value='Accept and continue']")
+        accept_input_elems = document.xpath("//form//button[contains(text(), 'Accept and continue')]")
         assert len(accept_input_elems) == 1
         accept_form_elem = accept_input_elems[0].xpath("ancestor::form")[0]
         assert self._parsed_url_matches(
@@ -2842,7 +2842,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert accept_form_elem.xpath("input[@name='csrf_token']")
         assert accept_form_elem.xpath("input[@name='nameOfOrganisation'][@value=$n]", n=self.decl_nameOfOrganization)
 
-        hold_input_elems = document.xpath("//form//input[@type='submit'][@value='Put on hold and continue']")
+        hold_input_elems = document.xpath("//form//button[contains(text(), 'Put on hold and continue')]")
         assert len(hold_input_elems) == 1
         hold_form_elem = hold_input_elems[0].xpath("ancestor::form")[0]
         assert self._parsed_url_matches(
@@ -2881,7 +2881,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
 
         assert "Cancel acceptance" not in data
 
-        accept_input_elems = document.xpath("//form//input[@type='submit'][@value='Accept and continue']")
+        accept_input_elems = document.xpath("//form//button[contains(text(), 'Accept and continue')]")
         assert len(accept_input_elems) == 1
         accept_form_elem = accept_input_elems[0].xpath("ancestor::form")[0]
         assert self._parsed_url_matches(
@@ -2923,7 +2923,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
         assert "Put on hold and continue" not in data
         assert len(document.xpath("//h2[normalize-space(string())='Accepted by']")) == 1
 
-        cancel_input_elems = document.xpath("//form//input[@type='submit'][@value='Cancel acceptance']")
+        cancel_input_elems = document.xpath("//form//button[contains(text(), 'Cancel acceptance')]")
         assert len(cancel_input_elems) == 1
         cancel_form_elem = cancel_input_elems[0].xpath("ancestor::form")[0]
         assert self._parsed_url_matches(

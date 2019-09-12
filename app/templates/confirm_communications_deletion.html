@@ -33,14 +33,11 @@
         <div class="question">
           Are you sure you want to delete the {{ framework.name }} {{ comm_type }} file ‘{{ filepath }}’?
         </div>
-        {%
-          with
-          label="Delete file",
-          type="destructive",
-          name="confirm"
-        %}
-          {% include "toolkit/button.html" %}
-        {% endwith %}
+        {{ govukButton({
+          "classes": "govuk-button--warning",
+          "name": "confirm",
+          "text": "Delete file"
+        }) }}
       </div>
     </div>
   </form>

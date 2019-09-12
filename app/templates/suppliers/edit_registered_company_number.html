@@ -36,13 +36,9 @@
         {{ form.companies_house_number }}
         {{ form.other_company_registration_number }}
 
-        {%
-          with
-          type = "save",
-          label = "Save"
-        %}
-          {% include "toolkit/button.html" %}
-        {% endwith %}
+        {{ govukButton({
+          "text": "Save"
+        }) }}
       </div>
     </div>
   </form>

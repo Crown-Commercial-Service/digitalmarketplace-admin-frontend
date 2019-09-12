@@ -38,7 +38,10 @@
               service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName']
             ),
             type = "destructive",
-            action = '<button type="submit" class="button-destructive banner-action">Publish</button>'|safe
+            action = govukButton({
+              "classes": "govuk-button--warning app-banner-action",
+              "text": "Publish"
+            }) | safe
           %}
             {% include "toolkit/notification-banner.html" %}
           {% endwith %}
@@ -55,7 +58,10 @@
             service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName']
           ),
           type = "destructive",
-          action = '<button type="submit" class="button-destructive banner-action">Remove</button>'|safe
+          action = govukButton({
+              "classes": "govuk-button--warning app-banner-action",
+              "text": "Remove"
+            }) | safe
         %}
           {% include "toolkit/notification-banner.html" %}
         {% endwith %}

@@ -161,7 +161,7 @@ class TestManageCommunicationsView(_BaseTestCommunicationsView):
 
         # find the form that has our submit button
         form = doc.xpath(
-            "//form[@method='post'][@enctype='multipart/form-data'][.//input[@type='submit'][@value='Upload files']]"
+            "//form[@method='post'][@enctype='multipart/form-data'][.//button[contains(text(),'Upload files')]]"
         )[0]
         # should be a self-posting form
         assert urljoin(
@@ -400,7 +400,7 @@ class TestDeleteCommunicationsConfirmationPage(_BaseTestCommunicationsView):
         # find the form that has our submit button
         form = doc.xpath(
             "//form[@method='POST'][.//input[@name='csrf_token']]"
-            "[.//input[@type='submit'][@name='confirm'][@value='Delete file']]"
+            "[.//button[@name='confirm'][contains(text(), 'Delete file')]]"
         )[0]
         # should be a self-posting form
         assert urljoin(

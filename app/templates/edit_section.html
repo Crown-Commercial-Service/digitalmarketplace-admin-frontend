@@ -38,7 +38,7 @@
   <form method="post" enctype="multipart/form-data">
     <div class="grid-row">
       <div class="column-two-thirds">
-        <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}"></div>
+        <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
         {% for question in section.questions %}
           {% if errors and errors[question.id] or question.type == 'multiquestion' %}
             {{ forms[question.type](question, service_data, errors) }}
@@ -56,13 +56,10 @@
             </div>
           {% endif %}
         {% endfor %}
-        {%
-          with
-          type = "save",
-          label = "Save and return to summary"
-        %}
-          {% include "toolkit/button.html" %}
-        {% endwith %}
+
+        {{ govukButton({
+          "text": "Save and return to summary"
+        }) }}
         <p>
           <a href="{{ url_for('.view_service', service_id=service_data.id) }}">Return without saving</a>
         </p>
