@@ -36,7 +36,7 @@
     {% include "toolkit/page-heading.html" %}
   {% endwith %}
 
-  {% set serviceNameHtml %}
+  {% set supplierNameHtml %}
     <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">
       {%
         with
@@ -95,7 +95,7 @@
       "label": "Name",
       "id": "supplier-name",
       "panel": {
-        "html": serviceNameHtml
+        "html": supplierNameHtml
       }
     },
     {
