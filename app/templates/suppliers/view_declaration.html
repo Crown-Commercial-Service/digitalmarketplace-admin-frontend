@@ -6,24 +6,22 @@
   View {{ framework.name }} declaration - Digital Marketplace admin
 {% endblock %}
 
-{% block breadcrumb %}
-  {%
-      with items = [
-          {
-              "link": url_for('.index'),
-              "label": "Admin home"
-          },
-          {
-              "link": url_for('.supplier_details', supplier_id=supplier.id),
-              "label": supplier.name
-          },
-          {
-              "label": "{} declaration".format(framework.name)
-          }
-      ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Admin home",
+        "href": url_for('.index')
+      },
+      {
+        "text": supplier.name,
+        "href": url_for('.supplier_details', supplier_id=supplier.id)
+      },
+      {
+        "text": "{} declaration".format(framework.name)
+      }
+    ]
+  }) }}
 {% endblock %}
 
 {% block main_content %}

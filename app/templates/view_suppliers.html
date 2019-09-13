@@ -4,17 +4,18 @@
 
 {% block page_title %}Suppliers - Digital Marketplace admin{% endblock %}
 
-{% block breadcrumb %}
-  {%
-      with items = [
-          {
-              "link": url_for('.index'),
-              "label": "Admin home"
-          }
-      ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Admin home",
+        "href": url_for('.index')
+      },
+      {
+        "text": "Suppliers"
+      }
+    ]
+  }) }}
 {% endblock %}
 
 {% block main_content %}

@@ -4,21 +4,22 @@
   Confirm communications deletion - Digital Marketplace admin
 {% endblock %}
 
-{% block breadcrumb %}
-  {%
-      with items = [
-          {
-              "link": url_for('.index'),
-              "label": "Admin home"
-          },
-          {
-              "link": url_for('.manage_communications', framework_slug=framework.slug),
-              "label": "Manage {} communications".format(framework.name)
-          }
-      ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Admin home",
+        "href": url_for('.index')
+      },
+      {
+        "text": "Manage {} communications".format(framework.name),
+        "href": url_for('.manage_communications', framework_slug=framework.slug)
+      },
+      {
+        "text": "Confirm communications deletion"
+      }
+    ]
+  }) }}
 {% endblock %}
 
 {% block main_content %}

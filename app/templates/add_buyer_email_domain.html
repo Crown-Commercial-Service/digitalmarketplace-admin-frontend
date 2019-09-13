@@ -2,20 +2,18 @@
 
 {% block page_title %}Add buyer email domains – Digital Marketplace admin{% endblock %}
 
-{% block breadcrumb %}
-  {%
-    with items = [
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    "items": [
       {
-        "link": url_for('.index'),
-        "label": "Admin home"
+        "text": "Admin home",
+        "href": url_for('.index')
       },
       {
-        "label": "Add buyer email domains"
+        "text": "Add buyer email domains"
       }
     ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
+  }) }}
 {% endblock %}
 
 {% block main_content %}

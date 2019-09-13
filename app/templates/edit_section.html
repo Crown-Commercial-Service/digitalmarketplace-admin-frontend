@@ -3,25 +3,28 @@
 
 {% extends "_base_page.html" %}
 
+{% set page_title = "Edit {}".format(section.name) %}
+
 {% block page_title %}
-  Edit {{ section.name }} – Digital Marketplace admin
+  {{ page_title }} – Digital Marketplace admin
 {% endblock %}
 
-{% block breadcrumb %}
-  {%
-    with items = [
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    "items": [
       {
-        "link": url_for('.index'),
-        "label": "Admin home"
+        "text": "Admin home",
+        "href": url_for('.index')
       },
       {
-        "link": url_for(".view_service", service_id=service_data.id),
-        "label": service_data['serviceName']
+        "text": service_data['serviceName'],
+        "href": url_for(".view_service", service_id=service_data.id)
+      },
+      {
+        "text": page_title
       }
     ]
-  %}
-    {% include "toolkit/breadcrumb.html" %}
-  {% endwith %}
+  }) }}
 {% endblock %}
 
 {% block main_content %}

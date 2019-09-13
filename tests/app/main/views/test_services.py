@@ -719,7 +719,8 @@ class TestServiceEdit(LoggedInApplicationTest):
             "normalize-space(string(//input[@name='serviceName']/@value))"
         ) == service["serviceName"]
         assert document.xpath(
-            "//nav//a[@href='/admin/services/123'][normalize-space(string())=$t]",
+            "//div[contains(@class, 'govuk-breadcrumbs')]"
+            "//a[@href='/admin/services/123'][normalize-space(string())=$t]",
             t=service["serviceName"],
         )
 
@@ -829,7 +830,8 @@ class TestServiceEdit(LoggedInApplicationTest):
         # ensure a field that data doesn't yet exist for is shown
         assert document.xpath("//input[@name='sfiaRateDocumentURL']")
         assert document.xpath(
-            "//nav//a[@href='/admin/services/321'][normalize-space(string())=$t]",
+            "//div[contains(@class, 'govuk-breadcrumbs')]"
+            "//a[@href='/admin/services/321'][normalize-space(string())=$t]",
             t=service["serviceName"],
         )
 
