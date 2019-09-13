@@ -1226,9 +1226,9 @@ class TestToggleSupplierServicesView(LoggedInApplicationTest):
             )
         ]
         assert self.data_api_client.update_service_status.call_args_list == [
-            mock.call('5687123785023488', result_status, 'test@example.com'),
-            mock.call('5687123785023489', result_status, 'test@example.com'),
-            mock.call('5687123785023490', result_status, 'test@example.com'),
+            mock.call('5687123785023488', result_status, 'test@example.com', wait_for_index=False),
+            mock.call('5687123785023489', result_status, 'test@example.com', wait_for_index=False),
+            mock.call('5687123785023490', result_status, 'test@example.com', wait_for_index=False),
         ]
 
     @pytest.mark.parametrize('action, message_action', [
@@ -1241,7 +1241,10 @@ class TestToggleSupplierServicesView(LoggedInApplicationTest):
 
         assert response.status_code == 302
 
-        expected_flash_message = "You {} all G-Cloud 8 services for ‘PROACTIS Group Ltd’.".format(message_action)
+        expected_flash_message = (
+            "You {} all G-Cloud 8 services for ‘PROACTIS Group Ltd’. Search results may take a few minutes "
+            "to be updated."
+        ).format(message_action)
         with self.client.session_transaction() as session:
             assert session['_flashes'][0][1] == expected_flash_message
 
