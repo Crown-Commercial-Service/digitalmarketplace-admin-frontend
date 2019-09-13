@@ -1,4 +1,4 @@
-{% extends "toolkit/layouts/_base_page.html" %}
+{% extends "template.njk" %}
 
 {# Import GOV.UK Frontend components for globale usage#}
 {% from "components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
@@ -22,6 +22,10 @@
 {# This can be removed once we start using govuk-frontend template #}
 {# The reason for calling this is to ensure we do not output the user research signup banner #}
 {% block after_header %}
+{% endblock %}
+
+{% block head %}
+  <link type="text/css" rel="stylesheet" href="{{ asset_fingerprinter.get_url('stylesheets/application.css') }}" />
 {% endblock %}
 
 {# override content block to add a beforeContent block like the one in govuk-frontend template #}
