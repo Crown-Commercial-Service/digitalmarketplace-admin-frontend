@@ -28,11 +28,8 @@
 {% endblock %}
 
 {% block main_content %}
-
   {% include 'toolkit/forms/validation.html' %}
-  {% with heading = "Update registered company address for ‘{}’".format(supplier.name) %}
-    {% include "toolkit/page-heading.html" %}
-  {% endwith %}
+  <h1 class="govuk-heading-xl">Update registered company address for ‘{{supplier.name}}’</h1>
   <form method="post">
     <div class="grid-row">
       <div class="column-two-thirds">

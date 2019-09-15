@@ -23,17 +23,7 @@
 {% endblock %}
 
 {% block main_content %}
-<div class='grid-row'>
-  <div class="column-one-whole">
-    {%
-        with
-        heading = company_details.registered_name,
-        smaller = True
-    %}
-    {% include "toolkit/page-heading.html" %}
-    {% endwith %}
-  </div>
-</div>
+<h1 class="govuk-heading-l">{{ company_details.registered_name }}</h1>
 <div class='grid-row'>
   <div class="column-one-third">
       <h2>Registered address</h2>

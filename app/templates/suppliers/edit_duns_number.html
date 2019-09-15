@@ -25,9 +25,7 @@
 {% block main_content %}
 <div class="grid-row">
 <div class="column-two-thirds">
-  {% with heading = "Change the DUNS number for ‘{}’".format(supplier.name) %}
-    {% include "toolkit/page-heading.html" %}
-  {% endwith %}
+  <h1 class="govuk-heading-xl">Change the DUNS number for ‘{{supplier.name}}’</h1>
 
   <p>You need to contact <a href="mailto:cloud_digital@crowncommercial.gov.uk ">cloud_digital@crowncommercial.gov.uk </a> to change a supplier DUNS number.</p>
   <br /><a href="{{ url_for('.supplier_details', supplier_id=supplier.id) }}">Return to ‘{{ supplier.name }}’ company details</a></p>

@@ -35,18 +35,8 @@
       </div>
   {% endif %}
 
-  <div class="grid-row">
-    <div class="service-title">
-      {%
-        with
-        context = supplier.name,
-        heading = "Upload a " + framework.name + " countersigned agreement",
-        smaller = True
-      %}
-        {% include "toolkit/page-heading.html" %}
-      {% endwith %}
-    </div>
-  </div>
+  <span class="govuk-caption-l">{{ supplier.name }}</span>
+  <h1 class="govuk-heading-l">Upload a {{ framework.name }} countersigned agreement</h1>
 
   {% set field_headings = [
     "Countersigned agreement",

@@ -25,10 +25,7 @@
 {% endblock %}
 
 {% block main_content %}
-
-  {% with heading = supplier.name %}
-  {% include "toolkit/page-heading.html" %}
-  {% endwith %}
+  <h1 class="govuk-heading-xl">{{ supplier.name }}</h1>
 
   <div class='page-section'>
     {% call(item) summary.list_table(

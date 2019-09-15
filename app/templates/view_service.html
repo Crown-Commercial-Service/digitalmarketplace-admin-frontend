@@ -90,14 +90,8 @@
 
 
   {% if service_data %}
-    {%
-      with
-      context = service_data['supplierName'],
-      heading = service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName'],
-      smaller = True
-    %}
-      {% include "toolkit/page-heading.html" %}
-    {% endwith %}
+    <span class="govuk-caption-l">{{ service['supplierName'] }}</span>
+    <h1 class="govuk-heading-l">{{ service_data['serviceName'] or service_data['frameworkName'] + ' - ' + service_data['lotName'] }}</h1>
 
     {# links #}
     <ul class="list-no-bullet">

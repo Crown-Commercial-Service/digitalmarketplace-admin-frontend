@@ -23,14 +23,9 @@
 {% endblock %}
 
 {% block main_content %}
-  {%
-    with
-    smaller = true,
-    heading = service['serviceName'],
-    context = service['supplierName']
-  %}
-    {% include "toolkit/page-heading.html" %}
-  {% endwith %}
+  <span class="govuk-caption-l">{{ service['supplierName'] }}</span>
+  <h1 class="govuk-heading-l">{{ service['serviceName'] }}</h1>
+
   {%
     with
       url = url_for("external.direct_award_service_page", framework_family=service['frameworkFamily'], service_id=service["id"]),

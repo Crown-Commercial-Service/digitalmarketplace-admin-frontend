@@ -20,10 +20,7 @@
 {% endblock %}
 
 {% block main_content %}
-
-  {% with heading = "Manage {} communications".format(framework.name) %}
-    {% include "toolkit/page-heading.html" %}
-  {% endwith %}
+  <h1 class="govuk-heading-xl">Manage {{framework.name}} communications</h1>
 
   <form method="post" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />

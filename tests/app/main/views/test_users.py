@@ -40,7 +40,7 @@ class TestUsersView(LoggedInApplicationTest):
         page_html = response.get_data(as_text=True)
         document = html.fromstring(page_html)
         heading = document.xpath(
-            '//header[@class="page-heading page-heading-without-breadcrumb"]//h1/text()')[0].strip()
+            '//h1/text()')[0].strip()
 
         assert response.status_code == 200
         assert "Sorry, we couldn't find an account with that email address" not in page_html

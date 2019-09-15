@@ -31,11 +31,7 @@
 {% endblock %}
 
 {% block main_content %}
-  {%
-    with heading = page_title
-  %}
-    {% include "toolkit/page-heading.html" %}
-  {% endwith %}
+  <h1 class="govuk-heading-xl">{{ page_title }}</h1>
 
   {% set supplierNameHtml %}
     <form action="{{ url_for('.find_suppliers') }}" method="get" class="question">

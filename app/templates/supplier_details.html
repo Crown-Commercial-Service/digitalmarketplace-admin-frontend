@@ -20,12 +20,7 @@
 {% endblock %}
 
 {% block main_content %}
-
-  {%
-    with heading = supplier.name
-  %}
-    {% include "toolkit/page-heading.html" %}
-  {% endwith %}
+  <h1 class="govuk-heading-xl">{{ supplier.name }}</h1>
 
   {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-ccs-data-controller') %}
   <p><a href="{{ url_for('.edit_supplier_name', supplier_id=supplier_id) }}">Edit supplier name</a></p>

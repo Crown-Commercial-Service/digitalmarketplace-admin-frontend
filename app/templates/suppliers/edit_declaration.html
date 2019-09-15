@@ -25,19 +25,8 @@
 {% endblock %}
 
 {% block main_content %}
-
-  <div class="grid-row">
-    <div class="service-title">
-      {%
-        with
-        context = supplier.name,
-        heading = section.name,
-        smaller = True
-      %}
-        {% include "toolkit/page-heading.html" %}
-      {% endwith %}
-    </div>
-  </div>
+  <span class="govuk-caption-l">{{ supplier.name }}</span>
+  <h1 class="govuk-heading-l">{{ section.name }}</h1>
 
   <form method="post" enctype="multipart/form-data">
     <div class="grid-row">

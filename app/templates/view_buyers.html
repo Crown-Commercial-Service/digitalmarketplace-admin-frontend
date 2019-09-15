@@ -19,11 +19,7 @@
 {% endblock %}
 
 {% block main_content %}
-
-  {% with heading = "Find a buyer" %}
-  {% include "toolkit/page-heading.html" %}
-  {% endwith %}
-
+  <h1 class="govuk-heading-xl">Find a buyer</h1>
 
   <form action="{{ url_for('.find_buyer_by_brief_id') }}" method="get" class="question">
     {%
