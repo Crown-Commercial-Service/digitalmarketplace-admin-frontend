@@ -46,6 +46,7 @@ UPLOAD_COUNTERSIGNED_AGREEMENT_MESSAGE = "Countersigned agreement file was uploa
 COUNTERSIGNED_AGREEMENT_NOT_PDF_MESSAGE = "Countersigned agreement file is not a PDF"
 SUPPLIER_SERVICES_REMOVED_MESSAGE = "You suspended all {framework_name} services for ‘{supplier_name}’."
 SUPPLIER_SERVICES_UNSUSPENDED_MESSAGE = "You unsuspended all {framework_name} services for ‘{supplier_name}’."
+SUPPLIER_SERVICES_DELAYED_INDEX_MESSAGE = "Search results may take a few minutes to be updated."
 SUPPLIER_USER_MESSAGES = {
     'user_invited': 'User invited',
     'user_moved': 'User moved to this supplier',
@@ -846,11 +847,21 @@ def toggle_supplier_services(supplier_id):
         abort(400, 'No {} services on framework'.format(toggle_action['old_status']))
 
     for service in services:
-        data_api_client.update_service_status(service['id'], toggle_action['new_status'], current_user.email_address)
+        data_api_client.update_service_status(
+            service['id'],
+            toggle_action['new_status'],
+            current_user.email_address,
+            wait_for_index=False,
+        )
 
-    flash(toggle_action['flash_message'].format(
-        supplier_name=services[0]['supplierName'],
-        framework_name=services[0]['frameworkName'])
+    flash(
+        " ".join((
+            toggle_action['flash_message'].format(
+                supplier_name=services[0]['supplierName'],
+                framework_name=services[0]['frameworkName']
+            ),
+            SUPPLIER_SERVICES_DELAYED_INDEX_MESSAGE,
+        ))
     )
     return redirect(url_for('.find_supplier_services', supplier_id=supplier_id))
 
