@@ -18,7 +18,7 @@ class TestSearchSuppliersAndServices(LoggedInApplicationTest):
         page_html = response.get_data(as_text=True)
         document = html.fromstring(page_html)
         header = document.xpath(
-            '//header[@class="page-heading page-heading-without-breadcrumb"]//h1/text()')[0].strip()
+            '///h1/text()')[0].strip()
 
         assert response.status_code == 200
         assert header == expected_header

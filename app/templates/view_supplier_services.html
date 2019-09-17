@@ -55,13 +55,7 @@
     {% endif %}
   {% endblock %}
 
-  <div class="grid-row">
-    <div class="column-one-whole">
-      {% with heading = "Services" %}
-        {% include "toolkit/page-heading.html" %}
-      {% endwith %}
-    </div>
-  </div>
+  <h1 class="govuk-heading-xl">Services</h1>
 
   {% if not frameworks_services %}
     {% call(item) summary.list_table(

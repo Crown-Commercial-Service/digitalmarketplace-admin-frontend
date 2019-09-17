@@ -21,10 +21,7 @@
 {% endblock %}
 
 {% block main_content %}
-
-  {% with heading = "Find a user" %}
-  {% include "toolkit/page-heading.html" %}
-  {% endwith %}
+  <h1 class="govuk-heading-xl">Find a user</h1>
 
   <form action="{{ url_for('.find_user_by_email_address') }}" method="get" class="question">
     {%

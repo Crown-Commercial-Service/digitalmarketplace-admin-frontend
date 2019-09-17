@@ -25,18 +25,9 @@
 {% endblock %}
 
 {% block main_content %}
-  <div class="grid-row">
-    <div class="service-title">
-      {%
-        with
-        context = supplier.name,
-        heading = framework.name + " declaration",
-        smaller = True
-      %}
-        {% include "toolkit/page-heading.html" %}
-      {% endwith %}
-    </div>
-  </div>
+  <span class="govuk-caption-l">{{ supplier.name }}</span>
+  <h1 class="govuk-heading-l">{{ framework.name }} declaration</h1>
+
   {% call summary.mapping_table(
     caption="Application status",
     field_headings_visible=False

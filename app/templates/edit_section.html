@@ -28,13 +28,7 @@
 {% endblock %}
 
 {% block main_content %}
-  {%
-    with
-    heading = section.name,
-    smaller = True
-  %}
-    {% include "toolkit/page-heading.html" %}
-  {% endwith %}
+  <h1 class="govuk-heading-l">{{ section.name }}</h1>
 
   {% include 'toolkit/forms/validation.html' %}
 

@@ -1896,9 +1896,8 @@ class TestServiceUpdates(LoggedInApplicationTest):
             } for args, kwargs in self.data_api_client.find_audit_events.call_args_list
         )
 
-        assert doc.xpath("normalize-space(string(//header//*[@class='context']))") == "Barrington's"
-        assert doc.xpath("normalize-space(string(//header//h1))") == "Lemonflavoured soap"
-
+        assert doc.cssselect('.govuk-caption-l')[0].text == "Barrington's"
+        assert doc.cssselect('.govuk-heading-l')[0].text == "Lemonflavoured soap"
         assert tuple(
             a.attrib["href"] for a in doc.xpath("//a[normalize-space(string())=$t]", t="View service")
         ) == ("/g-cloud/services/151",)

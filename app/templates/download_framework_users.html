@@ -21,11 +21,7 @@
 {% block main_content %}
   <div class="grid-row">
     <div class="column-two-thirds">
-      {%
-        with heading = "Download supplier lists for {}".format(framework['name'])
-      %}
-        {% include "toolkit/page-heading.html" %}
-      {% endwith %}
+      <h1 class="govuk-heading-xl">Download supplier lists for {{ framework['name'] }}</h1>
 
       <div class="explanation-list">
           <p class="lede">These lists contain details of all suppliers who:</p>

@@ -21,7 +21,6 @@ $path: "/admin/static/images/";
 @import "toolkit/_footer";
 @import "toolkit/_grids";
 @import "toolkit/_notification-banners";
-@import "toolkit/_page-headings";
 @import "toolkit/_phase-banner";
 @import "toolkit/_previous-next-navigation";
 @import "toolkit/_proposition-header";
@@ -59,6 +58,7 @@ $govuk-compatibility-govukelements: true;
 
 // Overrides
 @import "overrides/_notifications_banner";
+@import "overrides/_page_headings";
 
 // Misc styles
 // TODO: Move misc styling into their own partial files or the Digital Marketplace FE Toolkit
