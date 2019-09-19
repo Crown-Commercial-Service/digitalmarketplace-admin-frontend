@@ -71,7 +71,6 @@ def find_buyer_by_brief_id():
 
     try:
         brief = data_api_client.get_brief(brief_id).get('briefs')
-
     except:  # noqa
         flash('no_brief', 'error')
         return render_template(
