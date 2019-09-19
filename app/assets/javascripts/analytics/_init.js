@@ -1,12 +1,10 @@
-//= require ../../../../node_modules/govuk_frontend_toolkit/javascripts/govuk/analytics/google-analytics-universal-tracker.js
-//= include ../../../../node_modules/govuk_frontend_toolkit/javascripts/govuk/analytics/analytics.js
-
-; // JavaScript in the govuk_frontend_toolkit doesn't have trailing semicolons
-
 // Custom Admin FE analytics
 //= include _register.js
 
 // DM Frontend Toolkit analytics
+//= include ../../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/analytics/_pii.js
+//= include ../../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/analytics/_googleAnalyticsUniversalTracker.js
+//= include ../../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/analytics/_govukAnalytics.js
 //= include ../../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/analytics/_events.js
 //= include ../../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/analytics/_pageViews.js
 //= include ../../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/analytics/_virtualPageViews.js
