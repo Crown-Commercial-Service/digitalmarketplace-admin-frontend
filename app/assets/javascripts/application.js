@@ -16,7 +16,7 @@
 //= require ../../../node_modules/govuk_frontend_toolkit/javascripts/govuk/shim-links-with-button-role.js
 //= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/shim-links-with-button-role.js
 //= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/show-hide-content.js
-//= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/report-a-problem.js
+; // Hack needed because show-hide-content.js does not have a closing ";"
 //= require ../../../node_modules/govuk-frontend/all.js
 //= require _scroll-through-statistics.js
 //= require _selection-buttons.js
