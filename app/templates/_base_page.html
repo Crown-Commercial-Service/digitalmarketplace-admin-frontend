@@ -3,12 +3,35 @@
 {# Import GOV.UK Frontend components for globale usage#}
 {% from "components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "components/button/macro.njk" import govukButton %}
+{% from "components/phase-banner/macro.njk" import govukPhaseBanner %}
 {% from "components/tabs/macro.njk" import govukTabs %}
+
+{# This can be removed once we start using govuk-frontend template #}
+{# The reason calling this block here is to change the header title so that it does not
+   include the phase tag #}
+{% block inside_header %}
+  <div class="header-title">
+    <a href="/">Digital Marketplace</a>
+  </div>
+{% endblock %}
+
+{# This can be removed once we start using govuk-frontend template #}
+{# The reason for calling this is to ensure we do not output the user research signup banner #}
+{% block after_header %}
+{% endblock %}
 
 {# override content block to add a beforeContent block like the one in govuk-frontend template #}
 {% block content %}
   {% block top_header %}{% endblock %}
   <div id="wrapper">
+    {# This is only a temporary place for the phase banner until we start using govuk-frontend template #}
+    {{ govukPhaseBanner({
+      "tag": {
+        "text": "beta"
+      },
+      "html": 'Help us improve the Digital Marketplace - <a class="govuk-link" href="https://www.digitalmarketplace.service.gov.uk/help">send your feedback</a>'
+    }) }}
+
     {% block beforeContent %}{% endblock %}
     <main id="content" role="main">
       {% include "toolkit/flash_messages.html" %}
