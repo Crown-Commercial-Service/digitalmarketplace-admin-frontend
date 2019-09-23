@@ -16,7 +16,7 @@
   }
 
   .summary-item-field {
-    @include bold-80;
+    @include govuk-font(80, $weight: bold);
   }
 
   .summary-item-field-headings-visible {
@@ -30,7 +30,7 @@
 
   .summary-item-field-heading {
 
-    @include core-24;
+    @include govuk-font(24);
 
     .key {
       display: inline-block;

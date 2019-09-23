@@ -113,7 +113,7 @@ $govuk-compatibility-govukelements: true;
 }
 
 .location-autocomplete-fallback {
-  @include core-19;
+  @include govuk-font(19);
   width: 100%;
   height: 42px;
 }

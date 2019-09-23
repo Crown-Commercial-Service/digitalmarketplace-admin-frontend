@@ -8,9 +8,9 @@
   }
 
   table {
-    @include core-14;
+    @include govuk-font(14);
     @include media(tablet) {
-      @include core-19;
+      @include govuk-font(19);
     }
 
     width: 100%;
@@ -57,7 +57,7 @@
       }
 
       &.line-number {
-        @include core-14($tabular-numbers: true);
+        @include govuk-font($size: 14, $tabular: true);
         text-align: right;
         float: left;
         clear: both;
@@ -66,7 +66,7 @@
         border-right: none;
 
         @include media(tablet) {
-          @include core-19($tabular-numbers: true);
+          @include govuk-font($size: 19, $tabular: true);
           float: none;
         }
       }
