@@ -24,7 +24,6 @@ $path: "/admin/static/images/";
 @import "toolkit/_phase-banner";
 @import "toolkit/_previous-next-navigation";
 @import "toolkit/_proposition-header";
-@import "toolkit/_report-a-problem.scss";
 @import "toolkit/_secondary-action-link";
 @import "toolkit/_service-id";
 @import "toolkit/forms/_hint";
@@ -62,17 +61,9 @@ $govuk-compatibility-govukelements: true;
 
 // Misc styles
 // TODO: Move misc styling into their own partial files or the Digital Marketplace FE Toolkit
-.padding-bottom-small {
-  padding-bottom: 10px;
-}
-
 .border-image {
   width: 100%;
   border: 5px solid #dee0e2;
-}
-
-.lead {
-  margin-bottom: 20px;
 }
 
 .search-summary-border-bottom {

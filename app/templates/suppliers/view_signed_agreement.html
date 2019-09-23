@@ -27,14 +27,14 @@
 <div class='grid-row'>
   <div class="column-one-third">
       <h2>Registered address</h2>
-      <ul class="padding-bottom-small">
+      <ul class="govuk-list">
           <li>{{ company_details.address.street_address_line_1 }}</li>
           <li>{{ company_details.address.locality }}</li>
           <li>{{ company_details.address.postcode }}</li>
       </ul>
 
       <h2>Company number</h2>
-      <div class="padding-bottom-small">
+      <div class="govuk-!-padding-bottom-4">
         {% if company_details.registered_with == "companies_house" %}
           {%
           with
@@ -50,19 +50,19 @@
       </div>
 
       <h2>Appointment is to</h2>
-      <ul class="padding-bottom-small">
+      <ul class="govuk-list">
         {% for lot_slug, lot_name in lot_slugs_names.items() %}
           <li>{{ lot_name }}</li>
         {% endfor %}
       </ul>
 
       <h2>Signed by</h2>
-      <p class="padding-bottom-small">
+      <p class="govuk-body">
           {{ supplier_framework.agreementDetails.signerName}}, {{ supplier_framework.agreementDetails.signerRole }}
       </p>
 
       <h2>Uploaded by</h2>
-      <p class="padding-bottom-small">
+      <p class="govuk-body">
           {{ supplier_framework.agreementDetails.uploaderUserName }}
           <br>
           <span class="break-email">
@@ -74,7 +74,7 @@
 
       {% if supplier_framework.agreementStatus in ['approved', 'countersigned'] %}
         <h2>Accepted by</h2>
-        <p class="padding-bottom-small">
+        <p class="govuk-body">
           {{ supplier_framework.countersignedDetails.approvedByUserName }}
           <br>
           {{ supplier_framework.countersignedAt|datetimeformat }}
@@ -108,7 +108,7 @@
           </form>
         {% endif %}
       {% endif %}
-      <p class="padding-bottom-small">
+      <p class="govuk-body">
         {%
           with
           url = url_for(".next_agreement", framework_slug=framework.slug, supplier_id=supplier.id, status=next_status),
