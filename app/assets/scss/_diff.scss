@@ -1,9 +1,9 @@
 .diff {
-  margin-bottom: $gutter;
+  margin-bottom: govuk-spacing(6);
 
   .page-column-headings + table {
       caption {
-          padding-top: $gutter/2;
+          padding-top: govuk-spacing(3);
       }
   }
 
@@ -18,7 +18,7 @@
     caption {
       font-weight: bold;
       text-align: left;
-      padding: $gutter 0 10px;
+      padding: govuk-spacing(6) 0 govuk-spacing(2);
     }
 
     tbody tr {
@@ -31,7 +31,7 @@
       vertical-align: top;
       border-right: none;
       @include media(tablet) {
-        border-right: 5px solid white;
+        border-right: govuk-spacing(1) solid govuk-colour('white');
       }
 
       &.line-non-existent {

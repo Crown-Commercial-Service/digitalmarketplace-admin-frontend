@@ -63,12 +63,12 @@ $govuk-compatibility-govukelements: true;
 // TODO: Move misc styling into their own partial files or the Digital Marketplace FE Toolkit
 .border-image {
   width: 100%;
-  border: 5px solid #dee0e2;
+  border: govuk-spacing(1) solid #dee0e2;
 }
 
 .search-summary-border-bottom {
-  padding: 0 0 $gutter-half;
-  margin: 0 0 $gutter-half;
+  padding: 0 0 govuk-spacing(3);
+  margin: 0 0 govuk-spacing(3);
   border-bottom: 1px solid $govuk-border-colour;
 
   em {
@@ -78,9 +78,8 @@ $govuk-compatibility-govukelements: true;
 }
 
 .search-summary {
-  padding-bottom: 20px;
-  font-size: 24px;
-
+  padding-bottom: govuk-spacing(4);
+  @include govuk-font(24);
 }
 
 .break-email {
@@ -89,11 +88,11 @@ $govuk-compatibility-govukelements: true;
 
 .question + .secondary-action-link {
   margin-top: -36px;
-  margin-bottom: 40px;
+  margin-bottom: govuk-spacing(7);
 }
 
 .summary-item-field-heading, .summary-item-field {
-  padding-left: 10px;
+  padding-left: govuk-spacing(2);
 }
 
 .five-columns-table {
