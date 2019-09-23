@@ -106,13 +106,13 @@
   border-collapse: collapse;
   border-spacing: 0;
   empty-cells: show;
-  -webkit-box-shadow: 7px 7px 12px -9px rgba($text-colour, 0.1);
-  -moz-box-shadow: 7px 7px 12px -9px rgba($text-colour, 0.1);
-  box-shadow: 7px 7px 12px -9px rgba($text-colour, 0.1);
+  -webkit-box-shadow: 7px 7px 12px -9px rgba($govuk-text-colour, 0.1);
+  -moz-box-shadow: 7px 7px 12px -9px rgba($govuk-text-colour, 0.1);
+  box-shadow: 7px 7px 12px -9px rgba($govuk-text-colour, 0.1);
 }
 
 .c3-tooltip tr {
-  background: rgba($white, 0.9);
+  background: rgba(govuk-colour("white"), 0.9);
 }
 
 .c3-tooltip th {
@@ -125,7 +125,7 @@
   @include govuk-font(14);
   padding: 5px;
   margin-bottom: 12px;
-  border-top: 1px solid $border-colour;
+  border-top: 1px solid $govuk-border-colour;
 }
 
 .c3-tooltip td > span {

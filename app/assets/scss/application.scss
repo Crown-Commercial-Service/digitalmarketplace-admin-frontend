@@ -69,7 +69,7 @@ $govuk-compatibility-govukelements: true;
 .search-summary-border-bottom {
   padding: 0 0 $gutter-half;
   margin: 0 0 $gutter-half;
-  border-bottom: 1px solid $border-colour;
+  border-bottom: 1px solid $govuk-border-colour;
 
   em {
     font-style: normal;
