@@ -3,7 +3,7 @@
   <h2 class="search-result-title">
     <a class="govuk-link" href="{{ url_for('.view_signed_agreement', supplier_id=supplier_framework.supplierId, framework_slug=supplier_framework.frameworkSlug, next_status=(status or None)) }}">{{ supplier_framework.supplierName }}</a>
   </h2>
-  <ul class="search-result-important-metadata">
+  <ul class="govuk-list search-result-important-metadata">
     <li class="search-result-metadata-item">
       Submitted: {{ supplier_framework.agreementReturnedAt }}
     </li>
