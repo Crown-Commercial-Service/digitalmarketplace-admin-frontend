@@ -27,7 +27,7 @@
   <h1 class="govuk-heading-xl">Update registered company number for ‘{{supplier.name}}’</h1>
   <form method="post">
     <div class="govuk-grid-row">
-      <div class="column-two-thirds">
+      <div class="govuk-grid-column-two-thirds">
         <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
         {{ form.companies_house_number }}
         {{ form.other_company_registration_number }}

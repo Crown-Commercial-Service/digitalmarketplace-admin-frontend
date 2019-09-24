@@ -34,7 +34,7 @@
 
   <form method="post" enctype="multipart/form-data">
     <div class="govuk-grid-row">
-      <div class="column-two-thirds">
+      <div class="govuk-grid-column-two-thirds">
         <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
         {% for question in section.questions %}
           {% if errors and errors[question.id] or question.type == 'multiquestion' %}

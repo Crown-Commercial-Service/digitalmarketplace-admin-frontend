@@ -27,7 +27,7 @@
   {% endif %}
 
   <div class="govuk-grid-row">
-    <div class="column-two-thirds">
+    <div class="govuk-grid-column-two-thirds">
       {{ summary.heading("Company details") }}
       {% if current_user.has_role('admin-ccs-data-controller') %}
       <p class="govuk-body">
@@ -50,7 +50,7 @@
   </div>
 
   <div class="govuk-grid-row">
-    <div class="column-one-whole">
+    <div class="govuk-grid-column-full">
       {{ summary.heading("Frameworks") }}
       {% include "suppliers/_frameworks_table.html" %}
     </div>
@@ -58,7 +58,7 @@
 
   {% if not current_user.has_role('admin-ccs-sourcing') %}
   <div class="govuk-grid-row">
-    <div class="column-one-whole">
+    <div class="govuk-grid-column-full">
       {{ summary.heading("Users") }}
       <a href="{{ url_for('.find_supplier_users', supplier_id=supplier_id) }}">Users</a>
     </div>
