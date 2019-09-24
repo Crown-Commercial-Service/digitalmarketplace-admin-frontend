@@ -44,13 +44,13 @@
         <h2>Choose a status</h2>
           <ul>
             <li>
-              {% if status %}<a href="{{ url_for(".list_agreements", framework_slug=framework.slug) }}">{% endif %}
+              {% if status %}<a class="govuk-link" href="{{ url_for(".list_agreements", framework_slug=framework.slug) }}">{% endif %}
                 All
               {% if status %}</a>{% endif %}
             </li>
         {% for status_key, status_label in status_labels.items() %}
             <li>
-              {% if status_key != status %}<a href="{{ url_for(".list_agreements", framework_slug=framework.slug, status=status_key) }}">{% endif %}
+              {% if status_key != status %}<a class="govuk-link" href="{{ url_for(".list_agreements", framework_slug=framework.slug, status=status_key) }}">{% endif %}
                 {{ status_label }}
               {% if status_key != status %}</a>{% endif %}
             </li>

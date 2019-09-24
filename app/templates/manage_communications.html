@@ -40,7 +40,7 @@
             {% call summary.row() %}
             {{ summary.field_name(item.last_modified|dateformat) }}
             {% call summary.field() %}
-              <a href="{{ url_for('.download_communication', comm_type="communication", filepath=item.rel_path, framework_slug=framework.slug) }}" class="document-link-with-icon">
+              <a class="govuk-link" href="{{ url_for('.download_communication', comm_type="communication", filepath=item.rel_path, framework_slug=framework.slug) }}" class="document-link-with-icon">
                 <span class='document-icon'>{{ item.ext }}<span> document:</span></span>
                 {{ item.filename }}
               </a>
@@ -72,7 +72,7 @@
               {% call summary.row() %}
               {{ summary.field_name(item.last_modified|dateformat) }}
               {% call summary.field() %}
-                <a href="{{ url_for('.download_communication', comm_type="clarification", filepath=item.rel_path, framework_slug=framework.slug) }}" class="document-link-with-icon">
+                <a class="govuk-link" href="{{ url_for('.download_communication', comm_type="clarification", filepath=item.rel_path, framework_slug=framework.slug) }}" class="document-link-with-icon">
                   <span class='document-icon'>{{ item.ext }}<span> document:</span></span>
                   {{ item.filename }}
                 </a>

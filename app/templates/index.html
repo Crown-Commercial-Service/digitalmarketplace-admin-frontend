@@ -16,17 +16,17 @@
         {# ADMIN CCS DATA CONTROLLER #}
         <h3 class="heading-xmedium">Search for users</h3>
         <p>
-            <a href="{{ url_for('.find_user_by_email_address') }}">Find a user by email</a>
+            <a class="govuk-link" href="{{ url_for('.find_user_by_email_address') }}">Find a user by email</a>
         </p>
         <h3 class="heading-xmedium">Search for suppliers</h3>
         <p>
-            <a href="{{ url_for('.search_suppliers_and_services') }}">View and edit suppliers</a>
+            <a class="govuk-link" href="{{ url_for('.search_suppliers_and_services') }}">View and edit suppliers</a>
         </p>
         <h3 class="heading-xmedium">Download supplier lists</h3>
         {% for framework in frameworks %}
             {% if framework.status in ["pending", "standstill", "live"] or framework.slug == 'digital-outcomes-and-specialists-2' %}
                 <p>
-                  <a href="{{ url_for('.user_list_page_for_framework', framework_slug=framework['slug']) }}">{{ framework.name }}</a>
+                  <a class="govuk-link" href="{{ url_for('.user_list_page_for_framework', framework_slug=framework['slug']) }}">{{ framework.name }}</a>
                 </p>
             {% endif %}
         {% endfor %}
@@ -34,14 +34,14 @@
   {% elif current_user.has_role('admin-manager') %}
         {# ADMIN MANAGER #}
         <p>
-            <a href="{{ url_for('.manage_admin_users') }}">View and edit admin accounts</a>
+            <a class="govuk-link" href="{{ url_for('.manage_admin_users') }}">View and edit admin accounts</a>
         </p>
 
   {% else %}
         {# BUYERS, SUPPLIERS AND SERVICES #}
         <h2 class="heading-large">User support</h2>
             {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
-                <a href="{{ url_for('.find_user_by_email_address') }}">Find a user by email</a>
+                <a class="govuk-link" href="{{ url_for('.find_user_by_email_address') }}">Find a user by email</a>
             {% endif %}
 
             <h3 class="heading-xmedium">Suppliers</h3>
@@ -54,16 +54,16 @@
                 }
             %}
               <p>
-                <a href="{{ url_for('.search_suppliers_and_services') }}">{{ find_supplier_and_services_link_text[current_user.role] }}</a>
+                <a class="govuk-link" href="{{ url_for('.search_suppliers_and_services') }}">{{ find_supplier_and_services_link_text[current_user.role] }}</a>
               </p>
 
             {% if current_user.has_any_role('admin-framework-manager') %}
               <p>
-                <a href="{{ url_for('.supplier_user_research_participants_by_framework') }}">Download potential user research participants (suppliers)</a>
+                <a class="govuk-link" href="{{ url_for('.supplier_user_research_participants_by_framework') }}">Download potential user research participants (suppliers)</a>
               </p>
             {% elif current_user.has_any_role('admin-ccs-category') %}
               <p>
-                <a href="{{ url_for('.service_update_audits') }}">Review service changes</a>
+                <a class="govuk-link" href="{{ url_for('.service_update_audits') }}">Review service changes</a>
               </p>
             {% endif %}
         {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager') %}
@@ -71,17 +71,17 @@
 
             {% if current_user.has_any_role('admin-framework-manager') %}
                 <p>
-                    <a href="{{ url_for('.download_buyers') }}">Download list of all buyers</a>
+                    <a class="govuk-link" href="{{ url_for('.download_buyers') }}">Download list of all buyers</a>
                 </p>
                 <p>
-                    <a href="{{ url_for('.download_buyers_for_user_research') }}">Download potential user research participants (buyers)</a>
+                    <a class="govuk-link" href="{{ url_for('.download_buyers_for_user_research') }}">Download potential user research participants (buyers)</a>
                 </p>
             {% elif current_user.has_any_role('admin', 'admin-ccs-category') %}
                 <p>
-                    <a href="{{ url_for('.find_buyer_by_brief_id') }}">Find a buyer by opportunity ID</a>
+                    <a class="govuk-link" href="{{ url_for('.find_buyer_by_brief_id') }}">Find a buyer by opportunity ID</a>
                 </p>
                 <p>
-                    <a href="{{ url_for('.add_buyer_domains') }}">Add a buyer email domain</a>
+                    <a class="govuk-link" href="{{ url_for('.add_buyer_domains') }}">Add a buyer email domain</a>
                 </p>
             {% endif %}
         {% endif %}
@@ -90,7 +90,7 @@
             {# OUTCOMES #}
             <h2 class="heading-large">Outcomes</h2>
             <p>
-                <a href="{{ url_for('.download_outcomes') }}">Download Direct Award outcomes</a>
+                <a class="govuk-link" href="{{ url_for('.download_outcomes') }}">Download Direct Award outcomes</a>
             </p>
 
             {# FRAMEWORKS AND APPLICATIONS #}
@@ -108,23 +108,23 @@
                           }
                       %}
                         <p>
-                          <a href="{{ url_for('.list_agreements', framework_slug=framework['slug'], status='signed') }}">{{ agreement_link_text[current_user.role] }}</a>
+                          <a class="govuk-link" href="{{ url_for('.list_agreements', framework_slug=framework['slug'], status='signed') }}">{{ agreement_link_text[current_user.role] }}</a>
                         </p>
                     {% endif %}
 
                     {% if current_user.has_any_role('admin-ccs-sourcing', 'admin-framework-manager') %}
                         <p>
-                          <a href="{{ url_for('public.view_statistics', framework_slug=framework['slug']) }}">View application statistics</a>
+                          <a class="govuk-link" href="{{ url_for('public.view_statistics', framework_slug=framework['slug']) }}">View application statistics</a>
                         </p>
                     {% endif %}
                     {% if current_user.has_any_role('admin-framework-manager') %}
                         <p>
-                          <a href="{{ url_for('.manage_communications', framework_slug=framework['slug']) }}">Manage communications</a>
+                          <a class="govuk-link" href="{{ url_for('.manage_communications', framework_slug=framework['slug']) }}">Manage communications</a>
                         </p>
                     {% endif %}
                     {% if current_user.has_any_role('admin-ccs-category', 'admin-framework-manager') %}
                         <p>
-                          <a href="{{ url_for('.user_list_page_for_framework', framework_slug=framework['slug']) }}">Contact suppliers</a>
+                          <a class="govuk-link" href="{{ url_for('.user_list_page_for_framework', framework_slug=framework['slug']) }}">Contact suppliers</a>
                         </p>
                     {% endif %}
                 {% endif %}
@@ -138,9 +138,8 @@
   </div>
   <div class="govuk-grid-column-one-third dmspeak">
     <h2 class="heading-xmedium">Account settings</h2>
-
     <p>
-      <a href="{{ url_for('external.change_password') }}">Change your password</a>
+      <a class="govuk-link" href="{{ url_for('external.change_password') }}">Change your password</a>
     </p>
   </div>
 </div>
