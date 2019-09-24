@@ -33,7 +33,7 @@
   %}
     {% include "toolkit/secondary-action-link.html" %}
   {% endwith %}
-    <div class="grid-row">
+    <div class="govuk-grid-row">
       <div class="column-two-thirds page-section">
         <p>
           {% if latest_update_events %}
@@ -65,7 +65,7 @@
     {% if latest_update_events %}
       <div class="diff">
         {% if diffs %}
-          <div class="grid-row page-column-headings">
+          <div class="govuk-grid-row page-column-headings">
             <div class="column-one-half">
               <h3>
                 Previously approved version
@@ -89,7 +89,7 @@
       </div><!-- end of .diff -->
     {% endif %}
 
-    <div class="grid-row">
+    <div class="govuk-grid-row">
       <div class="column-one-whole">
         <h4>Contact supplier:</h4>
         <p><a href="mailto:{{ supplier["contactInformation"][0]["email"] }}">

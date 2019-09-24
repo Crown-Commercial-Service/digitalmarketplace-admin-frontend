@@ -117,7 +117,7 @@
   {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
   <div class='page-section'>
     <form action="{{ url_for('.invite_user', supplier_id=supplier.id) }}" method="post">
-      <div class="grid-row">
+      <div class="govuk-grid-row">
         <div class="column-two-thirds">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           {{ invite_form.email_address }}
@@ -131,7 +131,7 @@
 
   <div class='page-section'>
     <form action="{{ url_for('.move_user_to_new_supplier', supplier_id=supplier.id) }}" method="post">
-      <div class="grid-row">
+      <div class="govuk-grid-row">
         <div class="column-two-thirds">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           {{ move_user_form.user_to_move_email_address }}
