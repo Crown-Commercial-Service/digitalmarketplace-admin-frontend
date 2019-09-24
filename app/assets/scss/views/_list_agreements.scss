@@ -4,14 +4,14 @@
 .search-page-filters {
   .status-filters {
     h2 {
-      @include bold-19;
+      @include govuk-font(19, $weight: bold);
     }
 
     ul {
-      @include core-16;
+      @include govuk-font(16);
       list-style: none;
       padding-left: 0;
-      margin: 5px 0 $gutter;
+      margin: govuk-spacing(1) 0 govuk-spacing(6);
     }
   }
 }

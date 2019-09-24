@@ -2,7 +2,7 @@
 
 /*-- Chart --*/
 .c3 svg {
-  font-size: 14px;
+  @include govuk-font(14);
 }
 
 .c3 path, .c3 line {
@@ -21,8 +21,8 @@
   stroke: #fff; }
 
 .c3-chart-arc text {
-  fill: #fff;
-  font-size: 14px; }
+  @include govuk-font(14);
+  fill: #fff;}
 
 /*-- Axis --*/
 /*-- Grid --*/
@@ -106,27 +106,26 @@
   border-collapse: collapse;
   border-spacing: 0;
   empty-cells: show;
-  -webkit-box-shadow: 7px 7px 12px -9px rgba($text-colour, 0.1);
-  -moz-box-shadow: 7px 7px 12px -9px rgba($text-colour, 0.1);
-  box-shadow: 7px 7px 12px -9px rgba($text-colour, 0.1);
+  -webkit-box-shadow: 7px 7px 12px -9px rgba($govuk-text-colour, 0.1);
+  -moz-box-shadow: 7px 7px 12px -9px rgba($govuk-text-colour, 0.1);
+  box-shadow: 7px 7px 12px -9px rgba($govuk-text-colour, 0.1);
 }
 
 .c3-tooltip tr {
-  background: rgba($white, 0.9);
+  background: rgba(govuk-colour("white"), 0.9);
 }
 
 .c3-tooltip th {
-  font-weight: bold;
+  @include govuk-font(14, $weight: bold);
   padding: 5px;
   text-align: left;
-  font-size: 14px;
 }
 
 .c3-tooltip td {
-  font-size: 14px;
+  @include govuk-font(14);
   padding: 5px;
   margin-bottom: 12px;
-  border-top: 1px solid $border-colour;
+  border-top: 1px solid $govuk-border-colour;
 }
 
 .c3-tooltip td > span {
@@ -153,8 +152,8 @@
   stroke: none; }
 
 .c3-chart-arcs .c3-chart-arcs-gauge-unit {
-  fill: #000;
-  font-size: 16px; }
+  @include govuk-font(16);
+  fill: #000;}
 
 .c3-chart-arcs .c3-chart-arcs-gauge-max {
   fill: #777; }

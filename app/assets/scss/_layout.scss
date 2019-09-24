@@ -2,14 +2,14 @@
 @import "colours";
 
 #global-header-bar {
-  background: $red;
+  background: govuk-colour('red');
 }
 
 #wrapper {
   @extend %site-width-container;
-  padding-bottom: $gutter * 2;
+  padding-bottom: govuk-spacing(9);
 }
 
 .page-section {
-  margin-bottom: $gutter;
+  margin-bottom: govuk-spacing(6);
 }

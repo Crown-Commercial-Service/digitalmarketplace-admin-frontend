@@ -24,7 +24,6 @@ $path: "/admin/static/images/";
 @import "toolkit/_phase-banner";
 @import "toolkit/_previous-next-navigation";
 @import "toolkit/_proposition-header";
-@import "toolkit/_report-a-problem.scss";
 @import "toolkit/_secondary-action-link";
 @import "toolkit/_service-id";
 @import "toolkit/forms/_hint";
@@ -62,23 +61,15 @@ $govuk-compatibility-govukelements: true;
 
 // Misc styles
 // TODO: Move misc styling into their own partial files or the Digital Marketplace FE Toolkit
-.padding-bottom-small {
-  padding-bottom: 10px;
-}
-
 .border-image {
   width: 100%;
-  border: 5px solid #dee0e2;
-}
-
-.lead {
-  margin-bottom: 20px;
+  border: govuk-spacing(1) solid #dee0e2;
 }
 
 .search-summary-border-bottom {
-  padding: 0 0 $gutter-half;
-  margin: 0 0 $gutter-half;
-  border-bottom: 1px solid $border-colour;
+  padding: 0 0 govuk-spacing(3);
+  margin: 0 0 govuk-spacing(3);
+  border-bottom: 1px solid $govuk-border-colour;
 
   em {
     font-style: normal;
@@ -87,9 +78,8 @@ $govuk-compatibility-govukelements: true;
 }
 
 .search-summary {
-  padding-bottom: 20px;
-  font-size: 24px;
-
+  padding-bottom: govuk-spacing(4);
+  @include govuk-font(24);
 }
 
 .break-email {
@@ -98,11 +88,11 @@ $govuk-compatibility-govukelements: true;
 
 .question + .secondary-action-link {
   margin-top: -36px;
-  margin-bottom: 40px;
+  margin-bottom: govuk-spacing(7);
 }
 
 .summary-item-field-heading, .summary-item-field {
-  padding-left: 10px;
+  padding-left: govuk-spacing(2);
 }
 
 .five-columns-table {
@@ -122,7 +112,7 @@ $govuk-compatibility-govukelements: true;
 }
 
 .location-autocomplete-fallback {
-  @include core-19;
+  @include govuk-font(19);
   width: 100%;
   height: 42px;
 }

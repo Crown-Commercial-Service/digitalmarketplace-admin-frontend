@@ -2,7 +2,7 @@
 
   position: relative;
   background: $link-colour;
-  box-shadow: 0 0 0 100em $link-colour;
+  box-shadow: 0 0 0 100em $govuk-link-colour;
   padding-bottom: 100em;
   z-index: 1000;
 
@@ -16,11 +16,11 @@
   }
 
   .summary-item-field {
-    @include bold-80;
+    @include govuk-font(80, $weight: bold);
   }
 
   .summary-item-field-headings-visible {
-    border-top: 3px solid $link-colour;
+    border-top: 3px solid $govuk-link-colour;
   }
 
   .summary-item-field-first,
@@ -30,7 +30,7 @@
 
   .summary-item-field-heading {
 
-    @include core-24;
+    @include govuk-font(24);
 
     .key {
       display: inline-block;
@@ -47,7 +47,7 @@
   }
 
   table.summary-item-body {
-    border-bottom: 3px solid $grey-3;
+    border-bottom: 3px solid govuk-colour('grey-3');
   }
 
   table.summary-item-body tbody td {
