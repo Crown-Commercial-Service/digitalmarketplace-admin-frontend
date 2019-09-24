@@ -24,8 +24,8 @@
 
   <form method="post" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-    <div class="grid-row">
-      <div class="column-two-thirds">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
         <div class="dmspeak"><h2 class="heading-large">Communication</h2></div>
           {% call(item) summary.list_table(
             comm_type_objs.communication,

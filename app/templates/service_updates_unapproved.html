@@ -25,8 +25,8 @@
 {% block main_content %}
     <h1 class="govuk-heading-xl">Check edits to services</h1>
 
-    <div class="grid-row">
-        <div class="column-one-whole">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
         <p class="search-summary">
             <span class="search-summary-count">{{ audit_events|length }}</span> edited {{ pluralize(audit_events|length, "service", "services") }}
         </p>

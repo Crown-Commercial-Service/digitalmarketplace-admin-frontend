@@ -25,8 +25,8 @@
 
   {% if current_user.has_role('admin-ccs-sourcing') %}
   {# ### Don't show instructions for read-only users ### #}
-  <div class="grid-row">
-    <div class="column-two-thirds dmspeak">
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds dmspeak">
       <p class="govuk-body">
         Review the information for each agreement, accept it, and continue to the next one.
       </p>
@@ -38,8 +38,8 @@
   </div>
   {% endif %}
 
-  <div class="grid-row">
-    <div class="column-one-third search-page-filters">
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-third search-page-filters">
       <div class="status-filters">
         <h2>Choose a status</h2>
           <ul>
@@ -58,7 +58,7 @@
           </ul>
       </div>
     </div>
-    <div class="column-two-thirds">
+    <div class="govuk-grid-column-two-thirds">
       {% include "_view_agreements_summary.html" %}
       {% include "_view_agreements_results.html" %}
     </div>
