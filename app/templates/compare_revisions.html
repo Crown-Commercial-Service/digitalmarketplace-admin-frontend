@@ -35,7 +35,7 @@
   {% endwith %}
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds page-section">
-        <p>
+        <p class="govuk-body">
           {% if latest_update_events %}
             {% if min_number_of_users_who_made_edits > 1 %}
               More than one user has edited this service.
@@ -70,7 +70,7 @@
               <h3>
                 Previously approved version
               </h3>
-              <p>
+              <p class="govuk-body">
                 Changed on {{ oldest_update_events[-1].createdAt|datetimeformat }}
               </p>
             </div>
@@ -84,7 +84,7 @@
         {% for diff_table in diffs.values() %}
           {{ diff_table }}
         {% else %}
-          <p>All changes were reversed.</p>
+          <p class="govuk-body">All changes were reversed.</p>
         {% endfor %}
       </div><!-- end of .diff -->
     {% endif %}
@@ -92,7 +92,7 @@
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-full">
         <h4>Contact supplier:</h4>
-        <p><a class="govuk-link" href="mailto:{{ supplier["contactInformation"][0]["email"] }}">
+        <p class="govuk-body"><a class="govuk-link" href="mailto:{{ supplier["contactInformation"][0]["email"] }}">
           {{ supplier["contactInformation"][0]["email"] }}
           </a></p>
       </div>

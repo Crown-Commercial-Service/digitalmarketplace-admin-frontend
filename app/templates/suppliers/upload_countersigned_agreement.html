@@ -25,7 +25,7 @@
       <form method="post" action='{{ url_for(".remove_countersigned_agreement_file", supplier_id=supplier.id, framework_slug=framework.slug) }}'>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
       <div class="banner-destructive-with-action">
-        <p class="banner-message">
+        <p class="govuk-body banner-message">
           Do you want to remove the countersigned agreement?
         </p>
         {{ govukButton({

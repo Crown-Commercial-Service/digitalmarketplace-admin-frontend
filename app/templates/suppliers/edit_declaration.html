@@ -39,7 +39,7 @@
         {{ govukButton({
           "text": "Save and return to summary"
         }) }}
-        <p>
+        <p class="govuk-body">
           <a class="govuk-link" href="{{ url_for('.view_supplier_declaration', supplier_id=supplier.id, framework_slug=framework.slug) }}">Return without saving</a>
         </p>
         </div>
