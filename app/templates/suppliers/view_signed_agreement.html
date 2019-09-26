@@ -108,15 +108,10 @@
           </form>
         {% endif %}
       {% endif %}
-      <p class="govuk-body">
-        {%
-          with
-          url = url_for(".next_agreement", framework_slug=framework.slug, supplier_id=supplier.id, status=next_status),
-          text = "Next agreement"
-        %}
-          {% include "toolkit/secondary-action-link.html" %}
-        {% endwith %}
-      </p>
+      <a class="govuk-link govuk-link--no-visited-state"
+         href="{{ url_for('.next_agreement', framework_slug=framework.slug, supplier_id=supplier.id, status=next_status) }}">
+        Next agreement
+      </a>
   </div>
 
   <div class="govuk-grid-column-two-thirds">
