@@ -100,7 +100,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             for tr in document.xpath('//table[@class="summary-item-body"]/tbody/tr')
         ) == expected_table_contents
 
-        assert document.xpath('normalize-space(string(//*[@class="search-summary"]))') == expected_count
+        assert len(document.cssselect(f'p.govuk-body.search-summary:contains("{expected_count}")')) == 1
 
         if audit_events != ():
             assert tuple(

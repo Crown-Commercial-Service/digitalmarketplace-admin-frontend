@@ -6,7 +6,7 @@
     {% if pass_values %}
         {% with pass_fail = 'Pass' if (q.value in pass_values) else ('Discretionary' if discretionary else 'Fail') %}
           {% if multiquestion %}
-            <p>{{ pass_fail }}</p>
+            <p class="govuk-body">{{ pass_fail }}</p>
           {% else %}
             {{ summary.text(pass_fail)}}
           {% endif %}

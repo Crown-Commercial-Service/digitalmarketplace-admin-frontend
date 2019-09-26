@@ -150,7 +150,7 @@ class TestListAgreements(LoggedInApplicationTest):
             for status_key, status_label in status_labels.items()
         )
 
-        summary_elem = page.xpath("//p[@class='search-summary-border-bottom']")[0]
+        summary_elem = page.xpath("//p[@class='govuk-body search-summary-border-bottom']")[0]
         assert summary_elem.xpath("normalize-space(string())") == '2 agreements returned'
 
     def test_happy_path_notall_g8(self):
@@ -212,7 +212,7 @@ class TestListAgreements(LoggedInApplicationTest):
             ),
         ))
 
-        summary_elem = page.xpath("//p[@class='search-summary-border-bottom']")[0]
+        summary_elem = page.xpath("//p[@class='govuk-body search-summary-border-bottom']")[0]
         assert summary_elem.xpath("normalize-space(string())") == '2 agreements {}'.format(
             status_labels[chosen_status_key].lower()
         )

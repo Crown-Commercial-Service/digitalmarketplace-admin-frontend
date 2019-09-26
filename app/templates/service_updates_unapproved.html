@@ -27,7 +27,7 @@
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-        <p class="search-summary">
+        <p class="govuk-body search-summary">
             <span class="search-summary-count">{{ audit_events|length }}</span> edited {{ pluralize(audit_events|length, "service", "services") }}
         </p>
             {% call(item) summary.list_table(
