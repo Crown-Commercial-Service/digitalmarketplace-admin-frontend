@@ -20,7 +20,6 @@ $path: "/admin/static/images/";
 @import "toolkit/_document.scss";
 @import "toolkit/_footer";
 @import "toolkit/_notification-banners";
-@import "toolkit/_phase-banner";
 @import "toolkit/_previous-next-navigation";
 @import "toolkit/_proposition-header";
 @import "toolkit/_secondary-action-link";
@@ -36,7 +35,6 @@ $path: "/admin/static/images/";
 @import "toolkit/forms/_word-counter";
 @import "toolkit/forms/_option-select";
 @import "toolkit/forms/_keyword-search";
-@import "toolkit/_user-research-consent-banner.scss";
 
 // GOV.UK Design System (compatible with old toolkit/elements)
 $govuk-assets-path: '/admin/static/';
