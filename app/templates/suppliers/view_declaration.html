@@ -62,7 +62,7 @@
             <div class="multiquestion">
             {% for question in item.questions %}
                 {% with q=question, q_content=question_content[question.id], multiquestion=True %}
-                    <p>{% include "suppliers/_declaration_pass_fail.html" %}</p>
+                  <p class="govuk-body">{% include "suppliers/_declaration_pass_fail.html" %}</p>
                 {% endwith %}
             {% endfor %}
             </div>
