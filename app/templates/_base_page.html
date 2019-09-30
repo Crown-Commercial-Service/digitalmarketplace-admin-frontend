@@ -24,15 +24,16 @@
 {% block content %}
   {% block top_header %}{% endblock %}
   <div id="wrapper">
-    {# This is only a temporary place for the phase banner until we start using govuk-frontend template #}
-    {{ govukPhaseBanner({
-      "tag": {
-        "text": "beta"
-      },
-      "html": 'Help us improve the Digital Marketplace - <a class="govuk-link" href="'  + url_for('external.help') + '">send your feedback</a>'
-    }) }}
+    {% block beforeContent %}
+      {{ govukPhaseBanner({
+        "tag": {
+          "text": "beta"
+        },
+        "html": 'Help us improve the Digital Marketplace - <a class="govuk-link" href="'  + url_for('external.help') + '">send your feedback</a>'
+      }) }}
+      {% block breadcrumbs %}{% endblock %}
+    {% endblock %}
 
-    {% block beforeContent %}{% endblock %}
     <main id="content" role="main">
       {% include "toolkit/flash_messages.html" %}
       {% block main_content %}
