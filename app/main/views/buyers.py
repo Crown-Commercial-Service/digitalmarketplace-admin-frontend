@@ -68,9 +68,12 @@ def update_brief_data(brief_id):
 @role_required('admin')
 def find_buyer_by_brief_id():
     brief_id = request.args.get('brief_id')
+    teams = []
 
     try:
         brief = data_api_client.get_brief(brief_id).get('briefs')
+        teams = data_api_client.req.admin().buyers(brief_id).teams().get()
+
     except:  # noqa
         flash('no_brief', 'error')
         return render_template(
@@ -82,6 +85,7 @@ def find_buyer_by_brief_id():
 
     users = brief.get('users')
     title = brief.get('title')
+
     return render_template_with_csrf(
         "view_buyers.html",
         users=users,
@@ -91,7 +95,9 @@ def find_buyer_by_brief_id():
         seller_email_list=convert_array_to_string(brief.get('sellerEmailList', [])),
         seller_email=brief.get('sellerEmail', ''),
         area_of_expertise_list=AREA_OF_EXPERTISE_LIST,
-        area_of_expertise_selected=brief.get('areaOfExpertise', '')
+        area_of_expertise_selected=brief.get('areaOfExpertise', ''),
+        teams_exists=len(teams) > 0,
+        teams=teams
     )
 
 
@@ -250,3 +256,38 @@ def seller_feedback_email(brief_id):
 
     flash('seller_feedback_email', 'info')
     return redirect(url_for('.find_buyer_by_brief_id', brief_id=brief_id))
+
+
+@main.route('/team', methods=['GET'])
+@login_required
+@role_required('admin')
+def find_team_by_team_id():
+    team_id = request.args.get('team_id')
+
+    team_info = data_api_client.req.admin().team(team_id).get()
+    team = team_info.get('team')
+    briefs = team_info.get('briefs')
+
+    return render_template_with_csrf(
+        "view_teams.html",
+        team_id=team_id,
+        team=team,
+        briefs=briefs
+    )
+
+
+@main.route('/', methods=['GET'])
+@login_required
+@role_required('admin')
+def find_brief_by_team_id():
+    team_id = request.args.get('team_id')
+
+    team_info = data_api_client.req.admin().team(team_id).get()
+    team = team_info.get('team')
+    briefs = team_info.get('briefs')
+
+    return render_template_with_csrf(
+        "view_teams.html",
+        team_id=team_id,
+        team=team
+    )
