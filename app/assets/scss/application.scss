@@ -43,7 +43,7 @@ $govuk-fonts-path: '/admin/static/fonts/';
 $govuk-compatibility-govukfrontendtoolkit: true;
 $govuk-compatibility-govuktemplate: true;
 $govuk-compatibility-govukelements: true;
-@import "node_modules/govuk-frontend/all";
+@import "node_modules/digitalmarketplace-govuk-frontend/govuk-frontend/all";
 
 // App specific styles
 @import "_layout";
