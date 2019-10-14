@@ -73,6 +73,15 @@ class Config(object):
     ROLLBAR_TOKEN = None
     S3_BUCKET_NAME = None
 
+    # redis
+    REDIS_SESSIONS = True
+    REDIS_SERVER_HOST = '127.0.0.1'
+    REDIS_SERVER_PORT = 6379
+    REDIS_SERVER_PASSWORD = None
+    REDIS_SSL = False
+    REDIS_SSL_HOST_REQ = None
+    REDIS_SSL_CA_CERTS = None
+
 
 class Test(Config):
     DEBUG = True
@@ -97,6 +106,8 @@ class Test(Config):
     REACT_BUNDLE_URL = 'https://dm-dev-frontend.apps.y.cld.gov.au/bundle/'
     REACT_RENDER_URL = 'https://dm-dev-frontend.apps.y.cld.gov.au/render'
     REACT_RENDER = False
+
+    REDIS_SESSIONS = False
 
 
 class Development(Config):
@@ -133,6 +144,10 @@ class Live(Config):
     REACT_RENDER_URL = 'https://dm-frontend.apps.b.cld.gov.au/render'
     REACT_RENDER = True
 
+    REDIS_SSL = True
+    REDIS_SSL_CA_CERTS = '/etc/ssl/certs/ca-certificates.crt'
+    REDIS_SSL_HOST_REQ = True
+
 
 class Staging(Config):
     DEBUG = False
@@ -142,6 +157,10 @@ class Staging(Config):
     REACT_RENDER_URL = 'https://dm-dev-frontend.apps.y.cld.gov.au/render'
     REACT_RENDER = True
     DM_MAIN_SERVER_NAME = "dm-dev.apps.y.cld.gov.au"
+
+    REDIS_SSL = True
+    REDIS_SSL_CA_CERTS = '/etc/ssl/certs/ca-certificates.crt'
+    REDIS_SSL_HOST_REQ = True
 
 
 configs = {

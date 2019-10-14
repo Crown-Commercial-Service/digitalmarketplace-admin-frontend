@@ -6,6 +6,7 @@ disk_quota: 512M
 services:
 - ups-dm-common
 - ups-dm-admin
+- marketplace-redis-sessions
 routes:
 - route: dm-admin.apps.b.cld.gov.au
 applications:

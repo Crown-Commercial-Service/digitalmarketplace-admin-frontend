@@ -9,6 +9,7 @@ applications:
   - ups-secret-service
   - ups-dm-alpha-common
   - ups-dm-alpha-admin
+  - marketplace-y-redis-sessions
   routes:
   - route: dm-alpha.apps.y.cld.gov.au/admin
   - route: dm-alpha-admin.apps.y.cld.gov.au
