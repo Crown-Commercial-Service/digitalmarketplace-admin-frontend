@@ -76,7 +76,7 @@
                 {% call summary.row() %}
                     {{ summary.field_name(item.name) }}
                     {% call summary.field() %}
-                        <a href="{{ url_for('.find_user_by_email_address', email_address = item.email_address)}}" method="get"  class="question">{{ item.email_address }}</a>
+                        <a href="{{ url_for('.find_user_by_email_address', email_address = item.email_address)}}" class="question">{{ item.email_address }}</a>
                     <!-- {{ item.email_address }} -->
                     {% endcall %}
                 {% endcall %}

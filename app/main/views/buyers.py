@@ -268,11 +268,25 @@ def find_team_by_team_id():
     team = team_info.get('team')
     briefs = team_info.get('briefs')
 
+    team_leads = team.get('teamLeads')
+    team_leads_email_name = []
+
+    for i in team_leads:
+        team_leads_email_name.append(team_leads.get(i))
+
+    team_members = team.get('teamMembers')
+    team_members_email_name = []
+
+    for i in team_members:
+        team_members_email_name.append(team_members.get(i))
+
     return render_template_with_csrf(
         "view_teams.html",
         team_id=team_id,
         team=team,
-        briefs=briefs
+        briefs=briefs,
+        team_leads=team_leads_email_name,
+        team_members=team_members_email_name
     )
 
 
