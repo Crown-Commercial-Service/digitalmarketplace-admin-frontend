@@ -67,22 +67,35 @@
 
     {{ summary.text(item.name) }}
     {% call summary.field() %}
-      <a href="{{ url_for('.find_user_by_email_address', email_address = item.emailAddress)}}" class="question">{{ item.emailAddress}}</a>    
+      <a href="{{ url_for('.find_user_by_email_address', email_address = item.emailAddress)}}" class="question">{{ item.emailAddress}}</a> 
     {% endcall %}
-    {% for i in team.teamMembers %}
-        {% for key, value in team.teamMembers[i].items() %}
-        {% if key == 'permissions' %}
-          {% for permissionKey, permissionValue in value.items() %}
-            <td>{{ permissionValue  | replace(":"," ")}}</td>
-            {% if permissionKey == 'create_work_orders' %}
-            {{ summary.text(permissionValue) }}
-          {% endif %}
-          {% endfor %}
-          {% endif %}
-          {% endfor %}
-        {% endfor %}
-{% endcall %}
-{% endcall %}
+
+    {% call summary.field() %}
+      {{ item.permissions['download_reports'] }}
+    {% endcall %}
+
+    {% call summary.field() %}
+      {{ item.permissions['publish_opportunities'] }}
+    {% endcall %}
+
+    {% call summary.field() %}
+      {{ item.permissions['create_drafts'] }}
+    {% endcall %}
+
+    {% call summary.field() %}
+      {{ item.permissions['download_responses'] }}
+    {% endcall %}
+
+    {% call summary.field() %}
+      {{ item.permissions['answer_seller_questions'] }}
+    {% endcall %}
+
+    {% call summary.field() %}
+      {{ item.permissions['create_work_orders'] }}
+    {% endcall %}
+
+    {% endcall %}
+    {% endcall %}
 </div>
 
 <div>
