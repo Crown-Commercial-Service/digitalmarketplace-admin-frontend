@@ -23,6 +23,7 @@ const govukTemplateFolder = path.join(repoRoot, 'node_modules', 'govuk_template'
 const govukTemplateAssetsFolder = path.join(govukTemplateFolder, 'assets')
 const govukTemplateLayoutsFolder = path.join(govukTemplateFolder, 'views', 'layouts')
 const govukFrontendFontsFolder = path.join(govukFrontendRoot, 'assets', 'fonts')
+const govukFrontendImageFolder = path.join(govukFrontendRoot, 'assets', 'images')
 
 // JavaScript paths
 const jsSourceFile = path.join(assetsFolder, 'javascripts', 'application.js')
@@ -291,6 +292,15 @@ gulp.task(
   )
 )
 
+gulp.task(
+  'copy:govuk_frontend_assets:images',
+  copyFactory(
+    'images from the GOVUK frontend',
+    govukFrontendImageFolder,
+    staticFolder + '/images/govuk-frontend/'
+  )
+)
+
 gulp.task('set_environment_to_development', function (cb) {
   environment = 'development'
   cb()
@@ -315,6 +325,7 @@ gulp.task(
     'copy:images',
     'copy:govuk_template',
     'copy:govuk_frontend_assets:fonts',
+    'copy:govuk_frontend_assets:images',
     'copy:country_picker:jsons',
     'copy:country_picker:stylesheets',
     'copy:country_picker_package:javascripts',
