@@ -340,9 +340,9 @@ gulp.task('build:development', gulp.series(gulp.parallel('set_environment_to_dev
 gulp.task('build:production', gulp.series(gulp.parallel('set_environment_to_production', 'clean'), 'compile'))
 
 gulp.task('watch', gulp.series('build:development', function () {
-  const jsWatcher = gulp.watch([assetsFolder + '/**/*.js'], ['js'])
-  const cssWatcher = gulp.watch([assetsFolder + '/**/*.scss'], ['sass'])
-  const dmWatcher = gulp.watch([npmRoot + '/digitalmarketplace-frameworks/**'], ['copy:frameworks'])
+  const jsWatcher = gulp.watch([assetsFolder + '/**/*.js'], gulp.series('js'))
+  const cssWatcher = gulp.watch([assetsFolder + '/**/*.scss'], gulp.series('sass'))
+  const dmWatcher = gulp.watch([npmRoot + '/digitalmarketplace-frameworks/**'], gulp.series('copy:frameworks'))
   const notice = function (event) {
     console.log('File ' + event.path + ' was ' + event.type + ' running tasks...')
   }
