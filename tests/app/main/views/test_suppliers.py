@@ -2499,7 +2499,7 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
             assert len(document.xpath('//a[@href="https://beta.companieshouse.gov.uk/company/"]')) == 0  # noqa
             # Other registration number is visible
             assert len(document.xpath(
-                '//h2[contains(text(), "Company number")]/following-sibling::div[contains(text(), "987654321")]')) == 1
+                '//h2[contains(text(), "Company number")]/following-sibling::p[contains(text(), "987654321")]')) == 1
 
     def test_should_show_error_message_if_no_signed_url(self, s3):
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
