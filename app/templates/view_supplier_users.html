@@ -27,7 +27,7 @@
 {% block main_content %}
   <h1 class="govuk-heading-xl">{{ supplier.name }}</h1>
 
-  <div class='page-section'>
+  <div class="page-section">
     {% call(item) summary.list_table(
       users,
       caption="Users",
@@ -115,7 +115,7 @@
 
 
   {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
-  <div class='page-section'>
+  <div class="page-section">
     <form action="{{ url_for('.invite_user', supplier_id=supplier.id) }}" method="post">
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
@@ -129,7 +129,7 @@
     </form>
   </div>
 
-  <div class='page-section'>
+  <div class="page-section">
     <form action="{{ url_for('.move_user_to_new_supplier', supplier_id=supplier.id) }}" method="post">
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">

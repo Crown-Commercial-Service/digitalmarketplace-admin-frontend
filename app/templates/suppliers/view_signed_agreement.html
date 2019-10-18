@@ -24,7 +24,7 @@
 
 {% block main_content %}
 <h1 class="govuk-heading-l">{{ company_details.registered_name }}</h1>
-<div class='grid-row'>
+<div class="govuk-grid-row">
   <div class="govuk-grid-column-one-third">
       <h2>Registered address</h2>
       <ul class="govuk-list">
@@ -34,7 +34,7 @@
       </ul>
 
       <h2>Company number</h2>
-      <div class="govuk-!-padding-bottom-4">
+      <p class="govuk-body">
         {% if company_details.registered_with == "companies_house" %}
           {%
           with
@@ -47,7 +47,7 @@
         {% else %}
           {{ company_details.registration_number }}
         {% endif %}
-      </div>
+      </p>
 
       <h2>Appointment is to</h2>
       <ul class="govuk-list">
@@ -58,18 +58,18 @@
 
       <h2>Signed by</h2>
       <p class="govuk-body">
-          {{ supplier_framework.agreementDetails.signerName}}, {{ supplier_framework.agreementDetails.signerRole }}
+        {{ supplier_framework.agreementDetails.signerName}}, {{ supplier_framework.agreementDetails.signerRole }}
       </p>
 
       <h2>Uploaded by</h2>
       <p class="govuk-body">
-          {{ supplier_framework.agreementDetails.uploaderUserName }}
-          <br>
-          <span class="break-email">
-              {{ supplier_framework.agreementDetails.uploaderUserEmail }}
-          </span>
-          <br>
-          {{ supplier_framework.agreementReturnedAt|datetimeformat }}
+        {{ supplier_framework.agreementDetails.uploaderUserName }}
+        <br>
+        <span class="break-email">
+          {{ supplier_framework.agreementDetails.uploaderUserEmail }}
+        </span>
+        <br>
+        {{ supplier_framework.agreementReturnedAt|datetimeformat }}
       </p>
 
       {% if supplier_framework.agreementStatus in ['approved', 'countersigned'] %}
@@ -80,14 +80,14 @@
           {{ supplier_framework.countersignedAt|datetimeformat }}
         </p>
         {% if current_user.has_role('admin-ccs-sourcing') and supplier_framework.agreementStatus == 'approved' %}
-        <form action="{{ url_for('.unapprove_agreement_for_countersignature', agreement_id=supplier_framework.agreementId, next_status=next_status) }}" method="post">
-          <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
-          <input name="nameOfOrganisation" value="{{ supplier_framework.declaration.nameOfOrganisation }}" type="hidden">
-          {{ govukButton({
-            "classes": "govuk-button--warning",
-            "text": "Cancel acceptance"
-          }) }}
-        </form>
+          <form action="{{ url_for('.unapprove_agreement_for_countersignature', agreement_id=supplier_framework.agreementId, next_status=next_status) }}" method="post">
+            <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+            <input name="nameOfOrganisation" value="{{ supplier_framework.declaration.nameOfOrganisation }}" type="hidden">
+            {{ govukButton({
+              "classes": "govuk-button--warning",
+              "text": "Cancel acceptance"
+            }) }}
+          </form>
         {% endif %}
       {% elif current_user.has_role('admin-ccs-sourcing') %}
         <form action="{{ url_for('.approve_agreement_for_countersignature', agreement_id=supplier_framework.agreementId, next_status=next_status) }}" method="post">

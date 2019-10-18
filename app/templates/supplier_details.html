@@ -30,16 +30,16 @@
     <div class="govuk-grid-column-two-thirds">
       {{ summary.heading("Company details") }}
       {% if current_user.has_role('admin-ccs-data-controller') %}
-      <p class="govuk-body">
-        Change the company details on ‘{{ supplier.name }}’s Digital Marketplace account.
-      </p>
-      <p class="govuk-body">
-        These details do not get updated on the supplier’s framework agreement. Contact <a class="govuk-link" href="mailto:ccsrequests@digitalmarketplace.service.gov.uk">ccsrequests@digitalmarketplace.service.gov.uk</a>
-        to update details on the framework agreement.
-      </p>
-      <p class="govuk-body">
-        This usually takes 5 days. ‘{{ supplier.name }}’ can’t sign their agreement until it is updated.
-      </p>
+        <p class="govuk-body">
+          Change the company details on ‘{{ supplier.name }}’s Digital Marketplace account.
+        </p>
+        <p class="govuk-body">
+          These details do not get updated on the supplier’s framework agreement. Contact <a class="govuk-link" href="mailto:ccsrequests@digitalmarketplace.service.gov.uk">ccsrequests@digitalmarketplace.service.gov.uk</a>
+          to update details on the framework agreement.
+        </p>
+        <p class="govuk-body">
+          This usually takes 5 days. ‘{{ supplier.name }}’ can’t sign their agreement until it is updated.
+        </p>
       {% endif %}
       {% with
         caption = 'Company details for supplier account'
