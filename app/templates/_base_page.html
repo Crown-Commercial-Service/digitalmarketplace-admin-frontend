@@ -7,60 +7,49 @@
 {% from "components/tabs/macro.njk" import govukTabs %}
 {% from "components/error-summary/macro.njk" import govukErrorSummary %}
 
-{# This can be removed once we start using govuk-frontend template #}
-{# The reason calling this block here is to change the header title so that it does not
-   include the phase tag #}
-{% block inside_header %}
-  <div class="header-title">
-    <a href="/">Digital Marketplace</a>
-  </div>
-{% endblock %}
+{# Import DM Components #}
+{% from "digitalmarketplace/components/header/macro.njk" import dmHeader%}
 
-{# TODO: Remove once we start removing govuk_template, GOV.UK Frontend template uses pageTitle #}
-{% block page_title %}{% block pageTitle %}{% endblock %}{% endblock %}
-
-{# This can be removed once we start using govuk-frontend template #}
-{# The reason for calling this is to ensure we do not output the user research signup banner #}
-{% block after_header %}
-{% endblock %}
+{% set assetPath = '/admin/static' %}
 
 {% block head %}
+  {% include "layouts/_custom_dimensions.html" %}
+  {% include "layouts/_site_verification.html" %}
   <link type="text/css" rel="stylesheet" href="{{ asset_fingerprinter.get_url('stylesheets/application.css') }}" />
+  {% block pageStyles %}{% endblock%}
 {% endblock %}
 
-{# override content block to add a beforeContent block like the one in govuk-frontend template #}
+{% block header %}
+  {{ dmHeader({
+    "isAdmin": "true",
+    "role": current_user.role | default(None)
+  }) }}
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukPhaseBanner({
+    "tag": {
+      "text": "beta"
+    },
+    "html": 'Help us improve the Digital Marketplace - <a class="govuk-link" href="'  + url_for('external.help') + '">send your feedback</a>'
+  }) }}
+  {% block breadcrumbs %}{% endblock%}
+  {% include "toolkit/flash_messages.html" %}
+{% endblock %}
+
 {% block content %}
-  {% block top_header %}{% endblock %}
-  <div id="wrapper">
-    {% block beforeContent %}
-      {{ govukPhaseBanner({
-        "tag": {
-          "text": "beta"
-        },
-        "html": 'Help us improve the Digital Marketplace - <a class="govuk-link" href="'  + url_for('external.help') + '">send your feedback</a>'
-      }) }}
-      {% block breadcrumbs %}{% endblock %}
-      {% include "toolkit/flash_messages.html" %}
-      {% block errorSummary %}
-        {% if errors %}
-          {{ govukErrorSummary({
-          "titleText": "There is a problem",
-          "errorList": errors.values(),
-        }) }}
-        {% endif %}
-      {% endblock %}
-    {% endblock %}
-    <main id="content" role="main">
-      {# TODO: Remove this block when we start removing govuk_template but be sure #}
-      {#       To keep the inner block mainContent otherwise no content will be rendered #}
-      {% block main_content %}
-        {% block mainContent %}{% endblock %}
-      {% endblock %}
-    </main>
-  </div>
+  {% block errorSummary %}
+    {% if errors %}
+      {{ govukErrorSummary({
+      "titleText": "There is a problem",
+      "errorList": errors.values(),
+    }) }}
+    {% endif %}
+  {% endblock %}
+  {% block mainContent %}{% endblock %}
 {% endblock %}
 
-{% block footer_top %}
-{% endblock %}
-{% block footer_support_links %}
+{% block bodyEnd %}
+  <script src="{{ asset_fingerprinter.get_url('javascripts/application.js') }}"></script>
+  {% block pageScripts %}{% endblock%}
 {% endblock %}

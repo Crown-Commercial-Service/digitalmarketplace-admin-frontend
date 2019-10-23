@@ -53,13 +53,11 @@ class TestUsersView(LoggedInApplicationTest):
 
         document = html.fromstring(response.get_data(as_text=True))
 
-        page_title = document.xpath(
-            '//p[@class="banner-message"]//text()')[0].strip()
-        assert page_title == "Sorry, we couldn't find an account with that email address"
+        flash_message = "Sorry, we couldn't find an account with that email address"
+        assert len(document.cssselect(f'.banner-message:contains("{flash_message}")')) == 1
 
-        page_title = document.xpath(
-            '//p[@class="summary-item-no-content"]//text()')[0].strip()
-        assert page_title == "No users to show"
+        summary_result = "No users to show"
+        assert len(document.cssselect(f'.summary-item-no-content:contains("{summary_result}")')) == 1
 
     def test_should_be_a_404_if_no_email_provided(self):
         self.data_api_client.get_user.return_value = None
@@ -68,9 +66,8 @@ class TestUsersView(LoggedInApplicationTest):
 
         document = html.fromstring(response.get_data(as_text=True))
 
-        page_title = document.xpath(
-            '//p[@class="banner-message"]//text()')[0].strip()
-        assert page_title == "Sorry, we couldn't find an account with that email address"
+        flash_message = "Sorry, we couldn't find an account with that email address"
+        assert len(document.cssselect(f'.banner-message:contains("{flash_message}")')) == 1
 
         page_title = document.xpath(
             '//p[@class="summary-item-no-content"]//text()')[0].strip()

@@ -380,8 +380,9 @@ class TestAdminManagerEditsAdminUsers(LoggedInApplicationTest):
 
         document = html.fromstring(response.get_data(as_text=True))
 
-        assert document.xpath('//h1')[0].text.strip() == "reality.auditor@digital.cabinet-office.gov.uk"
-        assert document.xpath('//button')[0].text.strip() == "Update user"
+        user_email = "reality.auditor@digital.cabinet-office.gov.uk"
+        assert document.cssselect('.govuk-heading-xl')[0].text.strip() == user_email
+        assert document.cssselect('.govuk-main-wrapper .govuk-button')[0].text.strip() == "Update user"
 
     def test_edit_admin_user_form_prefills_edit_name_with_user_name(self):
         self.data_api_client.get_user.return_value = self.admin_user_to_edit

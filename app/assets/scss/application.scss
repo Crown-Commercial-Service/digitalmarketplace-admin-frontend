@@ -1,7 +1,3 @@
-// Reset styles on core HTML elements that might be injected by eg a user's browser, so that we have a known clean base
-// for DM styles to build on.
-@import "toolkit/shared_scss/_reset.scss";
-
 $path: "/admin/static/images/";
 
 // Digital Marketplace Front-end toolkit shared CSS placeholders used by other DM toolkit styles
@@ -10,14 +6,10 @@ $path: "/admin/static/images/";
 @import "toolkit/shared_placeholders/_placeholders.scss";
 @import "toolkit/shared_placeholders/_temporary-messages.scss";
 
-// Digital Marketplace Front-end toolkit shared styles between multiple apps
-@import "shared_scss/_reset.scss";
-
 // Digital Marketplace Front-end toolkit styles
 @import "toolkit/_browse-list";
 @import "toolkit/_contact-details.scss";
 @import "toolkit/_document.scss";
-@import "toolkit/_footer";
 @import "toolkit/_notification-banners";
 @import "toolkit/_previous-next-navigation";
 @import "toolkit/_proposition-header";
@@ -43,14 +35,15 @@ $govuk-compatibility-govukfrontendtoolkit: true;
 $govuk-compatibility-govukelements: true;
 @import "node_modules/digitalmarketplace-govuk-frontend/govuk-frontend/all";
 
+// Digital Marketplace Components
+@import "node_modules/digitalmarketplace-govuk-frontend/digitalmarketplace/all";
+
 // App specific styles
-@import "_layout";
 @import "_diff.scss";
 @import "views/list_agreements";
 
 // Overrides
 @import "overrides/_notification-banner";
-@import "overrides/_page_headings";
 
 // Misc styles
 // TODO: Move misc styling into their own partial files or the Digital Marketplace FE Toolkit
