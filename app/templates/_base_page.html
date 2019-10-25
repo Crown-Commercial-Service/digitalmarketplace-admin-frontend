@@ -32,10 +32,9 @@
         "html": 'Help us improve the Digital Marketplace - <a class="govuk-link" href="'  + url_for('external.help') + '">send your feedback</a>'
       }) }}
       {% block breadcrumbs %}{% endblock %}
-    {% endblock %}
-
-    <main id="content" role="main">
       {% include "toolkit/flash_messages.html" %}
+    {% endblock %}
+    <main id="content" role="main">
       {% block main_content %}
       {% endblock %}
     </main>
