@@ -219,6 +219,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
                 "id": 1,
                 "name": "Amazing Digital Framework",
                 "slug": "amazing-digital-framework",
+                "family": "amazing-digital-framework",
                 "status": framework_status,
             },
 
@@ -243,19 +244,16 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
 
         assert bool(document.xpath('.//h3[contains(text(),"Amazing Digital Framework")]')) == header_shown
 
-    @pytest.mark.parametrize(
-        ('slug_suffix', 'name_suffix', 'should_be_shown'),
-        (
-            ('', '', False),
-            ('-2', ' 2', True),
-            ('-3', ' 3', False),
-        )
-    )
-    def test_dos2_only_expired_framework_action_lists_shown_for(self, slug_suffix, name_suffix, should_be_shown):
+    @pytest.mark.parametrize('family,should_be_shown', (
+        ('g-cloud', False),
+        ('digital-outcomes-and-specialists', True),
+    ))
+    def test_dos_only_expired_framework_action_lists_shown_for(self, family, should_be_shown):
         self.data_api_client.find_frameworks.return_value = {'frameworks': [FrameworkStub(
             status='expired',
-            slug=f'digital-outcomes-and-specialists{slug_suffix}',
-            name=f'Digital Outcomes and Specialists{name_suffix}',
+            slug=f'flim-flam-3',
+            family=family,
+            name=f'Flim Flam Framework 3',
         ).response()]}
 
         self.user_role = "admin-framework-manager"
@@ -263,7 +261,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
 
         assert bool(
-            document.xpath(f'.//h3[contains(text(),"Digital Outcomes and Specialists{name_suffix}")]')
+            document.xpath(f'.//h3[contains(text(),"Flim Flam Framework 3")]')
         ) == should_be_shown
 
     @pytest.mark.parametrize('framework_status, header_shown', [
@@ -400,12 +398,14 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
                 "id": 1,
                 "name": "Amazing Digital Framework",
                 "slug": "amazing-digital-framework",
+                "family": "g-cloud",
                 "status": framework_status,
             },
             {
                 "id": 2,
                 "name": "Digital Outcomes and Specialists 2",
                 "slug": "digital-outcomes-and-specialists-2",
+                "family": "digital-outcomes-and-specialists",
                 "status": 'expired',
             },
 

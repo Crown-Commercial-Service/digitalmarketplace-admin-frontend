@@ -252,28 +252,29 @@ class TestUserListPage(LoggedInApplicationTest):
             '//h1//text()')[0].strip()
         assert page_heading == "Download supplier lists for G-Cloud 9"
 
-    @pytest.mark.parametrize(
-        ('slug_suffix', 'name_suffix', 'should_be_shown'),
-        (
-            ('', '', False),
-            ('-2', ' 2', True),
-            ('-3', ' 3', False),
-        )
-    )
-    def test_dos2_framework_only_expired_framework_available(self, s3, slug_suffix, name_suffix, should_be_shown):
+    @pytest.mark.parametrize('family,should_be_shown', (
+        ('g-cloud', False),
+        ('digital-outcomes-and-specialists', True),
+    ))
+    def test_dos_frameworks_only_expired_frameworks_available(self, s3, family, should_be_shown):
         self.data_api_client.get_framework.return_value = FrameworkStub(
+            family=family,
             status='expired',
-            slug=f'digital-outcomes-and-specialists{slug_suffix}',
-            name=f'Digital Outcomes and Specialists{name_suffix}',
+            slug=f'sunt-me-gratis-12',
+            name=f'Sunt Me Gratis 12',
         ).single_result_response()
 
-        response = self.client.get(f"/admin/frameworks/{slug_suffix}/users")
-        document = html.fromstring(response.get_data(as_text=True))
+        response = self.client.get(f"/admin/frameworks/sunt-me-gratis-12/users")
+
+        assert self.data_api_client.mock_calls == [
+            mock.call.get_framework("sunt-me-gratis-12")
+        ]
 
         if should_be_shown:
-            page_heading = document.xpath(
-                '//h1//text()')[0].strip()
-            assert page_heading == f"Download supplier lists for Digital Outcomes and Specialists{name_suffix}"
+            assert response.status_code == 200
+            document = html.fromstring(response.get_data(as_text=True))
+            page_heading = document.xpath('normalize-space(string(//h1))')
+            assert page_heading == f"Download supplier lists for Sunt Me Gratis 12"
         else:
             assert response.status_code == 404
 
@@ -437,18 +438,31 @@ class TestUserResearchParticipantsExport(LoggedInApplicationTest):
         assert len(document.xpath(href_xpath)) == 1  # Invalid framework not shown
         assert 'User research participants on {}'.format(self._valid_framework['name']) in text
 
-    def test_dos2_framework_only_expired_framework_available(self, s3):
-        framework_suffixes = (('', ''), ('-2', ' 2'), ('-3', ' 3'))
+    def test_dos_frameworks_only_expired_frameworks_available(self, s3):
         self.data_api_client.find_frameworks.return_value = {
             'frameworks': [
                 FrameworkStub(
+                    family='aliquid-alicui-bonum-vult',
                     status='expired',
-                    slug=f'digital-outcomes-and-specialists{suffixes[0]}',
-                    name=f'Digital Outcomes and Specialists{suffixes[1]}',
-                ).response() for suffixes in framework_suffixes
+                    slug='nulla-bona-2',
+                    name='Nulla Bona 2',
+                ).response(),
+                FrameworkStub(
+                    family='digital-outcomes-and-specialists',
+                    status='expired',
+                    slug='vere-dignum-13',
+                    name='Vere Dignum 13',
+                ).response(),
+                FrameworkStub(
+                    family='altius-aliquantulum',
+                    status='expired',
+                    slug='salvi-facti-sunt',
+                    name='Salvi Facti Sunt',
+                ).response(),
             ]
         }
-        s3.S3.return_value.get_signed_url.return_value = 'http://asseturl/path/to/csv?querystring'
+        asset_url = 'http://asseturl/path/to/csv?querystring'
+        s3.S3.return_value.get_signed_url.return_value = asset_url
 
         response = self.client.get('/admin/users/download/suppliers')
         assert response.status_code == 200
@@ -457,7 +471,8 @@ class TestUserResearchParticipantsExport(LoggedInApplicationTest):
         links = document.xpath("//a[@class='document-link-with-icon']")
 
         assert len(links) == 1  # Invalid frameworks not shown
-        assert 'User research participants on Digital Outcomes and Specialists 2' in links[0].text_content()
+        assert links[0].attrib["href"] == "/admin/frameworks/vere-dignum-13/user-research/download"
+        assert 'User research participants on Vere Dignum 13' in links[0].xpath("normalize-space(string())")
 
     def test_supplier_csvs_shown_in_alphabetical_name_order(self, s3):
         framework_1 = self._valid_framework.copy()
