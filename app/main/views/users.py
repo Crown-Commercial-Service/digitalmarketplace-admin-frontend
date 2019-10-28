@@ -38,11 +38,10 @@ def find_user_by_email_address():
 @main.route('/frameworks/<framework_slug>/users', methods=['GET'])
 @role_required('admin-framework-manager', 'admin-ccs-category', 'admin-ccs-data-controller')
 def user_list_page_for_framework(framework_slug):
-    bad_statuses = ['coming', 'expired']
     framework = data_api_client.get_framework(framework_slug).get("frameworks")
-    # TODO replace this temporary fix for DOS2 when a better solution has been created.
-    if not framework or \
-            (framework['status'] in bad_statuses and framework['slug'] != 'digital-outcomes-and-specialists-2'):
+    if framework is None or framework['status'] == 'coming' or (
+        framework['status'] == 'expired' and framework['family'] != 'digital-outcomes-and-specialists'
+    ):
         abort(404)
 
     supplier_csv_url = url_for(
@@ -82,12 +81,12 @@ def download_supplier_user_list_report(framework_slug, report_type):
 @main.route('/users/download/suppliers', methods=['GET'])
 @role_required('admin-framework-manager')
 def supplier_user_research_participants_by_framework():
-    bad_statuses = ['coming', 'expired']
     frameworks = data_api_client.find_frameworks().get("frameworks")
     frameworks = sorted(
-        filter(
-            lambda i: i['status'] not in bad_statuses or i['slug'] == 'digital-outcomes-and-specialists-2', frameworks
-        ), key=lambda i: i['name']
+        (fw for fw in frameworks if not (fw['status'] == 'coming' or (
+            fw['status'] == 'expired' and fw['family'] != 'digital-outcomes-and-specialists'
+        ))),
+        key=lambda i: i['name'],
     )
 
     items = [
