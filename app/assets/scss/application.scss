@@ -22,7 +22,6 @@ $path: "/admin/static/images/";
 @import "toolkit/_notification-banners";
 @import "toolkit/_previous-next-navigation";
 @import "toolkit/_proposition-header";
-@import "toolkit/_secondary-action-link";
 @import "toolkit/_service-id";
 @import "toolkit/forms/_hint";
 @import "toolkit/forms/_list-entry";
@@ -81,11 +80,6 @@ $govuk-compatibility-govukelements: true;
 
 .break-email {
   word-break: break-all;
-}
-
-.question + .secondary-action-link {
-  margin-top: -36px;
-  margin-bottom: govuk-spacing(7);
 }
 
 .summary-item-field-heading, .summary-item-field {
