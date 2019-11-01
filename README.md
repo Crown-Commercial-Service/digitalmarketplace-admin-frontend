@@ -64,7 +64,15 @@ make run-all
 
 To just run the application use the `run-app` target.
 
-The admin frontend runs on port 5004. Use the app at [http://127.0.0.1:5004/admin/](http://127.0.0.1:5004/admin/)
+Use the app at [http://127.0.0.1:5004/admin/](http://127.0.0.1:5004/admin/)
+
+When running the admin frontend locally it listens on port 5004 by default.
+This can be changed by setting the `DM_ADMIN_PORT` environment variable, e.g.
+to set the port number to 9004:
+
+```
+export DM_ADMIN_PORT=9004
+```
 
 ### Updating application dependencies
 
