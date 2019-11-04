@@ -15,6 +15,9 @@
   </div>
 {% endblock %}
 
+{# TODO: Remove once we start removing govuk_template, GOV.UK Frontend template uses pageTitle #}
+{% block page_title %}{% block pageTitle %}{% endblock %}{% endblock %}
+
 {# This can be removed once we start using govuk-frontend template #}
 {# The reason for calling this is to ensure we do not output the user research signup banner #}
 {% block after_header %}

@@ -2,7 +2,9 @@
 
 {% import "toolkit/forms/macros/forms.html" as forms %}
 {% set page_title = 'Invite a new admin user' %}
-{% block page_title %}{{ page_title }} – Digital Marketplace admin{% endblock %}
+{% block pageTitle %}
+  {{ page_title }} – Digital Marketplace admin
+{% endblock %}
 
 {% block breadcrumbs %}
   {{ govukBreadcrumbs({
