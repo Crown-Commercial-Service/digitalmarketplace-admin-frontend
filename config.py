@@ -93,7 +93,7 @@ class Development(Config):
     DM_REPORTS_BUCKET = "digitalmarketplace-dev-uploads"
     DM_ASSETS_URL = "https://{}.s3-eu-west-1.amazonaws.com".format(DM_S3_DOCUMENT_BUCKET)
 
-    DM_DATA_API_URL = "http://localhost:5000"
+    DM_DATA_API_URL = f"http://localhost:{os.getenv('DM_API_PORT', 5000)}"
     DM_DATA_API_AUTH_TOKEN = "myToken"
     SECRET_KEY = "verySecretKey"
     DM_NOTIFY_API_KEY = "not_a_real_key-00000000-fake-uuid-0000-000000000000"
