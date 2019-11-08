@@ -1,5 +1,5 @@
 {# ADMIN CCS DATA CONTROLLER #}
-<h2 class="heading-xmedium">Search for users</h3>
+<h2 class="govuk-heading-m">Search for users</h3>
 <ul class="govuk-list">
   <li>
     <a class="govuk-link" href="{{ url_for('.find_user_by_email_address') }}">
@@ -8,7 +8,7 @@
   </li>
 </ul>
 
-<h2 class="heading-xmedium">Search for suppliers</h3>
+<h2 class="govuk-heading-m">Search for suppliers</h3>
 <ul class="govuk-list">
   <li>
     <a class="govuk-link" href="{{ url_for('.search_suppliers_and_services') }}">
@@ -17,16 +17,16 @@
   </li>
 </ul>
 
-<h2 class="heading-xmedium">Download supplier lists</h3>
-{% for framework in frameworks %}
-  {% if framework.status in ["pending", "standstill", "live"] or
-      (framework.family == 'digital-outcomes-and-specialists' and framework.status == 'expired') %}
-    <ul class="govuk-list">
+<h2 class="govuk-heading-m">Download supplier lists</h3>
+<ul class="govuk-list">
+  {% for framework in frameworks %}
+    {% if framework.status in ["pending", "standstill", "live"] or
+        (framework.family == 'digital-outcomes-and-specialists' and framework.status == 'expired') %}
       <li>
         <a class="govuk-link" href="{{ url_for('.user_list_page_for_framework', framework_slug=framework['slug']) }}">
           {{ framework.name }}
         </a>
       </li>
-    </ul>
-  {% endif %}
-{% endfor %}
+    {% endif %}
+  {% endfor %}
+</ul>

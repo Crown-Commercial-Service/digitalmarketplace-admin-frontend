@@ -1,5 +1,5 @@
 {# BUYERS, SUPPLIERS AND SERVICES #}
-<h2 class="heading-large">User support</h2>
+<h2 class="govuk-heading-l">User support</h2>
 {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
   <ul class="govuk-list">
     <li>
@@ -10,7 +10,7 @@
   </ul>
 {% endif %}
 
-<h3 class="heading-xmedium">Suppliers</h3>
+<h3 class="govuk-heading-m">Suppliers</h3>
 
 {% set find_supplier_and_services_link_text = {
   'admin': 'Edit supplier accounts or view services',
@@ -42,7 +42,7 @@
 </ul>
 
 {% if current_user.has_any_role('admin', 'admin-ccs-category', 'admin-framework-manager') %}
-  <h3 class="heading-xmedium">Buyers</h3>
+  <h3 class="govuk-heading-m">Buyers</h3>
 
   <ul class="govuk-list">
     {% if current_user.has_role('admin-framework-manager') %}
@@ -73,7 +73,7 @@
 
 {% if current_user.has_any_role('admin-ccs-category', 'admin-framework-manager', 'admin-ccs-sourcing') %}
   {# OUTCOMES #}
-  <h2 class="heading-large">Outcomes</h2>
+  <h2 class="govuk-heading-l">Outcomes</h2>
   <ul class="govuk-list">
     <li>
       <a class="govuk-link" href="{{ url_for('.download_outcomes') }}">
@@ -83,13 +83,13 @@
   </ul>
 
   {# FRAMEWORKS AND APPLICATIONS #}
-  <h2 class="heading-large">Manage applications</h2>
+  <h2 class="govuk-heading-l">Manage applications</h2>
 
   {% for framework in frameworks %}
     {% if framework.status in ["standstill", "live"] or
         (framework.family == 'digital-outcomes-and-specialists' and framework.status == 'expired') or
           current_user.has_any_role('admin-framework-manager', 'admin-ccs-sourcing') %}
-      <h3 class="heading-xmedium">{{framework.name}}</h3>
+      <h3 class="govuk-heading-m">{{framework.name}}</h3>
 
       <ul class="govuk-list">
         {% if framework.status in ["live", "standstill"] or
