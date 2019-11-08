@@ -13,7 +13,7 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     <div class="dmspeak">
-      {% if current_user.has_any_role('admin-ccs-data-controller') %}
+      {% if current_user.has_role('admin-ccs-data-controller') %}
         {% include 'dashboard/_admin_ccs_data_controller_index.html' %}
       {% elif current_user.has_role('admin-manager') %}
         {% include 'dashboard/_admin_manager_index.html' %}
