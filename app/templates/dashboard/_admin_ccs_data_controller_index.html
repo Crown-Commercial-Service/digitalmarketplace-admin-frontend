@@ -1,19 +1,19 @@
 {# ADMIN CCS DATA CONTROLLER #}
-<h3 class="heading-xmedium">Search for users</h3>
+<h2 class="heading-xmedium">Search for users</h3>
 <ul class="govuk-list">
   <li>
     <a class="govuk-link" href="{{ url_for('.find_user_by_email_address') }}">Find a user by email</a>
   </li>
 </ul>
 
-<h3 class="heading-xmedium">Search for suppliers</h3>
+<h2 class="heading-xmedium">Search for suppliers</h3>
 <ul class="govuk-list">
   <li>
     <a class="govuk-link" href="{{ url_for('.search_suppliers_and_services') }}">View and edit suppliers</a>
   </li>
 </ul>
 
-<h3 class="heading-xmedium">Download supplier lists</h3>
+<h2 class="heading-xmedium">Download supplier lists</h3>
 {% for framework in frameworks %}
   {% if framework.status in ["pending", "standstill", "live"] or (framework.family == 'digital-outcomes-and-specialists' and framework.status == 'expired') %}
     <ul class="govuk-list">

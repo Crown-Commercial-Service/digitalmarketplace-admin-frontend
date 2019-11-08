@@ -414,7 +414,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         response = self.client.get('/admin')
         document = html.fromstring(response.get_data(as_text=True))
 
-        assert bool(document.xpath('.//h3[contains(text(),"Download supplier lists")]')) == link_should_be_visible
+        assert bool(document.xpath('.//h2[contains(text(),"Download supplier lists")]')) == link_should_be_visible
 
         link_is_visible = bool(document.xpath('.//a[contains(text(),"Amazing Digital Framework")]'))
         assert link_is_visible is link_should_be_visible, (
