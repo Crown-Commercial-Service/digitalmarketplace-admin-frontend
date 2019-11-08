@@ -3,7 +3,9 @@
 {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
   <ul class="govuk-list">
     <li>
-      <a class="govuk-link" href="{{ url_for('.find_user_by_email_address') }}">Find a user by email</a>
+      <a class="govuk-link" href="{{ url_for('.find_user_by_email_address') }}">
+        Find a user by email
+      </a>
     </li>
   </ul>
 {% endif %}
@@ -19,16 +21,22 @@
 %}
 <ul class="govuk-list">
   <li>
-    <a class="govuk-link" href="{{ url_for('.search_suppliers_and_services') }}">{{ find_supplier_and_services_link_text[current_user.role] }}</a>
+    <a class="govuk-link" href="{{ url_for('.search_suppliers_and_services') }}">
+      {{ find_supplier_and_services_link_text[current_user.role] }}
+    </a>
   </li>
 
   {% if current_user.has_role('admin-framework-manager') %}
     <li>
-      <a class="govuk-link" href="{{ url_for('.supplier_user_research_participants_by_framework') }}">Download potential user research participants (suppliers)</a>
+      <a class="govuk-link" href="{{ url_for('.supplier_user_research_participants_by_framework') }}">
+        Download potential user research participants (suppliers)
+      </a>
     </li>
   {% elif current_user.has_role('admin-ccs-category') %}
     <li>
-      <a class="govuk-link" href="{{ url_for('.service_update_audits') }}">Review service changes</a>
+      <a class="govuk-link" href="{{ url_for('.service_update_audits') }}">
+        Review service changes
+      </a>
     </li>
   {% endif %}
 </ul>
@@ -39,17 +47,25 @@
   <ul class="govuk-list">
     {% if current_user.has_role('admin-framework-manager') %}
       <li>
-        <a class="govuk-link" href="{{ url_for('.download_buyers') }}">Download list of all buyers</a>
+        <a class="govuk-link" href="{{ url_for('.download_buyers') }}">
+          Download list of all buyers
+        </a>
       </li>
       <li>
-        <a class="govuk-link" href="{{ url_for('.download_buyers_for_user_research') }}">Download potential user research participants (buyers)</a>
+        <a class="govuk-link" href="{{ url_for('.download_buyers_for_user_research') }}">
+          Download potential user research participants (buyers)
+        </a>
       </li>
     {% elif current_user.has_any_role('admin', 'admin-ccs-category') %}
       <li>
-        <a class="govuk-link" href="{{ url_for('.find_buyer_by_brief_id') }}">Find a buyer by opportunity ID</a>
+        <a class="govuk-link" href="{{ url_for('.find_buyer_by_brief_id') }}">
+          Find a buyer by opportunity ID
+        </a>
       </li>
       <li>
-        <a class="govuk-link" href="{{ url_for('.add_buyer_domains') }}">Add a buyer email domain</a>
+        <a class="govuk-link" href="{{ url_for('.add_buyer_domains') }}">
+          Add a buyer email domain
+        </a>
       </li>
     {% endif %}
   </ul>
@@ -60,7 +76,9 @@
   <h2 class="heading-large">Outcomes</h2>
   <ul class="govuk-list">
     <li>
-      <a class="govuk-link" href="{{ url_for('.download_outcomes') }}">Download Direct Award outcomes</a>
+      <a class="govuk-link" href="{{ url_for('.download_outcomes') }}">
+        Download Direct Award outcomes
+      </a>
     </li>
   </ul>
 
@@ -68,11 +86,14 @@
   <h2 class="heading-large">Manage applications</h2>
 
   {% for framework in frameworks %}
-    {% if framework.status in ["standstill", "live"] or (framework.family == 'digital-outcomes-and-specialists' and framework.status == 'expired') or current_user.has_any_role('admin-framework-manager', 'admin-ccs-sourcing') %}
+    {% if framework.status in ["standstill", "live"] or
+        (framework.family == 'digital-outcomes-and-specialists' and framework.status == 'expired') or
+          current_user.has_any_role('admin-framework-manager', 'admin-ccs-sourcing') %}
       <h3 class="heading-xmedium">{{framework.name}}</h3>
 
       <ul class="govuk-list">
-        {% if framework.status in ["live", "standstill"] or (framework.family == 'digital-outcomes-and-specialists' and framework.status == 'expired') %}
+        {% if framework.status in ["live", "standstill"] or
+            (framework.family == 'digital-outcomes-and-specialists' and framework.status == 'expired') %}
           {% set agreement_link_text = {
             'admin-ccs-category': 'View agreements',
             'admin-ccs-sourcing': 'Countersign agreements',
@@ -80,23 +101,41 @@
             }
         %}
           <li>
-            <a class="govuk-link" href="{{ url_for('.list_agreements', framework_slug=framework['slug'], status='signed') }}">{{ agreement_link_text[current_user.role] }}</a>
+            <a class="govuk-link" href="{{ url_for('.list_agreements', framework_slug=framework['slug'], status='signed') }}">
+              {{ agreement_link_text[current_user.role] }}
+            </a>
           </li>
         {% endif %}
 
-        {% if current_user.has_any_role('admin-ccs-sourcing', 'admin-framework-manager') %}
+        {% if current_user.has_role('admin-ccs-sourcing') %}
           <li>
-            <a class="govuk-link" href="{{ url_for('public.view_statistics', framework_slug=framework['slug']) }}">View application statistics</a>
+            <a class="govuk-link" href="{{ url_for('public.view_statistics', framework_slug=framework['slug']) }}">
+              View application statistics
+            </a>
           </li>
-        {% endif %}
-        {% if current_user.has_role('admin-framework-manager') %}
+
+        {% elif current_user.has_role('admin-framework-manager') %}
           <li>
-            <a class="govuk-link" href="{{ url_for('.manage_communications', framework_slug=framework['slug']) }}">Manage communications</a>
+            <a class="govuk-link" href="{{ url_for('public.view_statistics', framework_slug=framework['slug']) }}">
+              View application statistics
+            </a>
           </li>
-        {% endif %}
-        {% if current_user.has_any_role('admin-ccs-category', 'admin-framework-manager') %}
           <li>
-            <a class="govuk-link" href="{{ url_for('.user_list_page_for_framework', framework_slug=framework['slug']) }}">Contact suppliers</a>
+            <a class="govuk-link" href="{{ url_for('.manage_communications', framework_slug=framework['slug']) }}">
+              Manage communications
+            </a>
+          </li>
+          <li>
+            <a class="govuk-link" href="{{ url_for('.user_list_page_for_framework', framework_slug=framework['slug']) }}">
+              Contact suppliers
+            </a>
+          </li>
+
+        {% elif current_user.has_role('admin-ccs-category') %}
+          <li>
+            <a class="govuk-link" href="{{ url_for('.user_list_page_for_framework', framework_slug=framework['slug']) }}">
+              Contact suppliers
+            </a>
           </li>
         {% endif %}
       </ul>
