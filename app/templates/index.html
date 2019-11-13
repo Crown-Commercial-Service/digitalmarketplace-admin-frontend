@@ -14,7 +14,7 @@
   <div class="govuk-grid-column-two-thirds">
     {% if current_user.has_role('admin-ccs-data-controller') %}
       {# ADMIN CCS DATA CONTROLLER #}
-      <h2 class="govuk-heading-m">Search for users</h3>
+      <h2 class="govuk-heading-m">Search for users</h2>
       <ul class="govuk-list">
         <li>
           <a class="govuk-link" href="{{ url_for('.find_user_by_email_address') }}">
@@ -23,7 +23,7 @@
         </li>
       </ul>
 
-      <h2 class="govuk-heading-m">Search for suppliers</h3>
+      <h2 class="govuk-heading-m">Search for suppliers</h2>
       <ul class="govuk-list">
         <li>
           <a class="govuk-link" href="{{ url_for('.search_suppliers_and_services') }}">
@@ -32,7 +32,7 @@
         </li>
       </ul>
 
-      <h2 class="govuk-heading-m">Download supplier lists</h3>
+      <h2 class="govuk-heading-m">Download supplier lists</h2>
       <ul class="govuk-list">
         {% for framework in frameworks %}
           {% if framework.status in ["pending", "standstill", "live"] or
