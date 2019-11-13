@@ -25,17 +25,17 @@
 
   {% if current_user.has_role('admin-ccs-sourcing') %}
   {# ### Don't show instructions for read-only users ### #}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds dmspeak">
-      <p class="govuk-body">
-        Review the information for each agreement, accept it, and continue to the next one.
-      </p>
-      <p class="govuk-body">
-        If there’s a problem with an agreement, contact the person who uploaded it and come back to it later. Ask
-        suppliers to resubmit from the link in the email they received after they were accepted on to the framework.
-      </p>
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <p class="govuk-body">
+          Review the information for each agreement, accept it, and continue to the next one.
+        </p>
+        <p class="govuk-body">
+          If there’s a problem with an agreement, contact the person who uploaded it and come back to it later. Ask
+          suppliers to resubmit from the link in the email they received after they were accepted on to the framework.
+        </p>
+      </div>
     </div>
-  </div>
   {% endif %}
 
   <div class="govuk-grid-row">

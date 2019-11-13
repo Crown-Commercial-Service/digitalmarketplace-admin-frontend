@@ -168,7 +168,7 @@ class TestIndex(LoggedInApplicationTest):
             "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
         if link_should_be_visible:
-            link_text = document.xpath('.//a[@href="/admin/search"]//text()')[0]
+            link_text = document.xpath('.//a[@href="/admin/search"]//text()')[0].strip()
             assert link_text == expected_link_text
 
     @pytest.mark.parametrize("link_url, expected_link_text", [
@@ -196,7 +196,7 @@ class TestIndex(LoggedInApplicationTest):
             "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
         if link_should_be_visible:
-            link_text = document.xpath('.//a[@href="{}"]//text()'.format(link_url))[0]
+            link_text = document.xpath('.//a[@href="{}"]//text()'.format(link_url))[0].strip()
             assert link_text == expected_link_text
 
 
@@ -322,7 +322,8 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
             "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
         )
         if expected_link_text:
-            assert document.xpath('.//a[contains(text(),"agreements")]//text()')[0] == expected_link_text, (
+            link_text = document.xpath('.//a[contains(text(),"agreements")]//text()')[0].strip()
+            assert link_text == expected_link_text, (
                 "Agreements link text for role {} is {}".format(role, expected_link_text)
             )
 
@@ -414,7 +415,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         response = self.client.get('/admin')
         document = html.fromstring(response.get_data(as_text=True))
 
-        assert bool(document.xpath('.//h3[contains(text(),"Download supplier lists")]')) == link_should_be_visible
+        assert bool(document.xpath('.//h2[contains(text(),"Download supplier lists")]')) == link_should_be_visible
 
         link_is_visible = bool(document.xpath('.//a[contains(text(),"Amazing Digital Framework")]'))
         assert link_is_visible is link_should_be_visible, (

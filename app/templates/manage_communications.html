@@ -26,7 +26,9 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">
-        <div class="dmspeak"><h2 class="heading-large">Communication</h2></div>
+        <h2 class="govuk-heading-l">
+          Communication
+        </h2>
           {% call(item) summary.list_table(
             comm_type_objs.communication,
             caption="Communications present",
@@ -58,7 +60,9 @@
           {% endwith %}
 
           {% if framework.status in ['open'] %}
-            <div class="dmspeak"><h2 class="heading-large">Clarification answers</h2></div>
+            <h2 class="govuk-heading-l">
+              Clarification answers
+            </h2>
             {% call(item) summary.list_table(
               comm_type_objs.clarification,
               caption="Communications present",
