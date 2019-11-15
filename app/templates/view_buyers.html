@@ -131,7 +131,7 @@
     <div>
         <hr>
         <h3>Invited Sellers</h3>
-        {% if brief.lotSlug == 'rfx' and brief.sellers %}
+        {% if brief.lotSlug in ['rfx', 'specialist', 'training2'] and brief.sellers %}
 
             {% call(item) summary.list_table(
                 brief.sellers.keys(),
@@ -154,24 +154,24 @@
                 {% endcall %}
             {% endcall %}
         {% endif %}
-        {%if brief.lotSlug == 'rfx' %}
+        {%if brief.lotSlug in ['rfx', 'specialist', 'training2'] %}
             <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
                 {{ form.csrf_token }}
-                <label class="question-heading" for="add_seller_to_rfx_brief">Add a seller to this RFx brief (seller code)</label>
-                <input type = "text" name="add_seller_to_rfx_brief" id="add_seller_to_rfx_brief" class="text-box"></input>
+                <label class="question-heading" for="add_seller_to_brief">Add a seller to this brief (seller code)</label>
+                <input type = "text" name="add_seller_to_brief" id="add_seller_to_brief" class="text-box"></input>
                 <br>
             <input type="submit" value="Save" class="button-save">
             </form>
             <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
                 {{ form.csrf_token }}
-                <label class="question-heading" for="remove_seller_from_rfx_brief">Remove a seller from this RFx brief (seller code)</label>
-                <input type = "text" name="remove_seller_from_rfx_brief" id="remove_seller_from_rfx_brief" class="text-box"></input>
+                <label class="question-heading" for="remove_seller_from_brief">Remove a seller from this brief (seller code)</label>
+                <input type = "text" name="remove_seller_from_brief" id="remove_seller_from_brief" class="text-box"></input>
                 <br>
                 <input type="submit" value="Save" class="button-save">
                 <hr>
             </form>
         {% endif %}
-        {% if brief.lotSlug != 'rfx' %}
+        {% if brief.lotSlug not in ['rfx', 'specialist', 'training2'] %}
             <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
                 {{ form.csrf_token }}
                 <label class="question-heading" for="edit_seller_email_list">Edit seller email list (List of sellers). One on each line</label>

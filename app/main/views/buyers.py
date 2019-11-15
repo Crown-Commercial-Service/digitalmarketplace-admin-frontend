@@ -118,13 +118,13 @@ def update_brief(brief_id):
                                   'applications_closed_at': request.form['closed_at']
                                   },
                        'update_details': {'updated_by': current_user.email_address}}).get('briefs')
-        elif request.form.get('add_seller_to_rfx_brief'):
+        elif request.form.get('add_seller_to_brief'):
             brief = (
                 data_api_client
                 .req
                 .briefs(brief_id)
                 .suppliers(
-                    request.form['add_seller_to_rfx_brief'].strip()
+                    request.form['add_seller_to_brief'].strip()
                 )
                 .put({
                     'update_details': {
@@ -133,13 +133,13 @@ def update_brief(brief_id):
                 })
                 .get('briefs')
             )
-        elif request.form.get('remove_seller_from_rfx_brief'):
+        elif request.form.get('remove_seller_from_brief'):
             brief = (
                 data_api_client
                 .req
                 .briefs(brief_id)
                 .suppliers(
-                    request.form['remove_seller_from_rfx_brief'].strip()
+                    request.form['remove_seller_from_brief'].strip()
                 )
                 .delete({
                     'update_details': {
