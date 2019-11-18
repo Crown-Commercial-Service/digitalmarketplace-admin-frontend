@@ -20,94 +20,47 @@
 {% endblock %}
 
   {% block main_content %}
-  <div>
-    <h3>Team Details</h3>
-    Team ID: {{team_id}}
-    <br/>
-    Team Name: {{team.name}}
-    <br/> 
-    Team Email Address : {{team.emailAddress}}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+      {% for category, message in messages %}
+          {% if message == 'no_team_id' %}
+              {% set displayed_message = "There are no teams that exist with ID {}".format(team_id) %}
+          {% endif %}
+          {%
+            with
+                message = displayed_message,
+                type = "destructive" if category == 'error' else "success"
+            %}
+   <div class={{ "callout--warning" if category == 'error' else "callout" }}>
+                {% include "toolkit/notification-banner.html" %}
+   </div>
+          {% endwith %}
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div> 
+    <br> 
+    <h3>List of Teams</h3>
+    {% call(item) summary.list_table(
+      teams,
+      field_headings=[
+        'Agency Name',
+        'Team ID',
+        'Team Name',
+        'Team Status'
+      ],
+      field_headings_visible=True)
+  %}
+    {% call summary.row() %}
+      {{ summary.text(item.agency_name) }}
+      {% call summary.field() %}
+        <a href="{{ url_for('.find_team_by_team_id', team_id = item.team_id) }}" class="question">{{ item.team_id }}</a> 
+      {% endcall %}
+        {{ summary.text(item.team_name) }}
+        {{ summary.text(item.status) }}
+      {% endcall %}
+    {% endcall %}
   </div>
 
-<div> 
-  <br> 
-  <h3> Team Leads Table</h3>
-  {% call(item) summary.list_table(
-    team_leads,
-    field_headings=[
-      'Name',                    
-      'Email Address',
-    ],
-    field_headings_visible=True)
-%}
-  {% call summary.row() %}
-    {{ summary.text(item.name) }}
-    {% call summary.field() %}
-      <a href="{{ url_for('.find_user_by_email_address', email_address = item.emailAddress)}}" class="question">{{ item.emailAddress}}</a>    
-    {% endcall %}
-  {% endcall %}
-{% endcall %}
-
-<h3> Team Members' Permissions</h3>
-{% call(item) summary.list_table(
-  team_members,
-  field_headings=[  
-  'Name',                   
-  'Email Address',
-  'Download Reports',
-  'Publish Opportunities',
-  'Create Drafts',
-  'Download Responses',
-  'Answer Seller Questions', 
-  'Create Work Orders'
-  ],
-  field_headings_visible=True)
-%}
-{% call summary.row() %}
-
-    {{ summary.text(item.name) }}
-    {% call summary.field() %}
-      <a href="{{ url_for('.find_user_by_email_address', email_address = item.emailAddress)}}" class="question">{{ item.emailAddress}}</a> 
-    {% endcall %}
-
-    {% call summary.field() %}
-      {{ item.permissions['download_reports'] }}
-    {% endcall %}
-
-    {% call summary.field() %}
-      {{ item.permissions['publish_opportunities'] }}
-    {% endcall %}
-
-    {% call summary.field() %}
-      {{ item.permissions['create_drafts'] }}
-    {% endcall %}
-
-    {% call summary.field() %}
-      {{ item.permissions['download_responses'] }}
-    {% endcall %}
-
-    {% call summary.field() %}
-      {{ item.permissions['answer_seller_questions'] }}
-    {% endcall %}
-
-    {% call summary.field() %}
-      {{ item.permissions['create_work_orders'] }}
-    {% endcall %}
-
-    {% endcall %}
-    {% endcall %}
-</div>
-
-<div>
-  <h3> Team Briefs</h3>
-      <table>
-      {% for b in briefs %}
-            <tr>
-              <td> <a href="{{ url_for('.find_buyer_by_brief_id', brief_id=b.brief_id) }}" class="question">{{ b.brief_id }}</a></td>
-              <td>{{ b.name }}</td>
-            </tr>
-      {% endfor %}
-      </table>
-</div>
-
-  {% endblock %}
+{% endblock %}

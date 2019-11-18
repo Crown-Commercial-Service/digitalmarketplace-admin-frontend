@@ -68,16 +68,19 @@
         {% call(item) summary.list_table(
                 teams,
                 field_headings=[
+                    'Team Id',
+                    'Team Name',
                     'Name',
                     'Email'
                 ],
                 field_headings_visible=True)
             %}
                 {% call summary.row() %}
-                    {{ summary.field_name(item.name) }}
+                    {{ summary.field_name(item.team_id) }}
+                    {{ summary.field_name(item.team_name) }}
+                    {{ summary.field_name(item.user_name) }}
                     {% call summary.field() %}
                         <a href="{{ url_for('.find_user_by_email_address', email_address = item.email_address)}}" class="question">{{ item.email_address }}</a>
-                    <!-- {{ item.email_address }} -->
                     {% endcall %}
                 {% endcall %}
             {% endcall %}

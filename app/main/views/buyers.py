@@ -264,29 +264,41 @@ def seller_feedback_email(brief_id):
 def find_team_by_team_id():
     team_id = request.args.get('team_id')
 
-    team_info = data_api_client.req.admin().team(team_id).get()
-    team = team_info.get('team')
-    briefs = team_info.get('briefs')
+    try:
+        if team_id:
+            team_info = data_api_client.req.admin().team(team_id).get()
+            team = team_info.get('team')
+            briefs = team_info.get('briefs')
 
-    team_leads = team.get('teamLeads')
-    team_leads_email_name = []
+            team_leads = team.get('teamLeads')
+            team_leads_email_name = []
 
-    for i in team_leads:
-        team_leads_email_name.append(team_leads.get(i))
+            for i in team_leads:
+                team_leads_email_name.append(team_leads.get(i))
 
-    team_members = team.get('teamMembers')
-    team_members_email_name = []
+            team_members = team.get('teamMembers')
+            team_members_email_name = []
 
-    for i in team_members:
-        team_members_email_name.append(team_members.get(i))
+            for i in team_members:
+                team_members_email_name.append(team_members.get(i))
 
-    return render_template_with_csrf(
-        "view_teams.html",
-        team_id=team_id,
-        team=team,
-        briefs=briefs,
-        team_leads=team_leads_email_name,
-        team_members=team_members_email_name
+            return render_template_with_csrf(
+                "view_team.html",
+                team_id=team_id,
+                team=team,
+                briefs=briefs,
+                team_leads=team_leads_email_name,
+                team_members=team_members_email_name
+            )
+
+    except HTTPError as e:  # noqa
+        flash('no_team_id', 'error')
+
+    teams = data_api_client.req.admin().team().get()
+    return render_template(
+        'view_teams.html',
+        teams=teams.get('teams'),
+        team_id=team_id
     )
 
 
@@ -301,7 +313,7 @@ def find_brief_by_team_id():
     briefs = team_info.get('briefs')
 
     return render_template_with_csrf(
-        "view_teams.html",
+        "view_team.html",
         team_id=team_id,
         team=team
     )
