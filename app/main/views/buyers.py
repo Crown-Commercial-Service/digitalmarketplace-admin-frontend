@@ -279,8 +279,15 @@ def find_team_by_team_id():
             team_members = team.get('teamMembers')
             team_members_email_name = []
 
-            for i in team_members:
-                team_members_email_name.append(team_members.get(i))
+            if team_members is None:
+                team_members_flag = False
+
+            else:
+
+                for i in team_members:
+                    team_members_email_name.append(team_members.get(i))
+
+                team_members_flag = True
 
             return render_template_with_csrf(
                 "view_team.html",
@@ -288,7 +295,8 @@ def find_team_by_team_id():
                 team=team,
                 briefs=briefs,
                 team_leads=team_leads_email_name,
-                team_members=team_members_email_name
+                team_members=team_members_email_name,
+                team_members_flag=team_members_flag
             )
 
     except HTTPError as e:  # noqa
