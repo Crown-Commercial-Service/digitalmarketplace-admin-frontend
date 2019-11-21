@@ -201,12 +201,12 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
         self.data_api_client = self.data_api_client_patch.start()
         self.data_api_client.get_supplier_frameworks.return_value = {
             "frameworkInterest": [
-                SupplierFrameworkStub(framework_slug="g-cloud-10", declaration={"foo": "bar"}).response(),
+                SupplierFrameworkStub(framework_slug="g-cloud-10", with_declaration=True).response(),
                 SupplierFrameworkStub(
                     framework_slug="digital-outcomes-and-specialists-3",
-                    declaration={"foo": "bar"},
+                    with_declaration=True,
                 ).response(),
-                SupplierFrameworkStub(framework_slug="g-cloud-11", declaration={"foo": "bar"}).response(),
+                SupplierFrameworkStub(framework_slug="g-cloud-11", with_declaration=True).response(),
             ]
         }
 
@@ -237,9 +237,9 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
     ):
         self.user_role = role
         self.data_api_client.get_supplier_frameworks.return_value["frameworkInterest"].extend((
-            SupplierFrameworkStub(framework_slug="g-cloud-standstill-1", declaration={"foo": "bar"}).response(),
-            SupplierFrameworkStub(framework_slug="g-cloud-pending-1", declaration={"foo": "bar"}).response(),
-            SupplierFrameworkStub(framework_slug="g-cloud-open-1", declaration={"foo": "bar"}).response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-standstill-1", with_declaration=True).response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-pending-1", with_declaration=True).response(),
+            SupplierFrameworkStub(framework_slug="g-cloud-open-1", with_declaration=True).response(),
             SupplierFrameworkStub(framework_slug="g-cloud-expired-1").response(),
         ))
 
@@ -1450,7 +1450,7 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
             FrameworkStub(frameworkLiveAtUTC="b", status="live", slug="g-cloud-11").response(),
         ]}
         # TODO: fix test utils bug to reset declaration on init
-        supplier_framework = SupplierFrameworkStub(framework_slug="g-cloud-11", declaration={}).response()
+        supplier_framework = SupplierFrameworkStub(framework_slug="g-cloud-11").response()
         self.data_api_client.get_supplier_frameworks.return_value = {
             "frameworkInterest": [supplier_framework]
         }
@@ -1718,10 +1718,10 @@ class TestViewingASupplierDeclaration(LoggedInApplicationTest):
         sf_stub = SupplierFrameworkStub(
             framework_slug=framework_response["frameworks"]["slug"],
             supplier_id=supplier_response["suppliers"]["id"],
-            on_framework=True,
-            declaration=G11_DECLARATION.copy()
-        )
-        self.data_api_client.get_supplier_framework_info.return_value = sf_stub.single_result_response()
+            on_framework=True
+        ).single_result_response()
+        sf_stub['frameworkInterest']['declaration'] = G11_DECLARATION.copy()
+        self.data_api_client.get_supplier_framework_info.return_value = sf_stub
 
     def teardown_method(self, method):
         self.data_api_client_patch.stop()
