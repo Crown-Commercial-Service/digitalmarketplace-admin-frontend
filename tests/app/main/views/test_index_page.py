@@ -310,6 +310,23 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         assert bool(document.xpath('.//a[contains(text(),"Manage communications")]')) == comms_shown
         assert bool(document.xpath('.//a[contains(text(),"Contact suppliers")]')) == contact_shown
 
+    def test_stats_link_not_shown_if_no_pp_id(self):
+        self.data_api_client.find_frameworks.return_value = {"frameworks": [
+            {
+                "id": 7,
+                "name": "Mediocre Digital Framework",
+                "slug": "mediocre-digital-framework",
+                "family": "mediocre-digital-framework",
+                "status": "open",
+            },
+
+        ]}
+        self.user_role = "admin-framework-manager"
+        response = self.client.get('/admin')
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert not document.xpath('.//a[contains(text(),"View application statistics")]')
+
     @pytest.mark.parametrize("role, link_should_be_visible, expected_link_text", [
         ("admin", False, None),
         ("admin-ccs-category", True, "View agreements"),
