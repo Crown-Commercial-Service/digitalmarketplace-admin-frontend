@@ -54,6 +54,16 @@ class Config(object):
         "invite_contributor": "5eefe42d-1694-4388-8908-991cdfba0a71",
     }
 
+    # a mapping of framework slug to identifier on performance platform containing signup stats
+    PERFORMANCE_PLATFORM_ID_MAPPING = {
+        "g-cloud-9": "g-cloud-9-supplier-applications",
+        "g-cloud-10": "g-cloud-10-supplier-applications",
+        "g-cloud-11": "g-cloud-11-supplier-applications",
+        "digital-outcomes-and-specialists-3": "digital-outcomes-specialists-3",
+        "digital-outcomes-and-specialists-4": "digital-outcomes-specialists-4",
+    }
+    PERFORMANCE_PLATFORM_BASE_URL = "https://www.gov.uk/performance/"
+
     @staticmethod
     def init_app(app):
         repo_root = os.path.abspath(os.path.dirname(__file__))

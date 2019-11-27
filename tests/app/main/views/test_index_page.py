@@ -207,9 +207,15 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         self.data_api_client_patch = mock.patch('app.main.views.services.data_api_client', autospec=True)
         self.data_api_client = self.data_api_client_patch.start()
         self.data_api_client.find_frameworks.return_value = self._get_frameworks_list_fixture_data()
+        self.pp_id_mapping_patch = mock.patch.dict(
+            self.app.config["PERFORMANCE_PLATFORM_ID_MAPPING"],
+            {"amazing-digital-framework": "amazing-digitalized-framework"},
+        )
+        self.pp_id_mapping_patch.start()
 
     def teardown_method(self, method):
         self.data_api_client_patch.stop()
+        self.pp_id_mapping_patch.stop()
         super().teardown_method(method)
 
     @staticmethod

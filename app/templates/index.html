@@ -164,19 +164,15 @@
                 </li>
               {% endif %}
 
-              {% if current_user.has_role('admin-ccs-sourcing') %}
+              {% if framework['slug'] in config.PERFORMANCE_PLATFORM_ID_MAPPING and current_user.has_any_role('admin-ccs-sourcing', 'admin-framework-manager') %}
                 <li>
-                  <a class="govuk-link" href="{{ url_for('public.view_statistics', framework_slug=framework['slug']) }}">
+                  <a class="govuk-link" href="{{ config.PERFORMANCE_PLATFORM_BASE_URL }}{{ config.PERFORMANCE_PLATFORM_ID_MAPPING[framework.slug] }}">
                     View application statistics
                   </a>
                 </li>
+              {% endif %}
 
-              {% elif current_user.has_role('admin-framework-manager') %}
-                <li>
-                  <a class="govuk-link" href="{{ url_for('public.view_statistics', framework_slug=framework['slug']) }}">
-                    View application statistics
-                  </a>
-                </li>
+              {% if current_user.has_role('admin-framework-manager') %}
                 <li>
                   <a class="govuk-link" href="{{ url_for('.manage_communications', framework_slug=framework['slug']) }}">
                     Manage communications
