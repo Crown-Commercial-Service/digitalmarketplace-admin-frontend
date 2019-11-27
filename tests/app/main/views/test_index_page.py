@@ -19,6 +19,7 @@ class TestIndex(LoggedInApplicationTest):
     def test_change_password_link_is_shown_to_all_admin_users(self, role):
         self.user_role = role
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
         assert bool(document.xpath('.//a[@href="/user/change-password"]')), "Role {} cannot see the link".format(role)
 
@@ -33,6 +34,7 @@ class TestIndex(LoggedInApplicationTest):
     def test_add_buyer_email_domain_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
         link_is_visible = bool(document.xpath('.//a[@href="/admin/buyers/add-buyer-domains"]'))
 
@@ -51,6 +53,7 @@ class TestIndex(LoggedInApplicationTest):
     def test_user_support_header_is_shown_to_users_with_right_roles(self, role, header_should_be_visible):
         self.user_role = role
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
         header_is_visible = bool(document.xpath('.//h2[contains(text(),"User support")]'))
 
@@ -69,6 +72,7 @@ class TestIndex(LoggedInApplicationTest):
     def test_find_a_user_by_email_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
         link_is_visible = bool(document.xpath('.//a[@href="/admin/users"]'))
 
@@ -87,6 +91,7 @@ class TestIndex(LoggedInApplicationTest):
     def test_manage_admin_users_link_is_shown_to_users_with_the_right_role(self, role, link_should_be_visible):
         self.user_role = role
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
         link_is_visible = bool(document.xpath('.//a[@href="/admin/admin-users"]'))
 
@@ -105,6 +110,7 @@ class TestIndex(LoggedInApplicationTest):
     def test_check_service_edits_link_is_shown_to_users_with_the_right_role(self, role, link_should_be_visible):
         self.user_role = role
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
         link_is_visible = bool(document.xpath('.//a[@href="/admin/services/updates/unapproved"]'))
 
@@ -123,6 +129,7 @@ class TestIndex(LoggedInApplicationTest):
     def test_manage_applications_header_is_shown_to_users_with_the_right_role(self, role, header_should_be_visible):
         self.user_role = role
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
         header_is_visible = bool(document.xpath('.//h2[contains(text(),"Manage applications")]'))
 
@@ -141,6 +148,7 @@ class TestIndex(LoggedInApplicationTest):
     def test_find_buyer_by_opportunity_id_link_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
         link_is_visible = bool(document.xpath('.//a[@href="/admin/buyers"]'))
 
@@ -161,6 +169,7 @@ class TestIndex(LoggedInApplicationTest):
     ):
         self.user_role = role
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
         link_is_visible = bool(document.xpath('.//a[@href="/admin/search"]'))
 
@@ -189,6 +198,7 @@ class TestIndex(LoggedInApplicationTest):
     ):
         self.user_role = role
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
         link_is_visible = bool(document.xpath('.//a[@href="{}"]'.format(link_url)))
 
@@ -246,6 +256,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
 
         self.user_role = "admin-framework-manager"
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
 
         assert bool(document.xpath('.//h3[contains(text(),"Amazing Digital Framework")]')) == header_shown
@@ -264,6 +275,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
 
         self.user_role = "admin-framework-manager"
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
 
         assert bool(
@@ -285,6 +297,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
 
         self.user_role = "admin-ccs-category"
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
 
         assert bool(document.xpath('.//h3[contains(text(),"Amazing Digital Framework")]')) == header_shown
@@ -303,6 +316,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         self.data_api_client.find_frameworks.return_value = self._get_mock_framework_response(framework_status)
         self.user_role = "admin-framework-manager"
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
 
         assert bool(document.xpath('.//a[contains(text(),"agreements")]')) == agreements_shown
@@ -338,6 +352,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
     def test_framework_action_list_includes_agreements_link(self, role, link_should_be_visible, expected_link_text):
         self.user_role = role
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
         link_is_visible = bool(document.xpath('.//a[contains(text(),"agreements")]'))
 
@@ -361,6 +376,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
     def test_framework_action_list_includes_contact_suppliers(self, role, link_should_be_visible):
         self.user_role = role
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
         link_is_visible = bool(document.xpath('.//a[contains(text(),"Contact suppliers")]'))
 
@@ -379,6 +395,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
     def test_framework_action_list_includes_manage_communications(self, role, link_should_be_visible):
         self.user_role = role
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
         link_is_visible = bool(document.xpath('.//a[contains(text(),"Manage communications")]'))
 
@@ -397,6 +414,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
     def test_framework_action_list_includes_statistics(self, role, link_should_be_visible):
         self.user_role = role
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
         link_is_visible = bool(document.xpath('.//a[contains(text(),"View application statistics")]'))
 
@@ -436,6 +454,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         ]}
 
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
 
         assert bool(document.xpath('.//h2[contains(text(),"Download supplier lists")]')) == link_should_be_visible
@@ -460,6 +479,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
     def test_download_g_cloud_outcomes_is_shown_to_users_with_right_roles(self, role, link_should_be_visible):
         self.user_role = role
         response = self.client.get('/admin')
+        assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
         link_is_visible = bool(document.xpath('.//a[@href="/admin/direct-award/outcomes"]'))
 
