@@ -45,9 +45,7 @@ $govuk-compatibility-govukelements: true;
 
 // App specific styles
 @import "_layout";
-@import "_c3";  // Graphs
 @import "_diff.scss";
-@import "views/statistics";
 @import "views/list_agreements";
 
 // Overrides
