@@ -4,7 +4,6 @@
   Sprockets-style (https://github.com/sstephenson/sprockets)
   directives to concatenate multiple Javascript files into one.
 */
-//= require ../../../node_modules/govuk_frontend_toolkit/javascripts/vendor/polyfills/bind.js
 //= require ../../../node_modules/jquery/dist/jquery.js
 //= require ../../../node_modules/hogan.js/web/builds/3.0.2/hogan-3.0.2.js
 //= require ../../../node_modules/d3/d3.js
