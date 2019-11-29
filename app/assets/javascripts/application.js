@@ -6,8 +6,6 @@
 */
 //= require ../../../node_modules/jquery/dist/jquery.js
 //= require ../../../node_modules/hogan.js/web/builds/3.0.2/hogan-3.0.2.js
-//= require ../../../node_modules/d3/d3.js
-//= require ../../../node_modules/c3/c3.js
 //= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/list-entry.js
 //= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/validation.js
 //= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/word-counter.js
@@ -17,9 +15,7 @@
 //= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/show-hide-content.js
 ; // Hack needed because show-hide-content.js does not have a closing ";"
 //= require ../../../node_modules/digitalmarketplace-govuk-frontend/govuk-frontend/all.js
-//= require _scroll-through-statistics.js
 //= require _selection-buttons.js
-//= require _tables-to-charts.js
 //= require _analytics.js
 //= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/module-loader.js
 

@@ -46,7 +46,10 @@ def index():
         ))
     ]
     frameworks = sorted(frameworks, key=lambda x: x['id'], reverse=True)
-    return render_template("index.html", frameworks=frameworks)
+    return render_template(
+        "index.html",
+        frameworks=frameworks,
+    )
 
 
 @main.route('/services', methods=['GET'])
