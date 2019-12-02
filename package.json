@@ -10,7 +10,7 @@
     "colors": "1.1.2",
     "del": "^5.1.0",
     "digitalmarketplace-frameworks": "https://github.com/alphagov/digitalmarketplace-frameworks.git#v16.0.10",
-    "digitalmarketplace-frontend-toolkit": "https://github.com/alphagov/digitalmarketplace-frontend-toolkit.git#v35.0.1",
+    "digitalmarketplace-frontend-toolkit": "https://github.com/alphagov/digitalmarketplace-frontend-toolkit.git#v35.2.1",
     "digitalmarketplace-govuk-frontend": "^0.2.1",
     "govuk-country-and-territory-autocomplete": "0.5.1",
     "govuk-elements-sass": "3.0.3",
@@ -22,7 +22,6 @@
     "gulp-sass": "^4.0.2",
     "gulp-shell": "^0.7.1",
     "gulp-uglify": "^3.0.2",
-    "hogan.js": "3.0.2",
     "jquery": "3.4.1"
   },
   "scripts": {
