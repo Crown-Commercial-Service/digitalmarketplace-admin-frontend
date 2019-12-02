@@ -159,7 +159,7 @@ class TestIndex(LoggedInApplicationTest):
     @pytest.mark.parametrize("role, link_should_be_visible, expected_link_text", [
         ("admin", True, 'Edit supplier accounts or view services'),
         ("admin-ccs-category", True, 'Edit suppliers and services'),
-        ("admin-ccs-sourcing", True, 'Edit supplier declarations'),
+        ("admin-ccs-sourcing", True, 'View and edit supplier declarations'),
         ("admin-framework-manager", True, 'View suppliers and services'),
         ("admin-manager", False, None),
         ("admin-ccs-data-controller", True, "View and edit suppliers"),
