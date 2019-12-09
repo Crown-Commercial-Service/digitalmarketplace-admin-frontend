@@ -7,6 +7,7 @@ from dmcontent.formats import format_service_price
 from dmutils import s3  # this style of import so we only have to mock once
 from dmutils.documents import upload_service_documents
 from dmutils.flask import timed_render_template as render_template
+from dmutils.forms.errors import govuk_errors
 from flask import abort, current_app, flash, redirect, request, url_for
 from flask_login import current_user
 
@@ -46,10 +47,7 @@ def index():
         ))
     ]
     frameworks = sorted(frameworks, key=lambda x: x['id'], reverse=True)
-    return render_template(
-        "index.html",
-        frameworks=frameworks,
-    )
+    return render_template("index.html", frameworks=frameworks)
 
 
 @main.route('/services', methods=['GET'])
@@ -233,7 +231,7 @@ def update_service(service_id, section_id, question_slug=None):
             section=section,
             service_data=section.unformat_data(dict(service, **posted_data)),
             service_id=service_id,
-            errors=errors,
+            errors=govuk_errors(errors),
         ), 400
 
     return redirect(url_for(".view_service", service_id=service_id))

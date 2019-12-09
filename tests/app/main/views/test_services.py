@@ -1234,16 +1234,18 @@ class TestServiceUpdate(LoggedInApplicationTest):
 
         document = html.fromstring(response.get_data(as_text=True))
 
-        validation_banner_h2 = document.xpath("//h2[@class='validation-masthead-heading']//text()")[0].strip()
-        assert validation_banner_h2 == "There was a problem with your answer to:"
+        assert len(document.xpath(
+            "//h2[@id='error-summary-title'][normalize-space(string())=$t]",
+            t="There is a problem",
+        )) == 1
 
         validation_banner_links = [
-            (anchor.text_content(), anchor.get('href')) for anchor in
-            document.xpath("//a[@class='validation-masthead-link']")
+            (a.xpath("normalize-space(string())"), a.get('href'))
+            for a in document.xpath("//*[contains(@class,'govuk-error-summary')]//li//a")
         ]
         assert sorted(validation_banner_links) == sorted([
-            ("Service benefits", "#serviceBenefits"),
-            ("Service features", "#serviceFeatures")
+            ("You can’t write more than 10 words for each benefit.", "#input-serviceBenefits"),
+            ("You can’t write more than 10 words for each feature.", "#input-serviceFeatures"),
         ])
 
         validation_errors = [error.strip() for error in document.xpath("//span[@class='validation-message']//text()")]
