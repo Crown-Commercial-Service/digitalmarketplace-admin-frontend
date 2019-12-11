@@ -152,18 +152,37 @@ class TestAddBuyerDomainsView(LoggedInApplicationTest):
         actual_code = response.status_code
         assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
 
-    def test_admin_user_can_add_a_new_buyer_domain(self):
+    @pytest.mark.parametrize("new_buyer_domain", (
+        "kev.uk",
+        "zz",
+    ))
+    def test_admin_user_can_add_a_new_buyer_domain(self, new_buyer_domain):
         response1 = self.client.post('/admin/buyers/add-buyer-domains',
-                                     data={'new_buyer_domain': 'kev.uk'}
+                                     data={'new_buyer_domain': new_buyer_domain}
                                      )
         assert response1.status_code == 302
-        self.assert_flashes("You’ve added kev.uk.")
+        self.assert_flashes(f"You’ve added {new_buyer_domain}.")
         assert self.data_api_client.create_buyer_email_domain.call_args_list == [
-            mock.call("kev.uk", "test@example.com")
+            mock.call(new_buyer_domain, "test@example.com")
         ]
 
         response2 = self.client.get(response1.location)
-        assert "You’ve added kev.uk" in response2.get_data(as_text=True)
+        assert f"You’ve added {new_buyer_domain}" in response2.get_data(as_text=True)
+
+    def test_admin_user_cannot_add_blacklisted_buyer_domain(self):
+        response = self.client.post(
+            '/admin/buyers/add-buyer-domains',
+            data={'new_buyer_domain': "org.uk"},
+        )
+        assert response.status_code == 400
+        assert self.data_api_client.create_buyer_email_domain.called is False
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert document.xpath(
+            "//*[@class='banner-message'][normalize-space(string())=$t]",
+            t="Cannot use this domain suffix: ‘.org.uk’ domains are publicly purchasable",
+        )
 
     def test_post_empty_form_error(self):
         response = self.client.post('/admin/buyers/add-buyer-domains',
