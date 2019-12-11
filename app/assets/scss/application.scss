@@ -29,6 +29,7 @@ $path: "/admin/static/images/";
 @import "toolkit/forms/_selection-buttons";
 @import "toolkit/forms/_summary";
 @import "toolkit/forms/_textboxes";
+// remove when no longer used in validation messages for fields
 @import "toolkit/forms/_validation";
 @import "toolkit/forms/_word-counter";
 @import "toolkit/forms/_option-select";
