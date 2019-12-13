@@ -5,6 +5,7 @@
 {% from "components/button/macro.njk" import govukButton %}
 {% from "components/phase-banner/macro.njk" import govukPhaseBanner %}
 {% from "components/tabs/macro.njk" import govukTabs %}
+{% from "components/error-summary/macro.njk" import govukErrorSummary %}
 
 {# This can be removed once we start using govuk-frontend template #}
 {# The reason calling this block here is to change the header title so that it does not
@@ -36,6 +37,14 @@
       }) }}
       {% block breadcrumbs %}{% endblock %}
       {% include "toolkit/flash_messages.html" %}
+      {% block errorSummary %}
+        {% if errors %}
+          {{ govukErrorSummary({
+          "titleText": "There is a problem",
+          "errorList": errors.values(),
+        }) }}
+        {% endif %}
+      {% endblock %}
     {% endblock %}
     <main id="content" role="main">
       {# TODO: Remove this block when we start removing govuk_template but be sure #}

@@ -5,14 +5,14 @@
   var CountryAutocomplete = function() {
 
     openregisterLocationPicker({
-      selectElement: document.getElementById('location-autocomplete'),
+      selectElement: document.getElementById('input-country'),
       url: '/admin/static/location-autocomplete-graph.json'
     });
 
-    $('#location-autocomplete').keyup(function(event) {
+    $('#input-country').keyup(function(event) {
       // Clear the input value of the country select input, if the autocomplete is cleared.
       if ($(this).val().length < 2) {
-        $('#location-autocomplete-select').val('');
+        $('#input-country-select').val('');
       };
     });
   };

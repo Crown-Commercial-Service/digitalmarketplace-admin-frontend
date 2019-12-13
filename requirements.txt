@@ -10,7 +10,7 @@ lxml==4.4.1
 # Putting upgrade on hold due to v1.0.0 using sha512 instead of sha1 by default
 itsdangerous==0.24  # pyup: <1.0.0
 
-git+https://github.com/alphagov/digitalmarketplace-utils.git@50.0.1#egg=digitalmarketplace-utils==50.0.1
+git+https://github.com/alphagov/digitalmarketplace-utils.git@50.4.0#egg=digitalmarketplace-utils==50.4.0
 git+https://github.com/alphagov/digitalmarketplace-content-loader.git@7.1.1#egg=digitalmarketplace-content-loader==7.1.1
 git+https://github.com/alphagov/digitalmarketplace-apiclient.git@21.4.1#egg=digitalmarketplace-apiclient==21.4.1
 git+https://github.com/alphagov/govuk-frontend-jinja.git@v0.4.0-alpha#egg=govuk-frontend-jinja==0.4.0-alpha
@@ -18,9 +18,9 @@ git+https://github.com/alphagov/govuk-frontend-jinja.git@v0.4.0-alpha#egg=govuk-
 ## The following requirements were added by pip freeze:
 asn1crypto==1.2.0
 blinker==1.4
-boto3==1.10.23
-botocore==1.13.23
-certifi==2019.9.11
+boto3==1.10.36
+botocore==1.13.36
+certifi==2019.11.28
 cffi==1.13.2
 chardet==3.0.4
 Click==7.0
@@ -51,7 +51,7 @@ PyJWT==1.7.1
 python-dateutil==2.8.0
 python-json-logger==0.1.11
 pytz==2019.3
-PyYAML==5.1.2
+PyYAML==5.2
 requests==2.22.0
 s3transfer==0.2.1
 six==1.13.0

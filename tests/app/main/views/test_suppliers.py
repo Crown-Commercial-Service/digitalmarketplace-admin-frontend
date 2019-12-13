@@ -1691,8 +1691,10 @@ class TestUpdatingSupplierDetails(LoggedInApplicationTest):
         assert self.data_api_client.update_supplier_declaration.called is False
         assert expected_error_msg in response.get_data(as_text=True)
         document = html.fromstring(response.get_data(as_text=True))
-        validation_banner_h2 = document.xpath("//h2[@class='validation-masthead-heading']//text()")[0].strip()
-        assert validation_banner_h2 == "There was a problem with your answer to:"
+        assert len(document.xpath(
+            "//h2[@id='error-summary-title'][normalize-space(string())=$t]",
+            t="There is a problem",
+        )) == 1
 
     def test_edit_duns_number_shows_contact_us_message(self):
         self.user_role = 'admin-ccs-data-controller'

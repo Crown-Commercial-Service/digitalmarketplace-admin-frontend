@@ -28,7 +28,6 @@
 {% endblock %}
 
 {% block mainContent %}
-  {% include 'toolkit/forms/validation.html' %}
   <h1 class="govuk-heading-xl">Update registered company address for ‘{{supplier.name}}’</h1>
   <form method="post">
     <div class="govuk-grid-row">
@@ -42,15 +41,15 @@
           <div class="validation-wrapper">
             {# TODO remove inline styles #}
             <style>
-              #location-autocomplete {border: 5px solid #B10E1E;}
+              #input-country {border: 5px solid #B10E1E;}
               .autocomplete__hint {border: 5px solid;}
             </style>
         {% endif %}
 
-          <div class="question" id="country">
-            <span class="question-heading" id="country-label">Country</span>
+          <div class="question">
+            <label class="question-heading" for="input-country">Country</label>
             {{ forms.field_errors(form.country.name, errors=form.country.errors) }}
-            <select name="country" id="location-autocomplete" class="location-autocomplete-fallback">
+            <select name="country" id="input-country" class="location-autocomplete-fallback">
             {% if not form.country.data %}
               <option value="" selected="selected"></option>
             {% endif %}
