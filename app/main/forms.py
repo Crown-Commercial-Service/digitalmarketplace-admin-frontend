@@ -89,10 +89,12 @@ class NotInDomainSuffixBlacklistValidator:
 
     @staticmethod
     def _normalized_suffix(suffix: str) -> str:
-        # use reversed suffix and ensure last character is a '.'
-        # - reversed suffix because sorting of strings works by prefix, we want to search by suffix
-        # - adding "." because all suffixes we deal with implicitly begin with a separator, we need to make that
-        #   explicit for lookup
+        """Reverses suffix and ensures last character is a '.'
+
+        * Reverses suffix because sorting of strings works by prefix, we want to search by suffix
+        * Adds "." because all suffixes we deal with implicitly begin with a separator, we need to make that
+            explicit for lookup
+        """
         return (("" if suffix.startswith(".") else ".") + suffix.strip().lower())[::-1]
 
     @staticmethod
@@ -111,9 +113,8 @@ class NotInDomainSuffixBlacklistValidator:
 
     @classmethod
     def get_blacklist(cls) -> typing.Sequence[str]:
-        # cache blacklist class-wide
+        """Loads and caches the blacklist on the class."""
         if cls._blacklist is None:
-            # store this as a sorted tuple so we can use bisection to find specific prefixes
             cls._blacklist = tuple(sorted(chain.from_iterable(
                 cls._lines_from_filepath(filepath)
                 for filepath in (Path(current_app.root_path) / cls.BLACKLIST_DIR_PATH).iterdir()
@@ -125,15 +126,19 @@ class NotInDomainSuffixBlacklistValidator:
         self.message = message
 
     def __call__(self, form, field) -> None:
+        """Validate that the provided field is not in our domain suffix blacklist.
+
+        Use bisect_left to find the index of where the provided suffix would be inserted in our sorted blacklist and
+        check if the string that is already at that index matches the provided suffix. Ie the provided suffix is already
+        in the list.
+        """
         blacklist = self.get_blacklist()
-        normalized_data = self._normalized_suffix(field.data)
-        i = bisect_left(blacklist, normalized_data)
-        # if (the normalized) `field.data` is a prefix of any of the (normalized) entries in the blacklist, it
-        # should sort just before the first such entry. hence we just have to check whether normalized_data is
-        # a prefix of the entry that sorts directly after it. an "equal" match should work in the same way because
-        # we use bisect_left. see the bisect module documentation for more information.
-        if i < len(blacklist) and blacklist[i].startswith(normalized_data):
-            raise ValidationError(self.message % {"matched_suffix": self._un_normalized_suffix(blacklist[i])})
+        suffix = self._normalized_suffix(field.data)
+        insertion_index = bisect_left(blacklist, suffix)
+        if insertion_index < len(blacklist) and blacklist[insertion_index].startswith(suffix):
+            raise ValidationError(
+                self.message % {"matched_suffix": self._un_normalized_suffix(blacklist[insertion_index])}
+            )
 
 
 class EmailDomainForm(FlaskForm):
