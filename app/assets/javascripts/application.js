@@ -14,7 +14,6 @@
 ; // Hack needed because show-hide-content.js does not have a closing ";"
 //= require ../../../node_modules/digitalmarketplace-govuk-frontend/govuk-frontend/all.js
 //= require _selection-buttons.js
-//= require _analytics.js
 //= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/module-loader.js
 
 GOVUKFrontend.initAll()
