@@ -1,8 +1,14 @@
+from bisect import bisect_left
+from itertools import chain
+from pathlib import Path
+import typing
+
 from dmutils.forms.fields import DMRadioField, DMStripWhitespaceStringField
 
+from flask import current_app
 from flask_wtf import FlaskForm
 from wtforms import validators
-from wtforms.validators import DataRequired, AnyOf, InputRequired, Length, Optional, Regexp
+from wtforms.validators import DataRequired, AnyOf, InputRequired, Length, Optional, Regexp, ValidationError
 
 from .. import data_api_client
 from .helpers.countries import COUNTRY_TUPLE
@@ -74,13 +80,78 @@ class MoveUserForm(FlaskForm):
         ])
 
 
+class NotInDomainSuffixBlacklistValidator:
+    "WTForms validator, asserting that supplied value is not a prefix of any of the values present in a blacklist"
+
+    # path, relative to flask app root_path, to look for suffix blacklist files. all files found here will be read,
+    # one suffix per line
+    BLACKLIST_DIR_PATH: str = "data/public_domain_suffix_blacklist"
+
+    @staticmethod
+    def _normalized_suffix(suffix: str) -> str:
+        """Reverses suffix and ensures last character is a '.'
+
+        * Reverses suffix because sorting of strings works by prefix, we want to search by suffix
+        * Adds "." because all suffixes we deal with implicitly begin with a separator, we need to make that
+            explicit for lookup
+        """
+        return (("" if suffix.startswith(".") else ".") + suffix.strip().lower())[::-1]
+
+    @staticmethod
+    def _un_normalized_suffix(normalized_suffix: str) -> str:
+        # we can't fully reverse the normalization process as it throws information away, but we can restore its
+        # presentational sanity.
+        return normalized_suffix[::-1]
+
+    @classmethod
+    def _lines_from_filepath(cls, filepath: Path) -> typing.Sequence[str]:
+        with filepath.open("r", encoding="utf-8") as f:
+            return tuple(cls._normalized_suffix(line) for line in f if line)
+
+    # this value is not populated until first access because construction depends on current_app being available
+    _blacklist: typing.Optional[typing.Sequence[str]] = None
+
+    @classmethod
+    def get_blacklist(cls) -> typing.Sequence[str]:
+        """Loads and caches the blacklist on the class."""
+        if cls._blacklist is None:
+            cls._blacklist = tuple(sorted(chain.from_iterable(
+                cls._lines_from_filepath(filepath)
+                for filepath in (Path(current_app.root_path) / cls.BLACKLIST_DIR_PATH).iterdir()
+                if filepath.is_file()
+            )))
+        return cls._blacklist
+
+    def __init__(self, message):
+        self.message = message
+
+    def __call__(self, form, field) -> None:
+        """Validate that the provided field is not in our domain suffix blacklist.
+
+        Use bisect_left to find the index of where the provided suffix would be inserted in our sorted blacklist and
+        check if the string that is already at that index matches the provided suffix. Ie the provided suffix is already
+        in the list.
+        """
+        blacklist = self.get_blacklist()
+        suffix = self._normalized_suffix(field.data)
+        insertion_index = bisect_left(blacklist, suffix)
+        if insertion_index < len(blacklist) and blacklist[insertion_index].startswith(suffix):
+            raise ValidationError(
+                self.message % {"matched_suffix": self._un_normalized_suffix(blacklist[insertion_index])}
+            )
+
+
 class EmailDomainForm(FlaskForm):
     new_buyer_domain = DMStripWhitespaceStringField(
         "Add a buyer email domain",
         hint="For example, police.uk",
         validators=[
-            validators.DataRequired(message="The domain field can not be empty.")
-        ])
+            validators.DataRequired(message="The domain field can not be empty."),
+            NotInDomainSuffixBlacklistValidator(
+                message="Cannot use this domain suffix: ‘%(matched_suffix)s’ domains are publicly purchasable"
+            ),
+        ],
+    )
 
 
 class InviteAdminForm(FlaskForm):
