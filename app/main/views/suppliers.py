@@ -776,14 +776,13 @@ def find_supplier_services(supplier_id):
     frameworks = data_api_client.find_frameworks()['frameworks']
     supplier = data_api_client.get_supplier(supplier_id)["suppliers"]
 
-    services = data_api_client.find_services(
-        supplier_id=supplier_id,
-        framework=','.join(f['slug'] for f in frameworks if f['status'] in ['live', 'expired'])
-    )['services']
     frameworks_services = {
         framework_slug: list(framework_services)
         for framework_slug, framework_services in
-        groupby(sorted(services, key=itemgetter('frameworkSlug')), key=itemgetter('frameworkSlug'))
+        groupby(sorted(data_api_client.find_services_iter(
+            supplier_id=supplier_id,
+            framework=','.join(f['slug'] for f in frameworks if f['status'] in ['live', 'expired'])
+        ), key=itemgetter('frameworkSlug')), key=itemgetter('frameworkSlug'))
     }
 
     remove_services_for_framework, publish_services_for_framework = None, None

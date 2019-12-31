@@ -862,7 +862,8 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         self.data_api_client = self.data_api_client_patch.start()
 
         self.data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
-        self.data_api_client.find_services.return_value = self.load_example_listing("services_response")
+        self.data_api_client.find_services_iter.side_effect = lambda *a, **k: \
+            iter(self.load_example_listing("services_response")["services"])
         self.data_api_client.find_frameworks.return_value = {
             'frameworks': [self.load_example_listing("framework_response")['frameworks']]
         }
@@ -915,7 +916,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         self.user_role = role
         service = self.load_example_listing("services_response")["services"][0]
         service["status"] = "disabled"
-        self.data_api_client.find_services.return_value = {'services': [service]}
+        self.data_api_client.find_services_iter.side_effect = lambda *a, **k: iter((service,))
 
         response = self.client.get('/admin/suppliers/1000/services')
         assert response.status_code == 200
@@ -938,19 +939,19 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         assert response.status_code == 200
 
         self.data_api_client.get_supplier.assert_called_once_with(1000)
-        assert self.data_api_client.find_services.call_args_list == [
+        assert self.data_api_client.find_services_iter.call_args_list == [
             mock.call(framework='g-cloud-8', supplier_id=1000)
         ]
 
     def test_should_indicate_if_supplier_has_no_services(self):
-        self.data_api_client.find_services.return_value = {'services': []}
+        self.data_api_client.find_services_iter.side_effect = lambda *a, **k: iter(())
         response = self.client.get('/admin/suppliers/1000/services')
 
         assert response.status_code == 200
         assert "This supplier has no services on the Digital Marketplace" in response.get_data(as_text=True)
 
     def test_should_have_supplier_name_on_services_page(self):
-        self.data_api_client.find_services.return_value = {'services': []}
+        self.data_api_client.find_services_iter.side_effect = lambda *a, **k: iter(())
 
         response = self.client.get('/admin/suppliers/1000/services')
 
@@ -973,7 +974,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
     def test_should_show_correct_fields_for_disabled_service(self):
         service = self.load_example_listing("services_response")["services"][0]
         service["status"] = "disabled"
-        self.data_api_client.find_services.return_value = {'services': [service]}
+        self.data_api_client.find_services_iter.side_effect = lambda *a, **k: iter((service,))
 
         response = self.client.get('/admin/suppliers/1000/services')
 
@@ -984,7 +985,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
     def test_should_show_correct_fields_for_enabled_service(self):
         service = self.load_example_listing("services_response")["services"][0]
         service["status"] = "enabled"
-        self.data_api_client.find_services.return_value = {'services': [service]}
+        self.data_api_client.find_services_iter.side_effect = lambda *a, **k: iter((service,))
 
         response = self.client.get('/admin/suppliers/1000/services')
 
@@ -1011,7 +1012,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         service_3 = service_1.copy()
         service_2['frameworkSlug'] = 'digital-outcomes-and-specialists-2'
         service_3['frameworkSlug'] = 'g-cloud-11'
-        self.data_api_client.find_services.return_value = {'services': [service_1, service_2, service_3]}
+        self.data_api_client.find_services_iter.side_effect = lambda *a, **k: iter((service_1, service_2, service_3,))
 
         framework_1 = self.load_example_listing("framework_response")['frameworks']
         framework_2 = framework_1.copy()
@@ -1043,7 +1044,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         service_3 = service_1.copy()
         service_3["status"] = "enabled"
 
-        self.data_api_client.find_services.return_value = {'services': [service_1, service_2, service_3]}
+        self.data_api_client.find_services_iter.side_effect = lambda *a, **k: iter((service_1, service_2, service_3,))
 
         response = self.client.get('/admin/suppliers/1000/services')
         assert response.status_code == 200
@@ -1079,7 +1080,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         service = self.load_example_listing('services_response')['services'][0]
         service["status"] = service_status
 
-        self.data_api_client.find_services.return_value = {'services': [service]}
+        self.data_api_client.find_services_iter.side_effect = lambda *a, **k: iter((service,))
 
         response = self.client.get('/admin/suppliers/1000/services')
         assert response.status_code == 200
@@ -1098,12 +1099,10 @@ class TestSupplierServicesViewWithToggleSuspendedParam(LoggedInApplicationTest):
         self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
         self.data_api_client = self.data_api_client_patch.start()
         self.data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        self.data_api_client.find_services.return_value = {
-            'services': [
-                {'id': 1, 'status': 'published', 'frameworkSlug': 'g-cloud-8'},
-                {'id': 2, 'status': 'disabled', 'frameworkSlug': 'g-cloud-8'},
-            ]
-        }
+        self.data_api_client.find_services_iter.side_effect = lambda *a, **k: iter((
+            {'id': 1, 'status': 'published', 'frameworkSlug': 'g-cloud-8'},
+            {'id': 2, 'status': 'disabled', 'frameworkSlug': 'g-cloud-8'},
+        ))
         self.data_api_client.find_frameworks.return_value = {
             'frameworks': [self.load_example_listing("framework_response")['frameworks']]
         }
@@ -1114,7 +1113,7 @@ class TestSupplierServicesViewWithToggleSuspendedParam(LoggedInApplicationTest):
 
     def test_400_if_supplier_has_no_services(self):
         framework = 'digital-outcomes-and-specialists-2'
-        self.data_api_client.find_services.return_value = {'services': []}
+        self.data_api_client.find_services_iter.side_effect = lambda *a, **k: iter(())
 
         response = self.client.get('/admin/suppliers/1000/services?remove={}'.format(framework))
 
@@ -1132,7 +1131,7 @@ class TestSupplierServicesViewWithToggleSuspendedParam(LoggedInApplicationTest):
         framework = 'g-cloud-8'
         service = self.load_example_listing('services_response')['services'][0]
         service["status"] = service_status
-        self.data_api_client.find_services.return_value = {'services': [service]}
+        self.data_api_client.find_services_iter.side_effect = lambda *a, **k: iter((service,))
 
         response = self.client.get('/admin/suppliers/1000/services?remove={}'.format(framework))
 
