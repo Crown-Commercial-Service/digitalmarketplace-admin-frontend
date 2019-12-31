@@ -1167,7 +1167,8 @@ class TestToggleSupplierServicesView(LoggedInApplicationTest):
         self.data_api_client = self.data_api_client_patch.start()
 
         self.data_api_client.get_supplier.return_value = self.load_example_listing('supplier_response')
-        self.data_api_client.find_services.return_value = self.load_example_listing('services_response')
+        self.data_api_client.find_services_iter.side_effect = lambda *a, **k: \
+            iter(self.load_example_listing("services_response")["services"])
         self.data_api_client.get_framework.return_value = self.load_example_listing('framework_response')
 
     def teardown_method(self, method):
@@ -1183,7 +1184,7 @@ class TestToggleSupplierServicesView(LoggedInApplicationTest):
 
     def test_400_if_supplier_has_no_service_on_framework(self):
         framework = 'g-cloud-8'
-        self.data_api_client.find_services.return_value = {'services': []}
+        self.data_api_client.find_services_iter.side_effect = lambda *a, **k: iter(())
 
         response = self.client.post('/admin/suppliers/1000/services?remove={}'.format(framework))
 
@@ -1210,14 +1211,12 @@ class TestToggleSupplierServicesView(LoggedInApplicationTest):
         service_3['id'] = '5687123785023490'
         map(lambda k: k.update({'status': initial_status}), [service_1, service_2, service_3])
 
-        self.data_api_client.find_services.return_value = {
-            'services': [service_1, service_2, service_3]
-        }
+        self.data_api_client.find_services_iter.side_effect = lambda *a, **k: iter((service_1, service_2, service_3,))
 
         response = self.client.post('/admin/suppliers/1000/services?{}={}'.format(action, framework))
 
         assert response.status_code == 302
-        assert self.data_api_client.find_services.call_args_list == [
+        assert self.data_api_client.find_services_iter.call_args_list == [
             mock.call(
                 supplier_id=1000,
                 framework='g-cloud-8',
