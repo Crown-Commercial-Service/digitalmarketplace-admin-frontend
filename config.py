@@ -72,8 +72,8 @@ class Config(object):
         template_folders = [
             os.path.join(repo_root, "app", "templates"),
             os.path.join(digitalmarketplace_govuk_frontend),
+            # digitalmarketplace/templates is needed for digitalmarketplace-utils error templates
             os.path.join(digitalmarketplace_govuk_frontend, "digitalmarketplace", "templates"),
-            os.path.join(digitalmarketplace_govuk_frontend, "govuk-frontend"),
         ]
         jinja_loader = jinja2.FileSystemLoader(template_folders)
         app.jinja_loader = jinja_loader

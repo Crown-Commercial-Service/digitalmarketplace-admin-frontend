@@ -1,11 +1,11 @@
-{% extends "template.njk" %}
+{% extends "govuk-frontend/template.njk" %}
 
 {# Import GOV.UK Frontend components for globale usage#}
-{% from "components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from "components/button/macro.njk" import govukButton %}
-{% from "components/phase-banner/macro.njk" import govukPhaseBanner %}
-{% from "components/tabs/macro.njk" import govukTabs %}
-{% from "components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk-frontend/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk-frontend/components/button/macro.njk" import govukButton %}
+{% from "govuk-frontend/components/phase-banner/macro.njk" import govukPhaseBanner %}
+{% from "govuk-frontend/components/tabs/macro.njk" import govukTabs %}
+{% from "govuk-frontend/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {# Import DM Components #}
 {% from "digitalmarketplace/components/header/macro.njk" import dmHeader%}
@@ -13,8 +13,8 @@
 {% set assetPath = '/admin/static' %}
 
 {% block head %}
-  {% include "layouts/_custom_dimensions.html" %}
-  {% include "layouts/_site_verification.html" %}
+  {% include "digitalmarketplace/templates/layouts/_custom_dimensions.html" %}
+  {% include "digitalmarketplace/templates/layouts/_site_verification.html" %}
   <link type="text/css" rel="stylesheet" href="{{ asset_fingerprinter.get_url('stylesheets/application.css') }}" />
   {% block pageStyles %}{% endblock%}
 {% endblock %}
