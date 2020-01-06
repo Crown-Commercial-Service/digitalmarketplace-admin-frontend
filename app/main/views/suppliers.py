@@ -3,6 +3,8 @@ from itertools import groupby, chain
 from operator import itemgetter
 
 from dateutil.parser import parse as parse_date
+from dmcontent.errors import ContentNotFoundError
+from dmcontent.utils import count_unanswered_questions
 from dmapiclient import HTTPError, APIError
 from dmapiclient.audit import AuditTypes
 from dmutils import s3
@@ -863,6 +865,48 @@ def toggle_supplier_services(supplier_id):
         ))
     )
     return redirect(url_for('.find_supplier_services', supplier_id=supplier_id))
+
+
+def _draft_services_annotated_unanswered_counts(framework_slug, draft_services):
+    try:
+        manifest = content_loader.get_manifest(framework_slug, "edit_service_as_admin")
+    except ContentNotFoundError:
+        return None
+
+    return tuple(
+        {
+            **draft_service,
+            "unansweredRequiredCount": count_unanswered_questions(
+                manifest.filter(draft_service).summary(draft_service)
+            )[0],
+        } for draft_service in draft_services
+    )
+
+
+@main.route('/suppliers/<int:supplier_id>/draft-services', methods=['GET'])
+@role_required('admin-framework-manager')
+def find_supplier_draft_services(supplier_id):
+    supplier = data_api_client.get_supplier(supplier_id)["suppliers"]
+    frameworks = data_api_client.find_frameworks()['frameworks']
+
+    frameworks_draft_services = {
+        framework_slug: draft_services
+        for framework_slug, draft_services in (
+            (framework_slug, _draft_services_annotated_unanswered_counts(framework_slug, draft_services),)
+            for framework_slug, draft_services in
+            groupby(sorted(
+                data_api_client.find_draft_services_iter(supplier_id),
+                key=lambda draft_service: (draft_service["frameworkSlug"], draft_service["createdAt"]),
+            ), key=lambda draft_service: draft_service["frameworkSlug"])
+        ) if draft_services is not None  # omit frameworks for which we couldn't retrieve the manifest
+    }
+
+    return render_template(
+        'view_supplier_draft_services.html',
+        frameworks=frameworks,
+        frameworks_draft_services=frameworks_draft_services,
+        supplier=supplier,
+    )
 
 
 @main.route('/suppliers/<int:supplier_id>/invite-user', methods=['POST'])

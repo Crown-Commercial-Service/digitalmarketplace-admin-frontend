@@ -11,11 +11,17 @@ from freezegun import freeze_time
 from lxml import html
 
 from dmtestutils.api_model_stubs import (
+    DraftServiceStub,
     FrameworkStub,
     SupplierStub,
     SupplierFrameworkStub,
 )
 from dmtestutils.fixtures import valid_pdf_bytes
+from dmtestutils.mocking import (
+    assert_args_and_return,
+    assert_args_and_return_iter_over,
+    assert_args_and_raise,
+)
 
 from ...helpers import LoggedInApplicationTest, Response
 
@@ -1245,6 +1251,191 @@ class TestToggleSupplierServicesView(LoggedInApplicationTest):
         ).format(message_action)
         with self.client.session_transaction() as session:
             assert session['_flashes'][0][1] == expected_flash_message
+
+
+class TestSupplierDraftServicesView(LoggedInApplicationTest):
+    user_role = 'admin-framework-manager'
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+        self.data_api_client.get_supplier.side_effect = assert_args_and_return(
+            self.load_example_listing("supplier_response"),
+            1234,
+        )
+        self.data_api_client.find_frameworks.return_value = {
+            "frameworks": [
+                FrameworkStub(slug="g-cloud-8").response(),
+                FrameworkStub(slug="g-cloud-9").response(),
+                FrameworkStub(slug="digital-outcomes-and-specialists-2").response(),
+                FrameworkStub(slug="g-cloud-5").response(),
+            ],
+        }
+
+        # fortunately draft services are similar enough to regular services
+        example_services = self.load_example_listing("services_response")["services"]
+        self.data_api_client.find_draft_services_iter.side_effect = assert_args_and_return_iter_over(
+            (
+                {
+                    **example_services[0],
+                    "id": 567,
+                    "supplierId": 1234,
+                    "serviceId": "555666777",
+                    "status": "submitted",
+                },
+                {
+                    **example_services[1],
+                    "id": 678,
+                    "supplierId": 1234,
+                    "serviceId": "333444555",
+                    "priceMin": None,  # make this incomplete
+                    "status": "not-submitted",
+                    "serviceName": "Inconsiderate Contractee",
+                },
+                DraftServiceStub(
+                    id=890,
+                    framework_slug="digital-outcomes-and-specialists-2",
+                    lot="digital-specialists",
+                    lot_slug="digital-specialists",
+                    lot_name="Digital specialists",
+                    status="not-submitted",
+                    supplier_id=1234,
+                    service_name="",
+                    framework_framework="digital-outcomes-and-specialists",
+                    framework_family="digital-outcomes-and-specialists",
+                ).response(),
+                # deliberately outdated
+                DraftServiceStub(
+                    id=432,
+                    framework_slug="g-cloud-5",
+                    status="submitted",
+                    supplier_id=1234,
+                ).response(),
+            ),
+            1234,
+        )
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def test_happy_path(self):
+        response = self.client.get("/admin/suppliers/1234/draft-services")
+
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert "no draft services" not in document.xpath("normalize-space(string())")
+        # important args should already be checked by assert_args_and_*
+        assert self.data_api_client.find_draft_services_iter.called
+        assert self.data_api_client.find_frameworks.called
+        assert self.data_api_client.get_supplier.called
+
+        assert document.xpath(
+            "//*[contains(@class, 'govuk-breadcrumbs')]//li/a[normalize-space(string())=$t][@href=$u]",
+            t="Supplier Name",
+            u="/admin/suppliers/1234",
+        )
+
+        assert tuple(
+            (h2.xpath("normalize-space(string())"), h2.xpath("@id")[0])
+            for h2 in document.xpath("//main//h2")
+        ) == (
+            ("G-Cloud 8", "g-cloud-8_draft_services",),
+            ("Digital Outcomes and Specialists 2", "digital-outcomes-and-specialists-2_draft_services",),
+        )
+
+        assert tuple(
+            (
+                table.xpath("normalize-space(string(./caption))"),
+                tuple(
+                    tuple(td.xpath("normalize-space(string())") for td in tr.xpath("./td"))
+                    for tr in table.xpath("./tbody/tr")
+                ),
+            ) for table in document.xpath("//main//table[contains(@class, 'summary-item-body')]")
+        ) == (
+            (
+                "Draft services for the G-Cloud 8 framework.",
+                (
+                    (
+                        "Contract Management",
+                        "Wednesday 17 December 2014",
+                        "567",
+                        "Software as a Service",
+                        "Submitted",
+                        "0",
+                    ), (
+                        "Inconsiderate Contractee",
+                        "Wednesday 17 December 2014",
+                        "678",
+                        "Software as a Service",
+                        "Not Submitted",
+                        "1",
+                    ),
+                ),
+            ), (
+                "Draft services for the Digital Outcomes and Specialists 2 framework.",
+                (
+                    (
+                        "Digital specialists",
+                        "Friday 7 April 2017",
+                        "890",
+                        "Digital specialists",
+                        "Not Submitted",
+                        "4",
+                    ),
+                ),
+            ),
+        )
+
+    def test_no_drafts(self):
+        self.data_api_client.find_draft_services_iter.side_effect = assert_args_and_return_iter_over(
+            (
+                # deliberately outdated
+                DraftServiceStub(
+                    id=909303,
+                    framework_slug="g-cloud-5",
+                    status="not-submitted",
+                    supplier_id=1234,
+                    service_name="32 consignments",
+                ).response(),
+            ),
+            1234,
+        )
+
+        response = self.client.get("/admin/suppliers/1234/draft-services")
+
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        # important args should already be checked by assert_args_and_*
+        assert self.data_api_client.find_draft_services_iter.called
+        assert self.data_api_client.find_frameworks.called
+        assert self.data_api_client.get_supplier.called
+
+        assert document.xpath(
+            "//*[contains(@class, 'summary-item-no-content')][normalize-space(string())=$t]",
+            t="This supplier has no draft services on the Digital Marketplace.",
+        )
+        assert not document.xpath("//h2[normalize-space(string())=$t]", t="G-Cloud 5")
+        assert "32 consignments" not in document.xpath("normalize-space(string())")
+        assert "909303" not in document.xpath("normalize-space(string())")
+
+    def test_no_supplier(self):
+        self.data_api_client.get_supplier.side_effect = assert_args_and_raise(
+            HTTPError(Response(404)),
+            1234,
+        )
+
+        response = self.client.get("/admin/suppliers/1234/draft-services")
+
+        assert response.status_code == 404
+        assert self.data_api_client.get_supplier.called
+        assert self.data_api_client.find_draft_services_iter.called is False
+        assert self.data_api_client.find_frameworks.called is False
 
 
 class TestSupplierInviteUserView(LoggedInApplicationTest):

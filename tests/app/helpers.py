@@ -42,6 +42,7 @@ class BaseApplicationTest(object):
         # with a mock, because then the shared instance won't have been configured (done in create_app). Instead,
         # just mock the one function that would make an API call in this case.
         data_api_client.find_frameworks = mock.Mock()
+        # the value set here has an effect on the content that gets initially loaded by the content loader by default
         data_api_client.find_frameworks.return_value = self._get_frameworks_list_fixture_data()
 
         # if we don't make this tweak, the content loader will get re-built for every test, which is incredibly slow.

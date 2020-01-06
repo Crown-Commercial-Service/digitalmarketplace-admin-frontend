@@ -1,0 +1,64 @@
+{% import "toolkit/summary-table.html" as summary %}
+
+{% extends "_base_page.html" %}
+
+{% block pageTitle %}
+  {{ supplier.name }} - Draft services – Digital Marketplace admin
+{% endblock %}
+
+{% block breadcrumbs %}
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Admin home",
+        "href": url_for('.index')
+      },
+      {
+        "text": supplier.name,
+        "href": url_for('.supplier_details', supplier_id=supplier.id)
+      },
+      {
+        "text": "Draft services"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block mainContent %}
+  <h1 class="govuk-heading-xl">Draft services</h1>
+  {% if not frameworks_draft_services %}
+    {% call(item) summary.list_table(
+      empty_message="This supplier has no draft services on the Digital Marketplace."
+    )
+    %}{% endcall %}
+  {% else %}
+    {% for framework in frameworks | sort(attribute='id', reverse=True) %}
+      {% if framework['slug'] in frameworks_draft_services %}
+        {{ summary.heading(framework['name'], id="{}_draft_services".format(framework['slug'])) }}
+
+        {% call(item) summary.list_table(
+          frameworks_draft_services[framework['slug']],
+          caption="Draft services for the {} framework.".format(framework['name']),
+          empty_message="This supplier has no draft services for the {} framework.".format(framework['name']),
+          field_headings=['Draft service name', 'Date created', 'Draft service ID', 'Lot', 'Status', 'Unanswered questions'],
+          field_headings_visible=True
+        ) %}
+          {% call summary.row() %}
+            {% call summary.field(first=True, wide=True) %}
+              {{ item.serviceName or item.lotName }}
+            {% endcall %}
+            {{ summary.text(item.createdAt|dateformat) }}
+            {{ summary.text(item.id) }}
+            {{ summary.text(item.lotName) }}
+            {% call summary.field() %}
+              <span class="service-status-{{ item.status }}">
+                {{ item.status.replace('-', ' ')|title }}
+              </span>
+            {% endcall %}
+            {{ summary.text(item.unansweredRequiredCount|string) }}
+          {% endcall %}
+        {% endcall %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endblock %}
