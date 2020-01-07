@@ -1,10 +1,11 @@
 {% set field_headings = [
   "Supplier Name"
-] if current_user.has_role('admin-ccs-sourcing') else [
-  "Supplier Name",
+] + ([
   summary.hidden_field_heading("Users"),
   summary.hidden_field_heading("Services")
-] %}
+] if not current_user.has_role('admin-ccs-sourcing') else []) + ([
+  summary.hidden_field_heading("Draft services")
+] if current_user.has_role('admin-framework-manager') else []) %}
 
 {% call(item) summary.list_table(
   suppliers,
@@ -19,6 +20,9 @@
     {% if not current_user.has_role('admin-ccs-sourcing') %}
       {{ summary.edit_link("Users", url_for(".find_supplier_users", supplier_id=item.id)) }}
       {{ summary.edit_link("Services", url_for(".find_supplier_services", supplier_id=item.id)) }}
+    {% endif %}
+    {% if current_user.has_role('admin-framework-manager') %}
+      {{ summary.edit_link("Draft services", url_for(".find_supplier_draft_services", supplier_id=item.id)) }}
     {% endif %}
   {% endcall %}
 

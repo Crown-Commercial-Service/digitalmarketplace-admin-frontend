@@ -421,33 +421,40 @@ class TestSuppliersListView(LoggedInApplicationTest):
         )
 
     @pytest.mark.parametrize(
-        "link_text, href", [
-            ("Users", "/admin/suppliers/users?supplier_id=1234"),
-            ("Services", "/admin/suppliers/12345/services"),
+        "role, expect_services_user_link, expect_draft_services_link", [
+            ("admin", True, False),
+            ("admin-ccs-category", True, False),
+            ("admin-ccs-data-controller", True, False),
+            ("admin-framework-manager", True, True),
+            ("admin-ccs-sourcing", False, False)
         ]
     )
-    @pytest.mark.parametrize(
-        "role, link_should_be_visible", [
-            ("admin", True),
-            ("admin-ccs-category", True),
-            ("admin-ccs-data-controller", True),
-            ("admin-framework-manager", True),
-            ("admin-ccs-sourcing", False)
-        ]
-    )
-    def test_services_and_user_link_shown_to_users_with_right_roles(self, link_text, href, role,
-                                                                    link_should_be_visible):
+    def test_services_and_user_links_shown_to_users_with_right_roles(
+        self,
+        role,
+        expect_services_user_link,
+        expect_draft_services_link,
+    ):
         self.user_role = role
         response = self.client.get('/admin/suppliers?supplier_name=foo')
 
         document = html.fromstring(response.get_data(as_text=True))
 
-        expected_link = document.xpath('.//a[contains(@href,"{}")]'.format(href))
-
-        link_is_visible = len(expected_link) > 0 and expected_link[0].text == link_text
-
-        assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can"))
+        assert bool(document.xpath(
+            "//table//a[@href=$u][normalize-space(string())=$t]",
+            u="/admin/suppliers/users?supplier_id=12345",
+            t="Users",
+        )) is expect_services_user_link
+        assert bool(document.xpath(
+            "//table//a[@href=$u][normalize-space(string())=$t]",
+            u="/admin/suppliers/12345/services",
+            t="Services",
+        )) is expect_services_user_link
+        assert bool(document.xpath(
+            "//table//a[@href=$u][normalize-space(string())=$t]",
+            u="/admin/suppliers/12345/draft-services",
+            t="Draft services",
+        )) is expect_draft_services_link
 
     @mock.patch('app.main.views.suppliers.current_app')
     def test_should_500_if_no_framework_found_matching_the_oldest_interesting_defined(self, current_app):
