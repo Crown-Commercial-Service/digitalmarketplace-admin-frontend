@@ -17,7 +17,7 @@
    {{ summary.edit_link("View services", url_for(".find_supplier_services", supplier_id=supplier_id,) + "#{}_services".format(item.frameworkSlug)) }}
   {% endif %}
 
-  {% if current_user.has_role('admin-framework-manager') %}
+  {% if current_user.has_any_role('admin-framework-manager', 'admin-ccs-sourcing') %}
     {{ summary.edit_link("View draft services", url_for(".find_supplier_draft_services", supplier_id=supplier_id,) + "#{}_draft_services".format(item.frameworkSlug)) }}
   {% endif %}
 

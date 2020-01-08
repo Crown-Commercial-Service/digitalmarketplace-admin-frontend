@@ -884,7 +884,7 @@ def _draft_services_annotated_unanswered_counts(framework_slug, draft_services):
 
 
 @main.route('/suppliers/<int:supplier_id>/draft-services', methods=['GET'])
-@role_required('admin-framework-manager')
+@role_required('admin-framework-manager', 'admin-ccs-sourcing')
 def find_supplier_draft_services(supplier_id):
     supplier = data_api_client.get_supplier(supplier_id)["suppliers"]
     frameworks = data_api_client.find_frameworks()['frameworks']

@@ -340,7 +340,7 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
         ("admin-ccs-category", False, True, False),
         ("admin-ccs-data-controller", False, True, False),
         ("admin-framework-manager", False, True, True),
-        ("admin-ccs-sourcing", True, False, False)
+        ("admin-ccs-sourcing", True, False, True)
     ))
     def test_sourcing_admins_see_links(
         self,
@@ -358,7 +358,7 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
             FrameworkStub(
                 status="live",
                 slug="digital-outcomes-and-specialists-3"
-            ).response()
+            ).response(),
         ]}
 
         response = self.client.get("/admin/suppliers/1234")
@@ -452,7 +452,7 @@ class TestSuppliersListView(LoggedInApplicationTest):
             ("admin-ccs-category", True, False),
             ("admin-ccs-data-controller", True, False),
             ("admin-framework-manager", True, True),
-            ("admin-ccs-sourcing", False, False)
+            ("admin-ccs-sourcing", False, True)
         ]
     )
     def test_services_and_user_links_shown_to_users_with_right_roles(
