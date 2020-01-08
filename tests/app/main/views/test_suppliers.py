@@ -11,11 +11,17 @@ from freezegun import freeze_time
 from lxml import html
 
 from dmtestutils.api_model_stubs import (
+    DraftServiceStub,
     FrameworkStub,
     SupplierStub,
     SupplierFrameworkStub,
 )
 from dmtestutils.fixtures import valid_pdf_bytes
+from dmtestutils.mocking import (
+    assert_args_and_return,
+    assert_args_and_return_iter_over,
+    assert_args_and_raise,
+)
 
 from ...helpers import LoggedInApplicationTest, Response
 
@@ -324,36 +330,62 @@ class TestSupplierDetailsViewFrameworkTable(LoggedInApplicationTest):
             ]
         )
 
-    @pytest.mark.parametrize(
-        "role, link_should_be_visible", (
-            ("admin", False),
-            ("admin-ccs-category", False),
-            ("admin-ccs-data-controller", False),
-            ("admin-framework-manager", False),
-            ("admin-ccs-sourcing", True)
-        )
-    )
-    def test_sourcing_admins_see_edit_declaration_link(self, role, link_should_be_visible):
+    @pytest.mark.parametrize((
+        "role",
+        "expect_declaration_link",
+        "expect_services_link",
+        "expect_draft_services_link",
+    ), (
+        ("admin", False, True, False),
+        ("admin-ccs-category", False, True, False),
+        ("admin-ccs-data-controller", False, True, False),
+        ("admin-framework-manager", False, True, True),
+        ("admin-ccs-sourcing", True, False, True)
+    ))
+    def test_sourcing_admins_see_links(
+        self,
+        role,
+        expect_declaration_link,
+        expect_services_link,
+        expect_draft_services_link,
+    ):
         self.user_role = role
         self.data_api_client.find_frameworks.return_value = {'frameworks': [
             FrameworkStub(
                 status="pending",
                 slug="g-cloud-10"
-            ).response()
+            ).response(),
+            FrameworkStub(
+                status="live",
+                slug="digital-outcomes-and-specialists-3"
+            ).response(),
         ]}
 
         response = self.client.get("/admin/suppliers/1234")
         document = html.fromstring(response.get_data(as_text=True))
 
-        expected_link_text = "Edit declaration"
-        expected_href = '/admin/suppliers/1234/edit/declarations/g-cloud-10'
-        expected_link = document.xpath('.//a[contains(@href,"{}")]'.format(expected_href))
+        assert response.status_code == 200
 
-        link_is_visible = len(expected_link) > 0 and expected_link[0].text == expected_link_text
+        frameworks_table = document.xpath("//table[./caption[normalize-space(string())='Frameworks']]")[0]
 
-        assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can")
-        )
+        # check we've actually got some visible framework rows so we're testing the right thing...
+        assert frameworks_table.xpath("./tbody/tr")
+
+        assert bool(frameworks_table.xpath(
+            ".//a[@href=$u][normalize-space(string())=$t]",
+            u="/admin/suppliers/1234/edit/declarations/g-cloud-10",
+            t="Edit declaration",
+        )) is expect_declaration_link
+        assert bool(frameworks_table.xpath(
+            ".//a[contains(@href,$u)][normalize-space(string())=$t]",
+            u="/admin/suppliers/1234/services",
+            t="View services",
+        )) is expect_services_link
+        assert bool(frameworks_table.xpath(
+            ".//a[contains(@href,$u)][normalize-space(string())=$t]",
+            u="/admin/suppliers/1234/draft-services",
+            t="View draft services",
+        )) is expect_draft_services_link
 
 
 class TestSuppliersListView(LoggedInApplicationTest):
@@ -415,33 +447,40 @@ class TestSuppliersListView(LoggedInApplicationTest):
         )
 
     @pytest.mark.parametrize(
-        "link_text, href", [
-            ("Users", "/admin/suppliers/users?supplier_id=1234"),
-            ("Services", "/admin/suppliers/12345/services"),
+        "role, expect_services_user_link, expect_draft_services_link", [
+            ("admin", True, False),
+            ("admin-ccs-category", True, False),
+            ("admin-ccs-data-controller", True, False),
+            ("admin-framework-manager", True, True),
+            ("admin-ccs-sourcing", False, True)
         ]
     )
-    @pytest.mark.parametrize(
-        "role, link_should_be_visible", [
-            ("admin", True),
-            ("admin-ccs-category", True),
-            ("admin-ccs-data-controller", True),
-            ("admin-framework-manager", True),
-            ("admin-ccs-sourcing", False)
-        ]
-    )
-    def test_services_and_user_link_shown_to_users_with_right_roles(self, link_text, href, role,
-                                                                    link_should_be_visible):
+    def test_services_and_user_links_shown_to_users_with_right_roles(
+        self,
+        role,
+        expect_services_user_link,
+        expect_draft_services_link,
+    ):
         self.user_role = role
         response = self.client.get('/admin/suppliers?supplier_name=foo')
 
         document = html.fromstring(response.get_data(as_text=True))
 
-        expected_link = document.xpath('.//a[contains(@href,"{}")]'.format(href))
-
-        link_is_visible = len(expected_link) > 0 and expected_link[0].text == link_text
-
-        assert link_is_visible is link_should_be_visible, (
-            "Role {} {} see the link".format(role, "can not" if link_should_be_visible else "can"))
+        assert bool(document.xpath(
+            "//table//a[@href=$u][normalize-space(string())=$t]",
+            u="/admin/suppliers/users?supplier_id=12345",
+            t="Users",
+        )) is expect_services_user_link
+        assert bool(document.xpath(
+            "//table//a[@href=$u][normalize-space(string())=$t]",
+            u="/admin/suppliers/12345/services",
+            t="Services",
+        )) is expect_services_user_link
+        assert bool(document.xpath(
+            "//table//a[@href=$u][normalize-space(string())=$t]",
+            u="/admin/suppliers/12345/draft-services",
+            t="Draft services",
+        )) is expect_draft_services_link
 
     @mock.patch('app.main.views.suppliers.current_app')
     def test_should_500_if_no_framework_found_matching_the_oldest_interesting_defined(self, current_app):
@@ -1245,6 +1284,205 @@ class TestToggleSupplierServicesView(LoggedInApplicationTest):
         ).format(message_action)
         with self.client.session_transaction() as session:
             assert session['_flashes'][0][1] == expected_flash_message
+
+
+class TestSupplierDraftServicesView(LoggedInApplicationTest):
+    user_role = 'admin-framework-manager'
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.suppliers.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+        self.data_api_client.get_supplier.side_effect = assert_args_and_return(
+            self.load_example_listing("supplier_response"),
+            1234,
+        )
+        self.data_api_client.find_frameworks.return_value = {
+            "frameworks": [
+                FrameworkStub(slug="g-cloud-8").response(),
+                FrameworkStub(slug="g-cloud-9").response(),
+                FrameworkStub(slug="digital-outcomes-and-specialists-2").response(),
+                FrameworkStub(slug="g-cloud-5").response(),
+            ],
+        }
+
+        # fortunately draft services are similar enough to regular services
+        example_services = self.load_example_listing("services_response")["services"]
+        self.data_api_client.find_draft_services_iter.side_effect = assert_args_and_return_iter_over(
+            (
+                {
+                    **example_services[0],
+                    "id": 567,
+                    "supplierId": 1234,
+                    "serviceId": "555666777",
+                    "status": "submitted",
+                },
+                {
+                    **example_services[1],
+                    "id": 678,
+                    "supplierId": 1234,
+                    "serviceId": "333444555",
+                    "priceMin": None,  # make this incomplete
+                    "status": "not-submitted",
+                    "serviceName": "Inconsiderate Contractee",
+                },
+                DraftServiceStub(
+                    id=890,
+                    framework_slug="digital-outcomes-and-specialists-2",
+                    lot="digital-specialists",
+                    lot_slug="digital-specialists",
+                    lot_name="Digital specialists",
+                    status="not-submitted",
+                    supplier_id=1234,
+                    service_name="",
+                    framework_framework="digital-outcomes-and-specialists",
+                    framework_family="digital-outcomes-and-specialists",
+                ).response(),
+                # deliberately outdated
+                DraftServiceStub(
+                    id=432,
+                    framework_slug="g-cloud-5",
+                    status="submitted",
+                    supplier_id=1234,
+                ).response(),
+            ),
+            1234,
+        )
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    def test_happy_path(self):
+        response = self.client.get("/admin/suppliers/1234/draft-services")
+
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert "no draft services" not in document.xpath("normalize-space(string())")
+        # important args should already be checked by assert_args_and_*
+        assert self.data_api_client.find_draft_services_iter.called
+        assert self.data_api_client.find_frameworks.called
+        assert self.data_api_client.get_supplier.called
+
+        assert document.xpath(
+            "//*[contains(@class, 'govuk-breadcrumbs')]//li/a[normalize-space(string())=$t][@href=$u]",
+            t="Supplier Name",
+            u="/admin/suppliers/1234",
+        )
+
+        assert tuple(
+            (h2.xpath("normalize-space(string())"), h2.xpath("@id")[0])
+            for h2 in document.xpath("//main//h2")
+        ) == (
+            ("G-Cloud 8", "g-cloud-8_draft_services",),
+            ("Digital Outcomes and Specialists 2", "digital-outcomes-and-specialists-2_draft_services",),
+        )
+
+        assert tuple(
+            (
+                table.xpath("normalize-space(string(./caption))"),
+                tuple(
+                    tuple(td.xpath("normalize-space(string())") for td in tr.xpath("./td"))
+                    for tr in table.xpath("./tbody/tr")
+                ),
+            ) for table in document.xpath("//main//table[contains(@class, 'summary-item-body')]")
+        ) == (
+            (
+                "Draft services for the G-Cloud 8 framework.",
+                (
+                    (
+                        "Contract Management",
+                        "Wednesday 17 December 2014",
+                        "567",
+                        "Software as a Service",
+                        "Submitted",
+                        "0",
+                    ), (
+                        "Inconsiderate Contractee",
+                        "Wednesday 17 December 2014",
+                        "678",
+                        "Software as a Service",
+                        "Not Submitted",
+                        "1",
+                    ),
+                ),
+            ), (
+                "Draft services for the Digital Outcomes and Specialists 2 framework.",
+                (
+                    (
+                        "Digital specialists",
+                        "Friday 7 April 2017",
+                        "890",
+                        "Digital specialists",
+                        "Not Submitted",
+                        "4",
+                    ),
+                ),
+            ),
+        )
+
+    def test_no_drafts(self):
+        self.data_api_client.find_draft_services_iter.side_effect = assert_args_and_return_iter_over(
+            (
+                # deliberately outdated
+                DraftServiceStub(
+                    id=909303,
+                    framework_slug="g-cloud-5",
+                    status="not-submitted",
+                    supplier_id=1234,
+                    service_name="32 consignments",
+                ).response(),
+            ),
+            1234,
+        )
+
+        response = self.client.get("/admin/suppliers/1234/draft-services")
+
+        assert response.status_code == 200
+
+        document = html.fromstring(response.get_data(as_text=True))
+        # important args should already be checked by assert_args_and_*
+        assert self.data_api_client.find_draft_services_iter.called
+        assert self.data_api_client.find_frameworks.called
+        assert self.data_api_client.get_supplier.called
+
+        assert document.xpath(
+            "//*[contains(@class, 'summary-item-no-content')][normalize-space(string())=$t]",
+            t="This supplier has no draft services on the Digital Marketplace.",
+        )
+        assert not document.xpath("//h2[normalize-space(string())=$t]", t="G-Cloud 5")
+        assert "32 consignments" not in document.xpath("normalize-space(string())")
+        assert "909303" not in document.xpath("normalize-space(string())")
+
+    def test_no_supplier(self):
+        self.data_api_client.get_supplier.side_effect = assert_args_and_raise(
+            HTTPError(Response(404)),
+            1234,
+        )
+
+        response = self.client.get("/admin/suppliers/1234/draft-services")
+
+        assert response.status_code == 404
+        assert self.data_api_client.get_supplier.called
+        assert self.data_api_client.find_draft_services_iter.called is False
+        assert self.data_api_client.find_frameworks.called is False
+
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 200),
+        ("admin-ccs-data-controller", 403),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_permissions(self, role, expected_code):
+        self.user_role = role
+
+        response = self.client.get("/admin/suppliers/1234/draft-services")
+        assert response.status_code == expected_code
 
 
 class TestSupplierInviteUserView(LoggedInApplicationTest):
