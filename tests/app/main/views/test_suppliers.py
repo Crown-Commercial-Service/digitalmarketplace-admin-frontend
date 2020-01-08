@@ -1470,6 +1470,20 @@ class TestSupplierDraftServicesView(LoggedInApplicationTest):
         assert self.data_api_client.find_draft_services_iter.called is False
         assert self.data_api_client.find_frameworks.called is False
 
+    @pytest.mark.parametrize("role, expected_code", [
+        ("admin", 403),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 200),
+        ("admin-ccs-data-controller", 403),
+        ("admin-framework-manager", 200),
+        ("admin-manager", 403),
+    ])
+    def test_permissions(self, role, expected_code):
+        self.user_role = role
+
+        response = self.client.get("/admin/suppliers/1234/draft-services")
+        assert response.status_code == expected_code
+
 
 class TestSupplierInviteUserView(LoggedInApplicationTest):
 
