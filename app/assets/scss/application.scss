@@ -1,5 +1,9 @@
 $path: "/admin/static/images/";
 
+// Temporary needed until all components have migrated to govuk-frontend
+// and elements which need to be styled should have class names associated to them
+@import "overrides/govuk-template/_govuk-template";
+
 // Digital Marketplace Front-end toolkit shared CSS placeholders used by other DM toolkit styles
 @import "toolkit/shared_placeholders/_dm-typography.scss";
 @import "toolkit/shared_placeholders/_mixins.scss";
@@ -33,6 +37,11 @@ $govuk-images-path: '/admin/static/images/govuk-frontend/';
 $govuk-fonts-path: '/admin/static/fonts/';
 $govuk-compatibility-govukfrontendtoolkit: true;
 $govuk-compatibility-govukelements: true;
+// $govuk-global-styles Only affects the font colour of <a> without govuk-link class
+// and padding/font size of any <p> without govuk-body classname
+// https://github.com/alphagov/govuk-frontend/blob/v2.13.0/src/settings/_global-styles.scss
+// https://github.com/alphagov/govuk-frontend/blob/v2.13.0/src/core/_global-styles.scss
+$govuk-global-styles: true;
 @import "node_modules/digitalmarketplace-govuk-frontend/govuk-frontend/all";
 
 // Digital Marketplace Components
