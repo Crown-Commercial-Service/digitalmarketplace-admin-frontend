@@ -333,7 +333,10 @@ def view_supplier_declaration(supplier_id, framework_slug):
             raise
         sf = {}
 
-    content = content_loader.get_manifest(framework_slug, 'declaration').filter(sf.get("declaration", {}))
+    content = content_loader.get_manifest(
+        framework_slug,
+        'declaration',
+    ).filter(sf.get("declaration", {}), inplace_allowed=True)
     declaration_sections = content.sections
     question_content = OrderedDict(
         (question.id, question)
@@ -631,7 +634,7 @@ def edit_supplier_declaration_section(supplier_id, framework_slug, section_id):
             raise
         declaration = {}
 
-    content = content_loader.get_manifest(framework_slug, 'declaration').filter(declaration)
+    content = content_loader.get_manifest(framework_slug, 'declaration').filter(declaration, inplace_allowed=True)
     section = content.get_section(section_id)
     if section is None:
         abort(404)
@@ -662,7 +665,7 @@ def update_supplier_declaration_section(supplier_id, framework_slug, section_id)
             raise
         declaration = {}
 
-    content = content_loader.get_manifest(framework_slug, 'declaration').filter(declaration)
+    content = content_loader.get_manifest(framework_slug, 'declaration').filter(declaration, inplace_allowed=True)
     section = content.get_section(section_id)
     if section is None:
         abort(404)
@@ -877,7 +880,7 @@ def _draft_services_annotated_unanswered_counts(framework_slug, draft_services):
         {
             **draft_service,
             "unansweredRequiredCount": count_unanswered_questions(
-                manifest.filter(draft_service).summary(draft_service)
+                manifest.filter(draft_service, inplace_allowed=True).summary(draft_service, inplace_allowed=True)
             )[0],
         } for draft_service in draft_services
     )

@@ -89,12 +89,15 @@ def view_service(service_id):
             removed_at = most_recent_audit_events['auditEvents'][0]['createdAt']
 
     service_data['priceString'] = format_service_price(service_data)
-    content = content_loader.get_manifest(service_data['frameworkSlug'], 'edit_service_as_admin').filter(service_data)
+    sections = content_loader.get_manifest(
+        service_data['frameworkSlug'],
+        'edit_service_as_admin',
+    ).filter(service_data, inplace_allowed=True).summary(service_data, inplace_allowed=True)
 
     return render_template(
         "view_service.html",
         framework=framework,
-        sections=content.summary(service_data),
+        sections=sections,
         service_data=service_data,
         service_id=service_id,
         removed_by=removed_by,
@@ -160,7 +163,10 @@ def edit_service(service_id, section_id, question_slug=None):
 
     get_framework_or_404(data_api_client, service_data['frameworkSlug'], allowed_statuses=['live', 'expired'])
 
-    content = content_loader.get_manifest(service_data['frameworkSlug'], 'edit_service_as_admin').filter(service_data)
+    content = content_loader.get_manifest(
+        service_data['frameworkSlug'],
+        'edit_service_as_admin',
+    ).filter(service_data, inplace_allowed=True)
 
     section = content.get_section(section_id)
 
@@ -192,7 +198,10 @@ def update_service(service_id, section_id, question_slug=None):
     # TODO remove `expired` from below. It's a temporary fix to allow access to DOS2 as it's expired.
     get_framework_or_404(data_api_client, service['frameworkSlug'], allowed_statuses=['live', 'expired'])
 
-    content = content_loader.get_manifest(service['frameworkSlug'], 'edit_service_as_admin').filter(service)
+    content = content_loader.get_manifest(
+        service['frameworkSlug'],
+        'edit_service_as_admin',
+    ).filter(service, inplace_allowed=True)
     section = content.get_section(section_id)
     if question_slug is not None:
         # Overwrite section with single question section for 'question per page' editing.
@@ -301,7 +310,7 @@ def service_updates(service_id):
         extra_context["sections"] = sections = content_loader.get_manifest(
             service['frameworkSlug'],
             'edit_service_as_admin',
-        ).filter(service).sections
+        ).filter(service, inplace_allowed=True).sections
 
         extra_context["diffs"] = OrderedDict(
             (question_id, table_html,)
