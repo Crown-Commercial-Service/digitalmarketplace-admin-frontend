@@ -8,6 +8,7 @@
 {% from "govuk-frontend/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {# Import DM Components #}
+{% from "digitalmarketplace/components/cookie-banner/macro.njk" import dmCookieBanner %}
 {% from "digitalmarketplace/components/header/macro.njk" import dmHeader%}
 
 {% set assetPath = '/admin/static' %}
@@ -20,6 +21,12 @@
 {% endblock %}
 
 {% block header %}
+  {% block cookieBanner %}
+    {{ dmCookieBanner({
+      'cookieSettingsUrl': url_for('external.cookie_settings'),
+      'cookieInfoUrl': url_for('external.cookies'),
+    }) }}
+  {% endblock %}
   {{ dmHeader({
     "isAdmin": "true",
     "role": current_user.role | default(None)
