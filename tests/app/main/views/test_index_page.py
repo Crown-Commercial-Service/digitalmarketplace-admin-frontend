@@ -486,3 +486,12 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         assert link_is_visible is link_should_be_visible, (
             "Role {} {} see the link".format(role, "cannot" if link_should_be_visible else "can")
         )
+
+
+class TestCookieBanner(LoggedInApplicationTest):
+    def test_should_use_local_cookie_page_on_cookie_message(self):
+        res = self.client.get('/admin')
+        assert res.status_code == 200
+        document = html.fromstring(res.get_data(as_text=True))
+        cookie_banner = document.xpath('//div[@id="dm-cookie-banner"]')
+        assert cookie_banner[0].xpath('//h2//text()')[0].strip() == "Can we store analytics cookies on your device?"

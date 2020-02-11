@@ -10,7 +10,7 @@ lxml==4.5.0
 # Putting upgrade on hold due to v1.0.0 using sha512 instead of sha1 by default
 itsdangerous==0.24  # pyup: <1.0.0
 
-git+https://github.com/alphagov/digitalmarketplace-utils.git@51.1.0#egg=digitalmarketplace-utils==51.1.0
+git+https://github.com/alphagov/digitalmarketplace-utils.git@51.3.1#egg=digitalmarketplace-utils==51.3.1
 git+https://github.com/alphagov/digitalmarketplace-content-loader.git@7.3.0#egg=digitalmarketplace-content-loader==7.3.0
 git+https://github.com/alphagov/digitalmarketplace-apiclient.git@21.4.1#egg=digitalmarketplace-apiclient==21.4.1
 git+https://github.com/alphagov/govuk-frontend-jinja.git@v0.4.0-alpha#egg=govuk-frontend-jinja==0.4.0-alpha

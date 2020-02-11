@@ -13,7 +13,9 @@
 //= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/show-hide-content.js
 ; // Hack needed because show-hide-content.js does not have a closing ";"
 //= require ../../../node_modules/digitalmarketplace-govuk-frontend/govuk-frontend/all.js
+//= require ../../../node_modules/digitalmarketplace-govuk-frontend/digitalmarketplace/digitalmarketplace-govuk-frontend.js
 //= require _selection-buttons.js
 //= require ../../../node_modules/digitalmarketplace-frontend-toolkit/toolkit/javascripts/module-loader.js
 
 GOVUKFrontend.initAll()
+DMGOVUKFrontend.initAll()
