@@ -16,12 +16,15 @@ class TestIndex(LoggedInApplicationTest):
         "admin-manager",
         "admin-ccs-data-controller",
     ])
-    def test_change_password_link_is_shown_to_all_admin_users(self, role):
+    def test_account_action_links_are_shown_to_all_admin_users(self, role):
         self.user_role = role
         response = self.client.get('/admin')
         assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
-        assert bool(document.xpath('.//a[@href="/user/change-password"]')), "Role {} cannot see the link".format(role)
+        assert bool(document.xpath('.//a[@href="/user/change-password"]')), \
+            "Role {} cannot see the change password link".format(role)
+        assert bool(document.xpath('.//a[@href="/user/cookie-settings"]')), \
+            "Role {} cannot see the cookie settings link".format(role)
 
     @pytest.mark.parametrize("role, link_should_be_visible", [
         ("admin", True),
