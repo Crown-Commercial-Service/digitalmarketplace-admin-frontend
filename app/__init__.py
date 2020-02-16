@@ -62,7 +62,7 @@ def create_app(config_name):
         session_store = RedisStore(redis.StrictRedis(**redis_opts))
         KVSessionExtension(session_store, application)
 
-    application.permanent_session_lifetime = timedelta(hours=1)
+    application.permanent_session_lifetime = timedelta(hours=12)
     from .main import main as main_blueprint
     from .status import status as status_blueprint
 
