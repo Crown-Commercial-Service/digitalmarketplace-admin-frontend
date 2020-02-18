@@ -47,7 +47,7 @@ class Config(object):
     DM_APP_NAME = 'admin-frontend'
 
     SHARED_EMAIL_KEY = None
-    INVITE_EMAIL_SALT = 'InviteEmailSalt'
+    INVITE_EMAIL_TOKEN_NS = 'InviteEmailSalt'
 
     DM_NOTIFY_API_KEY = None
 
@@ -90,7 +90,7 @@ class Test(Config):
 
     DM_LOG_LEVEL = 'CRITICAL'
     SHARED_EMAIL_KEY = 'KEY'
-    INVITE_EMAIL_SALT = 'SALT'
+    INVITE_EMAIL_TOKEN_NS = 'SALT'
     DM_NOTIFY_API_KEY = "not_a_real_key-00000000-fake-uuid-0000-000000000000"
 
 
