@@ -1,0 +1,15 @@
+-c requirements.txt
+
+coverage
+coveralls
+cssselect
+flake8
+freezegun
+mock<4.0.0
+pytest
+pytest-cov
+python-dotenv  # used to load .flaskenv
+requests-mock
+watchdog
+
+git+https://github.com/alphagov/digitalmarketplace-test-utils.git@2.6.1#egg=digitalmarketplace-test-utils
