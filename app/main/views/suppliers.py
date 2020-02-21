@@ -892,6 +892,16 @@ def find_supplier_draft_services(supplier_id):
     supplier = data_api_client.get_supplier(supplier_id)["suppliers"]
     frameworks = data_api_client.find_frameworks()['frameworks']
 
+    if current_user.has_role('admin-ccs-sourcing'):
+        visible_framework_statuses = ["pending", "standstill", "live", "expired"]
+    elif current_user.has_role('admin-framework-manager'):
+        visible_framework_statuses = ["open", "pending", "standstill", "live", "expired"]
+    else:
+        # No other roles can access this page yet, but we might want to add them later
+        visible_framework_statuses = []
+
+    frameworks = filter(lambda fw: fw['status'] in visible_framework_statuses, frameworks)
+
     frameworks_draft_services = {
         framework_slug: draft_services
         for framework_slug, draft_services in (
