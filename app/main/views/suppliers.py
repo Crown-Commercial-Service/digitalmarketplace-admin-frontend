@@ -900,7 +900,7 @@ def find_supplier_draft_services(supplier_id):
         # No other roles can access this page yet, but we might want to add them later
         visible_framework_statuses = []
 
-    frameworks = filter(lambda fw: fw['status'] in visible_framework_statuses, frameworks)
+    frameworks = (fw for fw in frameworks if fw['status'] in visible_framework_statuses)
 
     frameworks_draft_services = {
         framework_slug: draft_services

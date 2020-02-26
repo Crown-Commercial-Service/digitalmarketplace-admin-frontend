@@ -1484,15 +1484,23 @@ class TestSupplierDraftServicesView(LoggedInApplicationTest):
         response = self.client.get("/admin/suppliers/1234/draft-services")
         assert response.status_code == expected_code
 
+    @pytest.mark.parametrize("post_application_framework_status", [
+        "pending", "standstill", "live", "expired"
+    ])
     @pytest.mark.parametrize("role, visible_open_frameworks", [
         ("admin-framework-manager", 1),
         ("admin-ccs-sourcing", 0),
     ])
-    def test_open_frameworks_only_visible_to_framework_manager_admins(self, role, visible_open_frameworks):
+    def test_open_frameworks_only_visible_to_framework_manager_admins(
+        self, role, visible_open_frameworks, post_application_framework_status
+    ):
         self.data_api_client.find_frameworks.return_value = {
             "frameworks": [
                 FrameworkStub(slug="g-cloud-8", status="open").response(),
-                FrameworkStub(slug="digital-outcomes-and-specialists-2", status="pending").response(),
+                FrameworkStub(
+                    slug="digital-outcomes-and-specialists-2",
+                    status=post_application_framework_status
+                ).response(),
             ],
         }
         self.user_role = role
