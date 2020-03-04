@@ -62,6 +62,7 @@
           field_headings=[
               'Name',
               'Email address',
+              'Phone Number',
               'Last login',
               'Last password change',
               'Locked',
@@ -74,6 +75,8 @@
       {{ summary.field_name(item.name) }}
 
       {{ summary.text(item.emailAddress) }}
+
+      {{ summary.text(supplier.contact_phone) }}
 
       {% call summary.field() %}
           {% if item.loggedInAt %}
