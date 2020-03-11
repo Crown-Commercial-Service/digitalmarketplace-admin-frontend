@@ -1,7 +1,7 @@
 applications:
 - name: dm-rc-admin
   command: ./scripts/cf_run_app.sh
-  buildpack: python_buildpack
+  buildpack: python2_buildpack
   instances: 1
   memory: 256M
   disk_quota: 512M
