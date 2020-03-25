@@ -258,7 +258,7 @@ gulp.task(
   copyFactory(
     'images from the GOVUK frontend',
     govukFrontendImageFolder,
-    path.join(staticFolder, 'images'),
+    path.join(staticFolder, 'images')
   )
 )
 
