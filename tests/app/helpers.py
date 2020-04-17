@@ -157,7 +157,7 @@ class LoggedInApplicationTest(BaseApplicationTest):
             res = self.client.get('/auto-login')
             assert res.status_code == 200
 
-        self._user_callback = login_manager.user_callback
+        self._user_callback = login_manager._user_callback
         login_manager.user_loader(self.user_loader)
 
     def user_loader(self, user_id):
