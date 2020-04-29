@@ -121,10 +121,15 @@ def preview_application_casestudy(application_id, case_study_id):
 @login_required
 @role_required('admin')
 def download_single_file(id, slug):
-    file = s3_download_file(slug, os.path.join('applications', str(id)))
-
     mimetype = mimetypes.guess_type(slug)[0] or 'binary/octet-stream'
-    return Response(file, mimetype=mimetype)
+    return Response(
+        s3_download_file(
+            current_app.config.get('S3_BUCKET_NAME'),
+            slug,
+            os.path.join('applications', str(id))
+        ),
+        mimetype=mimetype
+    )
 
 
 @main.route('/applications/<int:application_id>/update', methods=['POST'])
