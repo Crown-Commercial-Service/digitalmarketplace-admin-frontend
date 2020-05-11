@@ -24,12 +24,17 @@
     "jquery": "3.5.0"
   },
   "scripts": {
+    "preinstall": "npx npm-force-resolutions",
     "frontend-build:development": "gulp build:development",
     "frontend-build:production": "gulp build:production",
     "frontend-build:watch": "gulp watch",
     "test": "standard gulpfile.js"
   },
   "devDependencies": {
+    "minimist": "^1.2.5",
     "standard": "^14.1.0"
+  },
+  "resolutions": {
+    "minimist": "^1.2.5"
   }
 }
