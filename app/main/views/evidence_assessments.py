@@ -11,7 +11,7 @@ from react.render import render_component
 @main.route('/evidence-assessments/<int:evidence_id>', methods=['GET'])
 @main.route('/evidence-assessments', methods=['GET'])
 @login_required
-@role_required('admin')
+@role_required('admin', 'assessor')
 def evidence_assessments_review(evidence_id=None):
     SCHEME = request.environ['wsgi.url_scheme']
     if evidence_id:
@@ -37,7 +37,7 @@ def evidence_assessments_review(evidence_id=None):
 
 @main.route('/evidence-assessments/<int:evidence_id>/previous', methods=['GET'])
 @login_required
-@role_required('admin')
+@role_required('admin', 'assessor')
 def evidence_assessments_review_previous(evidence_id=None):
     SCHEME = request.environ['wsgi.url_scheme']
     evidence = None
@@ -61,7 +61,7 @@ def evidence_assessments_review_previous(evidence_id=None):
 
 @main.route('/evidence-assessments/approve', methods=['POST'])
 @login_required
-@role_required('admin')
+@role_required('admin', 'assessor')
 def evidence_assessments_approve():
     id = request.get_json(force=True)['id']
     if not id:
@@ -76,7 +76,7 @@ def evidence_assessments_approve():
 
 @main.route('/evidence-assessments/reject', methods=['POST'])
 @login_required
-@role_required('admin')
+@role_required('admin', 'assessor')
 def evidence_assessments_reject():
     request_data = request.get_json(force=True)
     if 'id' not in request_data:
