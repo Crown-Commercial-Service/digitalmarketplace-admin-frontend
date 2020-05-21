@@ -53,6 +53,7 @@ $govuk-global-styles: true;
 
 // Overrides
 @import "overrides/_notification-banner";
+@import "overrides/_temporary-messages";
 
 // Misc styles
 // TODO: Move misc styling into their own partial files or the Digital Marketplace FE Toolkit
