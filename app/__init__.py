@@ -106,6 +106,7 @@ def create_app(config_name):
     # the external NotImplemented routes in the dm-utils external blueprint).
     application.register_blueprint(external_blueprint)
 
+    login_manager.login_message = None  # don't flash message to user
     login_manager.login_view = '/user/login'
     main_blueprint.config = application.config.copy()
 
