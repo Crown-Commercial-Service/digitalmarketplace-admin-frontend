@@ -217,6 +217,73 @@ class TestListAgreements(LoggedInApplicationTest):
             status_labels[chosen_status_key].lower()
         )
 
+    def test_list_agreements_esignature_frameworks(self):
+        self.data_api_client.get_framework.return_value = {
+            "frameworks": {
+                "slug": "g-cloud-12",
+                "frameworkAgreementVersion": "RM.12"
+            }
+        }
+        self.data_api_client.find_framework_suppliers.return_value = {
+            'supplierFrameworks': [
+                {
+                    'supplierName': 'My other supplier',
+                    'supplierId': 11112,
+                    'agreementReturned': True,
+                    'agreementReturnedAt': '2020-10-30T01:01:01.000000Z',
+                    'frameworkSlug': 'g-cloud-12',
+                    'onFramework': True
+                }
+            ]
+        }
+
+        response = self.client.get('/admin/agreements/g-cloud-12?status=signed')
+        page = html.fromstring(response.get_data(as_text=True))
+
+        assert response.status_code == 200
+
+        assert self.data_api_client.find_framework_suppliers.call_args_list == [
+            mock.call('g-cloud-12', agreement_returned=True, statuses="signed", with_declarations=False)
+        ]
+        assert page.xpath('//h2[@class="search-result-title"]//a')[0].text.strip() == "My other supplier"
+
+        summary_elem = page.xpath("//p[@class='govuk-body search-summary-border-bottom']")[0]
+        assert summary_elem.xpath("normalize-space(string())") == '1 agreement waiting for automated countersigning'
+
+    def test_list_agreements_esignature_frameworks_countersigned(self):
+        self.data_api_client.get_framework.return_value = {
+            "frameworks": {
+                "slug": "g-cloud-12",
+                "frameworkAgreementVersion": "RM.12"
+            }
+        }
+        self.data_api_client.find_framework_suppliers.return_value = {
+            'supplierFrameworks': [
+                {
+                    'supplierName': 'My other supplier',
+                    'supplierId': 11112,
+                    'agreementReturned': True,
+                    'agreementReturnedAt': '2020-10-30T01:01:01.000000Z',
+                    'countersignedPath': 'path/11112-countersigned-agreement.pdf',
+                    'frameworkSlug': 'g-cloud-12',
+                    'onFramework': True
+                }
+            ]
+        }
+
+        response = self.client.get('/admin/agreements/g-cloud-12?status=approved,countersigned')
+        page = html.fromstring(response.get_data(as_text=True))
+
+        assert response.status_code == 200
+
+        assert self.data_api_client.find_framework_suppliers.call_args_list == [
+            mock.call('g-cloud-12', agreement_returned=True, statuses="approved,countersigned", with_declarations=False)
+        ]
+        assert page.xpath('//h2[@class="search-result-title"]//a')[0].text.strip() == "My other supplier"
+
+        summary_elem = page.xpath("//p[@class='govuk-body search-summary-border-bottom']")[0]
+        assert summary_elem.xpath("normalize-space(string())") == '1 agreement countersigned'
+
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 403),
         ("admin-ccs-category", 200),

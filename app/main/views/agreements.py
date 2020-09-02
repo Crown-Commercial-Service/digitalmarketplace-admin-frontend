@@ -17,6 +17,17 @@ status_labels = OrderedDict((
                                                   # much easier to just act as a filter
 ))
 
+OLD_COUNTERSIGNING_FLOW_FRAMEWORKS = [
+    'digital-outcomes-and-specialists-4',
+    'digital-outcomes-and-specialists-3',
+    'digital-outcomes-and-specialists-2',
+    'digital-outcomes-and-specialists',
+    'g-cloud-11',
+    'g-cloud-10',
+    'g-cloud-9',
+    'g-cloud-8',
+]
+
 
 def _get_supplier_frameworks(framework_slug, status=None):
     return [
@@ -44,14 +55,26 @@ def list_agreements(framework_slug):
         supplier_framework['agreementReturnedAt'] = datetimeformat(
             parse_date(supplier_framework['agreementReturnedAt']))
 
+    # Determine which template to use.
+    # G-Cloud 7 and earlier frameworks do not have a frameworkAgreementVersion and use an old countersigning flow
+    # G-Cloud 12 and newer frameworks use e-signature flow (countersignatures are automated)
+    is_e_signature_flow = False
+    if framework.get('frameworkAgreementVersion'):
+        template = "view_agreements_list.html"
+        if framework['slug'] not in OLD_COUNTERSIGNING_FLOW_FRAMEWORKS:
+            status_labels['signed'] = "Waiting for automated countersigning"
+            is_e_signature_flow = True
+    else:
+        template = 'view_agreements.html'
+
     return render_template(
-        # G-Cloud 8 and newer frameworks have a frameworkAgreementVersion and use the new countersigning flow
-        "view_agreements_list.html" if framework.get("frameworkAgreementVersion") else 'view_agreements.html',
+        template,
         framework=framework,
         supplier_frameworks=supplier_frameworks,
         degenerate_document_path_and_return_doc_name=lambda x: degenerate_document_path_and_return_doc_name(x),
         status=status,
         status_labels=status_labels,
+        is_e_signature_flow=is_e_signature_flow
     )
 
 
