@@ -346,9 +346,9 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
 
     @pytest.mark.parametrize("role, link_should_be_visible, expected_link_text", [
         ("admin", False, None),
-        ("admin-ccs-category", True, "View agreements"),
-        ("admin-ccs-sourcing", True, "Countersign agreements"),
-        ("admin-framework-manager", True, "View agreements"),
+        ("admin-ccs-category", True, "View supplier framework agreements"),
+        ("admin-ccs-sourcing", True, "View supplier framework agreements"),
+        ("admin-framework-manager", True, "View supplier framework agreements"),
         ("admin-manager", False, None),
         ("admin-ccs-data-controller", False, None),
     ])
