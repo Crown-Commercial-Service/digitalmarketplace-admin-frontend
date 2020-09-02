@@ -2724,7 +2724,7 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
         self.data_api_client.get_supplier.assert_called_once_with(1234)
         self.data_api_client.get_framework.assert_called_once_with('g-cloud-8')
 
-    def test_should_show_agreement_details_on_page(self, s3):
+    def test_should_show_agreement_details_on_page_old_countersigning_flow(self, s3):
         self.data_api_client.find_services_iter.return_value = iter(self.services_response)
 
         with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
@@ -2748,6 +2748,52 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
             # Uploader details
             assert len(document.xpath('//p[contains(text(), "Uploader Name")]')) == 1
             assert len(document.xpath('//span[contains(text(), "uploader@email.com")]')) == 1
+
+    def test_signed_agreement_details_visible_for_esignature_flow(self, s3):
+        self.data_api_client.find_services_iter.return_value = iter(self.services_response)
+
+        response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-12')
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert response.status_code == 200
+
+        # Company details - linked
+        assert len(document.xpath('//a[@href="/admin/suppliers/1234"][contains(text(), "View company details")]')) == 1
+        # Signer details
+        assert len(document.xpath('//h2[contains(text(), "Signature details")]')) == 1
+        assert len(document.xpath('//span[contains(text(), "Signer name")]')) == 1
+        assert len(document.xpath('//span[contains(text(), "Ace Developer")]')) == 1
+        assert len(document.xpath('//span[contains(text(), "Signer user")]')) == 1
+        assert len(document.xpath('//span[contains(text(), "uploader@email.com")]')) == 1
+        # Lots
+        assert len(document.xpath('//span[contains(text(), "Lettuce & cucumber, Raisins & dates")]')) == 1
+        # Countersignature status
+        assert len(document.xpath('//p[contains(text(), "Waiting for automatic countersigning")]')) == 1
+
+    def test_countersigned_agreement_details_visible_for_esignature_flow(self, s3):
+        self.data_api_client.find_services_iter.return_value = iter(self.services_response)
+        supplier_framework_info = self.load_example_listing(
+            'supplier_framework_response'
+        )
+        supplier_framework_info['frameworkInterest']['countersignedPath'] = 'https://path/to/countersigned.pdf'
+        supplier_framework_info['frameworkInterest']['countersignedAt'] = '2020-09-01T11:11:11.111111Z'
+        self.data_api_client.get_supplier_framework_info.return_value = supplier_framework_info
+
+        with mock.patch('app.main.views.suppliers.get_signed_url') as mock_get_url:
+            mock_get_url.return_value = "http://example.com/document/countersigned-1234.pdf"
+            response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-12')
+
+        document = html.fromstring(response.get_data(as_text=True))
+        assert response.status_code == 200
+
+        # Countersignature link
+        expected_link_text = "View countersigned framework agreement"
+        expected_link_href = "http://example.com/document/countersigned-1234.pdf"
+        link = document.xpath('//a[@href="{}"]'.format(expected_link_href))
+        assert link[0].text == expected_link_text
+        # Countersignature status
+        expected_status_text = "Automatically countersigned on Tuesday 1 September 2020 at 12:11pm BST"
+        assert len(document.xpath('//p[contains(text(), "{}")]'.format(expected_status_text))) == 1
 
     def test_companies_house_link_is_not_shown_for_other_registration_number(self, s3):
         self.data_api_client.find_services_iter.return_value = iter(self.services_response)
