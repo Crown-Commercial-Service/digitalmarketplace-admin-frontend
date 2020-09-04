@@ -14,7 +14,7 @@ const npmRoot = path.join(repoRoot, 'node_modules')
 const govukCountryPickerDist = path.join(npmRoot, 'govuk-country-and-territory-autocomplete', 'dist')
 const govukToolkitRoot = path.join(npmRoot, 'govuk_frontend_toolkit')
 const govukElementsRoot = path.join(npmRoot, 'govuk-elements-sass')
-const govukFrontendRoot = path.join(npmRoot, 'digitalmarketplace-govuk-frontend', 'govuk')
+const govukFrontendRoot = path.join(npmRoot, 'govuk-frontend')
 const dmToolkitRoot = path.join(npmRoot, 'digitalmarketplace-frontend-toolkit', 'toolkit')
 const sspContentRoot = path.join(npmRoot, 'digitalmarketplace-frameworks')
 const assetsFolder = path.join(repoRoot, 'app', 'assets')
@@ -262,6 +262,16 @@ gulp.task(
   )
 )
 
+gulp.task(
+  'copy:govuk_frontend_assets:stylesheets',
+  copyFiletypeFactory(
+    'stylesheets from GOV.UK Frontend',
+    govukFrontendRoot,
+    'scss',
+    path.join('app', 'assets', 'scss', 'govuk'),
+  )
+)
+
 gulp.task('set_environment_to_development', function (cb) {
   environment = 'development'
   cb()
@@ -283,6 +293,7 @@ gulp.task(
     'copy:images',
     'copy:govuk_frontend_assets:fonts',
     'copy:govuk_frontend_assets:images',
+    'copy:govuk_frontend_assets:stylesheets',
     'copy:country_picker:jsons',
     'copy:country_picker:stylesheets',
     'copy:country_picker_package:javascripts',
