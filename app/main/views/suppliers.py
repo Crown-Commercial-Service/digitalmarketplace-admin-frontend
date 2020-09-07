@@ -401,7 +401,7 @@ def view_signed_agreement(supplier_id, framework_slug):
     else:
         is_e_signature_flow = True
         # Fetch path to combined countersigned agreement, if available
-        path = supplier_framework.get('countersignedPath', "")
+        path = supplier_framework.get('countersignedPath')
         template = "suppliers/view_esignature_agreement.html"
 
     url = get_signed_url(agreements_bucket, path, current_app.config['DM_ASSETS_URL']) if path else ""
