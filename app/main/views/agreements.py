@@ -10,12 +10,15 @@ from .. import main
 from ..auth import role_required
 from ... import data_api_client
 
-status_labels = OrderedDict((
-    ("signed", "Waiting for countersigning"),
-    ("on-hold", "On hold"),
-    ("approved,countersigned", "Countersigned"),  # ugly key, but i don't want to start inventing new status values -
-                                                  # much easier to just act as a filter
-))
+
+def get_status_labels():
+    return OrderedDict((
+        ("signed", "Waiting for countersigning"),
+        ("on-hold", "On hold"),
+        ("approved,countersigned", "Countersigned"),  # ugly key, but i don't want to start inventing new status values
+                                                      # much easier to just act as a filter
+    ))
+
 
 OLD_COUNTERSIGNING_FLOW_FRAMEWORKS = [
     'digital-outcomes-and-specialists-4',
@@ -44,6 +47,7 @@ def _get_supplier_frameworks(framework_slug, status=None):
 @role_required('admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager', 'admin-ccs-data-controller')
 def list_agreements(framework_slug):
     framework = data_api_client.get_framework(framework_slug)['frameworks']
+    status_labels = get_status_labels()
 
     status = request.args.get("status")
     if status and status not in status_labels:
@@ -82,6 +86,7 @@ def list_agreements(framework_slug):
 @role_required('admin-ccs-category', 'admin-ccs-sourcing', 'admin-framework-manager', 'admin-ccs-data-controller')
 def next_agreement(supplier_id, framework_slug):
     status = request.args.get("status")
+    status_labels = get_status_labels()
     if status and status not in status_labels:
         abort(400)
 

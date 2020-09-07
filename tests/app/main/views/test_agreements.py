@@ -5,7 +5,7 @@ import mock
 import pytest
 from lxml import html
 
-from app.main.views.agreements import status_labels
+from app.main.views.agreements import get_status_labels
 from ...helpers import LoggedInApplicationTest
 
 
@@ -16,6 +16,7 @@ class TestListAgreements(LoggedInApplicationTest):
         super().setup_method(method)
         self.data_api_client_patch = mock.patch('app.main.views.agreements.data_api_client', autospec=True)
         self.data_api_client = self.data_api_client_patch.start()
+        self.status_labels = get_status_labels()
 
     def teardown_method(self, method):
         self.data_api_client_patch.stop()
@@ -147,7 +148,7 @@ class TestListAgreements(LoggedInApplicationTest):
             for a_element in page.cssselect('.status-filters a')
         ) == tuple(
             ({"status": [status_key]}, status_label)
-            for status_key, status_label in status_labels.items()
+            for status_key, status_label in self.status_labels.items()
         )
 
         summary_elem = page.xpath("//p[@class='govuk-body search-summary-border-bottom']")[0]
@@ -161,7 +162,7 @@ class TestListAgreements(LoggedInApplicationTest):
         self.data_api_client.find_framework_suppliers.return_value = find_framework_suppliers_return_value_g8
 
         # choose the second status (if there is one, otherwise first)
-        chosen_status_key = tuple(status_labels.keys())[:2][-1]
+        chosen_status_key = tuple(self.status_labels.keys())[:2][-1]
 
         response = self.client.get('/admin/agreements/g-cloud-8?status={}'.format(chosen_status_key))
         page = html.fromstring(response.get_data(as_text=True))
@@ -195,7 +196,7 @@ class TestListAgreements(LoggedInApplicationTest):
         assert any(
             # (don't really want to risk shoving unescaped text into the xpath query, so pulling the elements out and
             # comparing them in python)
-            element.xpath("normalize-space(string())") == status_labels[chosen_status_key]
+            element.xpath("normalize-space(string())") == self.status_labels[chosen_status_key]
             for element in page.xpath("//*[@class='status-filters']//li")
         )
 
@@ -208,13 +209,13 @@ class TestListAgreements(LoggedInApplicationTest):
             ),
             (
                 ({"status": [status_key]}, status_label)
-                for status_key, status_label in status_labels.items() if status_key != chosen_status_key
+                for status_key, status_label in self.status_labels.items() if status_key != chosen_status_key
             ),
         ))
 
         summary_elem = page.xpath("//p[@class='govuk-body search-summary-border-bottom']")[0]
         assert summary_elem.xpath("normalize-space(string())") == '2 agreements {}'.format(
-            status_labels[chosen_status_key].lower()
+            self.status_labels[chosen_status_key].lower()
         )
 
     def test_list_agreements_esignature_frameworks(self):
