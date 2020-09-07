@@ -34,7 +34,7 @@
         {% call(item)
               summary.list_table(
                 [
-                  {"name": "Appointment is to", "value": ", ".join(lot_names) },
+                  {"name": "Appointment is to", "value": lot_names|join(", ") },
                   {"name": "Signer name", "value": supplier_framework.agreementDetails.signerName },
                   {"name": "Signer role", "value": supplier_framework.agreementDetails.signerRole },
                   {"name": "Signer user", "value": supplier_framework.agreementDetails.uploaderUserEmail  },
