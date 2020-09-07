@@ -36,6 +36,7 @@ from ..helpers.supplier_details import (
     get_company_details_from_supplier,
     DEPRECATED_FRAMEWORK_SLUGS,
 )
+from .agreements import OLD_COUNTERSIGNING_FLOW_FRAMEWORKS
 from ... import data_api_client, content_loader
 
 
@@ -376,32 +377,49 @@ def view_signed_agreement(supplier_id, framework_slug):
     if not supplier_framework.get('agreementReturned'):
         abort(404)
 
+    lot_names = []
     if framework["status"] in ("live", "expired"):
         # If the framework is live or expired we don't need to filter drafts, we only care about successful services
         service_iterator = data_api_client.find_services_iter(supplier_id=supplier_id, framework=framework_slug)
-        lot_slugs_names = [(service["lotSlug"], service["lotName"]) for service in service_iterator]
+        for service in service_iterator:
+            if service['lotName'] not in lot_names:
+                lot_names.append(service['lotName'])
     else:
         # If the framework has not yet become live we need to filter out unsuccessful services
         service_iterator = data_api_client.find_draft_services_iter(supplier_id=supplier_id, framework=framework_slug)
-        lot_slugs_names = [
-            (service["lotSlug"], service["lotName"]) for service in service_iterator if service["status"] == "submitted"
-        ]
+        for service in service_iterator:
+            if service["status"] == "submitted" and service['lotName'] not in lot_names:
+                lot_names.append(service['lotName'])
 
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
-    path = supplier_framework['agreementPath']
-    url = get_signed_url(agreements_bucket, path, current_app.config['DM_ASSETS_URL'])
+
+    if framework_slug in OLD_COUNTERSIGNING_FLOW_FRAMEWORKS:
+        is_e_signature_flow = False
+        # Fetch path to supplier's signature page
+        path = supplier_framework['agreementPath']
+        template = "suppliers/view_signed_agreement.html"
+    else:
+        is_e_signature_flow = True
+        # Fetch path to combined countersigned agreement, if available
+        path = supplier_framework.get('countersignedPath')
+        template = "suppliers/view_esignature_agreement.html"
+
+    url = get_signed_url(agreements_bucket, path, current_app.config['DM_ASSETS_URL']) if path else ""
+    agreement_ext = get_extension(path) if path else ""
+
     if not url:
         current_app.logger.info(f'No agreement file found for {path}')
     return render_template(
-        "suppliers/view_signed_agreement.html",
+        template,
         company_details=get_company_details_from_supplier(supplier),
         supplier=supplier,
         framework=framework,
         supplier_framework=supplier_framework,
-        lot_slugs_names=OrderedDict(sorted(lot_slugs_names)),
+        lot_names=list(sorted(lot_names)),
         agreement_url=url,
-        agreement_ext=get_extension(path),
+        agreement_ext=agreement_ext,
         next_status=next_status,
+        is_e_signature_flow=is_e_signature_flow
     )
 
 

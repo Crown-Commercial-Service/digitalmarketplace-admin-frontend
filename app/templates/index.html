@@ -151,15 +151,9 @@
             <ul class="govuk-list">
               {% if framework.status in ["live", "standstill"] or
                   (framework.family == 'digital-outcomes-and-specialists' and framework.status == 'expired') %}
-                {% set agreement_link_text = {
-                  'admin-ccs-category': 'View agreements',
-                  'admin-ccs-sourcing': 'Countersign agreements',
-                  'admin-framework-manager': 'View agreements',
-                  }
-              %}
                 <li>
                   <a class="govuk-link" href="{{ url_for('.list_agreements', framework_slug=framework['slug'], status='signed') }}">
-                    {{ agreement_link_text[current_user.role] }}
+                    View supplier framework agreements
                   </a>
                 </li>
               {% endif %}

@@ -1,0 +1,64 @@
+{% extends "_base_page.html" %}
+{% import "toolkit/summary-table.html" as summary %}
+
+{% block pageTitle %}
+  {{ framework.name }} agreement for {{ supplier_framework.declaration.nameOfOrganisation }} – Digital Marketplace admin
+{% endblock %}
+
+{% block breadcrumbs %}
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Admin home",
+        "href": url_for('.index')
+      },
+      {
+        "text": "{} agreements".format(framework.name),
+        "href": url_for('.list_agreements', framework_slug=framework.slug)
+      },
+      {
+        "text": "Framework agreement"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block mainContent %}
+  <h1 class="govuk-heading-l">{{ company_details.registered_name }}</h1>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+        <p><a href="{{ url_for('.supplier_details', supplier_id=supplier.id) }}">View company details</a></p>
+
+       <h2 class="govuk-heading-m">Signature details</h2>
+        {% call(item)
+              summary.list_table(
+                [
+                  {"name": "Appointment is to", "value": lot_names|join(", ") },
+                  {"name": "Signer name", "value": supplier_framework.agreementDetails.signerName },
+                  {"name": "Signer role", "value": supplier_framework.agreementDetails.signerRole },
+                  {"name": "Signer user", "value": supplier_framework.agreementDetails.uploaderUserEmail  },
+                  {"name": "Signing date", "value": supplier_framework.agreementReturnedAt|datetimeformat  }
+                ],
+                caption=caption,
+              )
+          %}
+          {% call summary.row() %}
+            {{ summary.field_name(item.name, wide=True) }}
+            {{ summary.text(item.value or "None") }}
+          {% endcall %}
+        {% endcall %}
+
+        <h2 class="govuk-heading-m">Countersignature status</h2>
+      {% if agreement_url %}
+        <p class="govuk-body">
+            <a href="{{ agreement_url }}">View countersigned framework agreement</a>
+        </p>
+        <p class="govuk-body">Automatically countersigned on {{ supplier_framework.countersignedAt|datetimeformat }}</p>
+      {% else %}
+        <p class="govuk-body">Waiting for automatic countersigning</p>
+      {% endif %}
+
+  </div>
+  </div>
+{% endblock %}
