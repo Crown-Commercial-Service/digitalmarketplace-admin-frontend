@@ -27,17 +27,23 @@
   {# ### Don't show instructions for read-only users ### #}
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">
-        <p class="govuk-body">
-          {% if is_e_signature_flow %}
-            {{framework.name}} agreements are electronically signed, and do not need manual countersigning.
-          {% else %}
-            Review the information for each agreement, accept it, and continue to the next one.
-          {% endif %}
-        </p>
-        <p class="govuk-body">
-          If there’s a problem with an agreement, contact the person who uploaded it and come back to it later. Ask
+        {% if is_e_signature_flow %}
+          <p class="govuk-body">
+            {{ framework.name }} agreements are electronically signed, and do not need manual countersigning.
+          </p>
+          <p class="govuk-body">
+          If there’s a problem with the agreement, contact the person who signed it. Ask
           suppliers to resubmit from the link in the email they received after they were accepted on to the framework.
-        </p>
+          </p>
+        {% else %}
+          <p class="govuk-body">
+            Review the information for each agreement, accept it, and continue to the next one.
+          </p>
+          <p class="govuk-body">
+            If there’s a problem with an agreement, contact the person who uploaded it and come back to it later. Ask
+            suppliers to resubmit from the link in the email they received after they were accepted on to the framework.
+          </p>
+        {% endif %}
       </div>
     </div>
   {% endif %}
