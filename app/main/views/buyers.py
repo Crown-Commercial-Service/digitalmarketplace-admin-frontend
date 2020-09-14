@@ -12,17 +12,20 @@ from dmapiclient.errors import HTTPError
 NEW_LINE = '\n'
 AREA_OF_EXPERTISE_LIST = [
     'Agile delivery and Governance',
+    'Change and Transformation',
     'Content and Publishing',
     'Cyber security',
     'Data science',
+    'Digital sourcing and ICT procurement',
     'Emerging technologies',
+    'ICT risk management and audit activities',
+    'ICT systems integration',
     'Marketing, Communications and Engagement',
     'Software engineering and Development',
     'Strategy and Policy',
     'Support and Operations',
-    'User research and Design',
-    'Change and Transformation',
-    'Training, Learning and Development'
+    'Training, Learning and Development',
+    'User research and Design'
 ]
 
 
