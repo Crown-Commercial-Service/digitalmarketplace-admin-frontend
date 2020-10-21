@@ -20,7 +20,7 @@ def zendesk(email=None):
     resp = Response()
     resp.headers['X-Frame-Options'] = 'ALLOW-FROM https://marketplace1.zendesk.com/'
     if not current_user.is_authenticated or not current_user.has_role('admin'):
-        resp.data = "<A href='"+url_for('main.render_login')+"' target='_blank'>Please login</a> then refresh!"
+        resp.data = "<a href='"+url_for('main.render_login')+"' target='_blank'>Please login</a> then refresh!"
     else:
         if email:
             user, supplier = _user_info(email)

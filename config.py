@@ -56,8 +56,8 @@ class Config(object):
     RESET_PASSWORD_SALT = 'ResetPasswordSalt'
     BUYER_CREATION_TOKEN_SALT = 'BuyerCreation'
 
-    GENERIC_CONTACT_EMAIL = 'marketplace@digital.gov.au'
-    DM_GENERIC_NOREPLY_EMAIL = 'no-reply@marketplace.digital.gov.au'
+    GENERIC_CONTACT_EMAIL = 'marketplace@dta.gov.au'
+    DM_GENERIC_NOREPLY_EMAIL = 'no-reply@marketplace.dta.gov.au'
     DM_GENERIC_ADMIN_NAME = 'Digital Marketplace Admin'
 
     INVITE_EMAIL_NAME = DM_GENERIC_ADMIN_NAME
