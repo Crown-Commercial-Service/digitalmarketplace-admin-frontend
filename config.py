@@ -32,6 +32,7 @@ class Config(object):
     DM_COMMUNICATIONS_BUCKET = None
     DM_REPORTS_BUCKET = None
     DM_ASSETS_URL = None
+    DM_REDIS_SERVICE_NAME = None
 
     STATIC_URL_PATH = '/admin/static'
     ASSET_PATH = STATIC_URL_PATH + '/'
