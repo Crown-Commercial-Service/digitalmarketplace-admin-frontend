@@ -7,7 +7,7 @@ Flask-WTF==0.14.3
 lxml==4.6.1
 itsdangerous==1.1.0
 
-git+https://github.com/alphagov/digitalmarketplace-utils.git@55.1.1#egg=digitalmarketplace-utils==55.1.1
+git+https://github.com/alphagov/digitalmarketplace-utils.git@55.2.1#egg=digitalmarketplace-utils==55.2.1
 git+https://github.com/alphagov/digitalmarketplace-content-loader.git@7.3.0#egg=digitalmarketplace-content-loader==7.3.0
 git+https://github.com/alphagov/digitalmarketplace-apiclient.git@21.7.0#egg=digitalmarketplace-apiclient==21.7.0
 git+https://github.com/alphagov/govuk-frontend-jinja.git@v0.5.2-alpha#egg=govuk-frontend-jinja==0.5.2-alpha
