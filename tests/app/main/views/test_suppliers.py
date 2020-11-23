@@ -1406,7 +1406,7 @@ class TestSupplierDraftServicesView(LoggedInApplicationTest):
                         "678",
                         "Software as a Service",
                         "Not Submitted",
-                        "1",
+                        "0",
                     ),
                 ),
             ), (

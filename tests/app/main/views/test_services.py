@@ -1244,8 +1244,8 @@ class TestServiceUpdate(LoggedInApplicationTest):
             for a in document.xpath("//*[contains(@class,'govuk-error-summary')]//li//a")
         ]
         assert sorted(validation_banner_links) == sorted([
-            ("You can’t write more than 10 words for each benefit.", "#input-serviceBenefits"),
-            ("You can’t write more than 10 words for each feature.", "#input-serviceFeatures"),
+            ("You can’t write more than 10 words for each benefit.", "#input-serviceBenefits-1"),
+            ("You can’t write more than 10 words for each feature.", "#input-serviceFeatures-1"),
         ])
 
         validation_errors = [error.strip() for error in document.xpath("//span[@class='validation-message']//text()")]
