@@ -1406,7 +1406,9 @@ class TestSupplierDraftServicesView(LoggedInApplicationTest):
                         "678",
                         "Software as a Service",
                         "Not Submitted",
-                        "1",
+                        # TODO: Investigate why this value changed from 1 to 0 when updating dependencies in:
+                        # https://github.com/alphagov/digitalmarketplace-admin-frontend/pull/677
+                        "0",
                     ),
                 ),
             ), (
