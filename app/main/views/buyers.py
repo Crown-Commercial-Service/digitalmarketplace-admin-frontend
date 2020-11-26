@@ -21,6 +21,7 @@ AREA_OF_EXPERTISE_LIST = [
     'ICT risk management and audit activities',
     'ICT systems integration',
     'Marketing, Communications and Engagement',
+    'Platforms integration',
     'Software engineering and Development',
     'Strategy and Policy',
     'Support and Operations',
