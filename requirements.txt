@@ -35,7 +35,7 @@ inflection==0.3.1         # via digitalmarketplace-content-loader
 itsdangerous==1.1.0       # via -r requirements.in, flask, flask-wtf
 jinja2==2.10.3            # via digitalmarketplace-content-loader, flask, govuk-frontend-jinja
 jmespath==0.9.4           # via boto3, botocore
-lxml==4.6.1               # via -r requirements.in
+lxml==4.6.2               # via -r requirements.in
 mailchimp3==3.0.6         # via digitalmarketplace-utils
 markdown==2.6.11          # via digitalmarketplace-content-loader
 markupsafe==1.1.1         # via jinja2
