@@ -61,10 +61,13 @@ class BaseApplicationTest(object):
         self.app_env_var_mock = mock.patch.dict('gds_metrics.os.environ', {'PROMETHEUS_METRICS_PATH': '/_metrics'})
         self.app_env_var_mock.start()
 
+        self.session_mock = mock.patch('dmutils.session.init_app')
+        self.session_mock.start()
         self.app = create_app('test')
         self.client = self.app.test_client()
 
         self._s3_patch = mock.patch('dmutils.s3.S3')
+
         self.s3 = self._s3_patch.start()
         self.s3.return_value = mock.Mock()
         self.s3.return_value.list.return_value = []
@@ -79,6 +82,7 @@ class BaseApplicationTest(object):
         self._s3_patch.stop()
         self._default_suffix_patch.stop()
         self.app_env_var_mock.stop()
+        self.session_mock.stop()
         self.make_content_loader_factory_mock.stop()
 
     def load_example_listing(self, name):
