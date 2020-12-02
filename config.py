@@ -104,11 +104,20 @@ class Development(Config):
     DM_PLAIN_TEXT_LOGS = True
     SESSION_COOKIE_SECURE = False
     AUTHENTICATION = True
+
+    DM_S3_ENDPOINT_URL = (  # use envars to set this, defaults to using AWS
+        f"http://localhost:{os.environ['DM_S3_ENDPOINT_PORT']}"
+        if os.getenv("DM_S3_ENDPOINT_PORT") else None
+    )
+
     DM_AGREEMENTS_BUCKET = 'digitalmarketplace-dev-uploads'
     DM_COMMUNICATIONS_BUCKET = 'digitalmarketplace-dev-uploads'
     DM_S3_DOCUMENT_BUCKET = "digitalmarketplace-dev-uploads"
     DM_REPORTS_BUCKET = "digitalmarketplace-dev-uploads"
-    DM_ASSETS_URL = "https://{}.s3-eu-west-1.amazonaws.com".format(DM_S3_DOCUMENT_BUCKET)
+    DM_ASSETS_URL = (
+        DM_S3_ENDPOINT_URL if DM_S3_ENDPOINT_URL else
+        f"https://{DM_S3_DOCUMENT_BUCKET}.s3-eu-west-1.amazonaws.com"
+    )
 
     DM_DATA_API_URL = f"http://localhost:{os.getenv('DM_API_PORT', 5000)}"
     DM_DATA_API_AUTH_TOKEN = "myToken"
