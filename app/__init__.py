@@ -25,6 +25,20 @@ login_manager = LoginManager()
 # share a common object between concurrent threads/contexts
 _local = Local()
 
+# These frameworks pre-date the introduction of the edit_service_as_admin and declaration manifests.
+OLD_FRAMEWORKS_WITH_MISSING_MANIFESTS = ['g-cloud-4', 'g-cloud-5', 'g-cloud-6']
+
+
+def _log_missing_manifest(application, manifest_name, framework_slug):
+    if framework_slug in OLD_FRAMEWORKS_WITH_MISSING_MANIFESTS:
+        logger = application.logger.debug
+    else:
+        logger = application.logger.error
+
+    logger(
+        f"Could not load {manifest_name} manifest for {framework_slug}"
+    )
+
 
 def _make_content_loader_factory(application, frameworks, initial_instance=None):
     # for testing purposes we allow an initial_instance to be provided
@@ -33,17 +47,11 @@ def _make_content_loader_factory(application, frameworks, initial_instance=None)
         try:
             master_cl.load_manifest(framework_data['slug'], 'services', 'edit_service_as_admin')
         except ContentNotFoundError:
-            # Not all frameworks have this, so no need to panic (e.g. G-Cloud 4, G-Cloud 5)
-            application.logger.info(
-                "Could not load edit_service_as_admin manifest for {}".format(framework_data['slug'])
-            )
+            _log_missing_manifest(application, "edit_service_as_admin", framework_data['slug'])
         try:
             master_cl.load_manifest(framework_data['slug'], 'declaration', 'declaration')
         except ContentNotFoundError:
-            # Not all frameworks have this, so no need to panic (e.g. G-Cloud 4, G-Cloud 5, G-Cloud-6)
-            application.logger.info(
-                "Could not load declaration manifest for {}".format(framework_data['slug'])
-            )
+            _log_missing_manifest(application, "declaration", framework_data['slug'])
 
     # seal master_cl in a closure by returning a function which will only ever return an independent copy of it.
     # this is of course only guaranteed when the initial_instance argument wasn't used.
