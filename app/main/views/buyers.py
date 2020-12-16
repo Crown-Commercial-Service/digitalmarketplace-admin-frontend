@@ -22,6 +22,7 @@ AREA_OF_EXPERTISE_LIST = [
     'ICT systems integration',
     'Marketing, Communications and Engagement',
     'Platforms integration',
+    'Service Integration and Management',
     'Software engineering and Development',
     'Strategy and Policy',
     'Support and Operations',
