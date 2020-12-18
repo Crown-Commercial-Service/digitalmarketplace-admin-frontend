@@ -7,7 +7,7 @@ import csv
 class TestDirectAwardView(LoggedInApplicationTest):
     def setup_method(self, method):
         super().setup_method(method)
-        self.data_api_client_patch = mock.patch('app.main.views.direct_award.data_api_client', autospec=True)
+        self.data_api_client_patch = mock.patch('app.main.views.outcomes.data_api_client', autospec=True)
         self.data_api_client = self.data_api_client_patch.start()
 
     def teardown_method(self, method):

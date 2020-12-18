@@ -8,7 +8,7 @@ from ... import data_api_client
 
 @main.route('/direct-award/outcomes', methods=['GET'])
 @role_required('admin-ccs-category', 'admin-framework-manager', 'admin-ccs-sourcing')
-def download_outcomes():
+def download_direct_award_outcomes():
     download_filename = "direct-award-outcomes-{}.csv".format(datetime.utcnow().strftime('%Y-%m-%d-at-%H-%M-%S'))
     projects = data_api_client.find_direct_award_projects(having_outcome=True, with_users=True).get('projects', [])
     headers = [
