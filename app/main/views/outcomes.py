@@ -1,6 +1,10 @@
 from datetime import datetime
-from dmutils import csv_generator
-from flask import Response
+
+from flask import Response, abort, current_app, redirect
+
+from dmutils import csv_generator, s3
+from dmutils.documents import get_signed_url
+
 from .. import main
 from ..auth import role_required
 from ... import data_api_client
@@ -70,3 +74,34 @@ def download_direct_award_outcomes():
             "Content-Type": "text/csv; header=present"
         }
     )
+
+
+@main.route("/digital-outcomes-and-specialists/outcomes", methods=["GET"])
+@role_required("admin-ccs-category", "admin-framework-manager", "admin-ccs-sourcing")
+def download_dos_outcomes():
+    # get the slug for the latest DOS framework iteration
+    framework_slug = (
+        sorted(
+            filter(
+                lambda fw: (
+                    fw["family"] == "digital-outcomes-and-specialists"
+                    and fw["status"] == "live"
+                ),
+                data_api_client.find_frameworks()["frameworks"]
+            ),
+            key=lambda fw: fw["frameworkLiveAtUTC"],
+            reverse=True,
+        )[0]["slug"]
+    )
+
+    reports_bucket = s3.S3(current_app.config["DM_REPORTS_BUCKET"])
+    url = get_signed_url(
+        reports_bucket,
+        f"{framework_slug}/reports/opportunity-data.csv",
+        current_app.config["DM_ASSETS_URL"]
+    )
+
+    if not url:
+        abort(404)
+
+    return redirect(url)
