@@ -6,7 +6,7 @@ main = Blueprint('main', __name__)
 public = Blueprint('public', __name__)  # Admin login not required
 
 from .views import (
-    agreements, communications, direct_award, search, service_updates,
+    agreements, communications, outcomes, search, service_updates,
     services, suppliers, stats, users, buyers, admin_manager
 )
 from app.main import errors

@@ -1,13 +1,17 @@
-from ...helpers import LoggedInApplicationTest
-import pytest
-import mock
 import csv
+
+import mock
+import pytest
+
+from dmtestutils.api_model_stubs import FrameworkStub
+
+from ...helpers import LoggedInApplicationTest
 
 
 class TestDirectAwardView(LoggedInApplicationTest):
     def setup_method(self, method):
         super().setup_method(method)
-        self.data_api_client_patch = mock.patch('app.main.views.direct_award.data_api_client', autospec=True)
+        self.data_api_client_patch = mock.patch('app.main.views.outcomes.data_api_client', autospec=True)
         self.data_api_client = self.data_api_client_patch.start()
 
     def teardown_method(self, method):
@@ -145,3 +149,91 @@ class TestDirectAwardView(LoggedInApplicationTest):
             '1234.00', '123321', '2002-12-12', '2020-12-12',
             '123', 'A Buyer', 'buyer@example.com'
         ]
+
+
+class TestDOSView(LoggedInApplicationTest):
+
+    url = "/admin/digital-outcomes-and-specialists/outcomes"
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.outcomes.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+        self.data_api_client.find_frameworks.return_value = {"frameworks": [
+            FrameworkStub(
+                slug="digital-outcomes-and-specialists-4", status="live"
+            ).response()
+        ]}
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    @pytest.fixture(autouse=True)
+    def s3(self):
+        with mock.patch("app.main.views.outcomes.s3") as s3:
+            bucket = s3.S3()
+            bucket.get_signed_url.side_effect = \
+                lambda path: f"https://s3.example.com/{path}?signature=deadbeef"
+            yield s3
+
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 403),
+        ("admin-manager", 403),
+        ("admin-ccs-category", 302),
+        ("admin-ccs-sourcing", 302),
+        ("admin-framework-manager", 302),
+    ])
+    def test_download_permissions(self, role, expected_code):
+        self.user_role = role
+        response = self.client.get(self.url)
+        actual_code = response.status_code
+        assert actual_code == expected_code, "Unexpected response {} for role {}".format(actual_code, role)
+
+    def test_redirects_to_assets_domain(self):
+        self.user_role = "admin-ccs-category"
+
+        response = self.client.get(self.url)
+        assert response.status_code == 302
+        assert response.location \
+            == "https://assets.test.digitalmarketplace.service.gov.uk" \
+            "/digital-outcomes-and-specialists-4/reports/opportunity-data.csv" \
+            "?signature=deadbeef"
+
+    @pytest.mark.parametrize("latest_dos_framework", (
+        "digital-outcomes-and-specialists-4",
+        "digital-outcomes-and-specialists-5",
+    ))
+    def test_csv_is_for_latest_live_dos_framework(self, latest_dos_framework, s3):
+        self.user_role = "admin-ccs-category"
+
+        self.data_api_client.find_frameworks.return_value = {"frameworks": [
+            FrameworkStub(
+                framework_live_at="2016-03-03 12:00:00",
+                slug="digital-outcomes-and-specialists",
+                status="expired"
+            ).response(),
+            FrameworkStub(
+                framework_live_at="2018-10-01 10:58:09.43134",
+                slug="digital-outcomes-and-specialists-3",
+                status="live"
+            ).response(),
+            FrameworkStub(
+                framework_live_at="2019-12-18 15:13:24.53636",
+                slug=latest_dos_framework,
+                status="live"
+            ).response(),
+            FrameworkStub(
+                framework_live_at="2020-12-18 15:13:24.53636",
+                slug="g-cloud-12",
+                status="live"
+            ).response(),
+        ]}
+
+        response = self.client.get(self.url)
+
+        assert s3.S3().get_signed_url.call_args == mock.call(
+            f"{latest_dos_framework}/reports/opportunity-data.csv"
+        )
+        assert latest_dos_framework in response.location
