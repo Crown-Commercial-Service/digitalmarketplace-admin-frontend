@@ -11,4 +11,4 @@ python-dotenv  # used to load .flaskenv
 requests-mock
 watchdog
 
-git+https://github.com/alphagov/digitalmarketplace-test-utils.git@2.6.1#egg=digitalmarketplace-test-utils
+digitalmarketplace-test-utils
