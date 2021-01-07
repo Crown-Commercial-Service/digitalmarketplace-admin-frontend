@@ -898,7 +898,7 @@ def _draft_services_annotated_unanswered_counts(framework_slug, draft_services):
         {
             **draft_service,
             "unansweredRequiredCount": count_unanswered_questions(
-                manifest.filter(draft_service, inplace_allowed=True).summary(draft_service, inplace_allowed=True)
+                manifest.filter(draft_service).summary(draft_service)
             )[0],
         } for draft_service in draft_services
     )
