@@ -20,18 +20,6 @@ def get_status_labels():
     ))
 
 
-OLD_COUNTERSIGNING_FLOW_FRAMEWORKS = [
-    'digital-outcomes-and-specialists-4',
-    'digital-outcomes-and-specialists-3',
-    'digital-outcomes-and-specialists-2',
-    'digital-outcomes-and-specialists',
-    'g-cloud-11',
-    'g-cloud-10',
-    'g-cloud-9',
-    'g-cloud-8',
-]
-
-
 def _get_supplier_frameworks(framework_slug, status=None):
     return [
         supplier_framework for supplier_framework in data_api_client.find_framework_suppliers(
@@ -62,12 +50,11 @@ def list_agreements(framework_slug):
     # Determine which template to use.
     # G-Cloud 7 and earlier frameworks do not have a frameworkAgreementVersion and use an old countersigning flow
     # G-Cloud 12 and newer frameworks use e-signature flow (countersignatures are automated)
-    is_e_signature_flow = False
+    is_e_signature_flow = framework['isESignatureSupported']
     if framework.get('frameworkAgreementVersion'):
         template = "view_agreements_list.html"
-        if framework['slug'] not in OLD_COUNTERSIGNING_FLOW_FRAMEWORKS:
+        if is_e_signature_flow:
             status_labels['signed'] = "Waiting for automated countersigning"
-            is_e_signature_flow = True
     else:
         template = 'view_agreements.html'
 

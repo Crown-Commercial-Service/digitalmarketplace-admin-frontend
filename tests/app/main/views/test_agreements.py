@@ -63,6 +63,7 @@ class TestListAgreements(LoggedInApplicationTest):
                 "name": "G-Cloud 7",
                 "slug": "g-cloud-7",
                 "framework": "g-cloud",
+                "isESignatureSupported": False
             }
         }
 
@@ -222,7 +223,8 @@ class TestListAgreements(LoggedInApplicationTest):
         self.data_api_client.get_framework.return_value = {
             "frameworks": {
                 "slug": "g-cloud-12",
-                "frameworkAgreementVersion": "RM.12"
+                "frameworkAgreementVersion": "RM.12",
+                "isESignatureSupported": True
             }
         }
         self.data_api_client.find_framework_suppliers.return_value = {
@@ -255,7 +257,8 @@ class TestListAgreements(LoggedInApplicationTest):
         self.data_api_client.get_framework.return_value = {
             "frameworks": {
                 "slug": "g-cloud-12",
-                "frameworkAgreementVersion": "RM.12"
+                "frameworkAgreementVersion": "RM.12",
+                "isESignatureSupported": True
             }
         }
         self.data_api_client.find_framework_suppliers.return_value = {

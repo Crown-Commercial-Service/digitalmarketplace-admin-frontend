@@ -2752,6 +2752,7 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
             assert len(document.xpath('//span[contains(text(), "uploader@email.com")]')) == 1
 
     def test_signed_agreement_details_visible_for_esignature_flow(self, s3):
+        self.data_api_client.get_framework.return_value['frameworks'].update({'isESignatureSupported': True})
         self.data_api_client.find_services_iter.return_value = iter(self.services_response)
 
         response = self.client.get('/admin/suppliers/1234/agreements/g-cloud-12')
@@ -2773,6 +2774,7 @@ class TestViewingSignedAgreement(LoggedInApplicationTest):
         assert len(document.xpath('//p[contains(text(), "Waiting for automatic countersigning")]')) == 1
 
     def test_countersigned_agreement_details_visible_for_esignature_flow(self, s3):
+        self.data_api_client.get_framework.return_value['frameworks'].update({'isESignatureSupported': True})
         self.data_api_client.find_services_iter.return_value = iter(self.services_response)
         supplier_framework_info = self.load_example_listing(
             'supplier_framework_response'
@@ -3073,6 +3075,7 @@ class TestCorrectButtonsAreShownDependingOnContext(LoggedInApplicationTest):
                 'frameworkAgreementVersion': 'v1.0',
                 'slug': 'g-cloud-8',
                 'status': 'live',
+                'isESignatureSupported': False
             },
         }
         self.data_api_client.find_services_iter.return_value = []

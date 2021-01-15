@@ -36,7 +36,6 @@ from ..helpers.supplier_details import (
     get_company_details_from_supplier,
     DEPRECATED_FRAMEWORK_SLUGS,
 )
-from .agreements import OLD_COUNTERSIGNING_FLOW_FRAMEWORKS
 from ... import data_api_client, content_loader
 
 
@@ -393,13 +392,12 @@ def view_signed_agreement(supplier_id, framework_slug):
 
     agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
 
-    if framework_slug in OLD_COUNTERSIGNING_FLOW_FRAMEWORKS:
-        is_e_signature_flow = False
+    is_e_signature_flow = framework['isESignatureSupported']
+    if not is_e_signature_flow:
         # Fetch path to supplier's signature page
         path = supplier_framework['agreementPath']
         template = "suppliers/view_signed_agreement.html"
     else:
-        is_e_signature_flow = True
         # Fetch path to combined countersigned agreement, if available
         path = supplier_framework.get('countersignedPath')
         template = "suppliers/view_esignature_agreement.html"
