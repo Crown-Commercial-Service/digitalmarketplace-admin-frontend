@@ -813,6 +813,8 @@ class TestServiceEdit(LoggedInApplicationTest):
     def test_service_edit_documents_get_response(self):
         service = {
             "id": 321,
+            "supplierId": 100,
+            "supplierName": "Boylan",
             'frameworkSlug': 'g-cloud-8',
             "serviceName": "Boylan the billsticker",
             "lot": "scs",
@@ -837,6 +839,7 @@ class TestServiceEdit(LoggedInApplicationTest):
 
     def test_service_edit_with_no_features_or_benefits(self):
         self.data_api_client.get_service.return_value = {'services': {
+            "supplierId": 100,
             'lot': 'saas',
             'frameworkSlug': 'g-cloud-8',
         }}
@@ -875,6 +878,9 @@ class TestServiceEdit(LoggedInApplicationTest):
 
     def test_service_edit_assurance_questions(self):
         service = {
+            "supplierId": 100,
+            "supplierName": "My supplier",
+
             'frameworkSlug': 'g-cloud-8',
             'lot': 'saas',
             'serviceAvailabilityPercentage': {
