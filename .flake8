@@ -15,4 +15,4 @@ per-file-ignores =
     app/status/__init__.py : E402, F401
     app/__init__.py : E402, F401
     app/main/__init__.py : E402, F401
-
+    tasks.py: F401
