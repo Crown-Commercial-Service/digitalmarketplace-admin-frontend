@@ -17,7 +17,11 @@
         "href": url_for('.index')
       },
       {
-        "text": service_data['serviceName'],
+        "text": service_data.supplierName,
+        "href": url_for(".find_supplier_services", supplier_id=service_data.supplierId)
+      },
+      {
+        "text": service_data.serviceName | default(service_data.frameworkName ~ " - " ~ service_data.lotName),
         "href": url_for(".view_service", service_id=service_data.id)
       },
       {
