@@ -63,13 +63,18 @@ def evidence_assessments_review_previous(evidence_id=None):
 @login_required
 @role_required('admin', 'assessor')
 def evidence_assessments_approve():
-    id = request.get_json(force=True)['id']
-    if not id:
+    request_data = request.get_json(force=True)
+    if 'id' not in request_data:
         abort(400, 'Evidence id is missing')
+    id = request_data['id']
+    failed_criteria = request_data['failedCriteria']
+    data = {
+       'actioned_by': current_user.id, 'failed_criteria': failed_criteria if failed_criteria else None
+    }
     result = (
         data_api_client.req.evidence(id)
         .approve()
-        .post({'actioned_by': current_user.id})
+        .post(data)
     )
     return jsonify(result)
 
