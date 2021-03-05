@@ -268,7 +268,7 @@ gulp.task(
     'stylesheets from GOV.UK Frontend',
     govukFrontendRoot,
     'scss',
-    path.join('app', 'assets', 'scss', 'govuk'),
+    path.join('app', 'assets', 'scss', 'govuk')
   )
 )
 
