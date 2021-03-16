@@ -1,6 +1,5 @@
 from distutils.util import strtobool
 
-from dmapiclient import HTTPError
 from dmutils.email.user_account_email import send_user_account_email
 from dmutils.forms.helpers import get_errors_from_wtform
 from dmutils.flask import timed_render_template as render_template
@@ -84,22 +83,18 @@ def edit_admin_user(admin_user_id):
         edit_admin_status=admin_user["active"])
 
     if edit_admin_user_form.validate_on_submit():
-        try:
-            edited_admin_name = edit_admin_user_form.edit_admin_name.data
-            edited_admin_permissions = edit_admin_user_form.edit_admin_permissions.data
-            edited_admin_status = bool(strtobool(edit_admin_user_form.edit_admin_status.data))
+        edited_admin_name = edit_admin_user_form.edit_admin_name.data
+        edited_admin_permissions = edit_admin_user_form.edit_admin_permissions.data
+        edited_admin_status = bool(strtobool(edit_admin_user_form.edit_admin_status.data))
 
-            data_api_client.update_user(
-                admin_user_id,
-                name=edited_admin_name,
-                role=edited_admin_permissions,
-                active=edited_admin_status
-            )
-            flash(EMAIL_ADDRESS_UPDATED_MESSAGE.format(email_address=admin_user["emailAddress"]))
-            return redirect(url_for('.manage_admin_users'))
-        except HTTPError as e:
-            status_code = 400
-            raise e
+        data_api_client.update_user(
+            admin_user_id,
+            name=edited_admin_name,
+            role=edited_admin_permissions,
+            active=edited_admin_status
+        )
+        flash(EMAIL_ADDRESS_UPDATED_MESSAGE.format(email_address=admin_user["emailAddress"]))
+        return redirect(url_for('.manage_admin_users'))
     elif edit_admin_user_form.edit_admin_name.errors:
         status_code = 400
 
