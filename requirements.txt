@@ -90,7 +90,7 @@ jmespath==0.9.4
     # via
     #   boto3
     #   botocore
-lxml==4.6.2
+lxml==4.6.3
     # via -r requirements.in
 mailchimp3==3.0.6
     # via digitalmarketplace-utils
