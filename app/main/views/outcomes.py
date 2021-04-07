@@ -94,7 +94,9 @@ def download_dos_outcomes():
         )[0]["slug"]
     )
 
-    reports_bucket = s3.S3(current_app.config["DM_REPORTS_BUCKET"])
+    reports_bucket = s3.S3(
+        current_app.config["DM_REPORTS_BUCKET"], endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")
+    )
     url = get_signed_url(
         reports_bucket,
         f"{framework_slug}/reports/opportunity-data.csv",

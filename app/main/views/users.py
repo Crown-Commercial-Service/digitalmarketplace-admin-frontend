@@ -62,7 +62,9 @@ def user_list_page_for_framework(framework_slug):
 @main.route('/frameworks/<framework_slug>/users/<report_type>/download', methods=['GET'])
 @role_required('admin-framework-manager', 'admin-ccs-category', 'admin-ccs-data-controller')
 def download_supplier_user_list_report(framework_slug, report_type):
-    reports_bucket = s3.S3(current_app.config['DM_REPORTS_BUCKET'])
+    reports_bucket = s3.S3(
+        current_app.config['DM_REPORTS_BUCKET'], endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")
+    )
 
     if report_type == 'official':
         path = f"{framework_slug}/reports/official-details-for-suppliers-{framework_slug}.csv"
@@ -107,7 +109,9 @@ def supplier_user_research_participants_by_framework():
 @role_required('admin-framework-manager')
 def download_supplier_user_research_report(framework_slug):
 
-    reports_bucket = s3.S3(current_app.config['DM_REPORTS_BUCKET'])
+    reports_bucket = s3.S3(
+        current_app.config['DM_REPORTS_BUCKET'], endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")
+    )
     path = "{framework_slug}/reports/user-research-suppliers-on-{framework_slug}.csv"
     url = get_signed_url(
         reports_bucket, path.format(framework_slug=framework_slug), current_app.config['DM_ASSETS_URL']

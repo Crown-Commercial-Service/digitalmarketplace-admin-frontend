@@ -23,7 +23,9 @@ _comm_types = ("communication", "clarification",)
 @main.route('/communications/<framework_slug>', methods=['GET'])
 @role_required('admin-framework-manager')
 def manage_communications(framework_slug):
-    communications_bucket = s3.S3(current_app.config['DM_COMMUNICATIONS_BUCKET'])
+    communications_bucket = s3.S3(
+        current_app.config['DM_COMMUNICATIONS_BUCKET'], endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")
+    )
     framework = get_framework_or_404(data_api_client, framework_slug)
 
     # generate a dict of comm_type: seq of s3 object dicts
@@ -56,7 +58,9 @@ def download_communication(framework_slug, comm_type, filepath):
     # ensure this is a real framework
     get_framework_or_404(data_api_client, framework_slug)
 
-    bucket = s3.S3(current_app.config['DM_COMMUNICATIONS_BUCKET'])
+    bucket = s3.S3(
+        current_app.config['DM_COMMUNICATIONS_BUCKET'], endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")
+    )
     full_path = _get_comm_type_root(framework_slug, comm_type) / filepath
     url = get_signed_url(bucket, str(full_path), current_app.config["DM_ASSETS_URL"])
     if not url:
@@ -68,7 +72,9 @@ def download_communication(framework_slug, comm_type, filepath):
 @main.route('/communications/<framework_slug>', methods=['POST'])
 @role_required('admin-framework-manager')
 def upload_communication(framework_slug):
-    communications_bucket = s3.S3(current_app.config['DM_COMMUNICATIONS_BUCKET'])
+    communications_bucket = s3.S3(
+        current_app.config['DM_COMMUNICATIONS_BUCKET'], endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")
+    )
     errors = {}
 
     if request.files.get('communication'):
@@ -115,7 +121,9 @@ def delete_communication(framework_slug, comm_type, filepath):
         if "confirm" not in request.form:
             abort(400, "Expected 'confirm' parameter in POST request")
 
-        communications_bucket = s3.S3(current_app.config['DM_COMMUNICATIONS_BUCKET'])
+        communications_bucket = s3.S3(
+            current_app.config['DM_COMMUNICATIONS_BUCKET'], endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")
+        )
         full_path = _get_comm_type_root(framework_slug, comm_type) / filepath
 
         # do this check ourselves - deleting an object in S3 silently has no effect, forwarding this behaviour to the
