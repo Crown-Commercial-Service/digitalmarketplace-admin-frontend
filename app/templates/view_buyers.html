@@ -26,9 +26,9 @@
           {% if message == 'no_brief' %}
               {% set displayed_message = "There are no opportunities with ID {}".format(brief_id) %}
           {% elif message == 'brief_updated' %}
-              {% set displayed_message = "Brief updated ID {}".format(brief_id) %}
+              {% set displayed_message = "Opportunity updated ID {}".format(brief_id) %}
           {% elif message == 'brief_withdrawn' %}
-              {% set displayed_message = "Brief {} has been withdrawn".format(brief_id) %}
+              {% set displayed_message = "Opportunity {} has been withdrawn".format(brief_id) %}
           {% elif message == 'seller_feedback_email' %}
               {% set displayed_message = "Seller feedback email sent to buyer" %}
           {% else %}
@@ -55,7 +55,7 @@
 {% if brief %}
     <div>
         <hr/>
-        <h3>Brief Details</h3>
+        <h3>Opportunity Details</h3>
         Organisation: {{brief.organisation}}
         <br/>
         Contact Number: {{brief.contactNumber}}
@@ -64,7 +64,7 @@
  
     <div>
         {% if teams_exists and teams_exists >= 0 %}
-        <h3> Team Brief Users</h3>
+        <h3> Team Opportunity Users</h3>
         {% call(item) summary.list_table(
                 teams,
                 field_headings=[
@@ -117,14 +117,14 @@
         <br/>
         <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
             {{ form.csrf_token }}
-            <label class="question-heading" for="add_user">Add user to brief (email address or id)</label>
+            <label class="question-heading" for="add_user">Add user to opportunity (email address or id)</label>
             <input type="text" name="add_user" id="add_user" class="text-box" >
             <br/>
             <input type="submit" value="Save" class="button-save">
         </form>
         <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
             {{ form.csrf_token }}
-            <label class="question-heading" for="remove_user">Remove user from brief (email address or id)</label>
+            <label class="question-heading" for="remove_user">Remove user from opportunity (email address or id)</label>
             <input type="text" name="remove_user" id="remove_user" class="text-box">
             <br/>
             <input type="submit" value="Save" class="button-save">
@@ -160,14 +160,14 @@
         {%if brief.lotSlug in ['rfx', 'specialist', 'training2'] %}
             <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
                 {{ form.csrf_token }}
-                <label class="question-heading" for="add_seller_to_brief">Add a seller to this brief (seller code)</label>
+                <label class="question-heading" for="add_seller_to_brief">Add a seller to this opportunity (seller code)</label>
                 <input type = "text" name="add_seller_to_brief" id="add_seller_to_brief" class="text-box"></input>
                 <br>
             <input type="submit" value="Save" class="button-save">
             </form>
             <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
                 {{ form.csrf_token }}
-                <label class="question-heading" for="remove_seller_from_brief">Remove a seller from this brief (seller code)</label>
+                <label class="question-heading" for="remove_seller_from_brief">Remove a seller from this opportunity (seller code)</label>
                 <input type = "text" name="remove_seller_from_brief" id="remove_seller_from_brief" class="text-box"></input>
                 <br>
                 <input type="submit" value="Save" class="button-save">
@@ -190,7 +190,7 @@
             <hr>
         {% endif %}
         </div>
-        <h3> Edit brief data</h3>
+        <h3> Edit opportunity data</h3>
         <form action="{{ url_for('.update_brief',brief_id=brief_id) }}" method="post" class="question">
             {{ form.csrf_token }}
             <label class="question-heading" for="edit_area_of_expertise">Select area of expertise</label>
@@ -241,7 +241,7 @@
                 {{ form.csrf_token }}
                 <div>
                     <h3>Warning!</h3>
-                    <p>This will permanently withdraw brief {{ brief.id }}. Are you sure you want to continue?</p>
+                    <p>This will permanently withdraw opportunity {{ brief.id }}. Are you sure you want to continue?</p>
                     <menu>
                         <button id="cancel-button" type="reset">Cancel</button>
                         <button type="submit" value="true">Withdraw</button>
