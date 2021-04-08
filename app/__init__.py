@@ -42,20 +42,20 @@ def _log_missing_manifest(application, manifest_name, framework_slug):
 
 def _make_content_loader_factory(application, frameworks, initial_instance=None):
     # for testing purposes we allow an initial_instance to be provided
-    master_cl = initial_instance if initial_instance is not None else ContentLoader('app/content')
+    primary_cl = initial_instance if initial_instance is not None else ContentLoader('app/content')
     for framework_data in frameworks:
         try:
-            master_cl.load_manifest(framework_data['slug'], 'services', 'edit_service_as_admin')
+            primary_cl.load_manifest(framework_data['slug'], 'services', 'edit_service_as_admin')
         except ContentNotFoundError:
             _log_missing_manifest(application, "edit_service_as_admin", framework_data['slug'])
         try:
-            master_cl.load_manifest(framework_data['slug'], 'declaration', 'declaration')
+            primary_cl.load_manifest(framework_data['slug'], 'declaration', 'declaration')
         except ContentNotFoundError:
             _log_missing_manifest(application, "declaration", framework_data['slug'])
 
-    # seal master_cl in a closure by returning a function which will only ever return an independent copy of it.
+    # seal primary_cl in a closure by returning a function which will only ever return an independent copy of it.
     # this is of course only guaranteed when the initial_instance argument wasn't used.
-    return lambda: deepcopy(master_cl)
+    return lambda: deepcopy(primary_cl)
 
 
 def _content_loader_factory():
