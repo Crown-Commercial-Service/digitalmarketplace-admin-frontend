@@ -213,7 +213,7 @@ def update_service(service_id, section_id, question_slug=None):
     posted_data = section.get_data(request.form)
 
     uploaded_documents, document_errors = upload_service_documents(
-        s3.S3(current_app.config['DM_S3_DOCUMENT_BUCKET']),
+        s3.S3(current_app.config['DM_S3_DOCUMENT_BUCKET'], endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")),
         'documents',
         current_app.config['DM_ASSETS_URL'],
         service, request.files, section)

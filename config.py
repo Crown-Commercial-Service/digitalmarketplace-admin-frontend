@@ -106,7 +106,7 @@ class Development(Config):
     AUTHENTICATION = True
 
     DM_S3_ENDPOINT_URL = (  # use envars to set this, defaults to using AWS
-        f"http://localhost:{os.environ['DM_S3_ENDPOINT_PORT']}"
+        f"http://s3.localhost.localstack.cloud:{os.environ['DM_S3_ENDPOINT_PORT']}"
         if os.getenv("DM_S3_ENDPOINT_PORT") else None
     )
 
@@ -115,7 +115,8 @@ class Development(Config):
     DM_S3_DOCUMENT_BUCKET = "digitalmarketplace-dev-uploads"
     DM_REPORTS_BUCKET = "digitalmarketplace-dev-uploads"
     DM_ASSETS_URL = (
-        DM_S3_ENDPOINT_URL if DM_S3_ENDPOINT_URL else
+        f"http://{DM_S3_DOCUMENT_BUCKET}.s3.localhost.localstack.cloud:{os.environ['DM_S3_ENDPOINT_PORT']}"
+        if os.getenv("DM_S3_ENDPOINT_PORT") else
         f"https://{DM_S3_DOCUMENT_BUCKET}.s3-eu-west-1.amazonaws.com"
     )
 

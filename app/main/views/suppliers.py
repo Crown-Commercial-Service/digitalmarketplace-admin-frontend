@@ -390,7 +390,9 @@ def view_signed_agreement(supplier_id, framework_slug):
             if service["status"] == "submitted" and service['lotName'] not in lot_names:
                 lot_names.append(service['lotName'])
 
-    agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
+    agreements_bucket = s3.S3(
+        current_app.config['DM_AGREEMENTS_BUCKET'], endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")
+    )
 
     is_e_signature_flow = framework['isESignatureSupported']
     if not is_e_signature_flow:
@@ -501,7 +503,9 @@ def download_agreement_file(supplier_id, framework_slug, document_name):
     if supplier_framework is None or not supplier_framework.get("declaration"):
         abort(404)
 
-    agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
+    agreements_bucket = s3.S3(
+        current_app.config['DM_AGREEMENTS_BUCKET'], endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")
+    )
     path = get_document_path(framework_slug, supplier_id, 'agreements', document_name)
     url = get_signed_url(agreements_bucket, path, current_app.config['DM_ASSETS_URL'])
     if not url:
@@ -518,7 +522,9 @@ def list_countersigned_agreement_file(supplier_id, framework_slug):
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
     if not supplier_framework['onFramework'] or supplier_framework['agreementStatus'] in (None, 'draft'):
         abort(404)
-    agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
+    agreements_bucket = s3.S3(
+        current_app.config['DM_AGREEMENTS_BUCKET'], endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")
+    )
     countersigned_agreement_document = agreements_bucket.get_key(supplier_framework.get('countersignedPath'))
 
     remove_countersigned_agreement_confirm = convert_to_boolean(request.args.get('remove_countersigned_agreement'))
@@ -545,7 +551,9 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
     if not supplier_framework['onFramework'] or supplier_framework['agreementStatus'] in (None, 'draft'):
         abort(404)
     agreement_id = supplier_framework['agreementId']
-    agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
+    agreements_bucket = s3.S3(
+        current_app.config['DM_AGREEMENTS_BUCKET'], endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")
+    )
     errors = {}
 
     if request.files.get('countersigned_agreement'):
@@ -601,7 +609,9 @@ def upload_countersigned_agreement_file(supplier_id, framework_slug):
 def remove_countersigned_agreement_file(supplier_id, framework_slug):
     supplier_framework = data_api_client.get_supplier_framework_info(supplier_id, framework_slug)['frameworkInterest']
     document = supplier_framework.get('countersignedPath')
-    agreements_bucket = s3.S3(current_app.config['DM_AGREEMENTS_BUCKET'])
+    agreements_bucket = s3.S3(
+        current_app.config['DM_AGREEMENTS_BUCKET'], endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")
+    )
 
     if request.method == 'GET':
         return redirect(url_for(

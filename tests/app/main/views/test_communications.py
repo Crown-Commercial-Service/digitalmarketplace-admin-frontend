@@ -65,7 +65,7 @@ class TestManageCommunicationsView(_BaseTestCommunicationsView):
             mock.call.get_framework(self.framework_slug)
         ]
         assert self.s3.mock_calls == [
-            mock.call("flop-slop-slap"),
+            mock.call("flop-slop-slap", endpoint_url=None),
             mock.call().list('g-things-23/communications/updates/communications', load_timestamps=True),
             mock.call().list('g-things-23/communications/updates/clarifications', load_timestamps=True),
         ]
@@ -181,7 +181,7 @@ class TestManageCommunicationsView(_BaseTestCommunicationsView):
             mock.call.get_framework(self.framework_slug)
         ]
         assert self.s3.mock_calls == [
-            mock.call("flop-slop-slap"),
+            mock.call("flop-slop-slap", endpoint_url=None),
             mock.call().list('g-things-23/communications/updates/communications', load_timestamps=True),
             mock.call().list('g-things-23/communications/updates/clarifications', load_timestamps=True),
         ]
@@ -199,7 +199,7 @@ class TestUploadCommunicationsView(_BaseTestCommunicationsView):
 
         # check that we did actually mock-send two files
         assert self.s3.mock_calls == [
-            mock.call('flop-slop-slap'),
+            mock.call('flop-slop-slap', endpoint_url=None),
             mock.call().save(
                 f'{self.framework_slug}/communications/updates/communications/test-comm.pdf',
                 RestrictedAny(lambda other: other.filename == "test-comm.pdf"),
@@ -261,7 +261,7 @@ class TestUploadCommunicationsView(_BaseTestCommunicationsView):
         ) == f"http://localhost/admin/communications/{self.framework_slug}"
 
         # nothing was uploaded
-        assert self.s3.mock_calls == [mock.call('flop-slop-slap')]
+        assert self.s3.mock_calls == [mock.call('flop-slop-slap', endpoint_url=None)]
 
 
 class TestDownloadCommunicationsView(_BaseTestCommunicationsView):
@@ -291,7 +291,7 @@ class TestDownloadCommunicationsView(_BaseTestCommunicationsView):
         assert response.location == "https://basket.market.net/green/goldenly/lagoons.pdf"
 
         assert self.s3.mock_calls == [
-            mock.call('flop-slop-slap'),
+            mock.call('flop-slop-slap', endpoint_url=None),
             mock.call().get_signed_url(
                 f'{self.framework_slug}/communications/updates/{comm_type}s/floating/foampool.pdf'
             ),
@@ -323,7 +323,7 @@ class TestDownloadCommunicationsView(_BaseTestCommunicationsView):
         assert response.status_code == 404
 
         assert self.s3.mock_calls == [
-            mock.call('flop-slop-slap'),
+            mock.call('flop-slop-slap', endpoint_url=None),
             mock.call().get_signed_url(
                 f'{self.framework_slug}/communications/updates/{comm_type}s/floating/foampool.pdf'
             ),
@@ -478,7 +478,7 @@ class TestDeleteCommunicationsPost(_BaseTestCommunicationsView):
         ]
 
         assert self.s3.mock_calls == [
-            mock.call('flop-slop-slap'),
+            mock.call('flop-slop-slap', endpoint_url=None),
             mock.call().path_exists(
                 f'{self.framework_slug}/communications/updates/{comm_type}s/{file_path}'
             ),
@@ -504,7 +504,7 @@ class TestDeleteCommunicationsPost(_BaseTestCommunicationsView):
         ]
 
         assert self.s3.mock_calls == [
-            mock.call('flop-slop-slap'),
+            mock.call('flop-slop-slap', endpoint_url=None),
             mock.call().path_exists(f'{self.framework_slug}/communications/updates/{comm_type}s/floating/foampool.pdf'),
             # no deletion call
         ]
