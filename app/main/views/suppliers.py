@@ -6,7 +6,7 @@ from react.render import render_component
 
 from .. import main
 from ... import data_api_client, content_loader
-from app.main.forms import MoveUserForm, InviteForm
+from app.main.forms import MoveUserForm, InviteForm, NewSellerUserForm
 from ..auth import role_required
 
 from dmapiclient import HTTPError, APIError
@@ -287,6 +287,7 @@ def find_supplier_users():
         users=users["users"],
         invite_form=InviteForm(),
         move_user_form=MoveUserForm(),
+        new_seller_user_form=NewSellerUserForm(),
         supplier=supplier['supplier']
     )
 
@@ -541,6 +542,45 @@ def invite_user(supplier_code):
             supplier=supplier
         )
 
+@main.route('/suppliers/<int:supplier_code>/add-new-supplier-user', methods=['POST'])
+@login_required
+@role_required('admin')
+def add_new_supplier_user(supplier_code):
+    new_seller_user_form = NewSellerUserForm(request.form)
+    invite_form = InviteForm(request.form)
+    try:
+        supplier = data_api_client.get_supplier(supplier_code)['supplier']
+        """
+        users = data_api_client.find_users(supplier_code)
+        abn =supplier['abn']
+        data = {
+            'name': new_seller_user_form.name.data,
+            'emailAddress': new_seller_user_form.email_address.data,
+            'supplierCode': supplier_code,
+            'supplierName': supplier['name'],
+        }
+        """
+        user = data_api_client.create_user({
+            'name': new_seller_user_form.name.data,
+            'password': 'your_password',
+            'emailAddress': new_seller_user_form.email_address.data,
+            'role': 'supplier',
+            'supplierCode': supplier_code
+        })
+    except HTTPError as e:
+        current_app.logger.error(str(e), supplier_code)
+        if e.status_code != 404:
+            raise
+        else:
+            abort(404, "Supplier not found")
+    return render_template_with_csrf(
+            "view_supplier_users.html",
+            new_seller_user_form=new_seller_user_form,
+            move_user_form=MoveUserForm(),
+            invite_form=invite_form,
+            supplier=supplier,
+            users=users["users"],
+    )
 
 @main.route('/suppliers/assessments/trigger', methods=['POST'])
 @login_required

@@ -65,7 +65,9 @@
               'Phone Number',
               'Last login',
               'Last password change',
+              '',
               'Locked',
+              'Authorized Rep',
               summary.hidden_field_heading("") if current_user.has_role('admin') else "Status"
           ],
           field_headings_visible=True)
@@ -85,7 +87,7 @@
               Never
           {% endif %}
       {% endcall %}
-
+      {{ summary.text(supplier.contact_phone) }}
       {% call summary.field() %}
           {% if item.passwordChangedAt %}
               {{ item.passwordChangedAt|mediumtimeformat + ' ' + item.passwordChangedAt|mediumdateformat }}
@@ -93,7 +95,7 @@
               Never
           {% endif %}
       {% endcall %}
-
+    
       {% call summary.field() %}
       {% if item.locked and current_user.has_role('admin') %}
       <form action="{{ url_for('.unlock_user', user_id=item.id) }}" method="post">
@@ -112,7 +114,12 @@
           No
       {% endif %}
       {% endcall %}
-
+      {% call summary.field() %}
+      {% if item.active %}
+      <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike" checked>
+      {{ summary.text(item.name)}}
+      {% endif %}
+      {% endcall %}
       {% call summary.field() %}
       {% if item.active %}
         {% if current_user.has_role('admin') %}
@@ -135,6 +142,16 @@
               %}
               {% include "toolkit/button.html" %}
               {% endwith %}
+          </form>
+          <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
+            {{ form.csrf_token }}
+            {%
+                with
+                type = "destructive",
+                label = "Set authorized rep"
+            %}
+            {% include "toolkit/button.html" %}
+            {% endwith %}
           </form>
         {% else %}
           Active
@@ -204,6 +221,61 @@
                   </div>
                   {% endif %}
                  <button class="button-save">Send invitation</button>
+              </div>
+          </div>
+      </form>
+  </div>
+
+  <div class='page-section'>
+      <form action="{{ url_for('.add_new_supplier_user', supplier_code=supplier.code) }}" method="post">
+          {{ form.csrf_token }}
+          <div class="grid-row">
+              <div class="column-two-thirds">
+                  {% if invite_form.name.errors %}
+                  <div class="validation-wrapper">
+                  {% endif %}
+                      <div class="question">
+                          {{ new_seller_user_form.name.label(class="question-heading-with-hint") }}
+                          <p class="hint">
+                              Enter the name of the new seller
+                          </p>
+                          {% if new_seller_user_form.name.errors %}
+                          <p class="validation-message" id="error-name-textbox">
+                              {% for error in invite_form.name.errors %}{{ error }}{% endfor %}
+                          </p>
+                          {% endif %}
+                          {{ new_seller_user_form.name(class="text-box", autocomplete="off") }}
+                      </div>
+                  {% if new_seller_user_form.name.errors %}
+                  </div>
+                  {% endif %}
+                  {% if new_seller_user_form.email_address.errors %}
+                  <div class="validation-wrapper">
+                  {% endif %}
+                      <div class="question">
+                          {{ new_seller_user_form.email_address.label(class="question-heading-with-hint") }}
+                          <p class="hint">
+                              Enter the email address of the new seller
+                          </p>
+
+                          {% if new_seller_user_form.email_address.errors %}
+                          <p class="validation-message" id="error-email-address-textbox">
+                              {% for error in new_seller_user_form.email_address.errors %}{{ error }}{% endfor %}
+                          </p>
+                          {% endif %}
+
+                          {{ new_seller_user_form.email_address(class="text-box", autocomplete="off") }}
+                         
+                          {{ new_seller_user_form.phone.label(class="question-heading-with-hint") }}
+                          <p class="hint">
+                            Enter the phone of the new seller
+                          </p>
+                          {{ new_seller_user_form.phone(class="text-box", autocomplete="off") }}
+                      </div>
+                  {% if invite_form.email_address.errors %}
+                  </div>
+                  {% endif %}
+                 <button class="button-save">Add new seller user</button>
               </div>
           </div>
       </form>
