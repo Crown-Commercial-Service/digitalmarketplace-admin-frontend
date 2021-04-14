@@ -65,7 +65,6 @@
               'Phone Number',
               'Last login',
               'Last password change',
-              '',
               'Locked',
               'Authorized Rep',
               summary.hidden_field_heading("") if current_user.has_role('admin') else "Status"
@@ -87,7 +86,7 @@
               Never
           {% endif %}
       {% endcall %}
-      {{ summary.text(supplier.contact_phone) }}
+
       {% call summary.field() %}
           {% if item.passwordChangedAt %}
               {{ item.passwordChangedAt|mediumtimeformat + ' ' + item.passwordChangedAt|mediumdateformat }}
@@ -114,13 +113,16 @@
           No
       {% endif %}
       {% endcall %}
-      {% call summary.field() %}
-      {% if item.active %}
-      <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike" checked>
-      {{ summary.text(item.name)}}
+
+      {% call summary.field() %} 
+      {% if supplier.contact_name == supplier.representative %}
+      <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike" checked deabled>
+      {% else %}
+      <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike" disabled>
       {% endif %}
       {% endcall %}
-      {% call summary.field() %}
+      
+      {% call summary.field() %}     
       {% if item.active %}
         {% if current_user.has_role('admin') %}
           <form action="{{ url_for('.reset_password', user_id=item.id) }}" method="post">
@@ -143,7 +145,7 @@
               {% include "toolkit/button.html" %}
               {% endwith %}
           </form>
-          <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
+          <form action="{{ url_for('.set_auth_rep_user', user_id=item.id) }}" method="post">
             {{ form.csrf_token }}
             {%
                 with

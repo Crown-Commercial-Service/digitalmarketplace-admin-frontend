@@ -322,6 +322,39 @@ def deactivate_user(user_id):
     return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierCode']))
 
 
+@main.route('/suppliers/users/<int:user_id>/set-auth-rep', methods=['POST'])
+@login_required
+@role_required('admin')
+def set_auth_rep_user(user_id):
+    print 'user-id'
+    print user_id
+    user = data_api_client.update_user(user_id, active=True, updater=current_user.email_address)
+    #if "source" in request.form:
+    #    return redirect(request.form["source"])
+    supplier_code = user['users']['supplier']['supplierCode']
+
+    supplier = data_api_client.get_supplier(supplier_code)['supplier']
+
+    print 'rrrrrrr'
+    print supplier.get('last_update_time')
+    print supplier.get('representative')
+    print supplier.get('contact_name')
+    print 'useroooooooottttttqqq'
+    users = user.get('users')
+    print 'failedLoginCount'
+    print users[u'failedLoginCount']
+    print 'name'
+    print users[u'name']
+    print 'id'
+    print users[u'id']
+    print 'supplier_code'
+    print users[u'supplier_code']
+    for i in user.get('users'):
+        print i
+
+    print '33333333333333333333333333'
+    return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierCode']))
+
 @main.route('/suppliers/users/<int:user_id>/reset_password', methods=['POST'])
 @login_required
 @role_required('admin')
