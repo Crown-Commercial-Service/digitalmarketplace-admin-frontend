@@ -326,21 +326,19 @@ def deactivate_user(user_id):
 @login_required
 @role_required('admin')
 def set_auth_rep_user(user_id):
-    print 'user-id'
-    print user_id
+
     user = data_api_client.update_user(user_id, active=True, updater=current_user.email_address)
-    #if "source" in request.form:
-    #    return redirect(request.form["source"])
     supplier_code = user['users']['supplier']['supplierCode']
-
+    users = user.get('users')
     supplier = data_api_client.get_supplier(supplier_code)['supplier']
-
+    data_api_client.update_supplier(supplier_code, {'representative': users['name']})
     print 'rrrrrrr'
+    print user_id
     print supplier.get('last_update_time')
     print supplier.get('representative')
     print supplier.get('contact_name')
     print 'useroooooooottttttqqq'
-    users = user.get('users')
+    #users = user.get('users')
     print 'failedLoginCount'
     print users[u'failedLoginCount']
     print 'name'
@@ -351,8 +349,8 @@ def set_auth_rep_user(user_id):
     print users[u'supplier_code']
     for i in user.get('users'):
         print i
-
     print '33333333333333333333333333'
+
     return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierCode']))
 
 @main.route('/suppliers/users/<int:user_id>/reset_password', methods=['POST'])
@@ -583,6 +581,7 @@ def add_new_supplier_user(supplier_code):
     invite_form = InviteForm(request.form)
     try:
         supplier = data_api_client.get_supplier(supplier_code)['supplier']
+        users = data_api_client.find_users(supplier_code)
         """
         users = data_api_client.find_users(supplier_code)
         abn =supplier['abn']
@@ -595,7 +594,7 @@ def add_new_supplier_user(supplier_code):
         """
         user = data_api_client.create_user({
             'name': new_seller_user_form.name.data,
-            'password': 'your_password',
+            'password': new_seller_user_form.phone.data,
             'emailAddress': new_seller_user_form.email_address.data,
             'role': 'supplier',
             'supplierCode': supplier_code
