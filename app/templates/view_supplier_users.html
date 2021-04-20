@@ -115,10 +115,10 @@
       {% endcall %}
 
       {% call summary.field() %} 
-      {% if supplier.contact_name == supplier.representative %}
-      <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike" checked deabled>
+      {% if (item.name == supplier.representative) and (item.emailAddress == supplier.email)%}
+      <input type="checkbox" id="auth_rep_user" name="auth_rep_user" checked="checked" disabled="disabled">
       {% else %}
-      <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike" disabled>
+      <input type="checkbox" id="auth_rep_user" name="auth_rep_user" disabled>
       {% endif %}
       {% endcall %}
       
@@ -145,7 +145,7 @@
               {% include "toolkit/button.html" %}
               {% endwith %}
           </form>
-          <form action="{{ url_for('.set_auth_rep_user', user_id=item.id) }}" method="post">
+          <form action="{{ url_for('.set_auth_rep_user', user_id=item.id, supplier_code=supplier.code) }}" method="post">
             {{ form.csrf_token }}
             {%
                 with
@@ -233,48 +233,49 @@
           {{ form.csrf_token }}
           <div class="grid-row">
               <div class="column-two-thirds">
-                  {% if invite_form.name.errors %}
+                  {% if new_seller_user_form.new_name.errors %}
                   <div class="validation-wrapper">
                   {% endif %}
                       <div class="question">
-                          {{ new_seller_user_form.name.label(class="question-heading-with-hint") }}
+                          {{ new_seller_user_form.new_name.label(class="question-heading-with-hint") }}
                           <p class="hint">
                               Enter the name of the new seller
                           </p>
-                          {% if new_seller_user_form.name.errors %}
+                          {% if new_seller_user_form.new_name.errors %}
                           <p class="validation-message" id="error-name-textbox">
-                              {% for error in invite_form.name.errors %}{{ error }}{% endfor %}
+                              {% for error in new_seller_user_form.new_name.errors %}{{ error }}{% endfor %}
                           </p>
                           {% endif %}
-                          {{ new_seller_user_form.name(class="text-box", autocomplete="off") }}
+                          {{ new_seller_user_form.new_name(class="text-box", autocomplete="off") }}
                       </div>
-                  {% if new_seller_user_form.name.errors %}
+                  {% if new_seller_user_form.new_name.errors %}
                   </div>
                   {% endif %}
-                  {% if new_seller_user_form.email_address.errors %}
+
+                  {% if new_seller_user_form.new_email_address.errors %}
                   <div class="validation-wrapper">
                   {% endif %}
                       <div class="question">
-                          {{ new_seller_user_form.email_address.label(class="question-heading-with-hint") }}
+                          {{ new_seller_user_form.new_email_address.label(class="question-heading-with-hint") }}
                           <p class="hint">
                               Enter the email address of the new seller
                           </p>
 
-                          {% if new_seller_user_form.email_address.errors %}
-                          <p class="validation-message" id="error-email-address-textbox">
-                              {% for error in new_seller_user_form.email_address.errors %}{{ error }}{% endfor %}
+                          {% if new_seller_user_form.new_email_address.errors %}
+                          <p>
+                              *{% for error in new_seller_user_form.new_email_address.errors %}{{ error }}{% endfor %}
                           </p>
                           {% endif %}
 
-                          {{ new_seller_user_form.email_address(class="text-box", autocomplete="off") }}
+                          {{ new_seller_user_form.new_email_address(class="text-box", autocomplete="off") }}
                          
-                          {{ new_seller_user_form.phone.label(class="question-heading-with-hint") }}
+                          {{ new_seller_user_form.new_phone.label(class="question-heading-with-hint") }}
                           <p class="hint">
                             Enter the phone of the new seller
                           </p>
-                          {{ new_seller_user_form.phone(class="text-box", autocomplete="off") }}
+                          {{ new_seller_user_form.new_phone(class="text-box", autocomplete="off") }}
                       </div>
-                  {% if invite_form.email_address.errors %}
+                  {% if new_seller_user_form.new_email_address.errors %}
                   </div>
                   {% endif %}
                  <button class="button-save">Add new seller user</button>

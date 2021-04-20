@@ -73,15 +73,15 @@ class InviteForm(DmForm):
 
 
 class NewSellerUserForm(DmForm):
-    name = StripWhitespaceStringField('Name', validators=[
+    new_name = StripWhitespaceStringField('Name', validators=[
         DataRequired(message="Name cannot be empty"),
     ])
 
-    email_address = StripWhitespaceStringField('Email address', validators=[
+    new_email_address = StripWhitespaceStringField('Email address', validators=[
         DataRequired(message="Email cannot be empty"),
         Email(message="Please enter a valid email address")
     ])
 
-    phone = StripWhitespaceStringField('Phone', validators=[
+    new_phone = StripWhitespaceStringField('Phone', validators=[
         DataRequired(message="Phone cannot be empty"),
     ])

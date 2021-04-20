@@ -19,7 +19,7 @@ from dmutils.documents import (
 from dmutils import s3
 from dmutils.formats import DateFormatter
 from dmutils.forms import DmForm, render_template_with_csrf
-
+from ..forms import NewSellerUserForm
 from itertools import chain
 
 from urllib import quote_plus
@@ -322,26 +322,21 @@ def deactivate_user(user_id):
     return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierCode']))
 
 
-@main.route('/suppliers/users/<int:user_id>/set-auth-rep', methods=['POST'])
+@main.route('/suppliers/users/<int:user_id>/supplier_code/<int:supplier_code>/set-auth-rep', methods=['POST'])
 @login_required
 @role_required('admin')
-def set_auth_rep_user(user_id):
-    """
-    user = data_api_client.update_user(user_id, active=True, updater=current_user.email_address)
-    supplier_code = user['users']['supplier']['supplierCode']
-    users = user.get('users')
-    supplier = data_api_client.get_supplier(supplier_code)['supplier']
-    """
+def set_auth_rep_user(user_id, supplier_code):
     result = (
         data_api_client
         .req
-        .suppliers(869)
-        .users(4883)
+        .suppliers(supplier_code)
+        .users(user_id)
         .set_authorize_rep_user()
         .get()
     )
-
-    return redirect(url_for('.find_supplier_users', supplier_code=user['users']['supplier']['supplierCode']))
+    
+    print result
+    return redirect(url_for('.find_supplier_users', supplier_code=supplier_code))
 
 @main.route('/suppliers/users/<int:user_id>/reset_password', methods=['POST'])
 @login_required
@@ -366,7 +361,7 @@ def reset_password(user_id):
 @role_required('admin')
 def move_user_to_new_supplier(supplier_code):
     move_user_form = MoveUserForm(request.form)
-
+    new_seller_user_form = NewSellerUserForm(request.form)
     try:
         suppliers = data_api_client.get_supplier(supplier_code)
         users = data_api_client.find_users(supplier_code)
@@ -402,6 +397,7 @@ def move_user_to_new_supplier(supplier_code):
             status_code=400,
             invite_form=InviteForm(),
             move_user_form=move_user_form,
+            new_seller_user_form=new_seller_user_form,
             users=users["users"],
             supplier=suppliers['supplier']
         )
@@ -489,7 +485,7 @@ def update_supplier_domain_price_status(supplier_code):
 @role_required('admin')
 def invite_user(supplier_code):
     invite_form = InviteForm(request.form)
-
+    new_seller_user_form = NewSellerUserForm(request.form)
     try:
         supplier = data_api_client.get_supplier(supplier_code)['supplier']
         users = data_api_client.find_users(supplier_code)
@@ -558,6 +554,7 @@ def invite_user(supplier_code):
             "view_supplier_users.html",
             status_code=400,
             invite_form=invite_form,
+            new_seller_user_form=new_seller_user_form,
             move_user_form=MoveUserForm(),
             users=users["users"],
             supplier=supplier
@@ -567,25 +564,24 @@ def invite_user(supplier_code):
 @login_required
 @role_required('admin')
 def add_new_supplier_user(supplier_code):
-    new_seller_user_form = NewSellerUserForm(request.form)
     invite_form = InviteForm(request.form)
+    new_seller_user_form = NewSellerUserForm(request.form)
+    supplier = data_api_client.get_supplier(supplier_code)['supplier']
+    if not new_seller_user_form.validate():
+        users = data_api_client.find_users(supplier_code)
+        return render_template_with_csrf(
+            "view_supplier_users.html",
+            new_seller_user_form=new_seller_user_form,
+            move_user_form=MoveUserForm(),
+            invite_form=invite_form,
+            supplier=supplier,
+            users=users["users"],
+        ) 
     try:
-        supplier = data_api_client.get_supplier(supplier_code)['supplier']
-        users = data_api_client.find_users(supplier_code)
-        """
-        users = data_api_client.find_users(supplier_code)
-        abn =supplier['abn']
-        data = {
-            'name': new_seller_user_form.name.data,
-            'emailAddress': new_seller_user_form.email_address.data,
-            'supplierCode': supplier_code,
-            'supplierName': supplier['name'],
-        }
-        """
         user = data_api_client.create_user({
-            'name': new_seller_user_form.name.data,
-            'password': new_seller_user_form.phone.data,
-            'emailAddress': new_seller_user_form.email_address.data,
+            'name': new_seller_user_form.new_name.data,
+            'password': new_seller_user_form.new_phone.data,
+            'emailAddress': new_seller_user_form.new_email_address.data,
             'role': 'supplier',
             'supplierCode': supplier_code
         })
@@ -595,9 +591,11 @@ def add_new_supplier_user(supplier_code):
             raise
         else:
             abort(404, "Supplier not found")
+
+    users = data_api_client.find_users(supplier_code)
     return render_template_with_csrf(
             "view_supplier_users.html",
-            new_seller_user_form=new_seller_user_form,
+            new_seller_user_form=NewSellerUserForm(),
             move_user_form=MoveUserForm(),
             invite_form=invite_form,
             supplier=supplier,
