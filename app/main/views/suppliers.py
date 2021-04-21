@@ -334,11 +334,12 @@ def set_auth_rep_user(user_id, supplier_code):
         .set_authorize_rep_user()
         .get()
     )
-    
+
     if result['result'] == 'SUCCESS':
         return redirect(url_for('.find_supplier_users', supplier_code=supplier_code))
     else:
-        return render_template_with_csrf('set_authorize_rep_user.html',supplier_code=supplier_code,user_id=user_id)
+        return render_template_with_csrf('set_authorize_rep_user.html', supplier_code=supplier_code, user_id=user_id)
+
 
 @main.route('/suppliers/users/<int:user_id>/reset_password', methods=['POST'])
 @login_required
@@ -562,6 +563,7 @@ def invite_user(supplier_code):
             supplier=supplier
         )
 
+
 @main.route('/suppliers/<int:supplier_code>/add-new-supplier-user', methods=['POST'])
 @login_required
 @role_required('admin')
@@ -578,7 +580,7 @@ def add_new_supplier_user(supplier_code):
             invite_form=invite_form,
             supplier=supplier,
             users=users["users"],
-        ) 
+        )
     try:
         user = data_api_client.create_user({
             'name': new_seller_user_form.new_name.data,
@@ -603,6 +605,7 @@ def add_new_supplier_user(supplier_code):
             supplier=supplier,
             users=users["users"],
     )
+
 
 @main.route('/suppliers/assessments/trigger', methods=['POST'])
 @login_required
