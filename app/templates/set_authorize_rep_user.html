@@ -1,0 +1,20 @@
+{% import "toolkit/summary-table.html" as summary %}
+
+{% extends "_base_page.html" %}
+
+{% block page_title %}
+    Users – Digital Marketplace admin
+{% endblock %}
+
+{% block main_content %}
+<h3>Authorize representative User</h3>
+
+<h4>Supplier Code: {{ supplier_code }}</h4>
+<h4>User Id: {{ user_id }}</h4>
+
+Unable to set authorize representative user. Please consult your administrator
+<form method="POST">
+  {{ form.csrf_token }}
+  <input type="button" onclick="window.location.href='{{ url_for('.find_supplier_users',supplier_code=supplier_code)}}';" value="Close" class="button-save">
+</form>
+{% endblock %}

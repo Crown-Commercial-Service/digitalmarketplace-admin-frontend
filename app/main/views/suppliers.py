@@ -335,8 +335,10 @@ def set_auth_rep_user(user_id, supplier_code):
         .get()
     )
     
-    print result
-    return redirect(url_for('.find_supplier_users', supplier_code=supplier_code))
+    if result['result'] == 'SUCCESS':
+        return redirect(url_for('.find_supplier_users', supplier_code=supplier_code))
+    else:
+        return render_template_with_csrf('set_authorize_rep_user.html',supplier_code=supplier_code,user_id=user_id)
 
 @main.route('/suppliers/users/<int:user_id>/reset_password', methods=['POST'])
 @login_required
