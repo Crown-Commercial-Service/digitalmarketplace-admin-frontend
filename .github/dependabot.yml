@@ -13,13 +13,11 @@ updates:
   schedule:
     interval: weekly
     time: "03:00"
-  ignored_updates:
-    - match:
-        dependency_name: "govuk-frontend"
-        version_requirement: "3.x"
-    - match:
-        dependency_name: "digitalmarketplace-govuk-frontend"
-        version_requirement: "3.x"
+  ignore:
+  - dependency-name: "govuk-frontend"
+    versions: "3.x"
+  - dependency-name: "digitalmarketplace-govuk-frontend"
+    versions: "3.x"
 - package-ecosystem: docker
   directory: "/"
   schedule:
