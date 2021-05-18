@@ -19,9 +19,11 @@ class TestSearchSuppliersAndServices(LoggedInApplicationTest):
         document = html.fromstring(page_html)
         header = document.xpath(
             '///h1/text()')[0].strip()
+        title = document.xpath('//title/text()')[0].strip()
 
         assert response.status_code == 200
         assert header == expected_header
+        assert title.startswith(expected_header)
 
     @pytest.mark.parametrize("role,expected_code", [
         ("admin", 200),
