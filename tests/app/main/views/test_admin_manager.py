@@ -93,11 +93,14 @@ class TestAdminManagerListView(LoggedInApplicationTest):
 
     @pytest.mark.parametrize(
         "role_not_allowed",
-        ["admin", "admin-ccs-category", "admin-ccs-sourcing", "admin-framework-manager", "admin-ccs-data-controller"]
+        ["admin", "admin-ccs-category", "admin-ccs-sourcing", "admin-framework-manager", "admin-ccs-data-controller"])
+    @pytest.mark.parametrize(
+        "route",
+        ["/admin/admin-users", "/admin/admin-users/invite"]
     )
-    def test_should_403_forbidden_user_roles(self, role_not_allowed):
+    def test_should_403_forbidden_user_roles(self, role_not_allowed, route):
         self.user_role = role_not_allowed
-        response = self.client.get("/admin/admin-users")
+        response = self.client.get(route)
         assert response.status_code == 403
 
     def test_should_raise_http_error_from_api(self):
