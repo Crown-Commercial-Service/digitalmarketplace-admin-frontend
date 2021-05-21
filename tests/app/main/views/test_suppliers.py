@@ -1528,17 +1528,22 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         self.data_api_client_patch.stop()
         super().teardown_method(method)
 
-    @pytest.mark.parametrize("role, expected_code", [
-        ("admin", 302),
-        ("admin-ccs-category", 302),
-        ("admin-ccs-sourcing", 403),
-        ("admin-ccs-data-controller", 403),
-        ("admin-framework-manager", 403),
-        ("admin-manager", 403),
+    @pytest.mark.parametrize("role, expected_code, see_invite_button", [
+        ("admin", 302, True),
+        ("admin-ccs-category", 302, True),
+        ("admin-ccs-sourcing", 403, False),
+        ("admin-ccs-data-controller", 403, False),
+        ("admin-framework-manager", 403, False),
+        ("admin-manager", 403, False),
     ])
     @mock.patch('app.main.views.suppliers.send_user_account_email')
-    def test_correct_roles_can_invite_user(self, send_user_account_email, role, expected_code):
+    def test_correct_roles_can_invite_user(self, _send_user_account_email, role, expected_code, see_invite_button):
         self.user_role = role
+
+        get_response = self.client.get('/admin/suppliers/users?supplier_id=1234')
+        document = html.fromstring(get_response.get_data(as_text=True))
+        send_invitation_button = document.xpath('.//button[contains(text(), "Send invitation")]')
+        assert bool(send_invitation_button) is see_invite_button
 
         response = self.client.post(
             '/admin/suppliers/1234/invite-user',
