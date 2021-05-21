@@ -1543,7 +1543,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
         get_response = self.client.get('/admin/suppliers/users?supplier_id=1234')
         document = html.fromstring(get_response.get_data(as_text=True))
         send_invitation_button = document.xpath('.//button[contains(text(), "Send invitation")]')
-        assert len(send_invitation_button) == (1 if see_invite_button else 0)
+        assert bool(send_invitation_button) is see_invite_button
 
         response = self.client.post(
             '/admin/suppliers/1234/invite-user',
