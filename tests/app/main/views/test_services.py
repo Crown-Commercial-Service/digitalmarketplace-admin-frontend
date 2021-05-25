@@ -484,6 +484,34 @@ class TestServiceView(LoggedInApplicationTest):
 
         assert expected_link.text == expected_link_text
 
+    @pytest.mark.parametrize("role, can_edit", [
+        ("admin", False),
+        ("admin-ccs-category", True)
+    ])
+    def test_supplier_services_only_category_users_can_see_editing_options(self, role, can_edit):
+        self.data_api_client.get_service.return_value = {'services': {
+            'frameworkFamily': 'digital-outcomes-and-specialists',
+            'frameworkFramework': 'digital-outcomes-and-specialists',
+            'frameworkName': 'Digital Outcomes and Specialists 2',
+            'frameworkSlug': 'digital-outcomes-and-specialists-2',
+            'id': '1',
+            'lot': 'digital-outcomes',
+            'lotName': 'Digital outcomes',
+            'lotSlug': 'digital-outcomes',
+            'status': 'published',
+            'supplierId': 1000,
+            'supplierName': 'Foo Ltd',
+            'testingAndAuditingTypes': ['Application testing']}}
+        self.data_api_client.get_framework.return_value = self.get_framework_api_response
+        self.user_role = role
+        response = self.client.get('/admin/services/1')
+        assert response.status_code == 200
+        document = html.fromstring(response.get_data(as_text=True))
+        remove_link = document.xpath('.//a[contains(text(), "Remove service")]')
+        edit_link = document.xpath('.//a[contains(text(), "Edit")]')
+        assert bool(remove_link) is can_edit
+        assert bool(edit_link) is can_edit
+
     @pytest.mark.parametrize('action, service_status', [('publish', 'disabled'), ('remove', 'published')])
     @pytest.mark.parametrize('framework_status, links_shown', [('expired', 0), ('live', 1)])
     def test_remove_publish_service_links_only_appear_for_live_frameworks(
