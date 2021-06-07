@@ -18,6 +18,7 @@ from dmutils.email import send_user_account_email
 from dmutils.flask import timed_render_template as render_template
 from dmutils.forms.helpers import get_errors_from_wtform
 from dmutils.formats import datetimeformat
+from dmutils.urls import rewrite_supplier_asset_path
 from flask import request, redirect, url_for, abort, current_app, flash
 from flask_login import current_user
 
@@ -345,6 +346,13 @@ def view_supplier_declaration(supplier_id, framework_slug):
             key=lambda question: question.number
         )
     )
+    modern_slavery_fields = ['modernSlaveryStatement', 'modernSlaveryStatementOptional']
+    declaration_with_public_assets = sf.get("declaration", {})
+    for field in modern_slavery_fields:
+        if declaration_with_public_assets.get(field):
+            declaration_with_public_assets[field] = rewrite_supplier_asset_path(
+                declaration_with_public_assets[field],
+                current_app.config['DM_ASSETS_URL'])
     # Enhance question_content with any nested questions
     for question in chain.from_iterable(section.questions for section in declaration_sections):
         if question.type == 'multiquestion':
@@ -356,7 +364,7 @@ def view_supplier_declaration(supplier_id, framework_slug):
         supplier=supplier,
         framework=framework,
         supplier_framework=sf,
-        declaration=sf.get("declaration", {}),
+        declaration=declaration_with_public_assets,
         content=content,
         question_content=question_content
     )
