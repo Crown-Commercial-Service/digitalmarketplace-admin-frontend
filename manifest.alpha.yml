@@ -1,7 +1,7 @@
 applications:
 - name: dm-alpha-admin
   command: ./scripts/cf_run_app.sh
-  buildpack: python2_buildpack
+  buildpack: python_buildpack
   instances: 1
   memory: 256M
   disk_quota: 512M

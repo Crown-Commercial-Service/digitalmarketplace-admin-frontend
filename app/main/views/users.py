@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 from flask import render_template, request, Response
 from flask_login import login_required
 from flask import flash

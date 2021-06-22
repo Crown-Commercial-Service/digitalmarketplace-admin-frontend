@@ -10,12 +10,12 @@ from ...helpers import LoggedInApplicationTest
 class TestApplication(LoggedInApplicationTest):
     def test_main_index(self):
         response = self.client.get('/admin')
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_404(self):
         with self.app.app_context():
             response = self.client.get('/admin/not-found')
-            self.assertEquals(404, response.status_code)
+            self.assertEqual(404, response.status_code)
 
     def test_headers(self):
         res = self.client.get('/admin')

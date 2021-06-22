@@ -22,18 +22,18 @@ def process_login():
         user_json = data_api_client.authenticate_user(
             form.email_address.data,
             form.password.data
-            )
+        )
 
         if not any(user_has_role(user_json, role) for
            role in ['assessor', 'admin', 'admin-ccs-category', 'admin-ccs-sourcing']):
-                message = "login.fail: Failed to log in: %s"
-                current_app.logger.info(message, form.email_address.data)
-                flash('no_account', 'error')
-                return render_template(
-                    'login.html',
-                    form=form,
-                    next=next_url
-                ), 403
+            message = "login.fail: Failed to log in: %s"
+            current_app.logger.info(message, form.email_address.data)
+            flash('no_account', 'error')
+            return render_template(
+                'login.html',
+                form=form,
+                next=next_url
+            ), 403
 
         user = User.from_json(user_json)
         login_user(user)

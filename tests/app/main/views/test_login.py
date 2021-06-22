@@ -3,11 +3,8 @@ from lxml import html
 from nose.tools import assert_equal, assert_in
 import mock
 import pytest
-try:
-    from urlparse import urlsplit
-except ImportError:
-    from urllib.parse import urlsplit
 
+from urllib.parse import urlsplit
 from dmutils.forms import FakeCsrf
 from dmutils.user import User
 
@@ -175,8 +172,8 @@ class TestLogout(LoggedInApplicationTest):
 class TestSession(BaseApplicationTest):
     def test_url_with_non_canonical_trailing_slash(self):
         response = self.client.get('/admin/login/')
-        self.assertEquals(301, response.status_code)
-        self.assertEquals("http://localhost/admin/login", response.location)
+        self.assertEqual(301, response.status_code)
+        self.assertEqual("http://localhost/admin/login", response.location)
 
 
 class TestLoginFormsNotAutofillable(BaseApplicationTest):

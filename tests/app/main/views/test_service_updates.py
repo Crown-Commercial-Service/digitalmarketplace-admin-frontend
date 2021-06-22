@@ -17,7 +17,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         today = datetime.utcnow().strftime(DISPLAY_DATE_FORMAT)
 
         response = self.client.get('/admin/service-updates')
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         date_header = """
         <p class="context">
@@ -38,7 +38,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_render_correct_form_defaults(self, data_api_client):
         response = self.client.get('/admin/service-updates')
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         self.assertIn(
             '<input class="filter-field-text" id="audit_date" name="audit_date" placeholder="eg, 2015-07-23" type="text" value="">',  # noqa
@@ -56,7 +56,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_not_allow_invalid_dates(self, data_api_client):
         response = self.client.get('/admin/service-updates?audit_date=invalid')
-        self.assertEquals(400, response.status_code)
+        self.assertEqual(400, response.status_code)
         self.assertIn(
             "Not a valid date value",
             response.get_data(as_text=True)
@@ -84,7 +84,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         response = self.client.get(
             '/admin/service-updates?acknowledged=invalid'
         )
-        self.assertEquals(400, response.status_code)
+        self.assertEqual(400, response.status_code)
 
         self.assertIn(
             self._replace_whitespace(
@@ -98,7 +98,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
         response = self.client.get('/admin/service-updates?audit_date=2006-01-01&acknowledged=all')
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertIn(
             '<input class="filter-field-text" id="audit_date" name="audit_date" placeholder="eg, 2015-07-23" type="text" value="2006-01-01">',  # noqa
             response.get_data(as_text=True)
@@ -116,7 +116,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
         response = self.client.get('/admin/service-updates?audit_date=2006-01-01')  # noqa
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertIn(
             '<input class="filter-field-text" id="audit_date" name="audit_date" placeholder="eg, 2015-07-23" type="text" value="2006-01-01">',  # noqa
             response.get_data(as_text=True)
@@ -138,7 +138,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
         response = self.client.get('/admin/service-updates?acknowledged=false')  # noqa
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertIn(
             '<input class="filter-field-text" id="audit_date" name="audit_date" placeholder="eg, 2015-07-23" type="text" value="">',  # noqa
             response.get_data(as_text=True)
@@ -160,7 +160,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
         response = self.client.get('/admin/service-updates?audit_date=2006-01-01&acknowledged=all')  # noqa
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         data_api_client.find_audit_events.assert_called_with(
             audit_type=AuditTypes.update_service,
@@ -173,7 +173,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
         response = self.client.get('/admin/service-updates?acknowledged=all')  # noqa
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         data_api_client.find_audit_events.assert_called_with(
             audit_type=AuditTypes.update_service,
@@ -187,7 +187,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             '/admin/service-updates?audit_date=2010-01-01'
         )
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         date_header = """
         <p class="context">
@@ -216,7 +216,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             }
         )
 
-        self.assertEquals(302, response.status_code)
+        self.assertEqual(302, response.status_code)
         self.assertIn(
             'http://localhost/admin/service-updates',
             response.location)
@@ -240,7 +240,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             }
         )
 
-        self.assertEquals(400, response.status_code)
+        self.assertEqual(400, response.status_code)
         data_api_client.acknowledge_audit_event.assert_not_called()
         self.assertIn(
             self._replace_whitespace(
@@ -257,7 +257,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         data_api_client.find_audit_events.return_value = {'auditEvents': [], 'links': {}}
 
         response = self.client.get('/admin/service-updates?audit_date=2006-01-01')  # noqa
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         self.assertIn(
             self._replace_whitespace('Noauditeventsfound'),
@@ -272,7 +272,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_show_no_updates_if_invalid_search(self, data_api_client):
         response = self.client.get('/admin/service-updates?audit_date=invalid')  # noqa
-        self.assertEquals(400, response.status_code)
+        self.assertEqual(400, response.status_code)
 
         self.assertIn(
             self._replace_whitespace('Noauditeventsfound'),
@@ -305,7 +305,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
 
         data_api_client.find_audit_events.return_value = audit_event
         response = self.client.get('/admin/service-updates?audit_date=2010-01-01')  # noqa
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         self.assertIn(
             self._replace_whitespace(
@@ -344,7 +344,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
             '/admin/service-updates/123/acknowledge?audit_date=2010-01-01&acknowledged=all',
             data={'csrf_token': FakeCsrf.valid_token},
         )
-        self.assertEquals(302, response.status_code)
+        self.assertEqual(302, response.status_code)
 
         data_api_client.acknowledge_audit_event.assert_called_with(
             '123', 'test@example.com'
@@ -353,7 +353,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_pass_valid_page_argument_to_api(self, data_api_client):
         response = self.client.get('/admin/service-updates?page=5')
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         data_api_client.find_audit_events.assert_called_with(
             page=5,
@@ -365,7 +365,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
     @mock.patch('app.main.views.service_updates.data_api_client')
     def test_should_not_pass_invalid_page_argument_to_api(self, data_api_client):
         response = self.client.get('/admin/service-updates?page=invalid')
-        self.assertEquals(400, response.status_code)
+        self.assertEqual(400, response.status_code)
 
         data_api_client.find_audit_events.assert_not_called()
 
@@ -378,7 +378,7 @@ class TestServiceStatusUpdates(LoggedInApplicationTest):
             '/admin/service-status-updates'
         )
 
-        self.assertEquals(302, response.status_code)
+        self.assertEqual(302, response.status_code)
         self.assertIn('http://localhost/admin/service-status-updates/20', response.location)
 
     def test_404s_invalid_date(self, data_api_client):
@@ -386,7 +386,7 @@ class TestServiceStatusUpdates(LoggedInApplicationTest):
             '/admin/service-status-updates/invalid'
         )
 
-        self.assertEquals(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
     def test_should_show_updates_for_a_day_with_updates(self, data_api_client):
         data_api_client.find_audit_events.return_value = {
@@ -409,7 +409,7 @@ class TestServiceStatusUpdates(LoggedInApplicationTest):
             '/admin/service-status-updates/2016-01-01'
         )
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         page_contents = self._replace_whitespace(response.get_data(as_text=True))
 

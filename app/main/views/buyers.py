@@ -178,7 +178,7 @@ def update_brief(brief_id):
         else:
             brief = data_api_client.get_brief(brief_id).get('briefs')
 
-    except HTTPError, e:
+    except HTTPError as e:
         flash(e.message, 'error')
         brief = data_api_client.get_brief(brief_id).get('briefs')
         users = brief.get('users')
@@ -215,7 +215,7 @@ def withdraw_brief(brief_id):
         brief = data_api_client.req.briefs(brief_id).withdraw().post({
             'update_details': {'updated_by': current_user.email_address}
         }).get('briefs')
-    except HTTPError, e:
+    except HTTPError as e:
         flash(e.message, 'error')
         brief = data_api_client.get_brief(brief_id).get('briefs')
 
