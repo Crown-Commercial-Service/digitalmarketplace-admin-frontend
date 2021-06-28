@@ -72,7 +72,7 @@ def update_service_status(service_id):
         'private': 'enabled'
     }
 
-    if frontend_status in translate_frontend_to_api.keys():
+    if frontend_status in list(translate_frontend_to_api.keys()):
         backend_status = translate_frontend_to_api[frontend_status]
     else:
         flash({'bad_status': frontend_status}, 'error')

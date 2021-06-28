@@ -1,10 +1,5 @@
-import io
-try:
-    from urlparse import urlsplit
-    from StringIO import StringIO
-except ImportError:
-    from urllib.parse import urlsplit
-    from io import BytesIO as StringIO
+from urllib.parse import urlsplit
+from io import BytesIO
 import mock
 import pytest
 from lxml import html
@@ -23,7 +18,7 @@ class TestSuppliersListView(LoggedInApplicationTest):
     def test_should_raise_http_error_from_api(self, data_api_client):
         data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers')
-        assert_equals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
     def test_should_list_suppliers(self, data_api_client):
         data_api_client.find_suppliers.return_value = {
@@ -35,8 +30,8 @@ class TestSuppliersListView(LoggedInApplicationTest):
         response = self.client.get("/admin/suppliers")
         document = html.fromstring(response.get_data(as_text=True))
 
-        assert_equals(response.status_code, 200)
-        assert_equals(len(document.cssselect('.summary-item-row')), 2)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(document.cssselect('.summary-item-row')), 2)
 
     def test_should_search_by_prefix(self, data_api_client):
         data_api_client.find_suppliers.side_effect = HTTPError(Response(404))
@@ -57,18 +52,18 @@ class TestSupplierUsersView(LoggedInApplicationTest):
     def test_should_404_if_no_supplier_does_not_exist(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers/users?supplier_code=999')
-        self.assertEquals(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
     def test_should_404_if_no_supplier_code(self):
         response = self.client.get('/admin/suppliers/users')
-        self.assertEquals(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_apis_with_supplier_code(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         response = self.client.get('/admin/suppliers/users?supplier_code=1000')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         data_api_client.get_supplier.assert_called_with('1000')
         data_api_client.find_users.assert_called_with('1000')
@@ -78,7 +73,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         response = self.client.get('/admin/suppliers/users?supplier_code=1000')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertIn(
             'Example Pty Ltd',
             response.get_data(as_text=True)
@@ -91,7 +86,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/users?supplier_code=1000')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertIn(
             "This supplier has no users on the Digital Marketplace",
             response.get_data(as_text=True)
@@ -104,7 +99,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/users?supplier_code=1000')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertIn(
             "Test User",
             response.get_data(as_text=True)
@@ -164,7 +159,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/users?supplier_code=1000')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertIn(
             '<form action="/admin/suppliers/users/999/unlock" method="post">',
             response.get_data(as_text=True)
@@ -184,7 +179,7 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/users?supplier_code=1000')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertIn(
             '<form action="/admin/suppliers/users/999/activate" method="post">',
             response.get_data(as_text=True)
@@ -203,8 +198,8 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         data_api_client.update_user.assert_called_with(999, locked=False, updater="test@example.com")
 
-        self.assertEquals(302, response.status_code)
-        self.assertEquals('http://localhost/admin/suppliers/users?supplier_code=1000', response.location)
+        self.assertEqual(302, response.status_code)
+        self.assertEqual('http://localhost/admin/suppliers/users?supplier_code=1000', response.location)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_activate_user(self, data_api_client):
@@ -215,8 +210,8 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         data_api_client.update_user.assert_called_with(999, active=True, updater="test@example.com")
 
-        self.assertEquals(302, response.status_code)
-        self.assertEquals('http://localhost/admin/suppliers/users?supplier_code=1000', response.location)
+        self.assertEqual(302, response.status_code)
+        self.assertEqual('http://localhost/admin/suppliers/users?supplier_code=1000', response.location)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_deactivate_user(self, data_api_client):
@@ -233,8 +228,8 @@ class TestSupplierUsersView(LoggedInApplicationTest):
 
         data_api_client.update_user.assert_called_with(999, active=False, updater="test@example.com")
 
-        self.assertEquals(302, response.status_code)
-        self.assertEquals('http://localhost/admin/suppliers/users?supplier_code=1000', response.location)
+        self.assertEqual(302, response.status_code)
+        self.assertEqual('http://localhost/admin/suppliers/users?supplier_code=1000', response.location)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_api_to_move_user_to_another_supplier(self, data_api_client):
@@ -254,8 +249,8 @@ class TestSupplierUsersView(LoggedInApplicationTest):
             999, role='supplier', supplier_code=1000, active=True, updater='test@example.com'
         )
 
-        self.assertEquals(302, response.status_code)
-        self.assertEquals('http://localhost/admin/suppliers/users?supplier_code=1000', response.location)
+        self.assertEqual(302, response.status_code)
+        self.assertEqual('http://localhost/admin/suppliers/users?supplier_code=1000', response.location)
 
 
 class TestSupplierServicesView(LoggedInApplicationTest):
@@ -264,18 +259,18 @@ class TestSupplierServicesView(LoggedInApplicationTest):
     def test_should_404_if_supplier_does_not_exist_on_services(self, data_api_client):
         data_api_client.get_supplier.side_effect = HTTPError(Response(404))
         response = self.client.get('/admin/suppliers/services?supplier_code=999')
-        self.assertEquals(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
     def test_should_404_if_no_supplier_code_on_services(self):
         response = self.client.get('/admin/suppliers/users')
-        self.assertEquals(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_call_service_apis_with_supplier_code(self, data_api_client):
         data_api_client.get_supplier.return_value = self.load_example_listing("supplier_response")
         response = self.client.get('/admin/suppliers/services?supplier_code=1000')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         data_api_client.get_supplier.assert_called_with(1000)
         data_api_client.find_services.assert_called_with(1000)
@@ -286,7 +281,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
         data_api_client.find_services.return_value = {'services': []}
         response = self.client.get('/admin/suppliers/services?supplier_code=1000')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertIn(
             "This supplier has no services on the Digital Marketplace",
             response.get_data(as_text=True)
@@ -303,7 +298,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/services?supplier_code=1000')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertIn(
             'Example Pty Ltd',
             response.get_data(as_text=True)
@@ -315,7 +310,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/services?supplier_code=1000')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertIn(
             "Cyber security",
             response.get_data(as_text=True)
@@ -327,7 +322,7 @@ class TestSupplierServicesView(LoggedInApplicationTest):
 
         response = self.client.get('/admin/suppliers/services?supplier_code=1000')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertIn(
             "Data science",
             response.get_data(as_text=True)
@@ -351,7 +346,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             follow_redirects=True
         )
 
-        self.assertEquals(400, response.status_code)
+        self.assertEqual(400, response.status_code)
         self.assertTrue("Please enter a valid email address" in response.get_data(as_text=True))
 
     @mock.patch('app.main.views.suppliers.data_api_client')
@@ -368,7 +363,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             follow_redirects=True
         )
 
-        self.assertEquals(400, response.status_code)
+        self.assertEqual(400, response.status_code)
         self.assertTrue('name' in response.get_data(as_text=True))
 
     @mock.patch('app.main.views.suppliers.data_api_client')
@@ -385,7 +380,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             follow_redirects=True
         )
 
-        self.assertEquals(400, response.status_code)
+        self.assertEqual(400, response.status_code)
         self.assertTrue("Email cannot be empty" in response.get_data(as_text=True))
 
     @mock.patch('app.main.views.suppliers.data_api_client')
@@ -397,7 +392,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             follow_redirects=True
         )
 
-        self.assertEquals(404, response.status_code)
+        self.assertEqual(404, response.status_code)
         self.assertFalse(data_api_client.called)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
@@ -413,7 +408,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
 
         data_api_client.get_supplier.assert_called_with(1234)
         self.assertFalse(data_api_client.find_users.called)
-        self.assertEquals(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
     @mock.patch('app.main.views.suppliers.data_api_client')
     def test_should_be_a_404_if_supplier_users_not_found(self, data_api_client):
@@ -428,7 +423,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
 
         data_api_client.get_supplier.assert_called_with(1234)
         data_api_client.find_users.assert_called_with(1234)
-        self.assertEquals(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
     @mock.patch('app.main.views.suppliers.generate_token')
     @mock.patch('app.main.views.suppliers.send_email')
@@ -554,7 +549,7 @@ class TestSupplierInviteUserView(LoggedInApplicationTest):
             })
 
         send_email.assert_called_once_with(
-            u'this@isvalid.com',
+            'this@isvalid.com',
             mock.ANY,
             'Your Digital Marketplace invitation',
             self.app.config['INVITE_EMAIL_FROM'],
@@ -843,10 +838,10 @@ class TestListCountersignedAgreementFile(LoggedInApplicationTest):
     def test_should_be_visible_to_admin_sourcing_users(self, s3, data_api_client):
         s3.S3.return_value.get_key.return_value = {
             'size': '7050',
-            'path': u'g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf',
-            'ext': u'pdf',
-            'last_modified': u'2016-01-15T12:58:08.000000Z',
-            'filename': u'93495-countersigned-framework-agreement'
+            'path': 'g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf',
+            'ext': 'pdf',
+            'last_modified': '2016-01-15T12:58:08.000000Z',
+            'filename': '93495-countersigned-framework-agreement'
         }
         response = self.client.get('/admin/suppliers/1234/countersigned-agreements/g-cloud-7')
         eq_(response.status_code, 200)
@@ -868,15 +863,15 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
     def test_countersigned_agreement_displays_error_for_wrong_format(self, s3, data_api_client):
         s3.S3.return_value.get_key.return_value = {
             'size': '7050',
-            'path': u'g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf',
-            'ext': u'pdf',
-            'last_modified': u'2016-01-15T12:58:08.000000Z',
-            'filename': u'93495-countersigned-framework-agreement'
+            'path': 'g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf',
+            'ext': 'pdf',
+            'last_modified': '2016-01-15T12:58:08.000000Z',
+            'filename': '93495-countersigned-framework-agreement'
         }
         response = self.client.post(
             '/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
             data={
-                'countersigned_agreement': (io.BytesIO(b"this is a test"), 'test.odt'),
+                'countersigned_agreement': (BytesIO(b"this is a test"), 'test.odt'),
                 'csrf_token': FakeCsrf.valid_token,
             },
             follow_redirects=True
@@ -891,16 +886,16 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
     def test_should_create_audit_event(self, s3, data_api_client):
         s3.S3.return_value.get_key.return_value = {
             'size': '7050',
-            'path': u'g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf',
-            'ext': u'pdf',
-            'last_modified': u'2016-01-15T12:58:08.000000Z',
-            'filename': u'1234-countersigned-framework-agreement'
+            'path': 'g-cloud-7/agreements/1234/1234-countersigned-framework-agreement.pdf',
+            'ext': 'pdf',
+            'last_modified': '2016-01-15T12:58:08.000000Z',
+            'filename': '1234-countersigned-framework-agreement'
         }
 
         response = self.client.post(
             '/admin/suppliers/1234/countersigned-agreements/g-cloud-7',
             data={
-                'countersigned_agreement': (io.BytesIO(b"this is a test"), 'countersigned_agreement.pdf'),
+                'countersigned_agreement': (BytesIO(b"this is a test"), 'countersigned_agreement.pdf'),
                 'csrf_token': FakeCsrf.valid_token,
             },
             follow_redirects=True
@@ -910,7 +905,7 @@ class TestUploadCountersignedAgreementFile(LoggedInApplicationTest):
             audit_type=AuditTypes.upload_countersigned_agreement,
             user='test@example.com',
             object_type='suppliers',
-            object_id=u'1234',
+            object_id='1234',
             data={'upload_countersigned_agreement': 'g-cloud-7/agreements/1234/1234-countersigned-'
                   'framework-agreement.pdf'})
 
@@ -950,10 +945,10 @@ class TestRemoveCountersignedAgreementFile(LoggedInApplicationTest):
     def test_should_display_remove_countersigned_agreement_message(self, s3, data_api_client):
         s3.S3.return_value.get_key.return_value = {
             'size': '7050',
-            'path': u'g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf',
-            'ext': u'pdf',
-            'last_modified': u'2016-01-15T12:58:08.000000Z',
-            'filename': u'93495-countersigned-framework-agreement'
+            'path': 'g-cloud-7/agreements/93495/93495-countersigned-framework-agreement.pdf',
+            'ext': 'pdf',
+            'last_modified': '2016-01-15T12:58:08.000000Z',
+            'filename': '93495-countersigned-framework-agreement'
         }
         response = self.client.get('/admin/suppliers/1234/countersigned-agreements-remove/g-cloud-7',
                                    follow_redirects=True)

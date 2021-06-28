@@ -1,5 +1,4 @@
-# coding=utf-8
-from __future__ import unicode_literals
+
 
 import mock
 import pytest
@@ -17,7 +16,7 @@ class TestUsersView(LoggedInApplicationTest):
     def test_should_be_a_404_if_user_not_found(self, data_api_client, _user_info):
         data_api_client.get_user.return_value = None
         response = self.client.get('/admin/users?email_address=some@email.com')
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -28,7 +27,7 @@ class TestUsersView(LoggedInApplicationTest):
     def test_should_be_a_404_if_no_email_provided(self, data_api_client, _user_info):
         data_api_client.get_user.return_value = None
         response = self.client.get('/admin/users?email_address=')
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -39,7 +38,7 @@ class TestUsersView(LoggedInApplicationTest):
     def test_should_be_a_404_if_no_email_param_provided(self, data_api_client, _user_info):
         data_api_client.get_user.return_value = None
         response = self.client.get('/admin/users')
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -54,7 +53,7 @@ class TestUsersView(LoggedInApplicationTest):
         data_api_client.get_user.return_value = buyer
         _user_info.return_value = (None, None)
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -72,30 +71,30 @@ class TestUsersView(LoggedInApplicationTest):
 
         supplier = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[2].strip()
-        self.assertEquals('', supplier)
+        self.assertEqual('', supplier)
 
         last_login = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[3].strip()
-        self.assertEquals('19:33 23-07-2015', last_login)
+        self.assertEqual('19:33 23-07-2015', last_login)
 
         last_password_changed = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[4].strip()
-        self.assertEquals('22:46 29-06-2015', last_password_changed)
+        self.assertEqual('22:46 29-06-2015', last_password_changed)
 
         locked = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/text()')[5].strip()
-        self.assertEquals('No', locked)
+        self.assertEqual('No', locked)
 
         button = document.xpath(
             '//input[@class="button-destructive"]')[1].value
-        self.assertEquals('Deactivate', button)
+        self.assertEqual('Deactivate', button)
 
     def test_should_show_supplier_user(self, data_api_client, _user_info):
         buyer = self.load_example_listing("user_response")
         _user_info.return_value = (None, None)
         data_api_client.get_user.return_value = buyer
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -109,11 +108,11 @@ class TestUsersView(LoggedInApplicationTest):
 
         supplier = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/a/text()')[0].strip()
-        self.assertEquals('SME Corp UK Limited', supplier)
+        self.assertEqual('SME Corp UK Limited', supplier)
 
         supplier_link = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/a')[0]
-        self.assertEquals('/admin/suppliers?supplier_code=1000', supplier_link.attrib['href'])
+        self.assertEqual('/admin/suppliers?supplier_code=1000', supplier_link.attrib['href'])
 
     def test_should_show_unlock_button(self, data_api_client, _user_info):
         buyer = self.load_example_listing("user_response")
@@ -122,7 +121,7 @@ class TestUsersView(LoggedInApplicationTest):
         data_api_client.get_user.return_value = buyer
         _user_info.return_value = (None, None)
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -132,9 +131,9 @@ class TestUsersView(LoggedInApplicationTest):
             '//tr[@class="summary-item-row"]//td/span/form')[0]
         return_link = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/form/input')[1]
-        self.assertEquals('/admin/suppliers/users/999/unlock', unlock_link.attrib['action'])
-        self.assertEquals('Unlock', unlock_button)
-        self.assertEquals('/admin/users?email_address=test.user%40sme.com', return_link.attrib['value'])
+        self.assertEqual('/admin/suppliers/users/999/unlock', unlock_link.attrib['action'])
+        self.assertEqual('Unlock', unlock_button)
+        self.assertEqual('/admin/users?email_address=test.user%40sme.com', return_link.attrib['value'])
 
     @pytest.mark.skip
     def test_should_show_password_reset(self, data_api_client, _user_info):
@@ -143,13 +142,13 @@ class TestUsersView(LoggedInApplicationTest):
         data_api_client.get_user.return_value = buyer
         _user_info.return_value = (None, None)
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         document = html.fromstring(response.get_data(as_text=True))
 
         reset_link = document.xpath(
             '//tr[@class="summary-item-row"]//a[text()="Reset Password"]')[0]
-        self.assertEquals('/admin/suppliers/users/999/reset_password', reset_link.attrib['href'])
+        self.assertEqual('/admin/suppliers/users/999/reset_password', reset_link.attrib['href'])
 
     def test_should_show_deactivate_button(self, data_api_client, _user_info):
         buyer = self.load_example_listing("user_response")
@@ -157,7 +156,7 @@ class TestUsersView(LoggedInApplicationTest):
         data_api_client.get_user.return_value = buyer
         _user_info.return_value = (None, None)
         response = self.client.get('/admin/users?email_address=test.user@sme.com')
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         document = html.fromstring(response.get_data(as_text=True))
 
@@ -167,9 +166,9 @@ class TestUsersView(LoggedInApplicationTest):
             '//tr[@class="summary-item-row"]//td/span/form')[1]
         return_link = document.xpath(
             '//tr[@class="summary-item-row"]//td/span/form/input')[3]
-        self.assertEquals('/admin/suppliers/users/999/deactivate', deactivate_link.attrib['action'])
-        self.assertEquals('Deactivate', deactivate_button)
-        self.assertEquals('/admin/users?email_address=test.user%40sme.com', return_link.attrib['value'])
+        self.assertEqual('/admin/suppliers/users/999/deactivate', deactivate_link.attrib['action'])
+        self.assertEqual('Deactivate', deactivate_button)
+        self.assertEqual('/admin/users?email_address=test.user%40sme.com', return_link.attrib['value'])
 
 
 @mock.patch('app.main.views.users.data_api_client')
@@ -245,9 +244,8 @@ class TestUsersExport(LoggedInApplicationTest):
             assert sorted(list(users[0].keys())) == sorted(rows[0])
 
             for index, user in enumerate(users):
-                assert sorted([six.text_type(val) for val in user.values()]) == sorted(rows[index+1])
+                assert sorted([six.text_type(val) for val in list(user.values())]) == sorted(rows[index+1])
 
-    ##########################################################################
     def test_get_form_with_valid_framework(self, data_api_client):
         frameworks = [self._valid_framework]
         response = self._return_get_user_export_response(data_api_client, frameworks)

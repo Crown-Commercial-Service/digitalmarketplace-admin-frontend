@@ -50,7 +50,7 @@ def upload_communication(framework_slug):
         if not (file_is_pdf(the_file) or file_is_csv(the_file)):
             errors['communication'] = 'not_pdf_or_csv'
 
-        if 'communication' not in errors.keys():
+        if 'communication' not in list(errors.keys()):
             filename = _get_path(framework_slug, 'updates/communications') + '/' + the_file.filename
             communications_bucket.save(filename, the_file)
             flash('communication', 'upload_communication')
@@ -60,7 +60,7 @@ def upload_communication(framework_slug):
         if not file_is_pdf(the_file):
             errors['clarification'] = 'not_pdf'
 
-        if 'clarification' not in errors.keys():
+        if 'clarification' not in list(errors.keys()):
             filename = _get_path(framework_slug, 'updates/clarifications') + '/' + the_file.filename
             communications_bucket.save(filename, the_file)
             flash('clarification', 'upload_communication')
@@ -70,12 +70,12 @@ def upload_communication(framework_slug):
         if not file_is_zip(the_file):
             errors['itt_pack'] = 'not_zip'
 
-        if 'itt_pack' not in errors.keys():
+        if 'itt_pack' not in list(errors.keys()):
             filename = _get_itt_pack_path(framework_slug)
             communications_bucket.save(filename, the_file)
             flash('itt_pack', 'upload_communication')
 
     if len(errors) > 0:
-        for category, message in errors.items():
+        for category, message in list(errors.items()):
             flash(category, message)
     return redirect(url_for('.manage_communications', framework_slug=framework_slug))

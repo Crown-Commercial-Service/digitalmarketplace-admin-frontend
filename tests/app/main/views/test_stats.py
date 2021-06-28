@@ -10,7 +10,7 @@ from ...helpers import LoggedInApplicationTest
 class TestStats(LoggedInApplicationTest):
     def test_get_stats_page(self, data_api_client):
         response = self.client.get('/admin/statistics/applications')
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_supplier_counts_on_stats_page(self, data_api_client):
         data_api_client.req.metrics().applications().history().get.return_value = {
@@ -85,7 +85,7 @@ class TestStats(LoggedInApplicationTest):
         data_api_client.req.metrics().applications().history().get.assert_called()
         data_api_client.req.metrics().domains().get.assert_called()
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         page_without_whitespace = ''.join(response.get_data(as_text=True).split())
         assert_in('<span>7</span>', page_without_whitespace)
 
@@ -94,4 +94,4 @@ class TestStats(LoggedInApplicationTest):
         api_response.status_code = 500
         data_api_client.req.metrics().applications().history().get.side_effect = HTTPError(api_response)
         response = self.client.get('/admin/statistics/applications')
-        self.assertEquals(500, response.status_code)
+        self.assertEqual(500, response.status_code)

@@ -1,9 +1,5 @@
-try:
-    from urlparse import urlsplit
-    from StringIO import StringIO
-except ImportError:
-    from urllib.parse import urlsplit
-    from io import BytesIO as StringIO
+from urllib.parse import urlsplit
+from io import BytesIO
 import mock
 import pytest
 
@@ -20,7 +16,7 @@ class TestServiceView(LoggedInApplicationTest):
 
         data_api_client.get_service.assert_called_with('1')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_view_with_no_features_or_benefits(self, data_api_client):
@@ -29,7 +25,7 @@ class TestServiceView(LoggedInApplicationTest):
 
         data_api_client.get_service.assert_called_with('1')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_redirect_with_flash_for_api_client_404(self, data_api_client):
@@ -38,8 +34,8 @@ class TestServiceView(LoggedInApplicationTest):
         data_api_client.get_service.side_effect = HTTPError(response)
 
         response1 = self.client.get('/admin/services/1')
-        self.assertEquals(302, response1.status_code)
-        self.assertEquals(response1.location, 'http://localhost/admin')
+        self.assertEqual(302, response1.status_code)
+        self.assertEqual(response1.location, 'http://localhost/admin')
         response2 = self.client.get(response1.location)
         self.assertIn(b'Error trying to retrieve service with ID: 1',
                       response2.data)
@@ -73,7 +69,7 @@ class TestServiceEdit(LoggedInApplicationTest):
 
         data_api_client.get_service.assert_called_with('1')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_documents_empty_post(self, data_api_client):
@@ -95,8 +91,8 @@ class TestServiceEdit(LoggedInApplicationTest):
         data_api_client.get_service.assert_called_with('1')
         self.assertFalse(data_api_client.update_service.called)
 
-        self.assertEquals(302, response.status_code)
-        self.assertEquals(
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(
             "/admin/services/1", urlsplit(response.location).path
         )
 
@@ -116,10 +112,10 @@ class TestServiceEdit(LoggedInApplicationTest):
         response = self.client.post(
             '/admin/services/1/edit/documents',
             data={
-                'serviceDefinitionDocumentURL': (StringIO(), ''),
-                'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
-                'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.pdf'),
-                'termsAndConditionsDocumentURL': (StringIO(b''), ''),
+                'serviceDefinitionDocumentURL': (BytesIO(), ''),
+                'pricingDocumentURL': (BytesIO("doc".encode()), 'test.pdf'),
+                'sfiaRateDocumentURL': (BytesIO("doc".encode()), 'test.pdf'),
+                'termsAndConditionsDocumentURL': (BytesIO(''.encode()), ''),
                 'csrf_token': FakeCsrf.valid_token,
             }
         )
@@ -130,7 +126,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             'sfiaRateDocumentURL': 'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-7/documents/2/1-sfia-rate-card-2015-01-01-1200.pdf',  # noqa
         }, 'test@example.com')
 
-        self.assertEquals(302, response.status_code)
+        self.assertEqual(302, response.status_code)
 
     @mock.patch("app.main.views.services.data_api_client")
     def test_service_edit_documents_post_with_validation_errors(
@@ -147,10 +143,10 @@ class TestServiceEdit(LoggedInApplicationTest):
         response = self.client.post(
             '/admin/services/1/edit/documents',
             data={
-                'serviceDefinitionDocumentURL': (StringIO(), ''),
-                'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
-                'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.txt'),
-                'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
+                'serviceDefinitionDocumentURL': (BytesIO(), ''),
+                'pricingDocumentURL': (BytesIO("doc".encode()), 'test.pdf'),
+                'sfiaRateDocumentURL': (BytesIO("doc".encode()), 'test.txt'),
+                'termsAndConditionsDocumentURL': (BytesIO(), 'test.pdf'),
                 'csrf_token': FakeCsrf.valid_token,
             }
         )
@@ -159,7 +155,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         self.assertFalse(data_api_client.update_service.called)
 
         self.assertIn('Your document is not in an open format', response.get_data(as_text=True))
-        self.assertEquals(400, response.status_code)
+        self.assertEqual(400, response.status_code)
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_with_one_service_feature(self, data_api_client):
@@ -177,7 +173,7 @@ class TestServiceEdit(LoggedInApplicationTest):
         response = self.client.get(
             '/admin/services/1/edit/features-and-benefits'
         )
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         stripped_page = self.strip_all_whitespace(response.get_data(as_text=True))
         self.assertIn(
             'id="input-serviceFeatures-0"class="text-box"value="bar"',
@@ -197,7 +193,7 @@ class TestServiceEdit(LoggedInApplicationTest):
             'serviceFeatures': ['foo'],
             'serviceBenefits': ['foo'],
         }, 'test@example.com')
-        self.assertEquals(response.status_code, 302)
+        self.assertEqual(response.status_code, 302)
 
     @mock.patch('app.main.views.services.data_api_client')
     def test_service_edit_with_no_features_or_benefits(self, data_api_client):
@@ -209,7 +205,7 @@ class TestServiceEdit(LoggedInApplicationTest):
 
         data_api_client.get_service.assert_called_with('1')
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertIn(
             'id="input-serviceFeatures-0"class="text-box"value=""',
             self.strip_all_whitespace(response.get_data(as_text=True)))
@@ -231,9 +227,9 @@ class TestServiceEdit(LoggedInApplicationTest):
         response = self.client.post(
             '/admin/services/1/edit/documents',
             data={
-                'pricingDocumentURL': (StringIO(b"doc"), 'test.pdf'),
-                'sfiaRateDocumentURL': (StringIO(b"doc"), 'test.txt'),
-                'termsAndConditionsDocumentURL': (StringIO(), 'test.pdf'),
+                'pricingDocumentURL': (BytesIO("doc".encode()), 'test.pdf'),
+                'sfiaRateDocumentURL': (BytesIO("doc".encode()), 'test.txt'),
+                'termsAndConditionsDocumentURL': (BytesIO(), 'test.pdf'),
                 'csrf_token': FakeCsrf.valid_token,
             }
         )
@@ -288,9 +284,8 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         )
         data_api_client.update_service_status.assert_called_with(
             '1', 'disabled', 'test@example.com')
-        self.assertEquals(302, response1.status_code)
-        self.assertEquals(response1.location,
-                          'http://localhost/admin/services/1')
+        self.assertEqual(302, response1.status_code)
+        self.assertEqual(response1.location, 'http://localhost/admin/services/1')
         response2 = self.client.get(response1.location)
         self.assertIn(b'Service status has been updated to: Removed',
                       response2.data)
@@ -306,9 +301,8 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         )
         data_api_client.update_service_status.assert_called_with(
             '1', 'enabled', 'test@example.com')
-        self.assertEquals(302, response1.status_code)
-        self.assertEquals(response1.location,
-                          'http://localhost/admin/services/1')
+        self.assertEqual(302, response1.status_code)
+        self.assertEqual(response1.location, 'http://localhost/admin/services/1')
         response2 = self.client.get(response1.location)
         self.assertIn(b'Service status has been updated to: Private',
                       response2.data)
@@ -324,9 +318,8 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
         )
         data_api_client.update_service_status.assert_called_with(
             '1', 'published', 'test@example.com')
-        self.assertEquals(302, response1.status_code)
-        self.assertEquals(response1.location,
-                          'http://localhost/admin/services/1')
+        self.assertEqual(302, response1.status_code)
+        self.assertEqual(response1.location, 'http://localhost/admin/services/1')
         response2 = self.client.get(response1.location)
         self.assertIn(b'Service status has been updated to: Public',
                       response2.data)
@@ -339,16 +332,15 @@ class TestServiceStatusUpdate(LoggedInApplicationTest):
                 'csrf_token': FakeCsrf.valid_token,
             }
         )
-        self.assertEquals(302, response1.status_code)
-        self.assertEquals(response1.location,
-                          'http://localhost/admin/services/1')
+        self.assertEqual(302, response1.status_code)
+        self.assertEqual(response1.location, 'http://localhost/admin/services/1')
         response2 = self.client.get(response1.location)
         self.assertIn(b"Not a valid status: 'suspended'",
                       response2.data)
 
     def test_services_with_missing_id(self, data_api_client):
         response = self.client.get('/admin/services')
-        self.assertEquals(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
 
 class TestCompareServiceArchives(LoggedInApplicationTest):

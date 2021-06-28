@@ -15,14 +15,14 @@ references:
         cf -v
   deploy-docker: &deploy-docker
     docker:
-      - image: circleci/python:2.7.15-stretch
+      - image: circleci/python:3.7.9-stretch
         environment:
           TZ: "/usr/share/zoneinfo/Australia/Sydney"
 
 jobs:
   build:
     docker:
-      - image: circleci/python:2.7.15-stretch-node-browsers
+      - image: circleci/python:3.7.9-stretch-node-browsers
         environment:
           TZ: "/usr/share/zoneinfo/Australia/Sydney"
     steps:
@@ -35,13 +35,18 @@ jobs:
       - run: 
           name: Pip Install
           command: |
-            virtualenv venv
+            python -m venv venv
             source venv/bin/activate
             pip install -r requirements_for_test.txt
       - save_cache:
           <<: *venv-cache-key
           paths:
             - venv
+
+      - run: 
+          name: Install Node
+          command: |
+            curl -sSL "https://nodejs.org/dist/v10.15.2/node-v10.15.2-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v10.15.2-linux-x64/bin/node | sudo bash
 
       - restore_cache:
           <<: *npm-cache-key

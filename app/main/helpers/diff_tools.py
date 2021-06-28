@@ -1,8 +1,5 @@
 import difflib
-try:
-    from itertools import izip_longest
-except ImportError:
-    from itertools import zip_longest as izip_longest
+from itertools import zip_longest
 from datetime import datetime
 from flask import Markup, escape
 from flask._compat import string_types
@@ -96,7 +93,7 @@ def render_lines(
     }
 
     for index, revisions in enumerate(
-            izip_longest(revision_1, revision_2, fillvalue='')
+            zip_longest(revision_1, revision_2, fillvalue='')
     ):
         diff = get_words_diff(revisions[0], revisions[1])
 
@@ -147,19 +144,19 @@ def render_words_html(words, line_number):
             type = get_word_type(word)
 
             if type == 'unchanged':
-                html_words.append(u"{}".format(word[2:]))
+                html_words.append("{}".format(word[2:]))
 
             elif type == inferred_type:
-                html_words.append(u"<strong>{}</strong>".format(word[2:]))
+                html_words.append("<strong>{}</strong>".format(word[2:]))
 
-        return ' '.join(html_words).replace(u'</strong> <strong>', ' ')
+        return ' '.join(html_words).replace('</strong> <strong>', ' ')
 
     # Can only have one inferred type per line
     inferred_type = get_line_type(words)
 
     return \
-        u"<td class='line-number line-number-{type}'>{line_number}</td>" \
-        u"<td class='line-content {type}'>{line}</td>".format(
+        "<td class='line-number line-number-{type}'>{line_number}</td>" \
+        "<td class='line-content {type}'>{line}</td>".format(
             type=inferred_type,
             line_number=line_number,
             line=_render_words_inner_html(words, inferred_type)

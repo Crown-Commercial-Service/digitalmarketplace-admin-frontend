@@ -17,7 +17,7 @@ class TestDiffToolsHelpers(unittest.TestCase):
 
     def _check_correct_number_of_lines_in_revisions(
             self, lines, expected_number_of_lines):
-        for key in lines.keys():
+        for key in list(lines.keys()):
             self.assertEqual(len(lines[key]), expected_number_of_lines)
 
     def test_correct_number_of_lines(self):
@@ -70,17 +70,17 @@ class TestDiffToolsHelpers(unittest.TestCase):
         self.assertEqual(
             rendered_lines['revision_1'][0],
             Markup(
-                u"<td class='line-number line-number-empty'>2</td>"
-                u"<td class='line-content empty'></td>"
+                "<td class='line-number line-number-empty'>2</td>"
+                "<td class='line-content empty'></td>"
             )
         )
         self.assertEqual(
             rendered_lines['revision_2'][0],
             Markup(
-                u"<td class='line-number line-number-addition'>2</td>"
-                u"<td class='line-content addition'>"
-                u"<strong>line two</strong>"
-                u"</td>"
+                "<td class='line-number line-number-addition'>2</td>"
+                "<td class='line-content addition'>"
+                "<strong>line two</strong>"
+                "</td>"
             )
         )
 
@@ -92,17 +92,17 @@ class TestDiffToolsHelpers(unittest.TestCase):
         self.assertEqual(
             rendered_lines['revision_1'][0],
             Markup(
-                u"<td class='line-number line-number-removal'>2</td>"
-                u"<td class='line-content removal'>"
-                u"<strong>line two</strong>"
-                u"</td>"
+                "<td class='line-number line-number-removal'>2</td>"
+                "<td class='line-content removal'>"
+                "<strong>line two</strong>"
+                "</td>"
             )
         )
         self.assertEqual(
             rendered_lines['revision_2'][0],
             Markup(
-                u"<td class='line-number line-number-empty'>2</td>"
-                u"<td class='line-content empty'></td>"
+                "<td class='line-number line-number-empty'>2</td>"
+                "<td class='line-content empty'></td>"
             )
         )
 
@@ -113,18 +113,18 @@ class TestDiffToolsHelpers(unittest.TestCase):
         self.assertEqual(
             rendered_lines['revision_1'][0],
             Markup(
-                u"<td class='line-number line-number-removal'>1</td>"
-                u"<td class='line-content removal'>"
-                u"line <strong>number</strong> one has changed"
-                u"</td>"
+                "<td class='line-number line-number-removal'>1</td>"
+                "<td class='line-content removal'>"
+                "line <strong>number</strong> one has changed"
+                "</td>"
             )
         )
         self.assertEqual(
             rendered_lines['revision_2'][0],
             Markup(
-                u"<td class='line-number line-number-addition'>1</td>"
-                u"<td class='line-content addition'>"
-                u"line one has <strong>actually</strong> changed"
-                u"</td>"
+                "<td class='line-number line-number-addition'>1</td>"
+                "<td class='line-content addition'>"
+                "line one has <strong>actually</strong> changed"
+                "</td>"
             )
         )

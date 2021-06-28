@@ -31,7 +31,7 @@ def format_snapshots(snapshots, category, groupings):
 def _label_and_count(stats, groupings, created_at):
     data = {
         label: _sum_counts(stats, filters)
-        for label, filters in groupings.items()
+        for label, filters in list(groupings.items())
     }
     data['created_at'] = created_at
     return data
@@ -42,7 +42,7 @@ def _sum_counts(stats, filter_by=None, sum_by='count'):
         statistic[sum_by] for statistic in stats
         if not filter_by or all(
             _find(statistic.get(key), value)
-            for key, value in filter_by.items()
+            for key, value in list(filter_by.items())
         )
     )
 

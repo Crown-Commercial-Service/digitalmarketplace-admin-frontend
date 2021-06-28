@@ -22,7 +22,7 @@ from dmutils.forms import DmForm, render_template_with_csrf
 from ..forms import NewSellerUserForm
 from itertools import chain
 
-from urllib import quote_plus
+from urllib.parse import quote_plus
 
 import pendulum
 
@@ -144,7 +144,7 @@ def upload_countersigned_agreement_file(supplier_code, framework_slug):
         if not file_is_pdf(the_file):
             errors['countersigned_agreement'] = 'not_pdf'
 
-        if 'countersigned_agreement' not in errors.keys():
+        if 'countersigned_agreement' not in list(errors.keys()):
             filename = get_agreement_document_path(framework_slug, supplier_code, COUNTERSIGNED_AGREEMENT_FILENAME)
             agreements_bucket.save(filename, the_file)
 
@@ -158,7 +158,7 @@ def upload_countersigned_agreement_file(supplier_code, framework_slug):
             flash('countersigned_agreement', 'upload_countersigned_agreement')
 
     if len(errors) > 0:
-        for category, message in errors.items():
+        for category, message in list(errors.items()):
             flash(category, message)
 
     return redirect(url_for(
@@ -436,13 +436,13 @@ def find_supplier_services():
 
     for e in evidence:
         if 'submitted_at' in e and e['submitted_at']:
-            e['submitted_at'] = pendulum.parse(e['submitted_at']).format('%d-%m-%Y')
+            e['submitted_at'] = pendulum.parse(e['submitted_at']).format('DD-MM-YYYY')
         if 'rejected_at' in e and e['rejected_at']:
-            e['rejected_at'] = pendulum.parse(e['rejected_at']).format('%d-%m-%Y')
+            e['rejected_at'] = pendulum.parse(e['rejected_at']).format('DD-MM-YYYY')
         if 'approved_at' in e and e['approved_at']:
-            e['approved_at'] = pendulum.parse(e['approved_at']).format('%d-%m-%Y')
+            e['approved_at'] = pendulum.parse(e['approved_at']).format('DD-MM-YYYY')
         if 'created_at' in e and e['created_at']:
-            e['created_at'] = pendulum.parse(e['created_at']).format('%d-%m-%Y')
+            e['created_at'] = pendulum.parse(e['created_at']).format('DD-MM-YYYY')
     assessments_draft = [e for e in evidence if e['status'] == 'draft']
     assessments_rejected = [e for e in evidence if e['status'] == 'rejected']
     assessments_approved = [e for e in evidence if e['status'] == 'assessed']
