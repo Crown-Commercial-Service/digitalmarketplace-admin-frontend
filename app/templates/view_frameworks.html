@@ -1,0 +1,40 @@
+{% extends "_base_page.html" %}
+{% import "toolkit/summary-table.html" as summary %}
+
+{% block pageTitle %}
+  View frameworks - Digital Marketplace admin
+{% endblock %}
+
+{% block breadcrumbs %}
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Admin home",
+        "href": url_for('.index')
+      },
+      {
+        "text": "View frameworks"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block mainContent %}
+  <h1 class="govuk-heading-xl">Frameworks</h1>
+
+  {% call(framework) summary.list_table(
+    frameworks,
+    caption="Frameworks",
+    empty_message="No frameworks to show",
+    field_headings=[
+        'Name',
+        'Status',
+    ],
+    field_headings_visible=True)
+  %}
+    {% call summary.row() %}
+      {{ summary.text(framework.name) }}
+      {{ summary.text(framework.status) }}
+    {% endcall %}
+  {% endcall %}
+{% endblock %}
