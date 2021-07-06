@@ -40,7 +40,6 @@ ALL_ADMIN_ROLES = [
 @role_required(*ALL_ADMIN_ROLES)
 def index():
     frameworks = data_api_client.find_frameworks()['frameworks']
-    # TODO replace this temporary fix for DOS2 when a better solution has been created.
     frameworks = [
         fw for fw in frameworks if not (fw['status'] == 'coming' or (
             fw['status'] == 'expired' and fw["family"] != 'digital-outcomes-and-specialists'
