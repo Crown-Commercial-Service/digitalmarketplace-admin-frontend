@@ -267,3 +267,17 @@ class EditSupplierCompanyRegistrationNumberForm(FlaskForm):
             valid = False
 
         return valid
+
+
+class EditFrameworkStatusForm(FlaskForm):
+
+    status = DMRadioField(
+        "Framework status",
+        validators=[
+            validators.InputRequired(message='You must choose a framework status')
+        ],
+        options=[
+            {"value": status, "label": status.capitalize()}
+            for status in ('coming', 'open', 'pending', 'standstill', 'live', 'expired')
+        ],
+    )
