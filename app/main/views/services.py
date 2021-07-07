@@ -77,11 +77,16 @@ def change_framework_status(framework_slug):
     if not framework:
         abort(404, "Framework not found")
 
-    if request.method == "POST":
-        return redirect(url_for('.view_frameworks'))
-
     form = EditFrameworkStatusForm()
-    form.status.data = framework['status']
+
+    if request.method == "POST":
+        status = form.data.get('status')
+
+        data_api_client.update_framework(framework_slug, {"status": status}, user=current_user.email_address)
+
+        return redirect(url_for('.view_frameworks'))
+    else:
+        form.status.data = framework['status']
 
     return render_template(
         "change_framework_status.html",

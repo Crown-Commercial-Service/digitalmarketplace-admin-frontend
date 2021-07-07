@@ -273,6 +273,7 @@ class EditFrameworkStatusForm(FlaskForm):
 
     status = DMRadioField(
         "Framework status",
+        hint="Tell the rest of the team before making a change",
         validators=[
             validators.InputRequired(message='You must choose a framework status')
         ],
