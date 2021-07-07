@@ -1,3 +1,4 @@
+import os
 from functools import partial
 from io import BytesIO
 from itertools import chain
@@ -14,6 +15,26 @@ from lxml import html
 from dmtestutils.fixtures import valid_pdf_bytes
 
 from ...helpers import LoggedInApplicationTest
+
+
+class TestViewFrameworks(LoggedInApplicationTest):
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.services.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    @mock.patch.dict(os.environ, {"DM_ENVIRONMENT": "production"})
+    def test_hidden_in_production(self):
+        response = self.client.get('/admin/frameworks')
+        assert response.status_code == 404
+
+    def test_visible_in_non_production_environments(self):
+        response = self.client.get('/admin/frameworks')
+        assert response.status_code == 200
 
 
 class TestServiceFind(LoggedInApplicationTest):

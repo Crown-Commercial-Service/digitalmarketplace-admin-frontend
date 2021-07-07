@@ -1,3 +1,4 @@
+import os
 from collections import OrderedDict
 from itertools import chain, dropwhile, islice
 
@@ -47,6 +48,21 @@ def index():
     ]
     frameworks = sorted(frameworks, key=lambda x: x['id'], reverse=True)
     return render_template("index.html", frameworks=frameworks)
+
+
+@main.route('/frameworks', methods=['GET'])
+@role_required(*ALL_ADMIN_ROLES)
+def view_frameworks():
+    if os.getenv("DM_ENVIRONMENT") == 'production':
+        abort(404)  # This endpoint isn't safe in production.
+
+    frameworks = data_api_client.find_frameworks()['frameworks']
+    frameworks.sort(key=lambda x: (x['family'], x['id']), reverse=True)
+
+    return render_template(
+        "view_frameworks.html",
+        frameworks=frameworks,
+    )
 
 
 @main.route('/services', methods=['GET'])
