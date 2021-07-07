@@ -73,6 +73,16 @@ class TestChangeFrameworkStatus(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
         assert document.xpath('//input[@value="live"][@checked="checked"]')
 
+    def test_changes_status(self):
+        self.data_api_client.get_framework.return_value = {'frameworks': {'slug': 'foo', 'status': 'live'}}
+
+        response = self.client.post('/admin/frameworks/foo/status', data={"status": "expired"})
+
+        assert response.status_code == 302
+        assert self.data_api_client.update_framework.call_args_list == [
+            mock.call('foo', {'status': 'expired'}, user='test@example.com')
+        ]
+
 
 class TestServiceFind(LoggedInApplicationTest):
 
