@@ -57,7 +57,7 @@ class TestUsersView(LoggedInApplicationTest):
         assert len(document.cssselect(f'.banner-message:contains("{flash_message}")')) == 1
 
         summary_result = "No users to show"
-        assert len(document.cssselect(f'.summary-item-no-content:contains("{summary_result}")')) == 1
+        assert len(document.cssselect(f'.govuk-body:contains("{summary_result}")')) == 1
 
     def test_should_be_a_404_if_no_email_provided(self):
         self.data_api_client.get_user.return_value = None
@@ -69,9 +69,8 @@ class TestUsersView(LoggedInApplicationTest):
         flash_message = "Sorry, we couldn't find an account with that email address"
         assert len(document.cssselect(f'.banner-message:contains("{flash_message}")')) == 1
 
-        page_title = document.xpath(
-            '//p[@class="summary-item-no-content"]//text()')[0].strip()
-        assert page_title == "No users to show"
+        summary_result = "No users to show"
+        assert len(document.cssselect(f'.govuk-body:contains("{summary_result}")')) == 1
 
     def test_should_show_buyer_user(self):
         buyer = self.load_example_listing("user_response")
@@ -84,35 +83,35 @@ class TestUsersView(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
 
         name = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/text()')[0].strip()
+            '//tr[@class="govuk-table__row"]//td/text()')[0].strip()
         assert name == "Test User"
 
         role = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/text()')[1].strip()
+            '//tr[@class="govuk-table__row"]//td/text()')[1].strip()
         assert role == "buyer"
 
         supplier = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/text()')[2].strip()
+            '//tr[@class="govuk-table__row"]//td/text()')[2].strip()
         assert supplier == ''
 
         last_login = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/text()')[3].strip()
+            '//tr[@class="govuk-table__row"]//td/text()')[3].strip()
         assert last_login == '09:33:53'
 
         last_login_day = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/text()')[4].strip()
+            '//tr[@class="govuk-table__row"]//td/text()')[4].strip()
         assert last_login_day == 'Thursday 23 July 2015'
 
         last_password_changed = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/text()')[5].strip()
+            '//tr[@class="govuk-table__row"]//td/text()')[5].strip()
         assert last_password_changed == '12:46:01'
 
         last_password_changed_day = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/text()')[6].strip()
+            '//tr[@class="govuk-table__row"]//td/text()')[6].strip()
         assert last_password_changed_day == 'Monday 29 June 2015'
 
         locked = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/text()')[7].strip()
+            '//tr[@class="govuk-table__row"]//td/text()')[7].strip()
         assert locked == 'No'
 
         button = document.xpath(
@@ -126,15 +125,15 @@ class TestUsersView(LoggedInApplicationTest):
         document = html.fromstring(response.get_data(as_text=True))
 
         role = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/text()')[1].strip()
+            '//tr[@class="govuk-table__row"]//td/text()')[1].strip()
         assert role == "supplier"
 
         supplier = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/a/text()')[0].strip()
+            '//tr[@class="govuk-table__row"]//td/a/text()')[0].strip()
         assert supplier == 'SME Corp UK Limited'
 
         supplier_link = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/a')[0]
+            '//tr[@class="govuk-table__row"]//td/a')[0]
         assert supplier_link.attrib['href'] == '/admin/suppliers?supplier_id=1000'
 
     def test_should_show_unlock_button(self):
@@ -150,9 +149,9 @@ class TestUsersView(LoggedInApplicationTest):
         unlock_button = document.xpath(
             '//button[contains(@class, "govuk-button--secondary")]')[0].text.strip()
         unlock_link = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/form')[0]
+            '//tr[@class="govuk-table__row"]//td/form')[0]
         return_link = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/form/input')[1]
+            '//tr[@class="govuk-table__row"]//td/form/input')[1]
         assert unlock_link.attrib['action'] == '/admin/suppliers/users/999/unlock'
         assert unlock_button == 'Unlock'
         assert return_link.attrib['value'] == '/admin/users?email_address=test.user%40sme.com'
@@ -176,9 +175,9 @@ class TestUsersView(LoggedInApplicationTest):
         deactivate_button = document.xpath(
             '//button[contains(@class, "govuk-button--warning")]')[0].text.strip()
         deactivate_link = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/form')[0]
+            '//tr[@class="govuk-table__row"]//td/form')[0]
         return_link = document.xpath(
-            '//tr[@class="summary-item-row"]//td/span/form/input')[1]
+            '//tr[@class="govuk-table__row"]//td/form/input')[1]
         assert deactivate_link.attrib['action'] == '/admin/suppliers/users/999/deactivate'
         assert deactivate_button == 'Deactivate'
         assert return_link.attrib['value'] == '/admin/users?email_address=test.user%40sme.com'

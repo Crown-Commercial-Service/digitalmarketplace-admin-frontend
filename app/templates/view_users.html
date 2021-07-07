@@ -1,5 +1,3 @@
-{% import "toolkit/summary-table.html" as summary %}
-
 {% extends "_base_page.html" %}
 
 {% block pageTitle %}
@@ -38,54 +36,36 @@
 
   </form>
 
-  {% call(item) summary.list_table(
-    users,
-    caption="Users",
-    empty_message="No users to show",
-    field_headings=[
-        'Name',
-        'Role',
-        'Supplier',
-        'Last login',
-        'Last password change',
-        'Locked',
-        summary.hidden_field_heading("Change status")
-    ],
-    field_headings_visible=True)
-  %}
-    {% call summary.row() %}
-
-      {{ summary.field_name(item.name) }}
-
-      {{ summary.text(item.role) }}
-
-      {% call summary.field() %}
-        {% if item.role == 'supplier' %}
-          <a class="govuk-link" href="{{ url_for('.find_suppliers', supplier_id=item.supplier.supplierId) }}">{{ item.supplier.name }}</a>
+  {% if users %}
+    {% set ns = namespace(rows = []) %}
+    {% for user in users %}
+      {% set supplier %}
+        {% if user.role == 'supplier' %}
+          <a class="govuk-link" href="{{ url_for('.find_suppliers', supplier_id=user.supplier.supplierId) }}">{{ user.supplier.name }}</a>
         {% endif %}
-      {% endcall %}
+      {% endset %}
 
-      {% call summary.field() %}
-        {% if item.loggedInAt %}
-          {{ item.loggedInAt|timeformat }}<br/>
-          {{ item.loggedInAt|dateformat }}
+      {% set logged_in_at %}
+        {% if user.loggedInAt %}
+          {{ user.loggedInAt|timeformat }}<br/>
+          {{ user.loggedInAt|dateformat }}
         {% else %}
           Never
         {% endif %}
-      {% endcall %}
+      {% endset %}
 
-      {% call summary.field() %}
-        {% if item.passwordChangedAt %}
-          {{ item.passwordChangedAt|timeformat }}<br/>
-          {{ item.passwordChangedAt|dateformat }}
+      {% set password_changed_at %}
+        {% if user.passwordChangedAt %}
+          {{ user.passwordChangedAt|timeformat }}<br/>
+          {{ user.passwordChangedAt|dateformat }}
         {% else %}
           Never
         {% endif %}
-      {% endcall %}
+      {% endset %}
 
-      {% call summary.field() %}
-        {% if item.locked and current_user.has_any_role('admin', 'admin-ccs-category') and not item.personalDataRemoved %}
-          <form action="{{ url_for('.unlock_user', user_id=item.id) }}" method="post">
+      {% set locked %}
+        {% if user.locked and current_user.has_any_role('admin', 'admin-ccs-category') and not user.personalDataRemoved %}
+          <form action="{{ url_for('.unlock_user', user_id=user.id) }}" method="post">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <input type="hidden" name="source" value="{{ url_for('.find_user_by_email_address', email_address=email_address) }}"/>
             {{ govukButton({
@@ -93,17 +73,17 @@
               "text": "Unlock"
             }) }}
           </form>
-        {% elif item.locked %}
+        {% elif user.locked %}
           Yes
         {% else %}
           No
         {% endif %}
-      {% endcall %}
+      {% endset %}
 
-      {% call summary.field() %}
-        {% if item.active %}
+      {% set change_status %}
+        {% if user.active %}
           {% if current_user.has_any_role('admin', 'admin-ccs-category') %}
-            <form action="{{ url_for('.deactivate_user', user_id=item.id) }}" method="post">
+            <form action="{{ url_for('.deactivate_user', user_id=user.id) }}" method="post">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               <input type="hidden" name="source" value="{{ url_for('.find_user_by_email_address', email_address=email_address) }}"/>
               {{ govukButton({
@@ -115,8 +95,8 @@
             Active
           {% endif %}
         {% else %}
-          {% if current_user.has_any_role('admin', 'admin-ccs-category') and not item.personalDataRemoved %}
-            <form action="{{ url_for('.activate_user', user_id=item.id) }}" method="post">
+          {% if current_user.has_any_role('admin', 'admin-ccs-category') and not user.personalDataRemoved %}
+            <form action="{{ url_for('.activate_user', user_id=user.id) }}" method="post">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               <input type="hidden" name="source" value="{{ url_for('.find_user_by_email_address', email_address=email_address) }}"/>
               {{ govukButton({
@@ -128,8 +108,35 @@
             Deactivated
           {% endif %}
         {% endif %}
-      {% endcall %}
+      {% endset %}
 
-    {% endcall %}
-  {% endcall %}
+      {% set row = ns.rows.append(
+        [
+          {"text": user.name},
+          {"text": user.role},
+          {"html": supplier},
+          {"html": logged_in_at},
+          {"html": password_changed_at},
+          {"html": locked},
+          {"html": change_status},
+        ]
+      ) %}
+    {% endfor %}
+
+    {{ govukTable({
+      'head': [
+        {'text': 'Name'},
+        {'text': 'Role'},
+        {'text': 'Supplier'},
+        {'text': 'Last login'},
+        {'text': 'Last password change'},
+        {'text': 'Locked'},
+        {'text': 'Change status'},
+      ],
+      'rows': ns.rows,
+      "classes": "dm-table govuk-!-margin-bottom-6",
+    }) }}
+  {% else %}
+    <p class="govuk-body">No users to show</p>
+  {% endif %}
 {% endblock %}
