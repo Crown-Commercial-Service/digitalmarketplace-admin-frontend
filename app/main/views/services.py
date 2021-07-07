@@ -14,6 +14,7 @@ from flask_login import current_user
 
 from .. import main
 from ..auth import role_required
+from ..forms import EditFrameworkStatusForm
 from ..helpers.diff_tools import html_diff_tables_from_sections_iter
 from ..helpers.frameworks import get_framework_or_404
 from ... import content_loader
@@ -62,6 +63,30 @@ def view_frameworks():
     return render_template(
         "view_frameworks.html",
         frameworks=frameworks,
+    )
+
+
+@main.route('/frameworks/<framework_slug>/status', methods=['GET', 'POST'])
+@role_required(*ALL_ADMIN_ROLES)
+def change_framework_status(framework_slug):
+    if os.getenv("DM_ENVIRONMENT") == 'production':
+        abort(404)  # This endpoint isn't safe in production.
+
+    framework = data_api_client.get_framework(framework_slug)['frameworks']
+
+    if not framework:
+        abort(404, "Framework not found")
+
+    if request.method == "POST":
+        return redirect(url_for('.view_frameworks'))
+
+    form = EditFrameworkStatusForm()
+    form.status.data = framework['status']
+
+    return render_template(
+        "change_framework_status.html",
+        form=form,
+        framework=framework,
     )
 
 

@@ -29,12 +29,14 @@
     field_headings=[
         'Name',
         'Status',
+        summary.hidden_field_heading("Change status"),
     ],
     field_headings_visible=True)
   %}
     {% call summary.row() %}
       {{ summary.text(framework.name) }}
       {{ summary.text(framework.status) }}
+      {{ summary.edit_link(label="Change", link=url_for(".change_framework_status", framework_slug=framework.slug), hidden_text=framework.name) }}
     {% endcall %}
   {% endcall %}
 {% endblock %}
