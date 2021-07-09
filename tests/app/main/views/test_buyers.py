@@ -100,9 +100,10 @@ class TestBuyersView(LoggedInApplicationTest):
         response = self.client.get('/admin/buyers?brief_id=1')
 
         document = html.fromstring(response.get_data(as_text=True))
-        name = document.xpath('//td[@class="summary-item-field-first"]//text()')[1].strip()
-        email = document.xpath('//td[@class="summary-item-field"]//text()')[1].strip()
-        phone = document.xpath('//td[@class="summary-item-field"]//text()')[4].strip()
+        [name, email, phone] = [
+            field.xpath("normalize-space(string())")
+            for field in document.xpath('//td[@class="summary-item-field"]/span')
+        ]
 
         assert name == "Test Buyer"
         assert email == "test_buyer@example.com"

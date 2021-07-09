@@ -82,36 +82,16 @@ class TestUsersView(LoggedInApplicationTest):
 
         document = html.fromstring(response.get_data(as_text=True))
 
-        name = document.xpath(
-            '//tr[@class="govuk-table__row"]//td/text()')[0].strip()
+        [name, role, supplier, last_login, last_password_changed, locked, _button_text] = [
+            field.xpath("normalize-space(string())")
+            for field in document.xpath('//tr[@class="govuk-table__row"]//td')
+        ]
+
         assert name == "Test User"
-
-        role = document.xpath(
-            '//tr[@class="govuk-table__row"]//td/text()')[1].strip()
         assert role == "buyer"
-
-        supplier = document.xpath(
-            '//tr[@class="govuk-table__row"]//td/text()')[2].strip()
         assert supplier == ''
-
-        last_login = document.xpath(
-            '//tr[@class="govuk-table__row"]//td/text()')[3].strip()
-        assert last_login == '09:33:53'
-
-        last_login_day = document.xpath(
-            '//tr[@class="govuk-table__row"]//td/text()')[4].strip()
-        assert last_login_day == 'Thursday 23 July 2015'
-
-        last_password_changed = document.xpath(
-            '//tr[@class="govuk-table__row"]//td/text()')[5].strip()
-        assert last_password_changed == '12:46:01'
-
-        last_password_changed_day = document.xpath(
-            '//tr[@class="govuk-table__row"]//td/text()')[6].strip()
-        assert last_password_changed_day == 'Monday 29 June 2015'
-
-        locked = document.xpath(
-            '//tr[@class="govuk-table__row"]//td/text()')[7].strip()
+        assert last_login == '09:33:53 Thursday 23 July 2015'
+        assert last_password_changed == '12:46:01 Monday 29 June 2015'
         assert locked == 'No'
 
         button = document.xpath(
@@ -124,16 +104,11 @@ class TestUsersView(LoggedInApplicationTest):
 
         document = html.fromstring(response.get_data(as_text=True))
 
-        role = document.xpath(
-            '//tr[@class="govuk-table__row"]//td/text()')[1].strip()
-        assert role == "supplier"
+        role = document.xpath('//tr[@class="govuk-table__row"]//td')[1]
+        assert role.xpath("normalize-space(string())") == "supplier"
 
-        supplier = document.xpath(
-            '//tr[@class="govuk-table__row"]//td/a/text()')[0].strip()
-        assert supplier == 'SME Corp UK Limited'
-
-        supplier_link = document.xpath(
-            '//tr[@class="govuk-table__row"]//td/a')[0]
+        supplier_link = document.xpath('//tr[@class="govuk-table__row"]//td/a')[1]
+        assert supplier_link.xpath("normalize-space(string())") == 'SME Corp UK Limited'
         assert supplier_link.attrib['href'] == '/admin/suppliers?supplier_id=1000'
 
     def test_should_show_unlock_button(self):

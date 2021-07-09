@@ -44,7 +44,13 @@
     %}
       {% call summary.row() %}
 
-        {{ summary.field_name(item.name) }}
+        {% call summary.field() %}
+          {% if current_user.has_any_role('admin') %}
+            <a class="govuk-link" href="{{ url_for('.change_user_name', user_id=item.id) }}">{{ item.name }}</a>
+          {% else %}
+            {{ item.name }}
+          {% endif %}
+        {% endcall %}
 
         {{ summary.text(item.emailAddress) }}
 
