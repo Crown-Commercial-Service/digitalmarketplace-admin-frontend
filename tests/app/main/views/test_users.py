@@ -203,6 +203,52 @@ class TestUsersView(LoggedInApplicationTest):
         assert document.xpath('//button[contains(text(), "Activate")]')
 
 
+class TestChangeUserName(LoggedInApplicationTest):
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.data_api_client_patch = mock.patch('app.main.views.users.data_api_client', autospec=True)
+        self.data_api_client = self.data_api_client_patch.start()
+        self.data_api_client.get_user.return_value = self.load_example_listing("user_response")
+
+    def teardown_method(self, method):
+        self.data_api_client_patch.stop()
+        super().teardown_method(method)
+
+    @pytest.mark.parametrize("role,expected_code", [
+        ("admin", 200),
+        ("admin-ccs-category", 403),
+        ("admin-ccs-sourcing", 403),
+        ("admin-manager", 403),
+        ("admin-framework-manager", 403),
+        ("admin-ccs-data-controller", 403),
+    ])
+    def test_page_is_only_accessible_to_specific_user_role(self, role, expected_code):
+        self.user_role = role
+        response = self.client.get('/admin/users/12345/name')
+        actual_code = response.status_code
+        assert actual_code == expected_code, f"Unexpected response {actual_code} for role {role}"
+
+    def test_shows_current_name(self):
+        response = self.client.get('/admin/users/12345/name')
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert document.xpath('//input[@name="name"][@value="Test User"]')
+
+    def test_changes_name(self):
+        response = self.client.post('/admin/users/12345/name', data={"name": "New name"})
+
+        assert response.status_code == 200
+        assert self.data_api_client.update_user.call_args_list == [
+            mock.call(12345, name='New name', updater='test@example.com')
+        ]
+
+    @pytest.mark.parametrize('name', ["", "a" * 1000])
+    def test_reject_invalid_names(self, name):
+        response = self.client.post('/admin/users/12345/name', data={"name": name})
+
+        assert response.status_code == 400
+
+
 @mock.patch('app.main.views.users.s3')
 class TestUserListPage(LoggedInApplicationTest):
     user_role = 'admin-framework-manager'
