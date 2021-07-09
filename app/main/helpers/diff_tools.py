@@ -3,7 +3,6 @@ from itertools import chain
 
 from dmcontent.questions import Multiquestion
 from flask import Markup, render_template
-from flask._compat import string_types
 from lxml import html
 
 
@@ -49,7 +48,7 @@ def html_diff_tables_from_sections_iter(
 
 
 def _get_value_for_difflib(thing):
-    if isinstance(thing, string_types):
+    if isinstance(thing, str):
         return thing.splitlines()
     elif isinstance(thing, bool):
         return ["{}".format(thing)]
