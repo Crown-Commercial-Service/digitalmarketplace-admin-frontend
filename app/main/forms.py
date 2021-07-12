@@ -276,7 +276,7 @@ class EditFrameworkStatusForm(FlaskForm):
         label="Framework status",
         description="Tell the rest of the team before making a change",
         validators=[
-            validators.InputRequired(message='You must choose a framework status')
+            validators.InputRequired(message='Select a framework status')
         ],
         choices=[
             (status, status.capitalize())
