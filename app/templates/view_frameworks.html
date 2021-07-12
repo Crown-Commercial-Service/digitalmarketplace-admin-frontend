@@ -1,5 +1,4 @@
 {% extends "_base_page.html" %}
-{% import "toolkit/summary-table.html" as summary %}
 
 {% block pageTitle %}
   View frameworks - Digital Marketplace admin
@@ -22,21 +21,27 @@
 {% block mainContent %}
   <h1 class="govuk-heading-xl">Frameworks</h1>
 
-  {% call(framework) summary.list_table(
-    frameworks,
-    caption="Frameworks",
-    empty_message="No frameworks to show",
-    field_headings=[
-        'Name',
-        'Status',
-        summary.hidden_field_heading("Change status"),
-    ],
-    field_headings_visible=True)
-  %}
-    {% call summary.row() %}
-      {{ summary.text(framework.name) }}
-      {{ summary.text(framework.status) }}
-      {{ summary.edit_link(label="Change", link=url_for(".change_framework_status", framework_slug=framework.slug), hidden_text=framework.name) }}
-    {% endcall %}
-  {% endcall %}
+    {% set ns = namespace(rows = []) %}
+    {% for framework in frameworks %}
+      {% set change_link %}
+        <a class="govuk-link" href="{{ url_for('.change_framework_status', framework_slug=framework.slug) }}">Change<span class="govuk-visually-hidden"> status of {{ framework.name }}</span></a>
+      {% endset %}
+
+      {% set row = ns.rows.append(
+        [
+          {"text": framework.name},
+          {"text": framework.status},
+          {"html": change_link},
+        ]
+      ) %}
+    {% endfor %}
+
+    {{ govukTable({
+      'head': [
+        {'text': 'Name'},
+        {'text': 'Status'},
+        {'html': '<span class="govuk-visually-hidden">Change status</span>'},
+      ],
+      'rows': ns.rows,
+    }) }}
 {% endblock %}
