@@ -7,7 +7,7 @@ from dmutils.forms.fields import DMRadioField, DMStripWhitespaceStringField
 
 from flask import current_app
 from flask_wtf import FlaskForm
-from wtforms import validators
+from wtforms import validators, RadioField
 from wtforms.validators import DataRequired, AnyOf, InputRequired, Length, Optional, Regexp, ValidationError
 
 from .. import data_api_client
@@ -271,14 +271,21 @@ class EditSupplierCompanyRegistrationNumberForm(FlaskForm):
 
 class EditFrameworkStatusForm(FlaskForm):
 
-    status = DMRadioField(
-        "Framework status",
-        hint="Tell the rest of the team before making a change",
+    status = RadioField(
+        id="input-status-1",  # TODO: change to input-copy_service when on govuk-frontend~3
+        label="Framework status",
+        description="Tell the rest of the team before making a change",
         validators=[
             validators.InputRequired(message='You must choose a framework status')
         ],
-        options=[
-            {"value": status, "label": status.capitalize()}
+        choices=[
+            (status, status.capitalize())
             for status in ('coming', 'open', 'pending', 'standstill', 'live', 'expired')
         ],
     )
+
+    def items(self):
+        return [
+            {"value": value, "text": label, "checked": checked}
+            for value, label, checked in self.status.iter_choices()
+        ]
