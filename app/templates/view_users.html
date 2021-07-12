@@ -88,7 +88,7 @@
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               <input type="hidden" name="source" value="{{ url_for('.find_user_by_email_address', email_address=email_address) }}"/>
               {{ govukButton({
-                "classes": "govuk-button--warning",
+                "classes": "govuk-button--warning govuk-!-margin-bottom-0",
                 "text": "Deactivate"
               }) }}
             </form>
@@ -101,7 +101,7 @@
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               <input type="hidden" name="source" value="{{ url_for('.find_user_by_email_address', email_address=email_address) }}"/>
               {{ govukButton({
-                "classes": "govuk-button--secondary",
+                "classes": "govuk-button--secondary govuk-!-margin-bottom-0",
                 "text": "Activate"
               }) }}
             </form>
