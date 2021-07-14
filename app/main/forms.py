@@ -289,3 +289,17 @@ class EditFrameworkStatusForm(FlaskForm):
             {"value": value, "text": label, "checked": checked}
             for value, label, checked in self.status.iter_choices()
         ]
+
+
+class EditUserNameForm(FlaskForm):
+    """
+    This is a copy of the `name` form in `CreateUserForm` in user-frontend.
+    """
+    name = DMStripWhitespaceStringField('User name', validators=[
+        DataRequired(message="Enter the user's name"),
+        Length(
+            min=1,
+            max=255,
+            message="The user's name must be between 1 and 255 characters"
+        )
+    ])

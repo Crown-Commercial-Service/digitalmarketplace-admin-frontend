@@ -3,8 +3,11 @@ from datetime import datetime
 from dmutils import s3
 from dmutils.documents import get_signed_url
 from dmutils.flask import timed_render_template as render_template
+from dmutils.forms.errors import get_errors_from_wtform
 from flask import abort, current_app, flash, redirect, request, Response, url_for
+from flask_login import current_user
 
+from ..forms import EditUserNameForm
 from ..helpers.user_downloads import generate_user_csv
 from .. import main
 from ..auth import role_required
@@ -33,6 +36,31 @@ def find_user_by_email_address():
         users=[users['users']] if users else list(),
         email_address=email_address
     ), response_code
+
+
+@main.route('/users/<int:user_id>/name', methods=['GET', 'POST'])
+@role_required('admin')
+def change_user_name(user_id):
+    user = data_api_client.get_user(user_id)['users']
+
+    if not user:
+        abort(404, "User not found")
+
+    form = EditUserNameForm()
+
+    if form.validate_on_submit():
+        name = form.data.get('name')
+        user = data_api_client.update_user(user_id, name=name, updater=current_user.email_address)['users']
+
+    form.name.data = user['name']
+    errors = get_errors_from_wtform(form)
+
+    return render_template(
+        "change_user_name.html",
+        form=form,
+        user=user,
+        errors=errors,
+    ), 200 if not errors else 400
 
 
 @main.route('/frameworks/<framework_slug>/users', methods=['GET'])

@@ -40,6 +40,15 @@
   {% if users %}
     {% set ns = namespace(rows = []) %}
     {% for user in users %}
+
+      {% set name %}
+        {% if current_user.has_any_role('admin') %}
+          <a class="govuk-link" href="{{ url_for('.change_user_name', user_id=user.id) }}">{{ user.name }}</a>
+        {% else %}
+          {{ user.name }}
+        {% endif %}
+      {% endset %}
+
       {% set supplier %}
         {% if user.role == 'supplier' %}
           <a class="govuk-link" href="{{ url_for('.find_suppliers', supplier_id=user.supplier.supplierId) }}">{{ user.supplier.name }}</a>
@@ -113,7 +122,7 @@
 
       {% set row = ns.rows.append(
         [
-          {"text": user.name},
+          {"html": name},
           {"text": user.role},
           {"html": supplier},
           {"html": logged_in_at},

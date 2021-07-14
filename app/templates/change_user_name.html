@@ -1,0 +1,57 @@
+{% extends "_base_page.html" %}
+
+{% block pageTitle %}
+  Change user name – {{ user.name }} – Digital Marketplace admin
+{% endblock %}
+
+{% block breadcrumbs %}
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Admin home",
+        "href": url_for('.index')
+      },
+      {
+        "text": "Change user name"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" action="{{ url_for('.change_user_name', user_id=user.id) }}" novalidate>
+        <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+
+        {% set label %}
+          Update user name for ‘{{user.name}}’
+        {% endset %}
+
+        {% set hint %}
+          For the {{user.role}} with email address ‘{{user.emailAddress}}’.
+        {% endset %}
+
+        {{ govukInput({
+          "label": {
+            "text": label,
+            "classes": "govuk-label--xl",
+            "attributes": {"id": form.name.name},
+            "isPageHeading": true
+          },
+          "hint": {
+            "text": hint
+          },
+          "id": "input-" + form.name.name,
+          "name": form.name.name,
+          "errorMessage": errors.name.errorMessage if errors.name.errorMessage,
+          "value": form.name.data if form.name.data
+        })}}
+
+        {{ govukButton({
+          "text": "Save"
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}
