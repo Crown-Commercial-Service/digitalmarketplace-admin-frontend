@@ -111,6 +111,12 @@ class TestUsersView(LoggedInApplicationTest):
         assert supplier_link.xpath("normalize-space(string())") == 'SME Corp UK Limited'
         assert supplier_link.attrib['href'] == '/admin/suppliers?supplier_id=1000'
 
+    def test_should_strip_whitespace(self):
+        response_with_whitespace = self.client.get('/admin/users?email_address=+test.user@sme.com+')
+        assert response_with_whitespace.status_code == 200
+        response_without_whitespace = self.client.get('/admin/users?email_address=test.user@sme.com')
+        assert response_with_whitespace.get_data(as_text=True) == response_without_whitespace.get_data(as_text=True)
+
     def test_should_show_unlock_button(self):
         buyer = self.load_example_listing("user_response")
         buyer['users']['locked'] = True

@@ -24,7 +24,7 @@ def find_user_by_email_address():
     response_code = 200
 
     if "email_address" in request.args:
-        email_address = request.args.get("email_address")
+        email_address = request.args["email_address"].strip()
         if email_address:
             users = data_api_client.get_user(email_address=email_address)
         if not users:
