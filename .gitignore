@@ -69,3 +69,5 @@ app/static
 
 # local environment customizations
 local.nix
+
+.idea/
