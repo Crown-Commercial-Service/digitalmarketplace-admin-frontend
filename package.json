@@ -32,6 +32,6 @@
     "test": "standard gulpfile.js"
   },
   "devDependencies": {
-    "standard": "^16.0.4"
+    "standard": "^17.0.0"
   }
 }
