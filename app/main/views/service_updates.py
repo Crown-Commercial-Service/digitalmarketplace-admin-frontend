@@ -1,6 +1,8 @@
 from dmapiclient.audit import AuditTypes
+from dmutils import s3
+from dmutils.documents import get_signed_url
 from dmutils.flask import timed_render_template as render_template
-from flask import abort, flash, redirect, url_for
+from flask import abort, flash, redirect, url_for, current_app
 from flask_login import current_user
 
 from .. import main
@@ -46,3 +48,15 @@ def submit_service_update_approval(service_id, audit_id):
     )
     flash(APPROVED_SERVICE_EDITS_MESSAGE.format(service_id=service_id))
     return redirect(url_for('.service_update_audits'))
+
+
+@main.route('/services/updates/approved/<date>', methods=['GET'])
+@role_required('admin-ccs-category')
+def download_approved_service_edits(date):
+    reports_bucket = s3.S3(
+        current_app.config['DM_REPORTS_BUCKET'], endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")
+    )
+
+    path = f"reports/approved-service-edits-{date}.csv"
+    url = get_signed_url(reports_bucket, path, current_app.config['DM_ASSETS_URL']) or abort(404)
+    return redirect(url)

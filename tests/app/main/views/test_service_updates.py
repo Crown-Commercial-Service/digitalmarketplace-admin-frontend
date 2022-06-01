@@ -200,3 +200,20 @@ class TestServiceUpdates(LoggedInApplicationTest):
         self.data_api_client.get_audit_event.side_effect = lambda audit_event_id: {123: audit_event}[audit_event_id]
         response = self.client.post('/admin/services/321/updates/123/approve')
         assert response.status_code == 404
+
+    @mock.patch('app.main.views.service_updates.s3')
+    @mock.patch('app.main.views.service_updates.get_signed_url')
+    def test_report_download_redirects_to_s3(self, get_signed_url, s3):
+        get_signed_url.return_value = 'http://asseturl/path/to/csv?querystring'
+        self.app.config['DM_ASSETS_URL'] = 'http://example.com'
+
+        response = self.client.get('/admin/services/updates/approved/2022-06')
+        assert response.status_code == 302
+
+        assert get_signed_url.call_args_list == [
+            mock.call(
+                s3.S3.return_value,
+                "reports/approved-service-edits-2022-06.csv",
+                'http://example.com'
+            ),
+        ]
