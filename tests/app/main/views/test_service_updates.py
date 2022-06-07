@@ -213,7 +213,7 @@ class TestServiceUpdates(LoggedInApplicationTest):
         assert get_signed_url.call_args_list == [
             mock.call(
                 s3.S3.return_value,
-                "reports/approved-service-edits-2022-06.csv",
+                "common/reports/approved-service-edits-2022-06.csv",
                 'http://example.com'
             ),
         ]

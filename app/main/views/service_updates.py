@@ -57,6 +57,6 @@ def download_approved_service_edits(date):
         current_app.config['DM_REPORTS_BUCKET'], endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")
     )
 
-    path = f"reports/approved-service-edits-{date}.csv"
+    path = f"common/reports/approved-service-edits-{date}.csv"
     url = get_signed_url(reports_bucket, path, current_app.config['DM_ASSETS_URL']) or abort(404)
     return redirect(url)
