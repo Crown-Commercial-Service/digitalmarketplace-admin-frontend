@@ -2215,6 +2215,16 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         self.data_api_client.set_supplier_declaration.assert_called_once_with(
             1234, 'g-cloud-7', declaration, 'test@example.com')
 
+    def test_should_fail_if_validation_error(self):
+        self.data_api_client.set_supplier_declaration.side_effect = HTTPError(None, {'PR1': 'required'})
+
+        response = self.client.post(
+            '/admin/suppliers/1234/edit/declarations/g-cloud-7/g-cloud-7-essentials',
+            data={'PR1': None})
+
+        assert response.status_code == 400
+        assert 'There was a problem with the answer to this question' in response.get_data(as_text=True)
+
 
 @mock.patch('app.main.views.suppliers.download_agreement_file')
 class TestDownloadSignedAgreementFile(LoggedInApplicationTest):
