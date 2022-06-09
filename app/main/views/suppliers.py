@@ -13,7 +13,7 @@ from dmutils.documents import (
     AGREEMENT_FILENAME, COUNTERPART_FILENAME,
     file_is_pdf, get_document_path, get_extension, get_signed_url,
     generate_timestamped_document_upload_path, degenerate_document_path_and_return_doc_name,
-    generate_download_filename)
+    generate_download_filename, upload_declaration_documents)
 from dmutils.email import send_user_account_email
 from dmutils.flask import timed_render_template as render_template
 from dmutils.forms.errors import govuk_errors
@@ -705,9 +705,28 @@ def update_supplier_declaration_section(supplier_id, framework_slug, section_id)
     if section is None:
         abort(404)
 
+    errors = None
     posted_data = section.get_data(request.form)
 
-    if section.has_changes_to_save(declaration, posted_data):
+    uploaded_documents, document_errors = upload_declaration_documents(
+        uploader=s3.S3(
+            current_app.config['DM_S3_DOCUMENT_BUCKET'],
+            endpoint_url=current_app.config.get("DM_S3_ENDPOINT_URL")
+        ),
+        upload_type='documents',
+        documents_url=current_app.config['DM_ASSETS_URL'],
+        request_files=request.files,
+        section=section,
+        framework_slug=framework_slug,
+        supplier_id=supplier_id,
+    )
+
+    if document_errors:
+        errors = section.get_error_messages(document_errors)
+    else:
+        posted_data.update(uploaded_documents)
+
+    if not errors and section.has_changes_to_save(declaration, posted_data):
         declaration.update(posted_data)
         try:
             data_api_client.set_supplier_declaration(
@@ -715,14 +734,16 @@ def update_supplier_declaration_section(supplier_id, framework_slug, section_id)
                 current_user.email_address)
         except HTTPError as e:
             errors = section.get_error_messages(e.message)
-            return render_template(
-                "suppliers/edit_declaration.html",
-                supplier=data_api_client.get_supplier(supplier_id)['suppliers'],
-                framework=framework,
-                declaration=section.unformat_data(dict(declaration, **posted_data)),
-                section=section,
-                errors=govuk_errors(errors),
-            ), 400
+
+    if errors:
+        return render_template(
+            "suppliers/edit_declaration.html",
+            supplier=data_api_client.get_supplier(supplier_id)['suppliers'],
+            framework=framework,
+            declaration=section.unformat_data(dict(declaration, **posted_data)),
+            section=section,
+            errors=govuk_errors(errors),
+        ), 400
 
     return redirect(url_for('.view_supplier_declaration',
                             supplier_id=supplier_id, framework_slug=framework_slug))

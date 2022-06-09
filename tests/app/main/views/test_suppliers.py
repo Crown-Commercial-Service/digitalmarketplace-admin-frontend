@@ -2225,6 +2225,18 @@ class TestEditingASupplierDeclaration(LoggedInApplicationTest):
         assert response.status_code == 400
         assert 'There was a problem with the answer to this question' in response.get_data(as_text=True)
 
+    def test_should_upload_file(self):
+        response = self.client.post(
+            '/admin/suppliers/1234/edit/declarations/g-cloud-12/modern-slavery',
+            data={'modernSlaveryStatement': (BytesIO(valid_pdf_bytes), 'test.pdf')},
+        )
+
+        assert response.status_code == 302
+        self.data_api_client.set_supplier_declaration.assert_called_once()
+        assert self.data_api_client.set_supplier_declaration.call_args.args[2]['modernSlaveryStatement'] == \
+            'https://assets.test.digitalmarketplace.service.gov.uk/g-cloud-12/documents/1234/' \
+            'modern-slavery-statement-2015-01-01-1200.pdf'
+
 
 @mock.patch('app.main.views.suppliers.download_agreement_file')
 class TestDownloadSignedAgreementFile(LoggedInApplicationTest):
