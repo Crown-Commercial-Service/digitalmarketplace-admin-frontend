@@ -478,6 +478,50 @@
       "slug": "g-cloud-11",
       "status": "open",
       "variations": {}
+    },
+    {
+      "allow_declaration_reuse": false,
+      "application_close_date": null,
+      "clarificationQuestionsOpen": true,
+      "countersignerName": null,
+      "framework": "g-cloud",
+      "family": "g-cloud",
+      "frameworkAgreementDetails": {},
+      "frameworkAgreementVersion": null,
+      "id": 12,
+      "lots": [
+        {
+          "allowsBrief": false,
+          "id": 9,
+          "name": "Cloud hosting",
+          "oneServiceLimit": false,
+          "slug": "cloud-hosting",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 10,
+          "name": "Cloud software",
+          "oneServiceLimit": false,
+          "slug": "cloud-software",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        },
+        {
+          "allowsBrief": false,
+          "id": 11,
+          "name": "Cloud support",
+          "oneServiceLimit": false,
+          "slug": "cloud-support",
+          "unitPlural": "services",
+          "unitSingular": "service"
+        }
+      ],
+      "name": "G-Cloud 12",
+      "slug": "g-cloud-12",
+      "status": "open",
+      "variations": {}
     }
   ]
 }
