@@ -33,7 +33,11 @@
       <div class="govuk-grid-column-two-thirds">
        <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
         {% for question in section.questions %}
-          {{ forms[question.type](question, declaration, {}) }}
+          {% if errors and errors[question.id] or question.type == 'multiquestion' %}
+            {{ forms[question.type](question, declaration, errors) }}
+          {% else %}
+            {{ forms[question.type](question, declaration, {}) }}
+          {% endif %}
         {% endfor %}
 
         {{ govukButton({

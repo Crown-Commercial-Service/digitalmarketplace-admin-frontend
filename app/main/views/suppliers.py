@@ -16,6 +16,7 @@ from dmutils.documents import (
     generate_download_filename)
 from dmutils.email import send_user_account_email
 from dmutils.flask import timed_render_template as render_template
+from dmutils.forms.errors import govuk_errors
 from dmutils.forms.helpers import get_errors_from_wtform
 from dmutils.formats import datetimeformat
 from dmutils.urls import rewrite_supplier_asset_path
@@ -708,9 +709,20 @@ def update_supplier_declaration_section(supplier_id, framework_slug, section_id)
 
     if section.has_changes_to_save(declaration, posted_data):
         declaration.update(posted_data)
-        data_api_client.set_supplier_declaration(
-            supplier_id, framework_slug, declaration,
-            current_user.email_address)
+        try:
+            data_api_client.set_supplier_declaration(
+                supplier_id, framework_slug, declaration,
+                current_user.email_address)
+        except HTTPError as e:
+            errors = section.get_error_messages(e.message)
+            return render_template(
+                "suppliers/edit_declaration.html",
+                supplier=data_api_client.get_supplier(supplier_id)['suppliers'],
+                framework=framework,
+                declaration=section.unformat_data(dict(declaration, **posted_data)),
+                section=section,
+                errors=govuk_errors(errors),
+            ), 400
 
     return redirect(url_for('.view_supplier_declaration',
                             supplier_id=supplier_id, framework_slug=framework_slug))
