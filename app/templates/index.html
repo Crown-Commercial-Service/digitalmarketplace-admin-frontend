@@ -149,14 +149,12 @@
         <h2 class="govuk-heading-l">Manage applications</h2>
 
         {% for framework in frameworks %}
-          {% if framework.status in ["standstill", "live"] or
-              (framework.family == 'digital-outcomes-and-specialists' and framework.status == 'expired') or
-                current_user.has_any_role('admin-framework-manager', 'admin-ccs-sourcing') %}
+          {% if framework.status in ["standstill", "live", "expired"] or
+              current_user.has_any_role('admin-framework-manager', 'admin-ccs-sourcing') %}
             <h3 class="govuk-heading-m">{{framework.name}}</h3>
 
             <ul class="govuk-list">
-              {% if framework.status in ["live", "standstill"] or
-                  (framework.family == 'digital-outcomes-and-specialists' and framework.status == 'expired') %}
+              {% if framework.status in ["live", "standstill", "expired"] %}
                 <li>
                   <a class="govuk-link" href="{{ url_for('.list_agreements', framework_slug=framework['slug'], status='signed') }}">
                     View supplier framework agreements

@@ -250,9 +250,9 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         ('pending', True),
         ('standstill', True),
         ('live', True),
-        ('expired', False),
+        ('expired', True),
     ])
-    def test_framework_action_lists_not_shown_for_expired_frameworks(
+    def test_framework_action_lists_not_shown_for_coming_framework(
         self, framework_status, header_shown
     ):
         self.data_api_client.find_frameworks.return_value = self._get_mock_framework_response(framework_status)
@@ -264,26 +264,48 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
 
         assert bool(document.xpath('.//h3[contains(text(),"Amazing Digital Framework")]')) == header_shown
 
-    @pytest.mark.parametrize('family,should_be_shown', (
-        ('g-cloud', False),
-        ('digital-outcomes-and-specialists', True),
-    ))
-    def test_dos_only_expired_framework_action_lists_shown_for(self, family, should_be_shown):
-        self.data_api_client.find_frameworks.return_value = {'frameworks': [FrameworkStub(
-            status='expired',
-            slug=f'flim-flam-3',
-            family=family,
-            name=f'Flim Flam Framework 3',
-        ).response()]}
+    def test_show_all_expired_dos_frameworks(self):
+        framework_names = [f"framework-{n}" for n in range(10)]
+        self.data_api_client.find_frameworks.return_value = {'frameworks': [
+            FrameworkStub(
+                status='expired',
+                family='digital-outcomes-and-specialists',
+                slug=f,
+                name=f,
+            ).response()
+            for f in framework_names
+        ]}
 
-        self.user_role = "admin-framework-manager"
+        self.user_role = "admin-ccs-category"
         response = self.client.get('/admin')
         assert response.status_code == 200
         document = html.fromstring(response.get_data(as_text=True))
 
-        assert bool(
-            document.xpath(f'.//h3[contains(text(),"Flim Flam Framework 3")]')
-        ) == should_be_shown
+        for f in framework_names:
+            assert document.xpath(f'.//h3[contains(text(),"{f}")]')
+
+    def test_show_two_most_recent_other_frameworks(self):
+        self.data_api_client.find_frameworks.return_value = {'frameworks': [
+            FrameworkStub(
+                id=n,
+                status='expired',
+                family='g-cloud',
+                slug=f"framework-{n}",
+                name=f"framework-{n}",
+            ).response()
+            for n in range(10)
+        ]}
+
+        self.user_role = "admin-ccs-category"
+        response = self.client.get('/admin')
+        assert response.status_code == 200
+        document = html.fromstring(response.get_data(as_text=True))
+
+        assert document.xpath(f'.//h3[contains(text(),"framework-9")]')
+        assert document.xpath(f'.//h3[contains(text(),"framework-8")]')
+
+        for n in range(8):
+            assert not document.xpath(f'.//h3[contains(text(),"framework-{n}")]')
 
     @pytest.mark.parametrize('framework_status, header_shown', [
         ('coming', False),
@@ -291,9 +313,9 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         ('pending', False),
         ('standstill', True),
         ('live', True),
-        ('expired', False),
+        ('expired', True),
     ])
-    def test_framework_action_lists_only_shown_when_framework_standstill_or_live_for_category_users(
+    def test_framework_action_lists_only_shown_when_framework_standstill_live_or_expired_for_category_users(
         self, framework_status, header_shown
     ):
         self.data_api_client.find_frameworks.return_value = self._get_mock_framework_response(framework_status)
@@ -311,7 +333,7 @@ class TestFrameworkActionsOnIndexPage(LoggedInApplicationTest):
         ('pending', False, True, True, True),
         ('standstill', True, True, True, True),
         ('live', True, True, True, True),
-        ('expired', False, False, False, False),
+        ('expired', True, True, True, True),
     ])
     def test_framework_action_lists_only_contain_actions_for_framework_status(
         self, framework_status, agreements_shown, stats_shown, comms_shown, contact_shown
