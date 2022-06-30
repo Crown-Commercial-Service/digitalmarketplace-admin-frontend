@@ -67,9 +67,7 @@ def change_user_name(user_id):
 @role_required('admin-framework-manager', 'admin-ccs-category', 'admin-ccs-data-controller')
 def user_list_page_for_framework(framework_slug):
     framework = data_api_client.get_framework(framework_slug).get("frameworks")
-    if framework is None or framework['status'] == 'coming' or (
-        framework['status'] == 'expired' and framework['family'] != 'digital-outcomes-and-specialists'
-    ):
+    if framework is None or framework['status'] == 'coming':
         abort(404)
 
     supplier_csv_url = url_for(

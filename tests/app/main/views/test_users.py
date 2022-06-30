@@ -275,32 +275,6 @@ class TestUserListPage(LoggedInApplicationTest):
             '//h1//text()')[0].strip()
         assert page_heading == "Download supplier lists for G-Cloud 9"
 
-    @pytest.mark.parametrize('family,should_be_shown', (
-        ('g-cloud', False),
-        ('digital-outcomes-and-specialists', True),
-    ))
-    def test_dos_frameworks_only_expired_frameworks_available(self, s3, family, should_be_shown):
-        self.data_api_client.get_framework.return_value = FrameworkStub(
-            family=family,
-            status='expired',
-            slug=f'sunt-me-gratis-12',
-            name=f'Sunt Me Gratis 12',
-        ).single_result_response()
-
-        response = self.client.get(f"/admin/frameworks/sunt-me-gratis-12/users")
-
-        assert self.data_api_client.mock_calls == [
-            mock.call.get_framework("sunt-me-gratis-12")
-        ]
-
-        if should_be_shown:
-            assert response.status_code == 200
-            document = html.fromstring(response.get_data(as_text=True))
-            page_heading = document.xpath('normalize-space(string(//h1))')
-            assert page_heading == f"Download supplier lists for Sunt Me Gratis 12"
-        else:
-            assert response.status_code == 404
-
     @mock.patch('app.main.views.users.get_signed_url')
     def test_download_supplier_user_account_list_report_redirects_to_s3_url(self, get_signed_url, s3):
         get_signed_url.return_value = 'http://path/to/csv?querystring'
