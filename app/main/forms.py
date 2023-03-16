@@ -212,14 +212,14 @@ class EditSupplierRegisteredAddressForm(FlaskForm):
         AnyOf(values=[country[1] for country in COUNTRY_TUPLE], message="You must enter a valid country."),
     ])
 
-    def validate(self):
+    def validate(self, extra_validators=None):
         # If a user is trying to change the country and enters an invalid option (blank or not a country),
         # and submits the form, the country field is not submitted with the form.
         # The old value will be re-populated in the field (with the validation error message).
         # This could be confusing if there are multiple fields with errors, so clear the field for now.
         if not self.country.raw_data:
             self.country.data = ''
-        return super(EditSupplierRegisteredAddressForm, self).validate()
+        return super(EditSupplierRegisteredAddressForm, self).validate(extra_validators=extra_validators)
 
 
 class EditSupplierRegisteredNameForm(FlaskForm):
@@ -249,11 +249,11 @@ class EditSupplierCompanyRegistrationNumberForm(FlaskForm):
         ]
     )
 
-    def validate(self):
+    def validate(self, extra_validators=None):
         # Admin must supply one or other field
         # Admin cannot supply both fields
         valid = True
-        if not super(EditSupplierCompanyRegistrationNumberForm, self).validate():
+        if not super(EditSupplierCompanyRegistrationNumberForm, self).validate(extra_validators=extra_validators):
             valid = False
 
         if self.other_company_registration_number.data and self.companies_house_number.data:
