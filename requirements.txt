@@ -122,7 +122,7 @@ pyyaml==5.4
     # via digitalmarketplace-content-loader
 redis==3.5.3
     # via digitalmarketplace-utils
-requests==2.26.0
+requests==2.31.0
     # via
     #   digitalmarketplace-apiclient
     #   digitalmarketplace-utils
