@@ -138,7 +138,7 @@ urllib3==1.26.5
     # via
     #   botocore
     #   requests
-werkzeug==1.0.1
+werkzeug==3.0.1
     # via
     #   flask
     #   flask-login
