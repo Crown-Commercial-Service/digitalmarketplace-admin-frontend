@@ -54,7 +54,7 @@ flask==1.1.4
     #   gds-metrics
 flask-gzip==0.2
     # via digitalmarketplace-utils
-flask-login==0.6.2
+flask-login==0.6.3
     # via
     #   -r requirements.in
     #   digitalmarketplace-utils
