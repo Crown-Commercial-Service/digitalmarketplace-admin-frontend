@@ -11,4 +11,4 @@ itsdangerous
 digitalmarketplace-apiclient
 digitalmarketplace-content-loader
 digitalmarketplace-utils
-git+https://github.com/alphagov/govuk-frontend-jinja.git@v0.5.2-alpha#egg=govuk-frontend-jinja==0.5.2-alpha
+git+https://github.com/Crown-Commercial-Service/govuk-frontend-jinja.git@v0.5.2-alpha#egg=govuk-frontend-jinja==0.5.2-alpha
