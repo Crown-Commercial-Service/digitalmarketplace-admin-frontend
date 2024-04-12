@@ -36,7 +36,7 @@ digitalmarketplace-utils==60.12.0
     # via
     #   -r requirements.in
     #   digitalmarketplace-content-loader
-dnspython==2.3.0
+dnspython==2.6.1
     # via email-validator
 docopt==0.6.2
     # via notifications-python-client
