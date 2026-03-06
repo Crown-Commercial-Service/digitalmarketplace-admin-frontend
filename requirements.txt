@@ -96,7 +96,7 @@ lxml==4.9.2
     # via -r requirements.in
 mailchimp3==3.0.17
     # via digitalmarketplace-utils
-markdown==2.6.11
+markdown==3.8.1
     # via digitalmarketplace-content-loader
 markupsafe==1.1.1
     # via
